@@ -15,12 +15,15 @@
 - [[Decisions/0001-tech-stack-baseline]] — 기술 스택은 원본 명세서를 그대로 채택(bkit Enterprise 기본 템플릿 미사용)
 - [[Decisions/0002-ui-framework-selection]] — Web은 Ant Design v5, Mobile은 NativeWind (제안서 조합 A)
 - [[Decisions/0003-mvp-scope-and-user-model]] — MVP는 backend+web 우선(mobile은 Phase 2), 계정 없는 1인 모델, 백엔드는 Oracle Cloud Free Tier
+- [[Decisions/0004-write-api-protection]] — 쓰기 API는 정적 API 키로 최소 보호(진짜 인증 아님)
 
 ## 상세 (Reference 정본)
 - [[Reference/README]] — 요구사항 정본은 `docs/specs/`의 원본 명세서 3종
 
 ## bkit PDCA
-- Plan 문서 작성 완료: `docs/01-plan/features/firewatch.plan.md` (Phase 1 = backend+web). 상태 확인: `/pdca status`. 다음: `/pdca design firewatch`.
+- Plan 완료: `docs/01-plan/features/firewatch.plan.md` (Phase 1 = backend+web)
+- Design 완료: `docs/02-design/features/firewatch.design.md` (Option C, 10-모듈 Session Guide)
+- 다음: `/pdca do firewatch --scope module-1,module-2`. 상태 확인: `/pdca status`.
 - Plan/Design/Do/Check/Report 문서는 `docs/01-plan/`, `docs/02-design/` 등 bkit 표준 경로에 별도 생성된다(이 위키가 대체하지 않음).
 
 최근 변화: [[log]]

@@ -18,3 +18,4 @@
 | 사용자 인증 모델(단일 vs 다중 사용자) | 계정 없는 1인용으로 확정 | [[Decisions/0003-mvp-scope-and-user-model]] |
 | 백엔드 배포처(Oracle Cloud vs Render/Railway) | Oracle Cloud Always Free Tier로 확정 | [[Decisions/0003-mvp-scope-and-user-model]] |
 | 이번 Plan의 MVP 범위(3서비스 동시 vs 단계적) | backend+web을 Phase 1로, mobile은 별도 Phase 2 Plan | [[Decisions/0003-mvp-scope-and-user-model]] |
+| 계정 없이 쓰기 API(설정 변경·수동 트리거)를 어떻게 보호할지 | 정적 API 키(`X-API-Key`) — 진짜 인증이 아닌 남용 방지 최소선 | [[Decisions/0004-write-api-protection]] |

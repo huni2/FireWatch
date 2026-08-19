@@ -12,6 +12,8 @@
 
 **Phase 1(현재 Plan) = BE 전체 + WEB 전체. Phase 2(별도 Plan) = APP 전체.** 근거는 [[Decisions/0003-mvp-scope-and-user-model]] — 모바일 앱은 Expo 빌드·스토어 심사 등 원자재가 달라 `docs/01-plan/features/firewatch.plan.md`의 범위 밖이다. 아래 APP 섹션은 Phase 2 착수 시점에 별도 Plan 문서로 옮겨질 예정이며, 그 전까지는 백로그로만 유지한다.
 
+**Design 완료(2026-08-19)**: `docs/02-design/features/firewatch.design.md`, Option C(Pragmatic Balance) 채택. 아래 BE/WEB 과제 순서는 Design §11.3 Module Map과 1:1 대응하며, `/pdca do firewatch --scope module-N`으로 세션별 구현 가능.
+
 ## 열린 과제 — 백엔드(BE)
 
 ### BE-1. 백엔드 프로젝트 스캐폴딩
@@ -20,9 +22,9 @@
 **완료 기준** — `./gradlew bootRun`으로 빈 서버가 뜬다. `/actuator/health` 또는 동등한 헬스체크 200.
 
 ### BE-2. 감사로그(Audit Log) AOP 인프라
-**무엇** — `audit_logs` 테이블(명세서 3.2절 스키마) + `AuditLogAspect`(Spring AOP) + `LoggerService`. event_type(SCHEDULER/GEMINI_API/FCM_PUSH/USER_SETTING/ERROR), status(SUCCESS/WARNING/FALLBACK/FAILURE) 자동 기록.
+**무엇** — `audit_logs` 테이블(명세서 3.2절 스키마) + `AuditLogAspect`(Spring AOP) + `LoggerService`. event_type(SCHEDULER/GEMINI_API/FINANCIAL_API/FCM_PUSH/USER_SETTING/ERROR), status(SUCCESS/WARNING/FALLBACK/FAILURE) 자동 기록. **Design 결정(Option C)**: `@Auditable` 같은 수동 어노테이션이 아니라, Service 계층 공개 메서드 전체를 포인트컷으로 잡아 기본값으로 감사로그가 켜지게 한다(옵트아웃 방식) — [[Decisions/0001-tech-stack-baseline]]과 별개로 Design §1.2·§2.0에서 확정.
 **왜** — 이 프로젝트의 핵심 차별 기능(FR-07)이며, BE-3~BE-7이 전부 이 위에 로그를 남겨야 한다 — 나중에 넣으면 전 모듈에 재작업이 생긴다. **BE-1 완료 후 다른 어떤 기능보다 먼저.**
-**완료 기준** — 더미 메서드 하나에 `@Auditable` 등 어노테이션을 붙이면 `audit_logs`에 실행시간(ms)·성공/실패가 자동 기록됨.
+**완료 기준** — 임의의 Service 공개 메서드가 **어노테이션 없이도** 실행시간(ms)·성공/실패가 `audit_logs`에 자동 기록됨(Design §8.3 단위테스트로 확인).
 
 ### BE-3. 스케줄러 + Gemini API 연동
 **무엇** — `@Scheduled(cron = "0 0 8 * * *")` 잡 + Gemini 3 Flash Free API(Google Search Grounding) 호출로 국내/미국 증시 요약·호재/악재 뉴스·추천 종목 텍스트 생성(FR-01, FR-02). **BE-2 의존**(감사로그 없이 스케줄러를 붙이지 않는다).
@@ -45,9 +47,9 @@
 **완료 기준** — 날짜별 브리핑 조회 API 왕복 확인.
 
 ### BE-7. 사용자 설정 API
-**무엇** — 관심 키워드(종목명·원자재 등) 추가/삭제, 푸시 수신 시간 변경 API(FR-05). 설정 변경 이력도 감사로그(USER_SETTING)에 기록. **BE-2 의존.**
+**무엇** — 관심 키워드(종목명·원자재 등) 추가/삭제, 푸시 수신 시간 변경 API(FR-05). 설정 변경 이력도 감사로그(USER_SETTING)에 기록. **`PUT`은 `X-API-Key` 헤더 검증 필수**([[Decisions/0004-write-api-protection]]) — 키 불일치는 401 + 감사로그 FAILURE. **BE-2 의존.**
 **왜** — WEB-4·APP-4 설정 화면의 백엔드.
-**완료 기준** — 키워드 추가/삭제·시간 변경이 저장되고 감사로그에 client_ip와 함께 기록됨.
+**완료 기준** — 키워드 추가/삭제·시간 변경이 저장되고 감사로그에 client_ip와 함께 기록됨. 키 없이 호출 시 401 확인.
 
 ### BE-8. Oracle Cloud Free Tier 배포
 **무엇** — Oracle Cloud Always Free Tier(ARM 4 core/24GB) 또는 Render/Railway 무료 플랜에 배포, 24/7 가동 확인.
