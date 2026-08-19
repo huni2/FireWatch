@@ -25,6 +25,8 @@ spring:
         size: 2
 
 firewatch:
+  # 로컬 dev(Vite 5173) + 배포 후 Cloudflare Pages 도메인(BE-8/WEB-5에서 추가). Design 문서가 놓쳐 module-7에서 발견.
+  allowed-origins: ${FIREWATCH_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:4173}
   scheduler:
     # 매일 08:00 KST. Asia/Seoul 타임존을 SchedulerJob의 @Scheduled에 명시적으로 지정한다.
     cron: "0 0 8 * * *"

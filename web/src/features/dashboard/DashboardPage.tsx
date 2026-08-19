@@ -1,0 +1,62 @@
+import { useState } from 'react'
+import { Alert, Empty, Row, Col, Space } from 'antd'
+import { BriefingSummaryCard } from './components/BriefingSummaryCard'
+import { MetricStat } from './components/MetricStat'
+import { RateChart } from './components/RateChart'
+import { useLatestBriefing } from './hooks/useLatestBriefing'
+import { useBriefingHistory } from './hooks/useBriefingHistory'
+
+// Design Ref: §5.4 Dashboard 체크리스트 — FR-04
+export function DashboardPage() {
+  const [period, setPeriod] = useState<7 | 30>(30)
+  const latest = useLatestBriefing()
+  const history = useBriefingHistory(period)
+
+  const sortedHistory = [...(history.data ?? [])].sort((a, b) => b.briefingDate.localeCompare(a.briefingDate))
+  const previous = sortedHistory.find((b) => b.briefingDate !== latest.data?.briefingDate) ?? null
+  const lastAvailableDate = sortedHistory[0]?.briefingDate ?? null
+
+  if (latest.error) {
+    return <Alert type="error" message="브리핑을 불러오지 못했습니다" description={latest.error.message} showIcon />
+  }
+
+  return (
+    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      {!latest.loading && !latest.data && (
+        <Empty
+          description={
+            lastAvailableDate
+              ? `오늘자 브리핑이 아직 생성되지 않았습니다. 마지막 브리핑: ${lastAvailableDate}`
+              : '아직 생성된 브리핑이 없습니다.'
+          }
+        />
+      )}
+
+      <BriefingSummaryCard briefing={latest.data} loading={latest.loading} />
+
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat title="금(USD/oz)" value={latest.data?.goldPrice ?? null} previousValue={previous?.goldPrice} />
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat title="은(USD/oz)" value={latest.data?.silverPrice ?? null} previousValue={previous?.silverPrice} />
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat title="USD/KRW" value={latest.data?.usdKrw ?? null} previousValue={previous?.usdKrw} />
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat
+            title="JPY(100)/KRW"
+            value={latest.data?.jpy100Krw ?? null}
+            previousValue={previous?.jpy100Krw}
+          />
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat title="CNY/KRW" value={latest.data?.cnyKrw ?? null} previousValue={previous?.cnyKrw} />
+        </Col>
+      </Row>
+
+      <RateChart history={history.data ?? []} loading={history.loading} period={period} onPeriodChange={setPeriod} />
+    </Space>
+  )
+}

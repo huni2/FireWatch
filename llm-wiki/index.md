@@ -18,6 +18,7 @@
 - [[Decisions/0004-write-api-protection]] — 쓰기 API는 정적 API 키로 최소 보호(진짜 인증 아님)
 - [[Decisions/0005-spring-boot-4]] — 명세서의 "3.2+"를 만족하는 Spring Boot 4.1.0 채택(Initializr가 3.x 미제공)
 - [[Decisions/0006-fallback-scope]] — FALLBACK은 "Gemini 실패" 전용, 금융 API 단독 실패는 NORMAL+null 필드
+- [[Decisions/0007-web-stack-and-cors]] — Web은 React 18+antd v5 고정, CORS 설정 추가(Design 누락분)
 
 ## 상세 (Reference 정본)
 - [[Reference/README]] — 요구사항 정본은 `docs/specs/`의 원본 명세서 3종
@@ -25,7 +26,7 @@
 ## bkit PDCA
 - Plan 완료: `docs/01-plan/features/firewatch.plan.md` (Phase 1 = backend+web)
 - Design 완료: `docs/02-design/features/firewatch.design.md` (Option C, 10-모듈 Session Guide)
-- Do: module-1~5(스캐폴딩·감사로그 AOP·스케줄러/Gemini·금융API/FALLBACK·FCM발송·이력API·설정API) 완료 — **Phase 1 백엔드(BE-1~7) 전부 완료**. 다음: `--scope module-6`(배포) 또는 `--scope module-7,8,9`(Web).
+- Do: module-1~5, module-7~9 완료 — **Phase 1(backend+web) 사실상 전부 완료**, 남은 건 배포(module-6, module-10)뿐. 다음: `--scope module-6,module-10`.
 - 상태 확인: `/pdca status`.
 - Plan/Design/Do/Check/Report 문서는 `docs/01-plan/`, `docs/02-design/` 등 bkit 표준 경로에 별도 생성된다(이 위키가 대체하지 않음).
 
