@@ -8,7 +8,7 @@
 **BE는 번호가 곧 의존 순서**(스케줄러·감사로그 인프라가 먼저 서야 나머지가 그 위에 쌓인다).
 **WEB·APP은 서로 독립**이지만 대부분 특정 BE 과제에 의존한다 — 각 과제의 `무엇`에 명시.
 
-이 시점(2026-08-19)에는 세 서비스 모두 **스캐폴딩 전**이다. 지금 바로 착수 가능한 것은 없음 — 먼저 `/pdca design firewatch`로 아키텍처를 확정한 뒤 BE-1부터 순서대로 진행한다.
+**진행 상황(2026-08-19)**: BE-1·BE-2 완료. BE-3은 Gemini 연동까지 완료, 금융 API·FALLBACK(BE-4)은 아직. WEB·APP은 스캐폴딩 전.
 
 **Phase 1(현재 Plan) = BE 전체 + WEB 전체. Phase 2(별도 Plan) = APP 전체.** 근거는 [[Decisions/0003-mvp-scope-and-user-model]] — 모바일 앱은 Expo 빌드·스토어 심사 등 원자재가 달라 `docs/01-plan/features/firewatch.plan.md`의 범위 밖이다. 아래 APP 섹션은 Phase 2 착수 시점에 별도 Plan 문서로 옮겨질 예정이며, 그 전까지는 백로그로만 유지한다.
 
@@ -16,20 +16,11 @@
 
 ## 열린 과제 — 백엔드(BE)
 
-### BE-1. 백엔드 프로젝트 스캐폴딩
-**무엇** — `backend/`에 Kotlin(JVM 17) + Spring Boot 3.2+ + Spring WebFlux 프로젝트 생성(Gradle). H2/SQLite로 로컬 개발 DB 구성.
-**왜** — 나머지 BE 과제가 이 위에서 시작한다.
-**완료 기준** — `./gradlew bootRun`으로 빈 서버가 뜬다. `/actuator/health` 또는 동등한 헬스체크 200.
-
-### BE-2. 감사로그(Audit Log) AOP 인프라
-**무엇** — `audit_logs` 테이블(명세서 3.2절 스키마) + `AuditLogAspect`(Spring AOP) + `LoggerService`. event_type(SCHEDULER/GEMINI_API/FINANCIAL_API/FCM_PUSH/USER_SETTING/ERROR), status(SUCCESS/WARNING/FALLBACK/FAILURE) 자동 기록. **Design 결정(Option C)**: `@Auditable` 같은 수동 어노테이션이 아니라, Service 계층 공개 메서드 전체를 포인트컷으로 잡아 기본값으로 감사로그가 켜지게 한다(옵트아웃 방식) — [[Decisions/0001-tech-stack-baseline]]과 별개로 Design §1.2·§2.0에서 확정.
-**왜** — 이 프로젝트의 핵심 차별 기능(FR-07)이며, BE-3~BE-7이 전부 이 위에 로그를 남겨야 한다 — 나중에 넣으면 전 모듈에 재작업이 생긴다. **BE-1 완료 후 다른 어떤 기능보다 먼저.**
-**완료 기준** — 임의의 Service 공개 메서드가 **어노테이션 없이도** 실행시간(ms)·성공/실패가 `audit_logs`에 자동 기록됨(Design §8.3 단위테스트로 확인).
-
-### BE-3. 스케줄러 + Gemini API 연동
-**무엇** — `@Scheduled(cron = "0 0 8 * * *")` 잡 + Gemini 3 Flash Free API(Google Search Grounding) 호출로 국내/미국 증시 요약·호재/악재 뉴스·추천 종목 텍스트 생성(FR-01, FR-02). **BE-2 의존**(감사로그 없이 스케줄러를 붙이지 않는다).
+### BE-3. 스케줄러 + Gemini API 연동 (부분 완료)
+**무엇** — `@Scheduled` 잡 + Gemini API(Google Search Grounding) 호출로 국내/미국 증시 요약·추천 종목 텍스트 생성(FR-01, FR-02). **BE-2 의존.**
 **왜** — 시스템의 핵심 파이프라인.
 **완료 기준** — 수동 트리거로 잡 실행 → Gemini 응답 텍스트 생성 → `audit_logs`에 SCHEDULER/GEMINI_API 이벤트 기록.
+**진행 상황** — `SchedulerJob`·`GeminiBriefingService`·`GeminiClient` 구현 완료, 단위테스트(Mock) 통과, 앱 기동 확인. **실제 `GEMINI_API_KEY`로 라이브 호출은 아직 검증 안 됨**(더미 키로만 부팅 테스트) — 사용자가 키를 발급해 `.env`에 넣고 최소 1회 수동 트리거해봐야 진짜 완료. 금/은/환율(FALLBACK 포함)은 BE-4 몫이라 `Briefing.dataSourceStatus`는 항상 NORMAL로 저장 중.
 
 ### BE-4. 금융 API 연동 + FALLBACK 처리
 **무엇** — Yahoo Finance(yfinance)/한국수출입은행 API로 금/은 시세, 원/달러(USD)·원/100엔(JPY)·원/위안(CNY) 환율 수집. Gemini 장애 시 이 데이터로 FALLBACK 상태 발송(명세서 5.1절). **BE-2 의존.**
@@ -109,3 +100,5 @@
 
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
+| BE-1 | 백엔드 프로젝트 스캐폴딩 | 완료. Spring Initializr로 Kotlin+Spring Boot 4.1.0(+Boot 3.2 대신 채택, [[Decisions/0005-spring-boot-4]])+WebFlux+JPA+H2+Validation 생성, gradle wrapper 포함. `./gradlew build` 통과, `java -jar`로 기동 확인(Netty on port) | `backend/build.gradle.kts`, [[Decisions/0005-spring-boot-4]] (2026-08-19 [[log]]) |
+| BE-2 | 감사로그 AOP 인프라 | 완료. `AuditLogAspect`가 `service` 패키지 전체를 포인트컷으로 자동 감사(옵트아웃). SUCCESS/WARNING(임계값 초과)/FALLBACK(`AuditContext.markFallback`)/FAILURE(예외) 4개 상태 전부 단위테스트로 재현·확인(`AuditLogAspectTest`, 4 tests pass) | `backend/.../audit/AuditLogAspect.kt`, `docs/02-design/features/firewatch.design.md` §2.0 (2026-08-19 [[log]]) |

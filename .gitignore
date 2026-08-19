@@ -7,10 +7,11 @@ Thumbs.db
 .env.*
 *.env.local
 
-# backend (Kotlin/Gradle) — applies once backend/ is scaffolded
+# backend (Kotlin/Gradle)
 backend/build/
 backend/.gradle/
 backend/out/
+backend/data/
 *.class
 
 # web (Vite/React) — applies once web/ is scaffolded

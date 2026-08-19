@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: firewatch-backend
+  datasource:
+    url: jdbc:h2:file:./data/firewatch;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    # Design Ref: §3.1 — schema.sql이 정본, Hibernate가 스키마를 만들지 않는다
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+  sql:
+    init:
+      mode: always
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  task:
+    scheduling:
+      # Design Ref: §2.2 — 08:00은 항상 KST 기준(명세서 4.1절 cron: "0 0 8 * * *")
+      pool:
+        size: 2
+
+firewatch:
+  scheduler:
+    # 매일 08:00 KST. Asia/Seoul 타임존을 SchedulerJob의 @Scheduled에 명시적으로 지정한다.
+    cron: "0 0 8 * * *"
+    timezone: "Asia/Seoul"
+  audit:
+    # 이 시간(ms)을 넘긴 "성공" 호출은 AuditLogAspect가 WARNING으로 기록한다 (명세서 5.1절)
+    warning-threshold-ms: 3000
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    # 모델명은 자주 바뀐다 — 2026-08-19 기준 ai.google.dev 문서 확인값. 실행 전 재확인 권장.
+    model: ${GEMINI_MODEL:gemini-3.7-flash}
+    base-url: "https://generativelanguage.googleapis.com/v1beta"
+  settings:
+    # Design Ref: §7 / ADR 0004 — 쓰기 API 최소 보호(진짜 인증 아님)
+    api-key: ${SETTINGS_API_KEY:}
+
+logging:
+  level:
+    com.firewatch.backend: INFO
