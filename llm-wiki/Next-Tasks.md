@@ -8,7 +8,7 @@
 **BE는 번호가 곧 의존 순서**(스케줄러·감사로그 인프라가 먼저 서야 나머지가 그 위에 쌓인다).
 **WEB·APP은 서로 독립**이지만 대부분 특정 BE 과제에 의존한다 — 각 과제의 `무엇`에 명시.
 
-**진행 상황(2026-08-19)**: BE-1·BE-2 완료. BE-3은 Gemini 연동까지 완료, 금융 API·FALLBACK(BE-4)은 아직. WEB·APP은 스캐폴딩 전.
+**진행 상황(2026-08-19)**: BE-1·BE-2·BE-4·BE-5 완료. BE-3은 Gemini 연동까지 완료(실 API 키 검증 대기). WEB·APP은 스캐폴딩 전.
 
 **Phase 1(현재 Plan) = BE 전체 + WEB 전체. Phase 2(별도 Plan) = APP 전체.** 근거는 [[Decisions/0003-mvp-scope-and-user-model]] — 모바일 앱은 Expo 빌드·스토어 심사 등 원자재가 달라 `docs/01-plan/features/firewatch.plan.md`의 범위 밖이다. 아래 APP 섹션은 Phase 2 착수 시점에 별도 Plan 문서로 옮겨질 예정이며, 그 전까지는 백로그로만 유지한다.
 
@@ -20,17 +20,7 @@
 **무엇** — `@Scheduled` 잡 + Gemini API(Google Search Grounding) 호출로 국내/미국 증시 요약·추천 종목 텍스트 생성(FR-01, FR-02). **BE-2 의존.**
 **왜** — 시스템의 핵심 파이프라인.
 **완료 기준** — 수동 트리거로 잡 실행 → Gemini 응답 텍스트 생성 → `audit_logs`에 SCHEDULER/GEMINI_API 이벤트 기록.
-**진행 상황** — `SchedulerJob`·`GeminiBriefingService`·`GeminiClient` 구현 완료, 단위테스트(Mock) 통과, 앱 기동 확인. **실제 `GEMINI_API_KEY`로 라이브 호출은 아직 검증 안 됨**(더미 키로만 부팅 테스트) — 사용자가 키를 발급해 `.env`에 넣고 최소 1회 수동 트리거해봐야 진짜 완료. 금/은/환율(FALLBACK 포함)은 BE-4 몫이라 `Briefing.dataSourceStatus`는 항상 NORMAL로 저장 중.
-
-### BE-4. 금융 API 연동 + FALLBACK 처리
-**무엇** — Yahoo Finance(yfinance)/한국수출입은행 API로 금/은 시세, 원/달러(USD)·원/100엔(JPY)·원/위안(CNY) 환율 수집. Gemini 장애 시 이 데이터로 FALLBACK 상태 발송(명세서 5.1절). **BE-2 의존.**
-**왜** — 거시경제 지표 시각화(FR-02 일부)와 감사로그의 FALLBACK 상태를 실제로 만드는 경로.
-**완료 기준** — 정상/장애 두 경로 모두 감사로그에 올바른 status로 기록됨.
-
-### BE-5. FCM 푸시 발송 서비스
-**무엇** — Firebase Admin SDK로 분석 완료 즉시 등록 디바이스에 푸시 전송(FR-03). 무효 토큰 자동 정제. **BE-2, BE-3 의존.**
-**왜** — 브리핑을 실제로 전달하는 마지막 단계.
-**완료 기준** — 테스트 디바이스 토큰으로 푸시 수신 확인. 전체 발송 수·성공 수가 감사로그에 기록됨.
+**진행 상황** — `SchedulerJob`·`GeminiBriefingService`·`GeminiClient` 구현 완료, 단위테스트(Mock) 통과, 앱 기동 확인. **실제 `GEMINI_API_KEY`로 라이브 호출은 아직 검증 안 됨**(더미 키로만 부팅 테스트) — 사용자가 키를 발급해 `.env`에 넣고 최소 1회 수동 트리거해봐야 진짜 완료. BE-4 완료로 금/은/환율·FALLBACK 분기까지 `SchedulerJob`에 통합됨(단, 이쪽도 실제 `EXIM_API_KEY` 라이브 검증은 아직).
 
 ### BE-6. 브리핑 이력 저장 API
 **무엇** — 과거 브리핑 리포트·지표 데이터를 DB에 저장하고 조회하는 API(FR-06). **BE-3, BE-4 의존.**
@@ -55,9 +45,9 @@
 **완료 기준** — 빈 대시보드 셸이 다크 모드로 뜬다.
 
 ### WEB-2. 실시간 지표 대시보드
-**무엇** — 금·은·USD·JPY·CNY 시계열 차트(Recharts/Ant Design Charts) + AntD `Statistic`/`Card` 지표 뷰(FR-04). 수치 변경 시 Framer Motion 틱 애니메이션([[design]] 3절). **BE-6 완료 후 실데이터 연결, 그 전엔 목업으로 개발 가능.**
+**무엇** — 금·은·USD·JPY·CNY 시계열 차트(Recharts/Ant Design Charts) + AntD `Statistic`/`Card` 지표 뷰(FR-04). 수치 변경 시 Framer Motion 틱 애니메이션([[design]] 3절). **금융 API가 부분 실패하면 개별 필드가 null일 수 있다** — [[Decisions/0006-fallback-scope]]. null 필드는 카드에 "—"로 표시(에러로 취급하지 않음). **BE-6 완료 후 실데이터 연결, 그 전엔 목업으로 개발 가능.**
 **왜** — 이 시스템의 메인 화면.
-**완료 기준** — 5개 지표가 카드+차트로 표시되고, 새로고침 시 변경분이 시각적으로 드러남.
+**완료 기준** — 5개 지표가 카드+차트로 표시되고, 새로고침 시 변경분이 시각적으로 드러남. null 필드가 있어도 화면이 깨지지 않음.
 
 ### WEB-3. 감사로그 뷰어
 **무엇** — AntD `Table`/`Timeline`/`Tag`로 감사로그 대시보드(FR-07). 상태별 색상은 [[design]] 1절 고정값 그대로. **BE-2 완료 후 실데이터 연결.**
@@ -101,4 +91,6 @@
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
 | BE-1 | 백엔드 프로젝트 스캐폴딩 | 완료. Spring Initializr로 Kotlin+Spring Boot 4.1.0(+Boot 3.2 대신 채택, [[Decisions/0005-spring-boot-4]])+WebFlux+JPA+H2+Validation 생성, gradle wrapper 포함. `./gradlew build` 통과, `java -jar`로 기동 확인(Netty on port) | `backend/build.gradle.kts`, [[Decisions/0005-spring-boot-4]] (2026-08-19 [[log]]) |
-| BE-2 | 감사로그 AOP 인프라 | 완료. `AuditLogAspect`가 `service` 패키지 전체를 포인트컷으로 자동 감사(옵트아웃). SUCCESS/WARNING(임계값 초과)/FALLBACK(`AuditContext.markFallback`)/FAILURE(예외) 4개 상태 전부 단위테스트로 재현·확인(`AuditLogAspectTest`, 4 tests pass) | `backend/.../audit/AuditLogAspect.kt`, `docs/02-design/features/firewatch.design.md` §2.0 (2026-08-19 [[log]]) |
+| BE-2 | 감사로그 AOP 인프라 | 완료. `AuditLogAspect`가 `service` 패키지 전체를 포인트컷으로 자동 감사(옵트아웃). SUCCESS/WARNING(임계값 초과)/FALLBACK(`AuditContext.markFallback`)/FAILURE(예외) 4개 상태 전부 단위테스트로 재현·확인(`AuditLogAspectTest`, 4 tests pass). response_summary는 반환값 요약(예: FCM 발송 건수)이 자동으로 남음 | `backend/.../audit/AuditLogAspect.kt`, `docs/02-design/features/firewatch.design.md` §2.0 (2026-08-19 [[log]]) |
+| BE-4 | 금융 API 연동 + FALLBACK 처리 | 완료. `FinancialApiClient`(한국수출입은행 exchangeJSON + Yahoo Finance 비공식 v8 chart) + `FinancialDataService`. 실측 확인: 수출입은행 위안화 cur_unit은 "CNY"가 아니라 **"CNH"**, Yahoo는 User-Agent 없으면 429. FALLBACK 범위는 "Gemini 실패 시만" 적용, 금융 API 단독 실패는 NORMAL+null 필드로 처리 — [[Decisions/0006-fallback-scope]]. `SchedulerJobTest` 4개 시나리오(둘 다 성공/Gemini만 실패/금융만 실패/둘 다 실패)로 검증. **실제 EXIM_API_KEY 라이브 호출은 미검증** | `backend/.../client/FinancialApiClient.kt`, [[Decisions/0006-fallback-scope]] (2026-08-19 [[log]]) |
+| BE-5 | FCM 푸시 발송 서비스 | 완료. `FirebaseFcmSender`(Firebase Admin SDK `sendEachForMulticast`) + `PushService`, 무효 토큰(`MessagingErrorCode.UNREGISTERED`) 자동 정제해 `user_settings.fcm_tokens`에서 제거. `PushSendResult(tokenCount, successCount)`를 반환해 감사로그 response_summary에 발송 통계가 그대로 남음(FR-07 요건). `PushServiceTest` 3개 시나리오 통과. **Phase 1엔 등록 토큰이 없는 게 정상**(모바일 앱은 Phase 2) — 실기기 발송은 Phase 2에서 검증 | `backend/.../service/PushService.kt` (2026-08-19 [[log]]) |

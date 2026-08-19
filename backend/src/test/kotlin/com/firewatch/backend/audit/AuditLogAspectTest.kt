@@ -23,11 +23,12 @@ class AuditLogAspectTest @Autowired constructor(
         ?: error("audit_logs가 비어 있음")
 
     @Test
-    fun `성공한 호출은 SUCCESS로 기록된다`() {
+    fun `성공한 호출은 SUCCESS로 기록되고 반환값이 response_summary에 남는다`() {
         fixture.succeed()
         val last = lastLog()
         assertEquals(AuditStatus.SUCCESS, last.status)
         assertEquals("TestFixtureService.succeed", last.actionName)
+        assertEquals("ok", last.responseSummary)
         assertTrue((last.executionTimeMs ?: -1) >= 0)
     }
 

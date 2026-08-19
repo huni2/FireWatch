@@ -27,6 +27,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	// Design Ref: §2.0 — AuditLogAspect(AOP). Boot 4에서 spring-boot-starter-aop가 없어져 원본 모듈을 직접 추가.
 	implementation("org.springframework:spring-aspects")
+	// Design Ref: §2.2 — FCM 발송 (FR-03, 발송부만)
+	implementation("com.google.firebase:firebase-admin:9.9.0")
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")

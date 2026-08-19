@@ -40,6 +40,16 @@ firewatch:
   settings:
     # Design Ref: §7 / ADR 0004 — 쓰기 API 최소 보호(진짜 인증 아님)
     api-key: ${SETTINGS_API_KEY:}
+  exim:
+    # 한국수출입은행 Open API. 2025-06-25부로 도메인이 oapi.koreaexim.go.kr로 이전됨(실측 확인).
+    api-key: ${EXIM_API_KEY:}
+    base-url: "https://oapi.koreaexim.go.kr"
+  yahoo:
+    # 비공식 엔드포인트 — User-Agent 없으면 429(실측 확인, FinancialApiClient 참고)
+    base-url: "https://query1.finance.yahoo.com"
+  firebase:
+    # Firebase 콘솔 > 프로젝트 설정 > 서비스 계정에서 발급한 JSON 파일의 "내용 전체"를 문자열로 주입
+    service-account-json: ${FIREBASE_SERVICE_ACCOUNT_JSON:}
 
 logging:
   level:

@@ -39,7 +39,8 @@ Claude Code가 우선 읽는 구현 컨텍스트. "지금 무엇을 만드는가
 - **하네스 구축 완료**: `llm-wiki/`, 루트 `CLAUDE.md`, `.claude/settings.json` 훅(SessionStart/Stop) — 이 세션에 완료.
 - **bkit PDCA Plan 완료**: `docs/01-plan/features/firewatch.plan.md` 작성 완료. **MVP는 backend+web을 Phase 1로, mobile은 별도 Phase 2 Plan**으로 분리했다([[Decisions/0003-mvp-scope-and-user-model]]). 사용자는 계정 없는 1인 모델, 백엔드는 Oracle Cloud Always Free Tier로 확정.
 - **bkit PDCA Design 완료**: `docs/02-design/features/firewatch.design.md` 작성 완료. Option C(Pragmatic Balance) 채택 — AOP로 감사로그 자동 강제, 쓰기 API는 정적 API 키로 최소 보호([[Decisions/0004-write-api-protection]]). §11.3에 10개 모듈(BE-1~8, WEB-1~5 대응)과 세션 분할 계획 있음.
-- **module-1, module-2 구현 완료(2026-08-19)**: `backend/`에 Kotlin+Spring Boot 4.1.0([[Decisions/0005-spring-boot-4]]) 프로젝트 생성. `AuditLogAspect`(감사로그 AOP, 4상태 전부 테스트 통과), `SchedulerJob`+`GeminiClient`(Gemini Search Grounding 연동, cron 08:00 KST)까지. `./gradlew build` 통과, 실제 기동 확인. **단, 진짜 `GEMINI_API_KEY`로는 아직 호출해본 적 없음** — 더미 키로 부팅만 검증([[Next-Tasks]] BE-3 진행 상황 참고).
-- 다음 세션: `/pdca do firewatch --scope module-3,module-4`(금융 API+FALLBACK, FCM 발송) 또는 먼저 실제 Gemini API 키로 BE-3을 수동 검증.
+- **module-1~4 구현 완료(2026-08-19)**: `backend/`에 Kotlin+Spring Boot 4.1.0([[Decisions/0005-spring-boot-4]]) 프로젝트 생성. `AuditLogAspect`(감사로그 AOP, 4상태 전부 테스트 통과 + 반환값이 response_summary에 자동 기록), `SchedulerJob`이 `GeminiClient`(Search Grounding)·`FinancialApiClient`(수출입은행+Yahoo Finance)·`PushService`(FCM 발송, 무효 토큰 정제)를 오케스트레이션. FALLBACK은 "Gemini 실패 시만" 적용([[Decisions/0006-fallback-scope]]). `./gradlew build` 통과(22 tests), 실제 기동 확인.
+- **단, 진짜 API 키(GEMINI_API_KEY/EXIM_API_KEY/FIREBASE_SERVICE_ACCOUNT_JSON)로는 아직 라이브 호출을 안 해봤다** — 전부 더미 값으로 부팅만 검증([[Next-Tasks]] BE-3 진행 상황 참고).
+- 다음 세션: `/pdca do firewatch --scope module-5`(브리핑 이력·설정 API, `X-API-Key` 필터) 또는 먼저 실제 API 키들을 넣고 BE-3·BE-4를 라이브로 수동 검증.
 - `.bkit/` 자체(PDCA 상태·감사 로그 자동 축적)는 **Claude Code 세션의 작업 디렉터리에 스코프**된다 — 이번 세션은 `E:\`(상위 드라이브 루트)에서 시작되어 `.bkit` 자동 추적이 `E:\.bkit`에 잡힌다. FireWatch 전용 `.bkit` 상태를 원하면 **다음부터는 `E:\huni_private\FireWatch`를 작업 디렉터리로 Claude Code를 시작**해야 한다(sympo-studio가 그렇게 되어 있는 것과 동일한 이유).
 - 다음 한 걸음: [[Next-Tasks]]의 열린 과제 확인 → `/pdca design firewatch`.
