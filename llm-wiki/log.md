@@ -1,0 +1,14 @@
+# FireWatch — Log
+
+이 프로젝트의 시간순 기억. 최신이 위로.
+
+> **형식 계약 (훅이 파싱한다)**: 날짜 섹션은 `## YYYY-MM-DD`, 항목은 `- **[태그] 제목**: 내용`.
+> SessionStart 훅이 최신 섹션의 **제목**들만 추출해 세션에 주입한다(태그 포함).
+> 제목은 주입만 보고도 무슨 일이 있었는지 알 수 있게 쓴다.
+>
+> **담당 태그**: `[BE]` 백엔드(Kotlin/Spring) 코드 · `[WEB]` 웹(React/AntD) 코드 · `[APP]` 모바일(React Native) 코드 · `[PROJ]` 위키·문서·설정 등 코드 외 작업.
+> 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
+
+## 2026-08-19
+- **[PROJ] 프로젝트 착수 — llm-wiki 하네스 + git 초기화 + .bkit 연동**: `docs/specs/`의 원본 명세서 3종(시스템 명세서·UI 프레임워크 제안서·UI 참고/애니메이션 가이드)을 읽고 sympo-studio의 llm-wiki 패턴을 이식했다. `index.md`·`Context.md`·`design.md`·`Next-Tasks.md`(BE/WEB/APP 3분할, sympo-studio의 FE/BE 2분할에서 확장)·`OpenQuestions.md`·`Decisions/0001-tech-stack-baseline`·`0002-ui-framework-selection` 작성. 기술 스택은 원본 명세서를 그대로 따르기로 하고 bkit Enterprise 기본 템플릿(Turborepo/FastAPI/EKS)은 채택하지 않기로 결정([[Decisions/0001-tech-stack-baseline]]). `git init` 실행, `.claude/settings.json`에 SessionStart(로그·열린과제 주입)/Stop(로그 누락 경고) 훅 추가 — sympo-studio 원본은 `jq`를 썼으나 이 머신에 `jq`가 없어 `node -e`로 JSON 인코딩을 대체하고 실제 명령을 추출해 end-to-end로 동작 검증함. 사용자 인증 모델 등 명세서에 없는 부분은 [[OpenQuestions]]로 분리하고 임의로 결정하지 않음. 코드 스캐폴딩은 다음 세션(bkit PDCA plan/design 승인 후).
+- **[PROJ] bkit PDCA Plan 문서 작성 — `/pdca plan firewatch`**: Checkpoint 1(요구사항 이해 확인)·Checkpoint 2(명세서에 없는 부분 확인)를 거쳐 `docs/01-plan/features/firewatch.plan.md` 작성. 체크포인트에서 세 가지 확정 — 사용자는 계정 없는 1인 모델, MVP는 backend+web을 Phase 1로 하고 mobile(RN)은 별도 Phase 2 Plan으로 분리, 백엔드 배포처는 Oracle Cloud Always Free Tier로 확정(근거는 [[Decisions/0003-mvp-scope-and-user-model]]). `OpenQuestions.md`·`Next-Tasks.md`·`Context.md`·`index.md`를 이 결정에 맞춰 갱신. bkit의 `.bkit/` 자체 상태 자동 추적(체크포인트·감사로그)은 Claude Code 세션의 작업 디렉터리에 스코프되는데, 이번 세션이 `E:\` 루트에서 시작돼 `E:\.bkit`로 잡힌다는 것을 확인 — FireWatch 전용 `.bkit` 상태를 쓰려면 다음부터 `E:\huni_private\FireWatch`를 작업 디렉터리로 세션을 시작해야 한다는 점을 `Context.md`에 기록.

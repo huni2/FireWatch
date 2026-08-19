@@ -1,0 +1,28 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# env files (secrets: Gemini API key, Firebase service account, etc.)
+.env
+.env.*
+*.env.local
+
+# backend (Kotlin/Gradle) — applies once backend/ is scaffolded
+backend/build/
+backend/.gradle/
+backend/out/
+*.class
+
+# web (Vite/React) — applies once web/ is scaffolded
+web/node_modules/
+web/dist/
+
+# mobile (Expo/React Native) — applies once mobile/ is scaffolded
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
