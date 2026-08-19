@@ -8,7 +8,9 @@ import com.firewatch.backend.entity.Briefing
 import com.firewatch.backend.entity.DataSourceStatus
 import com.firewatch.backend.entity.toCommaSeparated
 import com.firewatch.backend.repository.BriefingRepository
+import com.firewatch.backend.web.UnauthorizedException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -30,13 +32,27 @@ class SchedulerJob(
     private val financialDataService: FinancialDataService,
     private val pushService: PushService,
     private val briefingRepository: BriefingRepository,
+    @Value("\${firewatch.settings.api-key}") private val expectedApiKey: String,
 ) : AuditedComponent {
     override val auditEventType = AuditEventType.SCHEDULER
 
     private val log = LoggerFactory.getLogger(SchedulerJob::class.java)
 
     @Scheduled(cron = "\${firewatch.scheduler.cron}", zone = "\${firewatch.scheduler.timezone}")
-    fun runMorningBriefing() {
+    fun runMorningBriefing() = executePipeline()
+
+    // Design Ref: §4.1 POST /api/scheduler/trigger — 디버그·QA용 수동 실행, 쓰기 API라 X-API-Key 요구(ADR 0004).
+    // runMorningBriefing()을 this로 재호출하지 않고 별도 진입점으로 둔다 — Spring AOP는 같은 빈 안에서
+    // this.메서드() 자기호출을 가로채지 못해(self-invocation), 그렇게 하면 이 진입점 자체가 감사로그에
+    // 안 남는다. 별도 public 메서드라야 프록시를 거쳐 SCHEDULER 이벤트가 정상적으로 기록된다.
+    fun triggerManually(apiKey: String?) {
+        if (expectedApiKey.isBlank() || apiKey != expectedApiKey) {
+            throw UnauthorizedException()
+        }
+        executePipeline()
+    }
+
+    private fun executePipeline() {
         val today = LocalDate.now()
         if (briefingRepository.findByBriefingDate(today) != null) {
             log.info("오늘($today)자 브리핑이 이미 존재해 스킵")

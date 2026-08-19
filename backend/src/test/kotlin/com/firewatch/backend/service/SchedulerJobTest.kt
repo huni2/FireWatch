@@ -4,6 +4,7 @@ import com.firewatch.backend.client.GeminiBriefingResult
 import com.firewatch.backend.entity.Briefing
 import com.firewatch.backend.entity.DataSourceStatus
 import com.firewatch.backend.repository.BriefingRepository
+import com.firewatch.backend.web.UnauthorizedException
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -22,8 +23,13 @@ class SchedulerJobTest {
     private val financialDataService = mockk<FinancialDataService>()
     private val pushService = mockk<PushService>(relaxed = true)
     private val briefingRepository = mockk<BriefingRepository>(relaxed = true)
-    private val schedulerJob =
-        SchedulerJob(geminiBriefingService, financialDataService, pushService, briefingRepository)
+    private val schedulerJob = SchedulerJob(
+        geminiBriefingService,
+        financialDataService,
+        pushService,
+        briefingRepository,
+        expectedApiKey = "secret-key",
+    )
 
     private val sampleSnapshot = FinancialSnapshot(
         goldPrice = BigDecimal("4406.1"),
@@ -99,6 +105,28 @@ class SchedulerJobTest {
 
         assertFailsWith<IllegalStateException> { schedulerJob.runMorningBriefing() }
 
+        verify(exactly = 0) { briefingRepository.save(any()) }
+    }
+
+    @Test
+    fun `triggerManually는 API 키가 맞으면 파이프라인을 실행한다`() {
+        every { briefingRepository.findByBriefingDate(LocalDate.now()) } returns null
+        every { geminiBriefingService.fetchTodaysBriefing() } returns
+            GeminiBriefingResult(marketSummary = "요약", recommendedStocks = emptyList())
+        every { financialDataService.fetchLatestSnapshot() } returns sampleSnapshot
+        // 제네릭 save(S): S 브리지 메서드는 relaxed mock의 자동 답변이 캐스팅에 실패해 명시 스텁이 필요하다.
+        every { briefingRepository.save(any()) } answers { firstArg() }
+
+        schedulerJob.triggerManually("secret-key")
+
+        verify { briefingRepository.save(any()) }
+    }
+
+    @Test
+    fun `triggerManually는 API 키가 틀리면 UnauthorizedException을 던지고 아무것도 하지 않는다`() {
+        assertFailsWith<UnauthorizedException> { schedulerJob.triggerManually("wrong-key") }
+
+        verify(exactly = 0) { geminiBriefingService.fetchTodaysBriefing() }
         verify(exactly = 0) { briefingRepository.save(any()) }
     }
 }

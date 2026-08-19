@@ -8,7 +8,7 @@
 **BE는 번호가 곧 의존 순서**(스케줄러·감사로그 인프라가 먼저 서야 나머지가 그 위에 쌓인다).
 **WEB·APP은 서로 독립**이지만 대부분 특정 BE 과제에 의존한다 — 각 과제의 `무엇`에 명시.
 
-**진행 상황(2026-08-19)**: BE-1·BE-2·BE-4·BE-5 완료. BE-3은 Gemini 연동까지 완료(실 API 키 검증 대기). WEB·APP은 스캐폴딩 전.
+**진행 상황(2026-08-19)**: BE-1·BE-2·BE-4·BE-5·BE-6·BE-7 완료. BE-3은 Gemini 연동까지 완료(실 API 키 검증 대기). **BE-8(배포)만 남음.** WEB·APP은 스캐폴딩 전.
 
 **Phase 1(현재 Plan) = BE 전체 + WEB 전체. Phase 2(별도 Plan) = APP 전체.** 근거는 [[Decisions/0003-mvp-scope-and-user-model]] — 모바일 앱은 Expo 빌드·스토어 심사 등 원자재가 달라 `docs/01-plan/features/firewatch.plan.md`의 범위 밖이다. 아래 APP 섹션은 Phase 2 착수 시점에 별도 Plan 문서로 옮겨질 예정이며, 그 전까지는 백로그로만 유지한다.
 
@@ -21,16 +21,6 @@
 **왜** — 시스템의 핵심 파이프라인.
 **완료 기준** — 수동 트리거로 잡 실행 → Gemini 응답 텍스트 생성 → `audit_logs`에 SCHEDULER/GEMINI_API 이벤트 기록.
 **진행 상황** — `SchedulerJob`·`GeminiBriefingService`·`GeminiClient` 구현 완료, 단위테스트(Mock) 통과, 앱 기동 확인. **실제 `GEMINI_API_KEY`로 라이브 호출은 아직 검증 안 됨**(더미 키로만 부팅 테스트) — 사용자가 키를 발급해 `.env`에 넣고 최소 1회 수동 트리거해봐야 진짜 완료. BE-4 완료로 금/은/환율·FALLBACK 분기까지 `SchedulerJob`에 통합됨(단, 이쪽도 실제 `EXIM_API_KEY` 라이브 검증은 아직).
-
-### BE-6. 브리핑 이력 저장 API
-**무엇** — 과거 브리핑 리포트·지표 데이터를 DB에 저장하고 조회하는 API(FR-06). **BE-3, BE-4 의존.**
-**왜** — WEB-2 대시보드와 APP-3 모바일 UI의 데이터 소스.
-**완료 기준** — 날짜별 브리핑 조회 API 왕복 확인.
-
-### BE-7. 사용자 설정 API
-**무엇** — 관심 키워드(종목명·원자재 등) 추가/삭제, 푸시 수신 시간 변경 API(FR-05). 설정 변경 이력도 감사로그(USER_SETTING)에 기록. **`PUT`은 `X-API-Key` 헤더 검증 필수**([[Decisions/0004-write-api-protection]]) — 키 불일치는 401 + 감사로그 FAILURE. **BE-2 의존.**
-**왜** — WEB-4·APP-4 설정 화면의 백엔드.
-**완료 기준** — 키워드 추가/삭제·시간 변경이 저장되고 감사로그에 client_ip와 함께 기록됨. 키 없이 호출 시 401 확인.
 
 ### BE-8. Oracle Cloud Free Tier 배포
 **무엇** — Oracle Cloud Always Free Tier(ARM 4 core/24GB) 또는 Render/Railway 무료 플랜에 배포, 24/7 가동 확인.
@@ -50,7 +40,7 @@
 **완료 기준** — 5개 지표가 카드+차트로 표시되고, 새로고침 시 변경분이 시각적으로 드러남. null 필드가 있어도 화면이 깨지지 않음.
 
 ### WEB-3. 감사로그 뷰어
-**무엇** — AntD `Table`/`Timeline`/`Tag`로 감사로그 대시보드(FR-07). 상태별 색상은 [[design]] 1절 고정값 그대로. **BE-2 완료 후 실데이터 연결.**
+**무엇** — AntD `Table`/`Timeline`/`Tag`로 감사로그 대시보드(FR-07). 상태별 색상은 [[design]] 1절 고정값 그대로. **BE-6 완료로 `GET /api/audit-logs` 준비됨 — 바로 실데이터 연결 가능.**
 **왜** — 명세서가 강조하는 핵심 차별 기능이자 24/7 무인 스케줄러의 유일한 관측 창구.
 **완료 기준** — event_type/status/실행시간 필터링 가능, 실패 건이 빨간 태그로 즉시 식별됨.
 
@@ -93,4 +83,6 @@
 | BE-1 | 백엔드 프로젝트 스캐폴딩 | 완료. Spring Initializr로 Kotlin+Spring Boot 4.1.0(+Boot 3.2 대신 채택, [[Decisions/0005-spring-boot-4]])+WebFlux+JPA+H2+Validation 생성, gradle wrapper 포함. `./gradlew build` 통과, `java -jar`로 기동 확인(Netty on port) | `backend/build.gradle.kts`, [[Decisions/0005-spring-boot-4]] (2026-08-19 [[log]]) |
 | BE-2 | 감사로그 AOP 인프라 | 완료. `AuditLogAspect`가 `service` 패키지 전체를 포인트컷으로 자동 감사(옵트아웃). SUCCESS/WARNING(임계값 초과)/FALLBACK(`AuditContext.markFallback`)/FAILURE(예외) 4개 상태 전부 단위테스트로 재현·확인(`AuditLogAspectTest`, 4 tests pass). response_summary는 반환값 요약(예: FCM 발송 건수)이 자동으로 남음 | `backend/.../audit/AuditLogAspect.kt`, `docs/02-design/features/firewatch.design.md` §2.0 (2026-08-19 [[log]]) |
 | BE-4 | 금융 API 연동 + FALLBACK 처리 | 완료. `FinancialApiClient`(한국수출입은행 exchangeJSON + Yahoo Finance 비공식 v8 chart) + `FinancialDataService`. 실측 확인: 수출입은행 위안화 cur_unit은 "CNY"가 아니라 **"CNH"**, Yahoo는 User-Agent 없으면 429. FALLBACK 범위는 "Gemini 실패 시만" 적용, 금융 API 단독 실패는 NORMAL+null 필드로 처리 — [[Decisions/0006-fallback-scope]]. `SchedulerJobTest` 4개 시나리오(둘 다 성공/Gemini만 실패/금융만 실패/둘 다 실패)로 검증. **실제 EXIM_API_KEY 라이브 호출은 미검증** | `backend/.../client/FinancialApiClient.kt`, [[Decisions/0006-fallback-scope]] (2026-08-19 [[log]]) |
+| BE-6 | 브리핑 이력 저장 API | 완료. `BriefingController`(`GET /latest`, `GET ?from=&to=`). 함께 `AuditLogController`(`GET /api/audit-logs`, 원래 Next-Tasks에 독립 항목이 없었는데 Design §4.1이 요구해 이번에 같이 구현 — WEB-3의 전제조건)와 `SchedulerController`(`POST /api/scheduler/trigger`, 디버그용 수동 실행)도 이 모듈에서 함께 만듦. `ApiIntegrationTest`(WebTestClient, 실제 내장 서버 기동)로 확인 | `backend/.../web/BriefingController.kt` (2026-08-19 [[log]]) |
+| BE-7 | 사용자 설정 API | 완료. `SettingsController` + `SettingsService`(USER_SETTING 이벤트). API 키 검증을 컨트롤러가 아니라 **Service 메서드 안에서** 해 인증 실패도 감사로그에 남게 함([[Decisions/0004-write-api-protection]]). `ApiIntegrationTest`로 401/200/400(fieldErrors) 전부 확인, 실제 서버 기동해 curl로도 재확인 | `backend/.../service/SettingsService.kt` (2026-08-19 [[log]]) |
 | BE-5 | FCM 푸시 발송 서비스 | 완료. `FirebaseFcmSender`(Firebase Admin SDK `sendEachForMulticast`) + `PushService`, 무효 토큰(`MessagingErrorCode.UNREGISTERED`) 자동 정제해 `user_settings.fcm_tokens`에서 제거. `PushSendResult(tokenCount, successCount)`를 반환해 감사로그 response_summary에 발송 통계가 그대로 남음(FR-07 요건). `PushServiceTest` 3개 시나리오 통과. **Phase 1엔 등록 토큰이 없는 게 정상**(모바일 앱은 Phase 2) — 실기기 발송은 Phase 2에서 검증 | `backend/.../service/PushService.kt` (2026-08-19 [[log]]) |

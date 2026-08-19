@@ -25,7 +25,7 @@
 ## bkit PDCA
 - Plan 완료: `docs/01-plan/features/firewatch.plan.md` (Phase 1 = backend+web)
 - Design 완료: `docs/02-design/features/firewatch.design.md` (Option C, 10-모듈 Session Guide)
-- Do: module-1~4(스캐폴딩·감사로그 AOP·스케줄러/Gemini·금융API/FALLBACK·FCM발송) 완료. 다음: `--scope module-5`.
+- Do: module-1~5(스캐폴딩·감사로그 AOP·스케줄러/Gemini·금융API/FALLBACK·FCM발송·이력API·설정API) 완료 — **Phase 1 백엔드(BE-1~7) 전부 완료**. 다음: `--scope module-6`(배포) 또는 `--scope module-7,8,9`(Web).
 - 상태 확인: `/pdca status`.
 - Plan/Design/Do/Check/Report 문서는 `docs/01-plan/`, `docs/02-design/` 등 bkit 표준 경로에 별도 생성된다(이 위키가 대체하지 않음).
 

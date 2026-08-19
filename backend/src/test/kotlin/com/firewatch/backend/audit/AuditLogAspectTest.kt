@@ -12,8 +12,15 @@ import kotlin.test.assertTrue
 import kotlin.test.assertFailsWith
 
 // Design Ref: docs/02-design/features/firewatch.design.md §8.3 — 감사로그 AOP 단위테스트
+// 전용 인메모리 DB(테스트 클래스별로 이름을 분리) — 로컬 개발용 파일 DB(./data/firewatch)를
+// 테스트가 오염시키지 않도록 격리. 자세한 사유는 [[llm-wiki/log]] 2026-08-19.
 @SpringBootTest
-@TestPropertySource(properties = ["firewatch.audit.warning-threshold-ms=50"])
+@TestPropertySource(
+    properties = [
+        "firewatch.audit.warning-threshold-ms=50",
+        "spring.datasource.url=jdbc:h2:mem:audit-aspect-test;DB_CLOSE_DELAY=-1",
+    ],
+)
 class AuditLogAspectTest @Autowired constructor(
     private val fixture: TestFixtureService,
     private val auditLogRepository: AuditLogRepository,
