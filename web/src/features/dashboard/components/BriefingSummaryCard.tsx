@@ -31,11 +31,13 @@ export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardPr
           ) : null
         }
       >
-        <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>{briefing.marketSummary}</Typography.Paragraph>
+        <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', fontSize: 15, lineHeight: 1.7 }}>
+          {briefing.marketSummary}
+        </Typography.Paragraph>
         {briefing.recommendedStocks.length > 0 && (
-          <Space wrap>
+          <Space wrap size={6}>
             {briefing.recommendedStocks.map((stock) => (
-              <Tag key={stock} color="blue">
+              <Tag key={stock} color="blue" style={{ borderRadius: 999, paddingInline: 10 }}>
                 {stock}
               </Tag>
             ))}
