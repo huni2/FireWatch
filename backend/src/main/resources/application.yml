@@ -41,8 +41,9 @@ firewatch:
     warning-threshold-ms: 3000
   gemini:
     api-key: ${GEMINI_API_KEY:}
-    # 모델명은 자주 바뀐다 — 2026-08-19 기준 ai.google.dev 문서 확인값. 실행 전 재확인 권장.
-    model: ${GEMINI_MODEL:gemini-3.7-flash}
+    # Gemini 3 계열은 Google Search Grounding이 무료 티어 일일 0건이라(2026-08-20 실측, render.yaml
+    # 참고) 2.5로 고정. 모델명은 자주 바뀌니 실행 전 재확인 권장.
+    model: ${GEMINI_MODEL:gemini-2.5-flash}
     base-url: "https://generativelanguage.googleapis.com/v1beta"
   settings:
     # Design Ref: §7 / ADR 0004 — 쓰기 API 최소 보호(진짜 인증 아님)
