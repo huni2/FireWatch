@@ -25,7 +25,7 @@ Claude Code가 우선 읽는 구현 컨텍스트. "지금 무엇을 만드는가
 - **Web**: React 18 + Vite · Ant Design v5(`ConfigProvider` + `darkAlgorithm`) · Recharts/Ant Design Charts(환율·금/은 시계열, 감사로그 응답시간) · Framer Motion(수치 틱 애니메이션, 카드 페이드인) — 근거 [[Decisions/0002-ui-framework-selection]].
 - **Mobile**: React Native(Expo) · NativeWind(Tailwind 클래스) · Expo Notifications/FCM · React Native Reanimated(60fps 모션).
 - **AI/외부 데이터**: Gemini 3 Flash Free API(Google Search Grounding, 일 1,500회 무료) · Yahoo Finance(yfinance) / 한국수출입은행 API.
-- **인프라(전부 무료 등급)**: Web은 Cloudflare Pages, Backend는 Oracle Cloud Always Free Tier(ARM 4 core/24GB) 또는 Render/Railway 무료 플랜, Push는 FCM.
+- **인프라(전부 무료 등급, 카드 미등록)**: Web은 Cloudflare Pages(`https://firewatch-eqp.pages.dev`), Backend는 Render 무료 플랜(`https://firewatch-backend-q3cv.onrender.com`, 15분 무활동 슬립 → GitHub Actions가 매일 08:00 KST에 깨움), Push는 FCM. Oracle Cloud는 가입 자체가 막혀 Render로 전환했다 — [[Decisions/0008-deployment-render-github-actions]].
 - 상세 근거는 [[Decisions/0001-tech-stack-baseline]].
 
 ## 감사로그(Audit Log) — 이 프로젝트의 핵심 차별점
@@ -39,9 +39,8 @@ Claude Code가 우선 읽는 구현 컨텍스트. "지금 무엇을 만드는가
 - **하네스 구축 완료**: `llm-wiki/`, 루트 `CLAUDE.md`, `.claude/settings.json` 훅(SessionStart/Stop) — 이 세션에 완료.
 - **bkit PDCA Plan 완료**: `docs/01-plan/features/firewatch.plan.md` 작성 완료. **MVP는 backend+web을 Phase 1로, mobile은 별도 Phase 2 Plan**으로 분리했다([[Decisions/0003-mvp-scope-and-user-model]]). 사용자는 계정 없는 1인 모델, 백엔드는 Oracle Cloud Always Free Tier로 확정.
 - **bkit PDCA Design 완료**: `docs/02-design/features/firewatch.design.md` 작성 완료. Option C(Pragmatic Balance) 채택 — AOP로 감사로그 자동 강제, 쓰기 API는 정적 API 키로 최소 보호([[Decisions/0004-write-api-protection]]). §11.3에 10개 모듈(BE-1~8, WEB-1~5 대응)과 세션 분할 계획 있음.
-- **module-1~5, module-7~9 구현 완료(2026-08-19) — Phase 1(backend+web) 사실상 전부 완료, 배포(BE-8/WEB-5)만 남음**: `backend/`(Kotlin+Spring Boot 4.1.0, [[Decisions/0005-spring-boot-4]])는 감사로그 AOP+스케줄러(Gemini/금융API/FALLBACK)+FCM+REST API 6개 엔드포인트까지. `web/`(React 18+Vite+AntD v5, [[Decisions/0007-web-stack-and-cors]])는 대시보드·감사로그 뷰어·설정 3화면. 브라우저로 실제 열어서 다크모드 토글·차트 렌더링·설정 저장(실제 PUT→백엔드 반영→감사로그 기록)까지 왕복 확인. 개발 중 CORS 설정이 Design에서 누락된 걸 발견해 추가([[Decisions/0007-web-stack-and-cors]]).
-- **단, 진짜 API 키(GEMINI_API_KEY/EXIM_API_KEY/FIREBASE_SERVICE_ACCOUNT_JSON)로는 아직 라이브 호출을 안 해봤다** — 전부 더미 값으로 검증([[Next-Tasks]] BE-3 진행 상황 참고).
-- **남은 건 BE-8·WEB-5(배포)뿐** — 배포되면 Phase 1이 완전히 끝난다.
-- 다음 세션: `/pdca do firewatch --scope module-6,module-10`(Oracle Cloud + Cloudflare Pages 배포) 또는 먼저 실제 API 키들을 넣고 BE-3·BE-4를 라이브로 수동 검증.
+- **Phase 1(backend+web) 전부 완료·배포됨(2026-08-20)**: `backend/`(Kotlin+Spring Boot 4.1.0, [[Decisions/0005-spring-boot-4]])는 감사로그 AOP+스케줄러(Gemini/금융API/FALLBACK)+FCM+REST API 6개 엔드포인트, Render에 배포됨. `web/`(React 18+Vite+AntD v5, [[Decisions/0007-web-stack-and-cors]])는 대시보드·감사로그 뷰어·설정 3화면, Cloudflare Pages에 배포됨. 프로덕션에서 실제 API 키(EXIM/Yahoo/Firebase)로 왕복 확인 — 금/은/환율은 실데이터, **Gemini만 무료 티어 레이트리밋(429)으로 FALLBACK**([[Next-Tasks]] BE-3 참고, 재시도해서 성공 응답 확인 필요). GitHub Actions 일일 트리거 워크플로도 수동 실행으로 확인 완료.
+- **남은 건 BE-3의 Gemini 라이브 성공 확인뿐**(레이트리밋이 풀린 뒤 재시도) — Phase 1은 사실상 종료.
+- 다음 세션: Gemini 재시도로 BE-3 완전 검증, 또는 Phase 2(모바일 APP) Plan 착수.
 - `.bkit/` 자체(PDCA 상태·감사 로그 자동 축적)는 **Claude Code 세션의 작업 디렉터리에 스코프**된다 — 이번 세션은 `E:\`(상위 드라이브 루트)에서 시작되어 `.bkit` 자동 추적이 `E:\.bkit`에 잡힌다. FireWatch 전용 `.bkit` 상태를 원하면 **다음부터는 `E:\huni_private\FireWatch`를 작업 디렉터리로 Claude Code를 시작**해야 한다(sympo-studio가 그렇게 되어 있는 것과 동일한 이유).
 - 다음 한 걸음: [[Next-Tasks]]의 열린 과제 확인 → `/pdca design firewatch`.
