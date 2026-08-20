@@ -3,11 +3,13 @@ package com.firewatch.backend.web
 import com.firewatch.backend.entity.AuditEventType
 import com.firewatch.backend.entity.AuditStatus
 import com.firewatch.backend.repository.AuditLogRepository
+import com.firewatch.backend.repository.AuditLogSpecifications
 import com.firewatch.backend.web.dto.AuditLogPageResponse
 import com.firewatch.backend.web.dto.toResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -29,6 +31,8 @@ class AuditLogController(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
     ): AuditLogPageResponse = withContext(Dispatchers.IO) {
-        auditLogRepository.search(eventType, status, from, to, PageRequest.of(page, size)).toResponse()
+        val spec = AuditLogSpecifications.search(eventType, status, from, to)
+        val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+        auditLogRepository.findAll(spec, pageable).toResponse()
     }
 }
