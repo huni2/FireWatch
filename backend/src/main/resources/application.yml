@@ -1,3 +1,7 @@
+server:
+  # Render 등 대부분의 PaaS가 PORT 환경변수로 리스닝 포트를 지정한다.
+  port: ${PORT:8080}
+
 spring:
   application:
     name: firewatch-backend

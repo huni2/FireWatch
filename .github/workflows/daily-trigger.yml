@@ -1,0 +1,27 @@
+name: Daily Morning Briefing Trigger
+
+# Design Ref: ADR "Render + GitHub Actions wake trigger" (2026-08-20) — Render 무료 티어는 15분
+# 무활동 시 슬립하므로, 내부 @Scheduled 대신 이 워크플로가 매일 08:00 KST에 외부에서 깨워
+# /api/scheduler/trigger를 호출한다. 요청이 오면 Render가 자동으로 기동한다(콜드스타트 30~60초).
+on:
+  schedule:
+    # 08:00 KST = 23:00 UTC(전날)
+    - cron: "0 23 * * *"
+  workflow_dispatch: {} # 수동 테스트용
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/scheduler/trigger
+        run: |
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" -X POST \
+            "${{ secrets.RENDER_BACKEND_URL }}/api/scheduler/trigger" \
+            -H "X-API-Key: ${{ secrets.SETTINGS_API_KEY }}" \
+            --max-time 120)
+          echo "HTTP status: $status"
+          cat /tmp/response.json
+          if [ "$status" -ge 300 ]; then
+            echo "::error::스케줄러 트리거 실패 (HTTP $status)"
+            exit 1
+          fi

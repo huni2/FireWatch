@@ -1,0 +1,26 @@
+# Design Ref: BE-8 — Render Blueprint. Render 대시보드에서 "New > Blueprint"로 이 저장소를 연결하면
+# 이 파일 그대로 서비스가 생성된다. sync:false인 값들은 Render 대시보드에서 직접 입력해야 한다
+# (진짜 시크릿은 절대 이 파일이나 repo에 커밋하지 않는다).
+services:
+  - type: web
+    name: firewatch-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: singapore
+    healthCheckPath: /api/settings
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.7-flash
+      - key: EXIM_API_KEY
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: SETTINGS_API_KEY
+        sync: false
+      - key: FIREWATCH_ALLOWED_ORIGINS
+        # Cloudflare Pages 실제 배포 URL — ADR 0007. "firewatch" 이름이 겹쳐 "-eqp" 접미사가 붙었다.
+        value: https://firewatch-eqp.pages.dev
