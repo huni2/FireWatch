@@ -22,17 +22,19 @@
 **완료 기준** — 수동 트리거로 잡 실행 → Gemini 응답 텍스트 생성 → `audit_logs`에 SCHEDULER/GEMINI_API 이벤트 기록.
 **진행 상황** — `SchedulerJob`·`GeminiBriefingService`·`GeminiClient` 구현 완료, 단위테스트(Mock) 통과, 앱 기동 확인. **실제 `GEMINI_API_KEY`로 라이브 호출은 아직 검증 안 됨**(더미 키로만 부팅 테스트) — 사용자가 키를 발급해 `.env`에 넣고 최소 1회 수동 트리거해봐야 진짜 완료. BE-4 완료로 금/은/환율·FALLBACK 분기까지 `SchedulerJob`에 통합됨(단, 이쪽도 실제 `EXIM_API_KEY` 라이브 검증은 아직).
 
-### BE-8. Oracle Cloud Free Tier 배포
-**무엇** — Oracle Cloud Always Free Tier(ARM 4 core/24GB) 또는 Render/Railway 무료 플랜에 배포, 24/7 가동 확인.
+### BE-8. Render 배포 (부분 완료)
+**무엇** — Render 무료 플랜에 배포(Oracle Cloud 가입이 막혀 전환, [[Decisions/0008-deployment-render-github-actions]]), GitHub Actions가 매일 08:00 KST에 깨우는 방식으로 24/7 대신 "필요할 때만 기동"을 확인.
 **왜** — 무료 등급 제약 안에서 실제로 매일 아침 8시에 동작해야 시스템으로서 의미가 있다.
 **완료 기준** — 스케줄러가 실 서버에서 최소 1회 자동 실행되고 푸시가 도착함. **결제 수단 미등록 확인.**
+**진행 상황** — `backend/Dockerfile`·`render.yaml`·`.github/workflows/daily-trigger.yml` 작성 완료, `SETTINGS_API_KEY` GitHub Actions 시크릿 등록 완료. **Render 대시보드에서의 실제 Blueprint 배포와 `GEMINI_API_KEY`/`EXIM_API_KEY`/`FIREBASE_SERVICE_ACCOUNT_JSON` 입력은 사용자가 직접 해야 함**(`DEPLOY.md` 1번 참고) — 아직 미실행. 배포 후 `RENDER_BACKEND_URL` GitHub Actions 시크릿 등록과 워크플로 수동 1회 실행 확인이 남음.
 
 ## 열린 과제 — 웹(WEB)
 
-### WEB-5. Cloudflare Pages 배포
+### WEB-5. Cloudflare Pages 배포 (부분 완료)
 **무엇** — Cloudflare Pages에 정적/React 호스팅 배포. **`FIREWATCH_ALLOWED_ORIGINS`에 실제 Cloudflare Pages 도메인 추가 필수**([[Decisions/0007-web-stack-and-cors]]) — 빠뜨리면 프로덕션에서 CORS로 전부 막힘.
 **왜** — 무료·무제한 대역폭 조건 충족(명세서 1.3절).
 **완료 기준** — 공개 URL에서 대시보드가 뜨고 BE-8 배포 서버와 통신됨.
+**진행 상황** — `https://firewatch-eqp.pages.dev`에 배포 완료(200 확인). 프로젝트명 "firewatch"가 계정 내에서 겹쳐 "-eqp" 접미사가 자동으로 붙음. `render.yaml`의 `FIREWATCH_ALLOWED_ORIGINS`도 이 값으로 맞춰둠. **아직 BE-8이 안 끝나 백엔드와 통신 불가**(현재 `web/.env`의 `VITE_API_BASE_URL`이 localhost) — BE-8 완료 후 그 URL로 재빌드+재배포 필요. Cloudflare 대시보드 UI가 2026-08 기준 대개편(Pages가 "Workers & Pages"로 흡수, Compute 하위 메뉴로 이동)되어 있었고, 기본 Account API 토큰엔 Pages 편집 권한이 없어 `Pages:Edit` 권한을 추가한 새 토큰을 발급해야 했음(`DEPLOY.md` 3번에 기록).
 
 ## 열린 과제 — 모바일(APP)
 
