@@ -20,6 +20,7 @@
 - [[Decisions/0006-fallback-scope]] — FALLBACK은 "Gemini 실패" 전용, 금융 API 단독 실패는 NORMAL+null 필드
 - [[Decisions/0007-web-stack-and-cors]] — Web은 React 18+antd v5 고정, CORS 설정 추가(Design 누락분)
 - [[Decisions/0008-deployment-render-github-actions]] — 백엔드는 Oracle Cloud 대신 Render, GitHub Actions가 매일 외부에서 깨움
+- [[Decisions/0009-persistent-db-supabase]] — H2 파일 DB가 Render 슬립 사이클마다 초기화되는 걸 겪은 뒤 Supabase Postgres로 전환
 
 ## 상세 (Reference 정본)
 - [[Reference/README]] — 요구사항 정본은 `docs/specs/`의 원본 명세서 3종

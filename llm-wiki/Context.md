@@ -25,7 +25,7 @@ Claude Code가 우선 읽는 구현 컨텍스트. "지금 무엇을 만드는가
 - **Web**: React 18 + Vite · Ant Design v5(`ConfigProvider` + `darkAlgorithm`) · Recharts/Ant Design Charts(환율·금/은 시계열, 감사로그 응답시간) · Framer Motion(수치 틱 애니메이션, 카드 페이드인) — 근거 [[Decisions/0002-ui-framework-selection]].
 - **Mobile**: React Native(Expo) · NativeWind(Tailwind 클래스) · Expo Notifications/FCM · React Native Reanimated(60fps 모션).
 - **AI/외부 데이터**: Gemini 3 Flash Free API(Google Search Grounding, 일 1,500회 무료) · Yahoo Finance(yfinance) / 한국수출입은행 API.
-- **인프라(전부 무료 등급, 카드 미등록)**: Web은 Cloudflare Pages(`https://firewatch-eqp.pages.dev`), Backend는 Render 무료 플랜(`https://firewatch-backend-q3cv.onrender.com`, 15분 무활동 슬립 → GitHub Actions가 매일 08:00 KST에 깨움), Push는 FCM. Oracle Cloud는 가입 자체가 막혀 Render로 전환했다 — [[Decisions/0008-deployment-render-github-actions]].
+- **인프라(전부 무료 등급, 카드 미등록)**: Web은 Cloudflare Pages(`https://firewatch-eqp.pages.dev`), Backend는 Render 무료 플랜(`https://firewatch-backend-q3cv.onrender.com`, 15분 무활동 슬립 → GitHub Actions가 매일 08:00 KST에 깨움), DB는 Supabase Postgres(Render는 영구 디스크가 없어 H2 파일 DB가 슬립 사이클마다 초기화되는 걸 실제로 겪은 뒤 전환 — [[Decisions/0009-persistent-db-supabase]]), Push는 FCM. Oracle Cloud는 가입 자체가 막혀 Render로 전환했다 — [[Decisions/0008-deployment-render-github-actions]].
 - 상세 근거는 [[Decisions/0001-tech-stack-baseline]].
 
 ## 감사로그(Audit Log) — 이 프로젝트의 핵심 차별점
