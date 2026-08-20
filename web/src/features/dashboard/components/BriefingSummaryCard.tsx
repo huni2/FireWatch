@@ -22,8 +22,9 @@ export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardPr
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
       <Card
+        className="hoverable-card"
         title="오늘의 증시 요약"
         extra={
           briefing.dataSourceStatus === 'FALLBACK' ? (

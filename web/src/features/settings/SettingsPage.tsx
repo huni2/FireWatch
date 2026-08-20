@@ -48,7 +48,7 @@ export function SettingsPage() {
   }
 
   return (
-    <Card title="설정">
+    <Card className="hoverable-card" title="설정">
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
         {error && <Alert type="error" message="설정을 불러오지 못했습니다" description={error.message} showIcon />}
 

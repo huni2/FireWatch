@@ -36,23 +36,34 @@ export function DashboardPage() {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} md={8} lg={4}>
-          <MetricStat title="금(USD/oz)" value={latest.data?.goldPrice ?? null} previousValue={previous?.goldPrice} />
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={4}>
-          <MetricStat title="은(USD/oz)" value={latest.data?.silverPrice ?? null} previousValue={previous?.silverPrice} />
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={4}>
-          <MetricStat title="USD/KRW" value={latest.data?.usdKrw ?? null} previousValue={previous?.usdKrw} />
+          <MetricStat
+            index={0}
+            title="금(USD/oz)"
+            value={latest.data?.goldPrice ?? null}
+            previousValue={previous?.goldPrice}
+          />
         </Col>
         <Col xs={24} sm={12} md={8} lg={4}>
           <MetricStat
+            index={1}
+            title="은(USD/oz)"
+            value={latest.data?.silverPrice ?? null}
+            previousValue={previous?.silverPrice}
+          />
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat index={2} title="USD/KRW" value={latest.data?.usdKrw ?? null} previousValue={previous?.usdKrw} />
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat
+            index={3}
             title="JPY(100)/KRW"
             value={latest.data?.jpy100Krw ?? null}
             previousValue={previous?.jpy100Krw}
           />
         </Col>
         <Col xs={24} sm={12} md={8} lg={4}>
-          <MetricStat title="CNY/KRW" value={latest.data?.cnyKrw ?? null} previousValue={previous?.cnyKrw} />
+          <MetricStat index={4} title="CNY/KRW" value={latest.data?.cnyKrw ?? null} previousValue={previous?.cnyKrw} />
         </Col>
       </Row>
 

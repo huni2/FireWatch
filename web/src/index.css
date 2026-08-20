@@ -25,3 +25,16 @@ body {
 .audit-row-failure > td {
   background-color: rgba(239, 68, 68, 0.08) !important;
 }
+
+/* Design Ref: llm-wiki/design.md §3 — 페이지 전반 카드에 살짝 뜨는 hover(0.5초 이내, 3D 회전/줌 금지 원칙 준수) */
+.hoverable-card {
+  transition:
+    transform 180ms ease-out,
+    box-shadow 180ms ease-out;
+}
+.hoverable-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 10px 24px rgba(16, 24, 40, 0.1),
+    0 3px 8px rgba(16, 24, 40, 0.08);
+}

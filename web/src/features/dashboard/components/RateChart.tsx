@@ -41,6 +41,7 @@ export function RateChart({ history, loading, period, onPeriodChange }: RateChar
 
   return (
     <Card
+      className="hoverable-card"
       title="시계열 차트"
       extra={
         <div style={{ display: 'flex', gap: 12 }}>

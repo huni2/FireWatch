@@ -84,7 +84,7 @@ export function AuditLogPage() {
   ]
 
   return (
-    <Card title="감사로그(Audit Log)">
+    <Card className="hoverable-card" title="감사로그(Audit Log)">
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
         <Space wrap>
           <Select
