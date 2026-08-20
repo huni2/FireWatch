@@ -1,0 +1,15 @@
+# 프로덕션(Render) 전용 오버라이드. SPRING_PROFILES_ACTIVE=prod로 활성화.
+# Render 무료 웹서비스는 영구 디스크가 없어 H2 파일 DB가 슬립→재기동마다 초기화되는 걸
+# 실제로 겪은 뒤(2026-08-20) 외부 영속 Postgres(Supabase)로 전환 — ADR 0009.
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      platform: postgresql
+  h2:
+    console:
+      enabled: false

@@ -1,7 +1,24 @@
 # FireWatch 배포 가이드 (BE-8 / WEB-5)
 
-카드 등록 없이 가입 가능한 무료 등급 조합: **Render(백엔드) + Cloudflare Pages(웹) + GitHub Actions(스케줄러 트리거)**.
+카드 등록 없이 가입 가능한 무료 등급 조합: **Render(백엔드) + Supabase(DB) + Cloudflare Pages(웹) + GitHub Actions(스케줄러 트리거)**.
 근거: Oracle Cloud 가입 실패 → 대안 검토 → `llm-wiki/Decisions/`의 최신 ADR 참고.
+
+## 0. DB — Supabase (Render 배포보다 먼저 해야 함)
+
+Render 무료 웹서비스는 **영구 디스크가 없어서** 슬립→재기동(15분 무활동마다)할 때 컨테이너 파일시스템이 통째로
+새로 뜬다 — H2 파일 DB를 그대로 썼다가 배포 몇 시간 만에 이력이 전부 사라지는 걸 실제로 겪었다([[Decisions/0009-persistent-db-supabase]]).
+그래서 프로덕션은 외부 Postgres(Supabase)를 쓴다. 로컬 개발은 기존 H2 그대로라 영향 없음.
+
+1. [supabase.com](https://supabase.com)에서 가입(카드 불필요) → 새 프로젝트 생성.
+2. 프로젝트 생성 후 **Project Settings → Database → Connection string** → **Session pooler** 탭 선택
+   (Render는 상시 연결이라 Session pooler가 적합, Transaction pooler 아님).
+3. 다음 세 값을 확인해둔다 — 1번(Render) 배포 시 그대로 입력한다.
+
+   | 값 | Supabase 화면상 위치 |
+   |---|---|
+   | `SPRING_DATASOURCE_URL` | `jdbc:postgresql://<Host>:<Port>/<Database>` 형태로 직접 조립(Host/Port/Database는 Connection string 화면에 표시됨) |
+   | `SPRING_DATASOURCE_USERNAME` | Connection string의 User |
+   | `SPRING_DATASOURCE_PASSWORD` | 프로젝트 생성 시 설정한 DB 비밀번호(분실 시 같은 화면에서 재설정 가능) |
 
 ## 1. 백엔드 — Render
 
@@ -18,6 +35,9 @@ Render 무료 티어는 15분 무활동 시 슬립한다. 내부 `@Scheduled` cr
    | `EXIM_API_KEY` | 한국수출입은행 Open API 포털에서 발급 |
    | `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase 콘솔 > 프로젝트 설정 > 서비스 계정 > 새 비공개 키 생성(JSON 파일 내용 전체를 문자열로 붙여넣기) |
    | `SETTINGS_API_KEY` | `a5d86a770681da35bdbc73ccfc6c873fa20953008985b701` (이미 GitHub Actions 시크릿으로도 등록됨 — 아래 2번과 값이 반드시 같아야 한다) |
+   | `SPRING_DATASOURCE_URL` / `_USERNAME` / `_PASSWORD` | 0번에서 확인한 Supabase 값 |
+
+   `SPRING_PROFILES_ACTIVE=prod`는 `render.yaml`에 이미 고정값으로 들어있어 따로 입력할 필요 없다.
 
 4. 배포 완료 후 Render가 부여한 URL을 확인한다(예: `https://firewatch-backend.onrender.com`).
 5. `render.yaml`의 `FIREWATCH_ALLOWED_ORIGINS`는 `https://firewatch-eqp.pages.dev`로 이미 채워져 있다(3번에서 실제 배포해 확인한 값).
@@ -64,6 +84,6 @@ Pages 권한이 빠져 있어 그대로 쓰면 `pages/projects/.../upload-token`
 
 ## 알려진 한계
 
-- Render 무료 티어는 **영구 디스크가 없다** — H2 파일 DB가 재배포 시 초기화될 수 있다(감사로그·브리핑 이력 유실 위험).
-  Phase 1 단계에서는 감수하는 리스크로 두고, 필요해지면 외부 영속 DB(예: Turso) 도입을 재검토한다.
+- Supabase 무료 티어는 0.5GB 저장공간 제한이 있다 — 이 프로젝트 데이터 규모(하루 1건 브리핑 + 소량 감사로그)로는
+  충분하고도 남지만, 참고([[Decisions/0009-persistent-db-supabase]]).
 - Render 무료 티어 콜드스타트가 30~60초라 GitHub Actions 워크플로 타임아웃(120초)을 여유 있게 잡아뒀다.

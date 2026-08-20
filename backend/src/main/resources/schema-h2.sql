@@ -1,5 +1,5 @@
 -- Design Ref: docs/02-design/features/firewatch.design.md §3.1
--- H2용 DDL. DB 엔진 최종 선택은 llm-wiki/OpenQuestions.md 참고(아직 미정 — 로컬 개발은 H2).
+-- 로컬 개발/테스트용 H2 DDL. 프로덕션(Render)은 schema-postgresql.sql — ADR 0009.
 
 CREATE TABLE IF NOT EXISTS audit_logs (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,

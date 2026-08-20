@@ -21,6 +21,17 @@ services:
         sync: false
       - key: SETTINGS_API_KEY
         sync: false
+      - key: SPRING_PROFILES_ACTIVE
+        # Postgres(Supabase) 데이터소스로 전환 — 무료 티어에 영구 디스크가 없어 H2 파일 DB가
+        # 슬립→재기동마다 초기화되는 걸 실제로 겪음(2026-08-20). ADR 0009.
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        # 예: jdbc:postgresql://<host>:5432/postgres (Supabase > Project Settings > Database > Session pooler)
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
       - key: FIREWATCH_ALLOWED_ORIGINS
         # Cloudflare Pages 실제 배포 URL — ADR 0007. "firewatch" 이름이 겹쳐 "-eqp" 접미사가 붙었다.
         value: https://firewatch-eqp.pages.dev
