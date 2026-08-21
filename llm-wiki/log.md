@@ -10,6 +10,8 @@
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
 ## 2026-08-21
+- **[PROJ] 루트 README.md 신설 — 배포 링크·아키텍처·기술스택 근거·문제해결·AI 협업 체계 정리**: 채용/포트폴리오 열람을 염두에 두고 프로젝트 루트에 README.md를 새로 작성. 배포 URL(Cloudflare Pages/Render), Mermaid 아키텍처 다이어그램, 기술스택별 선택 이유(ADR 근거), 실제로 겪은 버그 6건(Kotlin `List<@Pattern>` 무효 검증, AuditContext ThreadLocal 오귀속, 스케줄러 타임존, 수출입은행 11시 정책, Gemini grounding 할당량 0건, 네이버 뉴스 API 좌절→RSS 전환), 상태관리·성능최적화·품질개선·배포방법·운영이슈 대응, 그리고 `llm-wiki/` 기반 AI 협업 체계(SessionStart/Stop 훅, ADR, bkit 기본 템플릿을 의도적으로 거부한 판단 등)를 정리. 초안 작성 후 사용자 요청으로 전체 재검토를 한 번 거쳐, 기술스택 표의 근거 일부(AntD 선택 이유, Cloudflare Pages 이유, 금융 API 가입 여부)가 실제 ADR·DEPLOY.md와 어긋나던 걸 원본과 대조해 수정하고, 품질개선 섹션의 "감사로그로 버그 대부분 발견" 같은 과장된 서술도 정정했다.
+  `README.md` 신설.
 - **[BE] 백엔드 티커 검증이 실제로는 무효했던 버그 발견·수정 — Kotlin `List<@Pattern>`은 검증 안 됨**: 프론트 검증(바로 위 항목)을 방어적으로 백엔드에도 걸어뒀다고 생각했는데, 배포 후 실측하려고 API를 직접 호출해보니 `watchedStocks: ["005930.KS","AAPL","반도체"]`가 그대로 200 OK로 저장되는 걸 발견 — `SettingsUpdateRequest.watchedStocks: List<@Pattern(...) String>` 문법이 Jakarta Bean Validation에서 실제로 검증을 안 걸고 있었음(Kotlin의 제네릭 타입-인자 애노테이션이 TYPE_USE로 온전히 인식 안 되는 것으로 추정). 첫 테스트 시도는 `curl -d`에 한글을 직접 넣었다가 셸 인코딩 문제로 `Invalid UTF-8 start byte` 500 에러가 나서 헷갈렸는데, `Write` 도구로 정확한 UTF-8 파일을 만들어 `--data-binary`로 재시도하니 진짜 문제(검증 자체가 안 걸림)가 드러남.
   DTO의 미덥지 않은 `List<@Pattern>` 애노테이션을 걷어내고, `SettingsService.update()`에서 직접 정규식으로 검사해 `ValidationException`(400)을 던지도록 수정 — 프로덕션에서 `watchedStocks`에 "반도체"를 넣어 재요청하니 정확히 `400 VALIDATION_ERROR`로 거부되는 것 확인.
   `backend/.../service/SettingsService.kt`·`web/dto/SettingsDtos.kt`(+테스트) 변경.
