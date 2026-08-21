@@ -9,14 +9,14 @@ import {
 } from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 
-const { Header, Content } = Layout
+const { Sider, Header, Content } = Layout
 
 interface AppShellProps {
   darkMode: boolean
   onToggleDarkMode: (value: boolean) => void
 }
 
-// Design Ref: §5.1 Screen Layout — Header(로고+다크모드 토글) + Nav(대시보드|감사로그|설정)
+// Design Ref: §5.1 Screen Layout — 왼쪽 사이드바(로고+메뉴) + 상단 헤더(다크모드 토글) + 콘텐츠
 export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
   const location = useLocation()
 
@@ -29,38 +29,46 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Header
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 32,
-          paddingInline: 24,
-          borderBottom: '1px solid var(--ant-color-border-secondary)',
-        }}
+      <Sider
+        theme={darkMode ? 'dark' : 'light'}
+        width={220}
+        style={{ borderInlineEnd: '1px solid var(--ant-color-border-secondary)' }}
       >
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '20px 24px' }}>
           <span style={{ fontSize: 22 }}>🔥</span>
           <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.3, color: 'var(--ant-color-text)' }}>
             FireWatch
           </span>
-        </span>
+        </div>
         <Menu
           theme={darkMode ? 'dark' : 'light'}
-          mode="horizontal"
+          mode="inline"
           selectedKeys={[location.pathname]}
           items={menuItems}
-          style={{ flex: 1, minWidth: 0, borderBottom: 'none', background: 'transparent' }}
+          style={{ borderInlineEnd: 'none' }}
         />
-        <Switch
-          checked={darkMode}
-          onChange={onToggleDarkMode}
-          checkedChildren={<MoonOutlined />}
-          unCheckedChildren={<SunOutlined />}
-        />
-      </Header>
-      <Content style={{ padding: 24, maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
-        <Outlet />
-      </Content>
+      </Sider>
+      <Layout>
+        <Header
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            paddingInline: 24,
+            borderBottom: '1px solid var(--ant-color-border-secondary)',
+          }}
+        >
+          <Switch
+            checked={darkMode}
+            onChange={onToggleDarkMode}
+            checkedChildren={<MoonOutlined />}
+            unCheckedChildren={<SunOutlined />}
+          />
+        </Header>
+        <Content style={{ padding: 24, maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
+          <Outlet />
+        </Content>
+      </Layout>
     </Layout>
   )
 }
