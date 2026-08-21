@@ -14,7 +14,11 @@ data class SettingsUpdateRequest(
     @field:Size(max = 20, message = "관심 키워드는 최대 20개까지입니다")
     val interestKeywords: List<@Size(max = 30, message = "키워드는 30자를 넘을 수 없습니다") String> = emptyList(),
     @field:Size(max = 20, message = "관심 종목은 최대 20개까지입니다")
-    val watchedStocks: List<@Size(max = 20, message = "종목 티커는 20자를 넘을 수 없습니다") String> = emptyList(),
+    val watchedStocks: List<
+        @Size(max = 20, message = "종목 티커는 20자를 넘을 수 없습니다")
+        @Pattern(regexp = "^[A-Za-z0-9]+(\\.[A-Za-z0-9]+)?$", message = "티커 형식이 아닙니다(예: 005930.KS, AAPL)")
+        String,
+        > = emptyList(),
 )
 
 data class SettingsResponse(

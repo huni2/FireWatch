@@ -8,6 +8,14 @@ import { StockSearchInput } from './components/StockSearchInput'
 import { useSettings } from '../settings/hooks/useSettings'
 import { updateSettings } from '../../lib/api'
 
+// 티커 형식: 영문/숫자, 선택적으로 .KS/.KQ 같은 거래소 접미사(예: 005930.KS, AAPL, BRK.B).
+// 검색 없이 직접 입력할 때 "반도체" 같은 일반 단어가 그대로 들어가던 문제(2026-08-21 실측 발견)를 막는다.
+const TICKER_PATTERN = /^[A-Za-z0-9]+(\.[A-Za-z0-9]+)?$/
+
+function validateTicker(value: string): string | null {
+  return TICKER_PATTERN.test(value) ? null : '티커 형식이 아닙니다 — 예: 005930.KS, AAPL'
+}
+
 // 2026-08-21 사용자 요청 "원하는 종목과 특정 주식에 대한 차트도 보고싶은데" — 관심 종목 등록 + 차트를 별도 화면으로.
 // 대시보드의 관심 종목 미니 요약에서 ?symbol=로 넘어오면 그 종목을 바로 선택해 보여준다.
 export function StocksPage() {
@@ -65,7 +73,12 @@ export function StocksPage() {
           <Typography.Text type="secondary" style={{ display: 'block', margin: '8px 0' }}>
             국내 대형주는 한글명(예: 삼성전자)으로 찾을 수 있고, 그 외는 영문 사명(예: Tesla)으로 검색하세요.
           </Typography.Text>
-          <KeywordInput value={watchedStocks} onChange={handleChange} placeholder="정확한 티커를 알면 직접 입력 후 Enter" />
+          <KeywordInput
+            value={watchedStocks}
+            onChange={handleChange}
+            placeholder="정확한 티커를 알면 직접 입력 후 Enter"
+            validate={validateTicker}
+          />
           <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
             직접 입력 시 국내 종목은 코스피 <code>005930.KS</code>, 코스닥은 <code>.KQ</code>, 해외는{' '}
             <code>AAPL</code>처럼 티커 그대로 입력하세요.

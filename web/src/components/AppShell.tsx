@@ -26,8 +26,8 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
 
   const menuItems = [
     { key: '/', icon: <DashboardOutlined />, label: <Link to="/">대시보드</Link> },
-    { key: '/audit-log', icon: <AuditOutlined />, label: <Link to="/audit-log">감사로그</Link> },
     { key: '/stocks', icon: <LineChartOutlined />, label: <Link to="/stocks">종목</Link> },
+    { key: '/audit-log', icon: <AuditOutlined />, label: <Link to="/audit-log">감사로그</Link> },
     { key: '/settings', icon: <SettingOutlined />, label: <Link to="/settings">설정</Link> },
   ]
 
@@ -42,7 +42,14 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         onCollapse={setCollapsed}
         breakpoint="lg"
         trigger={null}
-        style={{ borderInlineEnd: '1px solid var(--ant-color-border-secondary)' }}
+        style={{
+          borderInlineEnd: '1px solid var(--ant-color-border-secondary)',
+          position: 'sticky',
+          insetInlineStart: 0,
+          top: 0,
+          height: '100vh',
+          overflow: 'auto',
+        }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '20px 24px' }}>
           <span style={{ fontSize: 22 }}>🔥</span>
