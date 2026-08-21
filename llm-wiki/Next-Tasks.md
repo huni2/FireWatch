@@ -20,7 +20,11 @@
 **무엇** — `@Scheduled` 잡 + Gemini API(Google Search Grounding) 호출로 국내/미국 증시 요약·추천 종목 텍스트 생성(FR-01, FR-02). **BE-2 의존.**
 **왜** — 시스템의 핵심 파이프라인.
 **완료 기준** — 수동 트리거로 잡 실행 → Gemini 응답 텍스트 생성 → `audit_logs`에 SCHEDULER/GEMINI_API 이벤트 기록.
-**진행 상황** — `SchedulerJob`·`GeminiBriefingService`·`GeminiClient` 구현 완료, 단위테스트(Mock) 통과. **실제 `GEMINI_API_KEY`로 라이브 호출 확인함(2026-08-20)** — Render 프로덕션에서 수동 트리거 결과 Gemini가 `429 Too Many Requests`(무료 티어 레이트리밋) 반환, 인증·요청 형식 자체는 정상(키가 유효함을 확인). FALLBACK 분기가 설계대로 작동해 금/은/환율은 정상 채워지고 `marketSummary`만 대체 문구로 채워짐. **아직 실제 성공 응답(텍스트 생성 성공)은 못 봄** — 나중에 재시도해서 확인 필요.
+**진행 상황** — `SchedulerJob`·`GeminiBriefingService`·`GeminiClient` 구현 완료, 단위테스트(Mock) 통과. 코드 자체는 완성, **막힌 건 Google 쪽 무료 티어 모델 가용성**(2026-08-21 Google AI Studio 쿼터 화면 실측):
+  - `gemini-3.7-flash`(최초 선택) — Gemini 3 계열(3/3.1/3.5/3.6/3.7 전부) 자체가 무료 티어에서 Search Grounding 일일 할당량 **0건**. 429는 "너무 많이 써서"가 아니라 애초에 0건 허용이라 항상 실패.
+  - `gemini-2.5-flash`(1차 대체) — 이번엔 **404 Not Found**. 공식 단종은 2026년 10월인데 이미 조기 404 사례가 다수 보고됨(2.0 계열도 예정보다 일찍 6월에 완전 종료된 전례).
+  - **결론: 현재 무료 티어로 Search Grounding이 되는 Gemini 모델이 사실상 없어 보임** — Google이 세대 전환 중 무료 그라운딩 자체를 걷어낸 것으로 추정. 사용자와 상의해 FALLBACK(금/은/환율만 정상 제공)으로 당분간 두기로 결정, 모델명은 `gemini-2.5-flash`로 남겨둠(재검토 시 Google AI Studio 플레이그라운드에서 실제 invokable 모델 먼저 확인 — aistudio.google.com/rate-limit의 "도구 > 검색 그라운딩" 섹션에서 모델 계열별 RPD 확인 가능).
+  - 이 조사 과정에서 **별개의 진짜 버그 2개**를 더 발견해 수정함 — 스케줄러 날짜가 컨테이너 기본(UTC) 타임존을 써서 매일 자동 실행마다 스킵될 뻔한 버그, 한국수출입은행 API가 08:00(영업일 11시 이전) 요청이라 항상 빈 응답이던 버그. 둘 다 재배포 후 프로덕션에서 왕복 확인 완료 — 자세한 내용은 [[log]] 2026-08-21.
 
 ## 열린 과제 — 웹(WEB)
 
