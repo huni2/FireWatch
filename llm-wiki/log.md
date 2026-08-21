@@ -10,6 +10,14 @@
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
 ## 2026-08-21
+- **[BE] 종목 차트 기간 6종 확장 + 종목명 검색(한글 별칭+Yahoo 영문 폴백)**: 사용자 요청 "5년/6개월/3개월/1달/일주일/하루 이렇게 시간적으로 볼 수 있는 차트" + "종목이 뭐가 있는지 모르는데 검색을 어떻게 해야할지 모르겠다". `StockInterval`(2종)을 `StockRange`(6종: DAY/WEEK/MONTH/THREE_MONTH/SIX_MONTH/FIVE_YEAR)로 확장, 각각 Yahoo (interval,range) 조합에 매핑. `GET /api/stocks/search?q=`도 신설하려고 Yahoo 검색 API를 붙였는데, 실측해보니 **한글 종목명을 아예 못 알아듣는 걸 확인**("Samsung"은 정상, "삼성전자"·"카카오"·"현대차"는 에러 아니면 엉뚱한 결과) — 코스피/코스닥 대형주 ~35개를 로컬 별칭표로 먼저 매칭하고, 없으면 Yahoo 영문 검색으로 폴백하도록 구현.
+  프로덕션 실측: `AAPL` 1wk/1mo/5y 전부 실데이터 확인(5년치는 2021년부터), `search?q=삼성전자`→로컬 별칭 매칭, `search?q=Tesla`→Yahoo 폴백 정상. 검증 중 `watchedStocks`에 티커가 아닌 "반도체"라는 값이 섞여 있던 걸 발견해 정리 — 직접 입력 폴백에 형식 검증이 없어 생긴 것으로 추정(UI는 안 깨지고 "—"로 안전하게 표시됨, 검증 로직 추가는 TODO).
+  `backend/.../client/StockApiClient.kt`·`service/StockService.kt`·`web/StockController.kt`·`backend/src/test/.../StockApiClientTest.kt` 변경.
+- **[WEB] 종목 화면: 기간 선택기 6종 + 종목명 검색 입력**: 위 백엔드 변경에 맞춰 `StockChart`의 이분 토글(6개월/오늘)을 6단계 `Segmented`로 교체, 새 `StockSearchInput`(디바운스 자동완성)을 추가해 "종목 티커를 몰라도" 이름으로 찾아 바로 관심종목에 추가할 수 있게 함 — 기존 직접 티커 입력(`KeywordInput`)은 정확한 티커를 아는 경우를 위한 폴백으로 유지.
+  `web/src/features/stocks/{StocksPage,components/{StockChart,StockSearchInput},hooks/useStockHistory}.tsx`·`features/dashboard/hooks/useWatchlistSummary.ts`·`lib/api.ts` 변경.
+- **[WEB] 대시보드: AI 추천종목 칩 복원 + 관심종목 미니요약 카드 추가**: 사용자 지적 "AI 종목추천도 해야지" + "대시보드가 한눈에 안 보임, AI 추천이랑 뉴스랑 메뉴가 다 나뉘어져있고" — 확인해보니 뉴스는 이미 대시보드 안에 있었고(별도 메뉴 아님, 사용자 오해였음), 실제 문제는 두 가지였음. ① `recommendedStocks`가 UI는 준비돼 있는데 Gemini 응답에서 뽑아내는 로직이 없어 항상 빈 배열이었던 것 — 프롬프트 마지막 줄에 "추천종목: A, B" 형식을 요청하고 정규식으로 파싱해서 채움(본문에서는 그 줄을 빼서 보여줌). ② 관심종목을 보려면 매번 "종목" 메뉴로 들어가야 했던 것 — 대시보드에 `WatchlistSummaryCard`(최근 종가+전일 대비 등락, 클릭 시 `/stocks?symbol=`로 이동해 해당 종목이 바로 선택됨) 추가.
+  프로덕션 실측: 오늘자 브리핑 삭제 후 재생성 → `recommendedStocks: ["SK하이닉스","에이텀","TBH글로벌"]`로 실제 채워짐 확인, 대시보드에서 칩·미니요약 카드·클릭 이동까지 스크린샷으로 확인.
+  `backend/.../client/GeminiClient.kt`(+테스트)·`web/src/features/dashboard/{DashboardPage,components/WatchlistSummaryCard,hooks/useWatchlistSummary}.tsx`·`features/stocks/StocksPage.tsx`(쿼리 파라미터로 초기 선택) 변경.
 - **[WEB] 좁은 화면 대응 — 사이드바 자동 접힘 + 감사로그 테이블 가로 스크롤**: 사용자가 "화면 크기에 따른 오토스케일링이 하나도 안 되어있다"고 지적. `Layout.Sider`에 `breakpoint="lg"`+`collapsedWidth={0}`를 달아 992px 아래에서 자동으로 사라지고, 헤더의 햄버거 버튼(`trigger={null}` 커스텀)으로 다시 열 수 있게 함. 감사로그 테이블도 6개 컬럼이 좁은 화면에서 찌그러지지 않도록 `scroll={{x:'max-content'}}` 추가. 이 세션의 브라우저 자동화 도구가 `resize_window`를 호출해도 `window.innerWidth`가 실제로 안 바뀌는 문제(Windows 창 관리자 제약으로 추정)를 만나 처음엔 실측 검증을 못 했지만, 이후 재시도에서 리사이즈가 반영돼 실제 좁은 뷰포트에서 접힘/펼침 동작을 스크린샷으로 확인.
   `web/src/components/AppShell.tsx`·`features/audit-log/AuditLogPage.tsx` 변경.
 - **[WEB] 상단 가로 메뉴 → 왼쪽 사이드바 레이아웃 전환**: 사용자가 "기본적인 왼쪽에 사이드바도 없냐"고 지적 — `AppShell`을 `Header`(로고+가로 Menu+다크토글) 구조에서 `Sider`(로고+세로 Menu) + `Header`(다크토글만) + `Content`로 재구성. AntD `Layout.Sider`/`Menu mode="inline"` 표준 패턴 그대로 사용.
