@@ -1,8 +1,10 @@
-import { Layout, Menu, Switch } from 'antd'
+import { useState } from 'react'
+import { Button, Layout, Menu, Switch } from 'antd'
 import {
   AuditOutlined,
   DashboardOutlined,
   LineChartOutlined,
+  MenuOutlined,
   MoonOutlined,
   SettingOutlined,
   SunOutlined,
@@ -16,9 +18,11 @@ interface AppShellProps {
   onToggleDarkMode: (value: boolean) => void
 }
 
-// Design Ref: §5.1 Screen Layout — 왼쪽 사이드바(로고+메뉴) + 상단 헤더(다크모드 토글) + 콘텐츠
+// Design Ref: §5.1 Screen Layout — 왼쪽 사이드바(로고+메뉴) + 상단 헤더(다크토글) + 콘텐츠.
+// lg(992px) 아래에서는 사이드바가 자동으로 접혀 화면 밖으로 사라지고, 헤더의 햄버거 버튼으로 다시 연다.
 export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
   const location = useLocation()
+  const [collapsed, setCollapsed] = useState(false)
 
   const menuItems = [
     { key: '/', icon: <DashboardOutlined />, label: <Link to="/">대시보드</Link> },
@@ -32,6 +36,12 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
       <Sider
         theme={darkMode ? 'dark' : 'light'}
         width={220}
+        collapsedWidth={0}
+        collapsed={collapsed}
+        onBreakpoint={setCollapsed}
+        onCollapse={setCollapsed}
+        breakpoint="lg"
+        trigger={null}
         style={{ borderInlineEnd: '1px solid var(--ant-color-border-secondary)' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '20px 24px' }}>
@@ -45,6 +55,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
           mode="inline"
           selectedKeys={[location.pathname]}
           items={menuItems}
+          onClick={() => setCollapsed(true)}
           style={{ borderInlineEnd: 'none' }}
         />
       </Sider>
@@ -52,12 +63,13 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         <Header
           style={{
             display: 'flex',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
             alignItems: 'center',
             paddingInline: 24,
             borderBottom: '1px solid var(--ant-color-border-secondary)',
           }}
         >
+          <Button type="text" icon={<MenuOutlined />} onClick={() => setCollapsed((v) => !v)} />
           <Switch
             checked={darkMode}
             onChange={onToggleDarkMode}

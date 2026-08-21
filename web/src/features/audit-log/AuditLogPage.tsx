@@ -125,6 +125,7 @@ export function AuditLogPage() {
           loading={loading}
           columns={columns}
           dataSource={data?.data ?? []}
+          scroll={{ x: 'max-content' }}
           rowClassName={(record) => (record.status === 'FAILURE' ? 'audit-row-failure' : '')}
           pagination={{
             current: page + 1,
