@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
 import { KeywordInput } from '../settings/components/KeywordInput'
 import { StockChart } from './components/StockChart'
+import { StockSearchInput } from './components/StockSearchInput'
 import { useSettings } from '../settings/hooks/useSettings'
 import { updateSettings } from '../../lib/api'
 
@@ -38,6 +39,15 @@ export function StocksPage() {
     reload()
   }
 
+  const handleAddFromSearch = (symbol: string) => {
+    if (watchedStocks.includes(symbol)) {
+      setSelected(symbol)
+      return
+    }
+    handleChange([...watchedStocks, symbol])
+    setSelected(symbol)
+  }
+
   if (loading) {
     return (
       <Card title="종목">
@@ -51,14 +61,14 @@ export function StocksPage() {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <Card className="hoverable-card" title="관심 종목">
           {error && <Alert type="error" message="설정을 불러오지 못했습니다" description={error.message} showIcon />}
-          <KeywordInput
-            value={watchedStocks}
-            onChange={handleChange}
-            placeholder="종목 티커 입력 후 Enter"
-          />
+          <StockSearchInput onSelect={handleAddFromSearch} />
+          <Typography.Text type="secondary" style={{ display: 'block', margin: '8px 0' }}>
+            국내 대형주는 한글명(예: 삼성전자)으로 찾을 수 있고, 그 외는 영문 사명(예: Tesla)으로 검색하세요.
+          </Typography.Text>
+          <KeywordInput value={watchedStocks} onChange={handleChange} placeholder="정확한 티커를 알면 직접 입력 후 Enter" />
           <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-            국내 종목은 코스피 <code>005930.KS</code>, 코스닥은 <code>.KQ</code>, 해외는 <code>AAPL</code>처럼 티커를
-            그대로 입력하세요.
+            직접 입력 시 국내 종목은 코스피 <code>005930.KS</code>, 코스닥은 <code>.KQ</code>, 해외는{' '}
+            <code>AAPL</code>처럼 티커 그대로 입력하세요.
           </Typography.Text>
         </Card>
       </motion.div>

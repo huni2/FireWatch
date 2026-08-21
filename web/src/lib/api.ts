@@ -70,6 +70,14 @@ export interface StockHistory {
   points: StockPricePoint[]
 }
 
+export type StockChartRange = '1d' | '1wk' | '1mo' | '3mo' | '6mo' | '5y'
+
+export interface StockSearchResult {
+  symbol: string
+  name: string
+  exchange: string | null
+}
+
 export interface ApiErrorBody {
   code: string
   message: string
@@ -157,6 +165,10 @@ export function updateSettings(input: {
   })
 }
 
-export function fetchStockHistory(symbol: string, interval: '1d' | '1m' = '1d'): Promise<StockHistory> {
-  return request<StockHistory>(`/api/stocks/${encodeURIComponent(symbol)}/history?interval=${interval}`)
+export function fetchStockHistory(symbol: string, range: StockChartRange = '6mo'): Promise<StockHistory> {
+  return request<StockHistory>(`/api/stocks/${encodeURIComponent(symbol)}/history?range=${range}`)
+}
+
+export function searchStocks(query: string): Promise<StockSearchResult[]> {
+  return request<StockSearchResult[]>(`/api/stocks/search?q=${encodeURIComponent(query)}`)
 }

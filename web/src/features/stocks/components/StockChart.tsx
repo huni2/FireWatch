@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Alert, Empty, Segmented, Skeleton, Typography } from 'antd'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import type { StockChartRange } from '../../../lib/api'
 import { useStockHistory } from '../hooks/useStockHistory'
 
 const CHART_COLOR = '#4F46E5'
@@ -9,36 +10,45 @@ interface StockChartProps {
   symbol: string
 }
 
-function formatLabel(timestamp: string, interval: '1d' | '1m'): string {
+const RANGE_OPTIONS: { label: string; value: StockChartRange }[] = [
+  { label: '하루(실시간)', value: '1d' },
+  { label: '일주일', value: '1wk' },
+  { label: '1개월', value: '1mo' },
+  { label: '3개월', value: '3mo' },
+  { label: '6개월', value: '6mo' },
+  { label: '5년', value: '5y' },
+]
+
+function formatLabel(timestamp: string, range: StockChartRange): string {
   const d = new Date(timestamp)
-  return interval === '1m'
-    ? d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
-    : `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  if (range === '1d') {
+    return d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+  }
+  if (range === '1wk') {
+    return `${d.getMonth() + 1}/${d.getDate()} ${d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}`
+  }
+  if (range === '5y') {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  }
+  return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-// Design Ref: llm-wiki/design.md §4 벤치마크 톤 — RateChart와 동일한 Area+그라디언트 스타일 재사용
+// Design Ref: llm-wiki/design.md §4 벤치마크 톤 — RateChart와 동일한 Area+그라디언트 스타일 재사용.
+// 2026-08-21 사용자 요청 — "5년/6개월/3개월/1달/일주일/하루 이렇게 시간적으로 볼 수 있는 차트".
 export function StockChart({ symbol }: StockChartProps) {
-  const [interval, setInterval] = useState<'1d' | '1m'>('1d')
-  const { data, loading, error } = useStockHistory(symbol, interval)
+  const [range, setRange] = useState<StockChartRange>('6mo')
+  const { data, loading, error } = useStockHistory(symbol, range)
 
   const chartData = useMemo(
-    () => (data?.points ?? []).map((point) => ({ label: formatLabel(point.timestamp, interval), value: point.close })),
-    [data, interval],
+    () => (data?.points ?? []).map((point) => ({ label: formatLabel(point.timestamp, range), value: point.close })),
+    [data, range],
   )
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-        <Segmented
-          size="small"
-          value={interval}
-          onChange={(value) => setInterval(value as '1d' | '1m')}
-          options={[
-            { label: '6개월', value: '1d' },
-            { label: '오늘(실시간)', value: '1m' },
-          ]}
-        />
-        {interval === '1m' && (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+        <Segmented size="small" value={range} onChange={(value) => setRange(value as StockChartRange)} options={RANGE_OPTIONS} />
+        {range === '1d' && (
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             30초마다 자동 갱신 — 완전한 실시간 스트리밍은 아니고 짧은 지연이 있습니다.
           </Typography.Text>

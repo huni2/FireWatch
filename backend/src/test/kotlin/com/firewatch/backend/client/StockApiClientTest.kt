@@ -75,4 +75,30 @@ class StockApiClientTest {
             StockApiClient.parseHistory(mapOf("chart" to mapOf("result" to emptyList<Any>())), "005930.KS")
         }
     }
+
+    @Test
+    fun `검색 응답에서 심볼-이름-거래소를 뽑는다`() {
+        val response = mapOf(
+            "quotes" to listOf(
+                mapOf(
+                    "symbol" to "005930.KS",
+                    "shortname" to "SamsungElec",
+                    "longname" to "Samsung Electronics Co., Ltd.",
+                    "exchDisp" to "Korea",
+                ),
+            ),
+        )
+
+        val results = StockApiClient.parseSearchResults(response)
+
+        assertEquals(1, results.size)
+        assertEquals("005930.KS", results[0].symbol)
+        assertEquals("Samsung Electronics Co., Ltd.", results[0].name)
+        assertEquals("Korea", results[0].exchange)
+    }
+
+    @Test
+    fun `quotes가 없으면 빈 목록을 반환한다`() {
+        assertEquals(emptyList(), StockApiClient.parseSearchResults(emptyMap()))
+    }
 }

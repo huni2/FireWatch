@@ -13,7 +13,7 @@ async function loadWatchlistSummary(): Promise<WatchlistSummaryItem[]> {
   return Promise.all(
     settings.watchedStocks.map(async (symbol): Promise<WatchlistSummaryItem> => {
       try {
-        const history = await fetchStockHistory(symbol, '1d')
+        const history = await fetchStockHistory(symbol) // 기본 6개월 일봉 — 최신/전일 종가 비교용
         const points = history.points
         return {
           symbol,

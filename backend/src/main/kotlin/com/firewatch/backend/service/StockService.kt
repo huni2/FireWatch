@@ -2,8 +2,9 @@ package com.firewatch.backend.service
 
 import com.firewatch.backend.audit.AuditedComponent
 import com.firewatch.backend.client.StockApiClient
-import com.firewatch.backend.client.StockInterval
 import com.firewatch.backend.client.StockPriceHistory
+import com.firewatch.backend.client.StockRange
+import com.firewatch.backend.client.StockSearchResult
 import com.firewatch.backend.entity.AuditEventType
 import org.springframework.stereotype.Service
 
@@ -14,6 +15,8 @@ class StockService(
 ) : AuditedComponent {
     override val auditEventType = AuditEventType.FINANCIAL_API
 
-    fun fetchPriceHistory(symbol: String, interval: StockInterval): StockPriceHistory =
-        stockApiClient.fetchPriceHistory(symbol, interval)
+    fun fetchPriceHistory(symbol: String, range: StockRange): StockPriceHistory =
+        stockApiClient.fetchPriceHistory(symbol, range)
+
+    fun search(query: String): List<StockSearchResult> = stockApiClient.searchSymbols(query)
 }
