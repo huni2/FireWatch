@@ -28,3 +28,6 @@ mobile/dist/
 .idea/
 *.iml
 .vscode/
+
+# 개인 작업 스타일 가이드(CLAUDE.md가 @import) — 로컬 전용, 공유 안 함
+CLAUDE.local.md
