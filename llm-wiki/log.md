@@ -10,6 +10,8 @@
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
 ## 2026-08-21
+- **[WEB] 감사로그 화면 컬럼·필터 라벨 한글화**: 사용자가 "감사로그 화면도 확인해줘"라고 해 리뷰 — 상태 4색·다크모드·페이지네이션 다 정상이라 큰 문제는 없었고, `event_type`/`action_name`/`response_summary` 같은 컬럼명이 원본 필드명 그대로 노출되던 것만 발견해 사용자 요청으로 한글 라벨(이벤트 유형/작업명/상태/응답 요약)로 교체. 상태 태그 값 자체(SUCCESS/WARNING 등, design.md §1 고정값)와 event_type 드롭다운의 옵션 값(SCHEDULER/GEMINI_API 등, 실제 enum 값)은 그대로 둠.
+  `web/src/features/audit-log/AuditLogPage.tsx` 변경.
 - **[WEB] 대시보드 정리 — AI 요약 접기 + 마크다운 렌더링 + 파비콘 교체**: Gemini가 grounding 없이 훨씬 긴 텍스트(1부 시세분석+2부 테마추천, 수십 줄)를 생성하게 되면서 사용자가 "대시보드가 스크롤이 있을정도로 너무 많다"고 지적 — `BriefingSummaryCard` 하나만으로 화면 3개 분량이었음. `Typography.Paragraph`의 `ellipsis`가 리치 텍스트를 지원하지 않아 대신 CSS `max-height`(기본 160px) + 하단 그라디언트 페이드 + "더보기"/"접기" 토글을 직접 구현. 확인 중 Gemini가 보내는 `###`/`**` 마크다운이 그대로 텍스트로 노출되는 것도 함께 발견해, 범용 마크다운 라이브러리 대신 이 프로젝트가 실제로 받는 패턴(헤더·볼드·구분선)만 처리하는 최소 렌더러 `lib/markdownLite.tsx`를 새로 작성(새 의존성 추가 없이 해결). 파비콘도 헤더에 이미 쓰던 🔥 이모지로 교체 — 기존 파비콘은 브랜드와 무관한 스캐폴딩 기본 아이콘이었음.
   로컬 dev 서버(`localhost:5173`)로 검증하려다 CORS 403을 만남 — 원인은 버그가 아니라 `render.yaml`의 `FIREWATCH_ALLOWED_ORIGINS`가 프로덕션 URL로만 고정돼 있어 로컬 프론트가 프로덕션 백엔드를 호출할 수 없는 것(의도된 설정). `tsc`/`vite build` 통과 확인 후 Cloudflare Pages에 직접 배포해 프로덕션에서 접기/펼치기·마크다운 렌더링·전체 페이지 길이(5화면→2화면)를 스크린샷으로 실측 확인.
   `web/src/lib/markdownLite.tsx`(신설)·`features/dashboard/components/{BriefingSummaryCard,RelatedNewsCard}.tsx`·`public/favicon.svg` 변경.
