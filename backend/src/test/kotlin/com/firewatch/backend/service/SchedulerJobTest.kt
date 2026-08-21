@@ -12,6 +12,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.ZoneId
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
@@ -29,7 +30,10 @@ class SchedulerJobTest {
         pushService,
         briefingRepository,
         expectedApiKey = "secret-key",
+        schedulerTimezone = "Asia/Seoul",
     )
+
+    private val today = LocalDate.now(ZoneId.of("Asia/Seoul"))
 
     private val sampleSnapshot = FinancialSnapshot(
         goldPrice = BigDecimal("4406.1"),
@@ -41,7 +45,7 @@ class SchedulerJobTest {
 
     @Test
     fun `오늘자 브리핑이 이미 있으면 아무것도 호출하지 않고 스킵한다`() {
-        every { briefingRepository.findByBriefingDate(LocalDate.now()) } returns mockk()
+        every { briefingRepository.findByBriefingDate(today) } returns mockk()
 
         schedulerJob.runMorningBriefing()
 
@@ -52,7 +56,7 @@ class SchedulerJobTest {
 
     @Test
     fun `둘 다 성공하면 NORMAL로 저장하고 푸시를 보낸다`() {
-        every { briefingRepository.findByBriefingDate(LocalDate.now()) } returns null
+        every { briefingRepository.findByBriefingDate(today) } returns null
         every { geminiBriefingService.fetchTodaysBriefing() } returns
             GeminiBriefingResult(marketSummary = "요약", recommendedStocks = listOf("삼성전자"))
         every { financialDataService.fetchLatestSnapshot() } returns sampleSnapshot
@@ -68,7 +72,7 @@ class SchedulerJobTest {
 
     @Test
     fun `Gemini만 실패하면 FALLBACK으로 저장하고 금융 데이터는 채운다`() {
-        every { briefingRepository.findByBriefingDate(LocalDate.now()) } returns null
+        every { briefingRepository.findByBriefingDate(today) } returns null
         every { geminiBriefingService.fetchTodaysBriefing() } throws IllegalStateException("gemini down")
         every { financialDataService.fetchLatestSnapshot() } returns sampleSnapshot
         val saved = slot<Briefing>()
@@ -83,7 +87,7 @@ class SchedulerJobTest {
 
     @Test
     fun `금융 API만 실패하면 NORMAL로 저장하되 금융 필드는 비어있다`() {
-        every { briefingRepository.findByBriefingDate(LocalDate.now()) } returns null
+        every { briefingRepository.findByBriefingDate(today) } returns null
         every { geminiBriefingService.fetchTodaysBriefing() } returns
             GeminiBriefingResult(marketSummary = "요약", recommendedStocks = emptyList())
         every { financialDataService.fetchLatestSnapshot() } throws IllegalStateException("yahoo down")
@@ -99,7 +103,7 @@ class SchedulerJobTest {
 
     @Test
     fun `둘 다 실패하면 예외를 던지고 아무것도 저장하지 않는다`() {
-        every { briefingRepository.findByBriefingDate(LocalDate.now()) } returns null
+        every { briefingRepository.findByBriefingDate(today) } returns null
         every { geminiBriefingService.fetchTodaysBriefing() } throws IllegalStateException("gemini down")
         every { financialDataService.fetchLatestSnapshot() } throws IllegalStateException("yahoo down")
 
@@ -110,7 +114,7 @@ class SchedulerJobTest {
 
     @Test
     fun `triggerManually는 API 키가 맞으면 파이프라인을 실행한다`() {
-        every { briefingRepository.findByBriefingDate(LocalDate.now()) } returns null
+        every { briefingRepository.findByBriefingDate(today) } returns null
         every { geminiBriefingService.fetchTodaysBriefing() } returns
             GeminiBriefingResult(marketSummary = "요약", recommendedStocks = emptyList())
         every { financialDataService.fetchLatestSnapshot() } returns sampleSnapshot

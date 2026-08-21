@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import java.time.ZoneId
 
 /**
  * Design Ref: §2.2 — 매일 08:00 KST(cron `firewatch.scheduler.cron`) 파이프라인 오케스트레이션.
@@ -33,6 +34,7 @@ class SchedulerJob(
     private val pushService: PushService,
     private val briefingRepository: BriefingRepository,
     @Value("\${firewatch.settings.api-key}") private val expectedApiKey: String,
+    @Value("\${firewatch.scheduler.timezone}") private val schedulerTimezone: String,
 ) : AuditedComponent {
     override val auditEventType = AuditEventType.SCHEDULER
 
@@ -53,7 +55,10 @@ class SchedulerJob(
     }
 
     private fun executePipeline() {
-        val today = LocalDate.now()
+        // 컨테이너 기본 타임존(UTC로 추정)이 아니라 스케줄러와 같은 존을 명시적으로 써야 한다 —
+        // KST 08:00은 UTC로 전날 23:00이라, 타임존 없이 LocalDate.now()를 쓰면 자동 실행 때마다
+        // "오늘"이 하루 전 날짜로 계산돼 매번 스킵되는 버그가 있었다(2026-08-21 실측 발견).
+        val today = LocalDate.now(ZoneId.of(schedulerTimezone))
         if (briefingRepository.findByBriefingDate(today) != null) {
             log.info("오늘($today)자 브리핑이 이미 존재해 스킵")
             return
