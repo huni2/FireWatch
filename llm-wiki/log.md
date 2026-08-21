@@ -10,6 +10,9 @@
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
 ## 2026-08-21
+- **[BE] 백엔드 티커 검증이 실제로는 무효했던 버그 발견·수정 — Kotlin `List<@Pattern>`은 검증 안 됨**: 프론트 검증(바로 위 항목)을 방어적으로 백엔드에도 걸어뒀다고 생각했는데, 배포 후 실측하려고 API를 직접 호출해보니 `watchedStocks: ["005930.KS","AAPL","반도체"]`가 그대로 200 OK로 저장되는 걸 발견 — `SettingsUpdateRequest.watchedStocks: List<@Pattern(...) String>` 문법이 Jakarta Bean Validation에서 실제로 검증을 안 걸고 있었음(Kotlin의 제네릭 타입-인자 애노테이션이 TYPE_USE로 온전히 인식 안 되는 것으로 추정). 첫 테스트 시도는 `curl -d`에 한글을 직접 넣었다가 셸 인코딩 문제로 `Invalid UTF-8 start byte` 500 에러가 나서 헷갈렸는데, `Write` 도구로 정확한 UTF-8 파일을 만들어 `--data-binary`로 재시도하니 진짜 문제(검증 자체가 안 걸림)가 드러남.
+  DTO의 미덥지 않은 `List<@Pattern>` 애노테이션을 걷어내고, `SettingsService.update()`에서 직접 정규식으로 검사해 `ValidationException`(400)을 던지도록 수정 — 프로덕션에서 `watchedStocks`에 "반도체"를 넣어 재요청하니 정확히 `400 VALIDATION_ERROR`로 거부되는 것 확인.
+  `backend/.../service/SettingsService.kt`·`web/dto/SettingsDtos.kt`(+테스트) 변경.
 - **[WEB] 종목 티커 형식 검증 + 사이드바 스크롤 고정 + 메뉴 순서 변경**: 세 가지 사용자 지적을 한 번에 반영. ① 이전에 발견한 "반도체" 같은 일반 단어가 관심종목에 그대로 저장되던 문제(TODO로 남겨뒀던 것) — "종목 티커 형식 검증도 추가해줘" 요청으로 해결. `KeywordInput`에 선택적 `validate` prop을 추가해(관심 키워드 쪽엔 안 넘겨서 자유 텍스트 그대로 허용, 하위호환) 종목 화면에서만 `^[A-Za-z0-9]+(\.[A-Za-z0-9]+)?$` 정규식 검증 — 틀리면 빨간 테두리+에러 문구, 값은 안 지워지고 그대로 남아 고쳐 쓸 수 있음. 백엔드 `SettingsUpdateRequest.watchedStocks`에도 같은 정규식을 `@Pattern`으로 추가해 API 직접 호출에도 방어. ② "대시보드가 저게 많아서 스크롤 내려가도 사이드바가 안 딸려온다" — `Sider`에 `position:sticky`+`height:100vh`+`overflow:auto` 적용(AntD 공식 문서의 고정 사이드바 패턴). ③ "감사로그는 설정의 바로 위로" — 메뉴 순서를 대시보드→감사로그→종목→설정에서 대시보드→종목→감사로그→설정으로 재배치.
   실측: 프로덕션에서 "반도체" 직접 입력 시 에러 문구 뜨고 추가 안 되는 것 확인, 넓은 화면(1400px)에서 스크롤해도 사이드바 고정되는 것 확인, 메뉴 순서 확인.
   `backend/.../web/dto/SettingsDtos.kt`·`web/src/components/AppShell.tsx`·`features/settings/components/KeywordInput.tsx`·`features/stocks/StocksPage.tsx` 변경.
