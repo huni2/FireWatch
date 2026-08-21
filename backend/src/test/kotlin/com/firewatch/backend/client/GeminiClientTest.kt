@@ -55,6 +55,40 @@ class GeminiClientTest {
     }
 
     @Test
+    fun `마지막 줄의 추천종목을 뽑아내고 본문에서는 뺀다`() {
+        val response = mapOf(
+            "candidates" to listOf(
+                mapOf(
+                    "content" to mapOf(
+                        "parts" to listOf(
+                            mapOf("text" to "코스피는 반도체 강세.\n추천종목: 삼성전자, SK하이닉스"),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val result = GeminiClient.parseResponse(response)
+
+        assertEquals("코스피는 반도체 강세.", result.marketSummary)
+        assertEquals(listOf("삼성전자", "SK하이닉스"), result.recommendedStocks)
+    }
+
+    @Test
+    fun `추천종목 줄이 없으면 빈 목록이고 본문은 그대로다`() {
+        val response = mapOf(
+            "candidates" to listOf(
+                mapOf("content" to mapOf("parts" to listOf(mapOf("text" to "코스피는 반도체 강세.")))),
+            ),
+        )
+
+        val result = GeminiClient.parseResponse(response)
+
+        assertEquals("코스피는 반도체 강세.", result.marketSummary)
+        assertEquals(emptyList(), result.recommendedStocks)
+    }
+
+    @Test
     fun `응답 텍스트가 비어있으면 예외를 던진다`() {
         val response = mapOf(
             "candidates" to listOf(

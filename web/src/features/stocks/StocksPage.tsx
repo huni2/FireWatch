@@ -1,22 +1,31 @@
 import { useEffect, useState } from 'react'
 import { Alert, Card, Empty, Segmented, Skeleton, Space, Typography } from 'antd'
 import { motion } from 'framer-motion'
+import { useSearchParams } from 'react-router-dom'
 import { KeywordInput } from '../settings/components/KeywordInput'
 import { StockChart } from './components/StockChart'
 import { useSettings } from '../settings/hooks/useSettings'
 import { updateSettings } from '../../lib/api'
 
 // 2026-08-21 사용자 요청 "원하는 종목과 특정 주식에 대한 차트도 보고싶은데" — 관심 종목 등록 + 차트를 별도 화면으로.
+// 대시보드의 관심 종목 미니 요약에서 ?symbol=로 넘어오면 그 종목을 바로 선택해 보여준다.
 export function StocksPage() {
   const { data, loading, error, reload } = useSettings()
+  const [searchParams] = useSearchParams()
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
   const [selected, setSelected] = useState<string | null>(null)
 
   useEffect(() => {
     if (data) {
       setWatchedStocks(data.watchedStocks)
-      setSelected((current) => current ?? data.watchedStocks[0] ?? null)
+      const fromQuery = searchParams.get('symbol')
+      setSelected((current) => {
+        if (current) return current
+        if (fromQuery && data.watchedStocks.includes(fromQuery)) return fromQuery
+        return data.watchedStocks[0] ?? null
+      })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data])
 
   const handleChange = async (next: string[]) => {

@@ -65,6 +65,7 @@ class GeminiClient(
 
     companion object {
         private const val TIMEOUT_SECONDS = 20L
+        private val STOCK_LINE_REGEX = Regex("""^추천\s*종목\s*[:：]\s*(.+)$""", RegexOption.MULTILINE)
 
         internal fun buildPrompt(
             goldPrice: BigDecimal?,
@@ -97,6 +98,8 @@ class GeminiClient(
                 1. 위 시세 데이터를 참고해 오늘 국내외 증시에 참고할 만한 코멘트를 3분 안에 읽을 분량으로 정리해줘.
                 2. 위 뉴스와 시세 흐름을 참고해 관심 가질 만한 테마주나 섹터를 2~3개 추천하고 간단한 이유를 붙여줘
                    — 실시간 시세 조회 없이 일반적인 상관관계 수준의 참고용 추천이라는 점을 자연스럽게 녹여줘.
+                3. 마지막 줄에는 위에서 언급한 구체적인 종목명만 쉼표로 구분해서 정확히 이 형식으로 딱 한 줄 추가해줘
+                   (다른 설명 없이): 추천종목: 삼성전자, SK하이닉스
             """.trimIndent()
         }
 
@@ -112,8 +115,16 @@ class GeminiClient(
             val text = parts.joinToString("\n") { it["text"]?.toString().orEmpty() }.trim()
             check(text.isNotEmpty()) { "Gemini 응답 텍스트가 비어 있음" }
 
-            // Gemini가 자유 텍스트로 응답 — 추천 종목 구조화 추출은 하지 않는다(TODO: 필요해지면 JSON 응답 모드 검토).
-            return GeminiBriefingResult(marketSummary = text, recommendedStocks = emptyList())
+            // 프롬프트가 마지막 줄에 "추천종목: A, B" 형식을 요청 — 그 줄만 뽑아 구조화하고 본문에서는 뺀다.
+            val stockLine = STOCK_LINE_REGEX.find(text)
+            val recommendedStocks = stockLine?.groupValues?.get(1)
+                ?.split(",", "、")
+                ?.map { it.trim() }
+                ?.filter { it.isNotEmpty() }
+                ?: emptyList()
+            val marketSummary = if (stockLine != null) text.replace(stockLine.value, "").trim() else text
+
+            return GeminiBriefingResult(marketSummary = marketSummary, recommendedStocks = recommendedStocks)
         }
     }
 }
