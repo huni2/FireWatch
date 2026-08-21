@@ -10,6 +10,9 @@
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
 ## 2026-08-21
+- **[WEB] 종목 티커 형식 검증 + 사이드바 스크롤 고정 + 메뉴 순서 변경**: 세 가지 사용자 지적을 한 번에 반영. ① 이전에 발견한 "반도체" 같은 일반 단어가 관심종목에 그대로 저장되던 문제(TODO로 남겨뒀던 것) — "종목 티커 형식 검증도 추가해줘" 요청으로 해결. `KeywordInput`에 선택적 `validate` prop을 추가해(관심 키워드 쪽엔 안 넘겨서 자유 텍스트 그대로 허용, 하위호환) 종목 화면에서만 `^[A-Za-z0-9]+(\.[A-Za-z0-9]+)?$` 정규식 검증 — 틀리면 빨간 테두리+에러 문구, 값은 안 지워지고 그대로 남아 고쳐 쓸 수 있음. 백엔드 `SettingsUpdateRequest.watchedStocks`에도 같은 정규식을 `@Pattern`으로 추가해 API 직접 호출에도 방어. ② "대시보드가 저게 많아서 스크롤 내려가도 사이드바가 안 딸려온다" — `Sider`에 `position:sticky`+`height:100vh`+`overflow:auto` 적용(AntD 공식 문서의 고정 사이드바 패턴). ③ "감사로그는 설정의 바로 위로" — 메뉴 순서를 대시보드→감사로그→종목→설정에서 대시보드→종목→감사로그→설정으로 재배치.
+  실측: 프로덕션에서 "반도체" 직접 입력 시 에러 문구 뜨고 추가 안 되는 것 확인, 넓은 화면(1400px)에서 스크롤해도 사이드바 고정되는 것 확인, 메뉴 순서 확인.
+  `backend/.../web/dto/SettingsDtos.kt`·`web/src/components/AppShell.tsx`·`features/settings/components/KeywordInput.tsx`·`features/stocks/StocksPage.tsx` 변경.
 - **[BE] 종목 차트 기간 6종 확장 + 종목명 검색(한글 별칭+Yahoo 영문 폴백)**: 사용자 요청 "5년/6개월/3개월/1달/일주일/하루 이렇게 시간적으로 볼 수 있는 차트" + "종목이 뭐가 있는지 모르는데 검색을 어떻게 해야할지 모르겠다". `StockInterval`(2종)을 `StockRange`(6종: DAY/WEEK/MONTH/THREE_MONTH/SIX_MONTH/FIVE_YEAR)로 확장, 각각 Yahoo (interval,range) 조합에 매핑. `GET /api/stocks/search?q=`도 신설하려고 Yahoo 검색 API를 붙였는데, 실측해보니 **한글 종목명을 아예 못 알아듣는 걸 확인**("Samsung"은 정상, "삼성전자"·"카카오"·"현대차"는 에러 아니면 엉뚱한 결과) — 코스피/코스닥 대형주 ~35개를 로컬 별칭표로 먼저 매칭하고, 없으면 Yahoo 영문 검색으로 폴백하도록 구현.
   프로덕션 실측: `AAPL` 1wk/1mo/5y 전부 실데이터 확인(5년치는 2021년부터), `search?q=삼성전자`→로컬 별칭 매칭, `search?q=Tesla`→Yahoo 폴백 정상. 검증 중 `watchedStocks`에 티커가 아닌 "반도체"라는 값이 섞여 있던 걸 발견해 정리 — 직접 입력 폴백에 형식 검증이 없어 생긴 것으로 추정(UI는 안 깨지고 "—"로 안전하게 표시됨, 검증 로직 추가는 TODO).
   `backend/.../client/StockApiClient.kt`·`service/StockService.kt`·`web/StockController.kt`·`backend/src/test/.../StockApiClientTest.kt` 변경.
