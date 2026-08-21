@@ -61,7 +61,7 @@ export interface Settings {
 }
 
 export interface StockPricePoint {
-  date: string
+  timestamp: string
   close: number
 }
 
@@ -157,6 +157,6 @@ export function updateSettings(input: {
   })
 }
 
-export function fetchStockHistory(symbol: string): Promise<StockHistory> {
-  return request<StockHistory>(`/api/stocks/${encodeURIComponent(symbol)}/history`)
+export function fetchStockHistory(symbol: string, interval: '1d' | '1m' = '1d'): Promise<StockHistory> {
+  return request<StockHistory>(`/api/stocks/${encodeURIComponent(symbol)}/history?interval=${interval}`)
 }

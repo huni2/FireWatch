@@ -7,15 +7,22 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
-import java.time.ZoneOffset
 
-data class StockPricePoint(val date: String, val close: BigDecimal)
+data class StockPricePoint(val timestamp: String, val close: BigDecimal)
 data class StockPriceHistory(val symbol: String, val points: List<StockPricePoint>)
+
+enum class StockInterval {
+    DAILY, // 최근 6개월, 일봉 — 종목 화면 기본 차트
+    INTRADAY, // 오늘 하루, 1분봉 — 프론트가 주기적으로 재조회해 실시간처럼 보여준다("2026-08-21 사용자 요청)
+}
 
 /**
  * [FinancialApiClient]와 같은 Yahoo Finance 비공식 v8 chart 엔드포인트를 임의 종목 티커로 재사용한다.
- * 국내 종목은 코스피 `005930.KS`/코스닥 `.KQ`, 해외는 `AAPL`처럼 티커 그대로 입력받는다(2026-08-21,
- * 사용자 요청 "원하는 종목과 특정 주식에 대한 차트도 보고싶은데").
+ * 국내 종목은 코스피 `005930.KS`/코스닥 `.KQ`, 해외는 `AAPL`처럼 티커 그대로 입력받는다.
+ *
+ * "실시간"은 진짜 틱 스트리밍이 아니라 — Yahoo 비공식 API가 웹소켓을 안 주기도 하고, 진짜 실시간
+ * 스트리밍은 대부분 가입/키가 필요한 유료·무료티어 서비스라 이 프로젝트의 "가입 없이" 원칙에 안 맞는다.
+ * 대신 오늘 하루치 1분봉을 가져오고, 프론트가 짧은 주기로 재조회하는 폴링 방식으로 근사한다.
  */
 @Component
 class StockApiClient(
@@ -26,9 +33,13 @@ class StockApiClient(
         .defaultHeader("User-Agent", "Mozilla/5.0 (compatible; FireWatch/1.0)")
         .build()
 
-    fun fetchPriceHistory(symbol: String): StockPriceHistory {
+    fun fetchPriceHistory(symbol: String, interval: StockInterval = StockInterval.DAILY): StockPriceHistory {
+        val (yahooInterval, range) = when (interval) {
+            StockInterval.DAILY -> "1d" to "6mo"
+            StockInterval.INTRADAY -> "1m" to "1d"
+        }
         val response = yahooClient.get()
-            .uri("/v8/finance/chart/$symbol?interval=1d&range=6mo")
+            .uri("/v8/finance/chart/$symbol?interval=$yahooInterval&range=$range")
             .retrieve()
             .bodyToMono<Map<String, Any?>>()
             .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
@@ -53,8 +64,8 @@ class StockApiClient(
             // 비거래일·데이터 결측 슬롯은 close가 null로 온다 — 그대로 걸러낸다.
             val points = timestamps.zip(closes).mapNotNull { (ts, close) ->
                 close ?: return@mapNotNull null
-                val date = Instant.ofEpochSecond(ts.toLong()).atZone(ZoneOffset.UTC).toLocalDate()
-                StockPricePoint(date = date.toString(), close = BigDecimal(close.toString()))
+                val instant = Instant.ofEpochSecond(ts.toLong())
+                StockPricePoint(timestamp = instant.toString(), close = BigDecimal(close.toString()))
             }
             check(points.isNotEmpty()) { "Yahoo 응답에 유효한 시세 포인트가 없음($symbol)" }
             return StockPriceHistory(symbol = symbol, points = points)

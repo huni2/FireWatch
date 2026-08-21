@@ -28,6 +28,7 @@ class StockApiClientTest {
         assertEquals("AAPL", history.symbol)
         assertEquals(2, history.points.size)
         assertEquals(BigDecimal("172.4"), history.points[0].close)
+        assertEquals("2025-08-21T00:00:00Z", history.points[0].timestamp)
     }
 
     @Test
