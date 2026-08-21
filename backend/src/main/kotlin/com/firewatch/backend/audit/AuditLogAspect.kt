@@ -39,11 +39,14 @@ class AuditLogAspect(
         val requestPayload = summarizeArgs(joinPoint.args)
         val clientIp = joinPoint.args.filterIsInstance<HasClientIp>().firstOrNull()?.clientIp
         val startedAt = System.currentTimeMillis()
+        val isRootCall = AuditContext.enterCall()
 
         try {
             val result = joinPoint.proceed()
             val elapsedMs = (System.currentTimeMillis() - startedAt).toInt()
-            val fallbackReason = AuditContext.consumeFallback()
+            // 가장 바깥쪽 호출만 markFallback() 표시를 소비한다 — 중첩된 감사 대상 호출이 먼저 가로채가지
+            // 않도록([[AuditContext]] 참고). 중첩 호출은 항상 이 표시를 무시하고 자기 자신의 결과로만 판정한다.
+            val fallbackReason = if (isRootCall) AuditContext.consumeFallback() else null
             val status = when {
                 fallbackReason != null -> AuditStatus.FALLBACK
                 elapsedMs > warningThresholdMs -> AuditStatus.WARNING
@@ -62,6 +65,8 @@ class AuditLogAspect(
             )
             return result
         } catch (ex: Exception) {
+            // 스레드풀 재사용 시 다음 요청으로 새지 않도록, 루트 호출이 예외로 끝나도 표시를 비운다.
+            if (isRootCall) AuditContext.consumeFallback()
             val elapsedMs = (System.currentTimeMillis() - startedAt).toInt()
             persist(
                 eventType = declaredEventType ?: AuditEventType.ERROR,
@@ -73,6 +78,8 @@ class AuditLogAspect(
                 clientIp = clientIp,
             )
             throw ex
+        } finally {
+            AuditContext.exitCall()
         }
     }
 

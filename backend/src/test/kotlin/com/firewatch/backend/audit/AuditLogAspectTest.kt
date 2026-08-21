@@ -29,6 +29,11 @@ class AuditLogAspectTest @Autowired constructor(
     private fun lastLog() = auditLogRepository.findAll().maxByOrNull { it.id ?: 0L }
         ?: error("audit_logs가 비어 있음")
 
+    private fun lastLogFor(actionName: String) = auditLogRepository.findAll()
+        .filter { it.actionName == actionName }
+        .maxByOrNull { it.id ?: 0L }
+        ?: error("$actionName 에 대한 audit_logs가 없음")
+
     @Test
     fun `성공한 호출은 SUCCESS로 기록되고 반환값이 response_summary에 남는다`() {
         fixture.succeed()
@@ -60,5 +65,18 @@ class AuditLogAspectTest @Autowired constructor(
         val last = lastLog()
         assertEquals(AuditStatus.FALLBACK, last.status)
         assertEquals("test-fallback-reason", last.responseSummary)
+    }
+
+    @Test
+    fun `markFallback 이후 중첩된 감사 대상 호출이 있어도 FALLBACK은 가장 바깥쪽 호출에만 남는다`() {
+        fixture.fallbackThenCallNested()
+
+        val outer = lastLogFor("TestFixtureService.fallbackThenCallNested")
+        assertEquals(AuditStatus.FALLBACK, outer.status)
+        assertEquals("test-fallback-reason", outer.responseSummary)
+
+        val nested = lastLogFor("TestFixtureNestedService.doSomething")
+        assertEquals(AuditStatus.SUCCESS, nested.status)
+        assertEquals("nested-ok", nested.responseSummary)
     }
 }
