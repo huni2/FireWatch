@@ -22,13 +22,17 @@ class SchedulerJobTest {
 
     private val geminiBriefingService = mockk<GeminiBriefingService>()
     private val financialDataService = mockk<FinancialDataService>()
+    private val newsService = mockk<NewsService>(relaxed = true)
     private val pushService = mockk<PushService>(relaxed = true)
     private val briefingRepository = mockk<BriefingRepository>(relaxed = true)
+    private val newsArticleRepository = mockk<com.firewatch.backend.repository.NewsArticleRepository>(relaxed = true)
     private val schedulerJob = SchedulerJob(
         geminiBriefingService,
         financialDataService,
+        newsService,
         pushService,
         briefingRepository,
+        newsArticleRepository,
         expectedApiKey = "secret-key",
         schedulerTimezone = "Asia/Seoul",
     )
@@ -61,7 +65,7 @@ class SchedulerJobTest {
             GeminiBriefingResult(marketSummary = "요약", recommendedStocks = listOf("삼성전자"))
         every { financialDataService.fetchLatestSnapshot() } returns sampleSnapshot
         val saved = slot<Briefing>()
-        every { briefingRepository.save(capture(saved)) } answers { saved.captured }
+        every { briefingRepository.save(capture(saved)) } answers { saved.captured.also { it.id = 1L } }
 
         schedulerJob.runMorningBriefing()
 
@@ -76,7 +80,7 @@ class SchedulerJobTest {
         every { geminiBriefingService.fetchTodaysBriefing() } throws IllegalStateException("gemini down")
         every { financialDataService.fetchLatestSnapshot() } returns sampleSnapshot
         val saved = slot<Briefing>()
-        every { briefingRepository.save(capture(saved)) } answers { saved.captured }
+        every { briefingRepository.save(capture(saved)) } answers { saved.captured.also { it.id = 1L } }
 
         schedulerJob.runMorningBriefing()
 
@@ -92,7 +96,7 @@ class SchedulerJobTest {
             GeminiBriefingResult(marketSummary = "요약", recommendedStocks = emptyList())
         every { financialDataService.fetchLatestSnapshot() } throws IllegalStateException("yahoo down")
         val saved = slot<Briefing>()
-        every { briefingRepository.save(capture(saved)) } answers { saved.captured }
+        every { briefingRepository.save(capture(saved)) } answers { saved.captured.also { it.id = 1L } }
 
         schedulerJob.runMorningBriefing()
 
@@ -119,7 +123,7 @@ class SchedulerJobTest {
             GeminiBriefingResult(marketSummary = "요약", recommendedStocks = emptyList())
         every { financialDataService.fetchLatestSnapshot() } returns sampleSnapshot
         // 제네릭 save(S): S 브리지 메서드는 relaxed mock의 자동 답변이 캐스팅에 실패해 명시 스텁이 필요하다.
-        every { briefingRepository.save(any()) } answers { firstArg() }
+        every { briefingRepository.save(any()) } answers { (firstArg() as Briefing).also { it.id = 1L } }
 
         schedulerJob.triggerManually("secret-key")
 

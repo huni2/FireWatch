@@ -5,6 +5,7 @@ enum class AuditEventType {
     SCHEDULER,
     GEMINI_API,
     FINANCIAL_API,
+    NEWS_API,
     FCM_PUSH,
     USER_SETTING,
     ERROR,

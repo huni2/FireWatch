@@ -4,6 +4,13 @@ const SETTINGS_API_KEY = import.meta.env.VITE_SETTINGS_API_KEY ?? ''
 
 export type DataSourceStatus = 'NORMAL' | 'FALLBACK'
 
+export interface NewsArticle {
+  title: string
+  link: string
+  description: string | null
+  pubDate: string | null
+}
+
 export interface Briefing {
   id: number
   briefingDate: string
@@ -16,12 +23,14 @@ export interface Briefing {
   cnyKrw: number | null
   dataSourceStatus: DataSourceStatus
   createdAt: string
+  news: NewsArticle[]
 }
 
 export type AuditEventType =
   | 'SCHEDULER'
   | 'GEMINI_API'
   | 'FINANCIAL_API'
+  | 'NEWS_API'
   | 'FCM_PUSH'
   | 'USER_SETTING'
   | 'ERROR'

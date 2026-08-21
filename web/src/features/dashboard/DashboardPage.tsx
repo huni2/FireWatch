@@ -3,6 +3,7 @@ import { Alert, Empty, Row, Col, Space } from 'antd'
 import { BriefingSummaryCard } from './components/BriefingSummaryCard'
 import { MetricStat } from './components/MetricStat'
 import { RateChart } from './components/RateChart'
+import { RelatedNewsCard } from './components/RelatedNewsCard'
 import { useLatestBriefing } from './hooks/useLatestBriefing'
 import { useBriefingHistory } from './hooks/useBriefingHistory'
 
@@ -33,6 +34,10 @@ export function DashboardPage() {
       )}
 
       <BriefingSummaryCard briefing={latest.data} loading={latest.loading} />
+
+      {(latest.loading || latest.data) && (
+        <RelatedNewsCard news={latest.data?.news ?? []} loading={latest.loading} />
+      )}
 
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} md={8} lg={4}>

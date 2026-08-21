@@ -27,6 +27,17 @@ CREATE TABLE IF NOT EXISTS briefings (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 설계 문서 원본엔 없던 테이블 — 사용자 요청(2026-08-21)으로 추가. Gemini Search Grounding이
+-- 무료 티어에서 막혀 있어 네이버 뉴스 검색 API로 실제 기사 링크를 대신 제공한다.
+CREATE TABLE IF NOT EXISTS briefing_news (
+  id BIGSERIAL PRIMARY KEY,
+  briefing_id BIGINT NOT NULL,
+  title VARCHAR(500) NOT NULL,
+  link VARCHAR(1000) NOT NULL,
+  description VARCHAR(1000),
+  pub_date TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS user_settings (
   id BIGINT PRIMARY KEY,
   push_time VARCHAR(5) NOT NULL DEFAULT '08:00',

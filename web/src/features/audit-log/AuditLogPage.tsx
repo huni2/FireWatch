@@ -13,6 +13,7 @@ const EVENT_TYPE_OPTIONS = [
   { value: 'SCHEDULER', label: 'SCHEDULER' },
   { value: 'GEMINI_API', label: 'GEMINI_API' },
   { value: 'FINANCIAL_API', label: 'FINANCIAL_API' },
+  { value: 'NEWS_API', label: 'NEWS_API' },
   { value: 'FCM_PUSH', label: 'FCM_PUSH' },
   { value: 'USER_SETTING', label: 'USER_SETTING' },
   { value: 'ERROR', label: 'ERROR' },

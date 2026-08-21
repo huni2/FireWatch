@@ -6,8 +6,10 @@ import com.firewatch.backend.client.GeminiBriefingResult
 import com.firewatch.backend.entity.AuditEventType
 import com.firewatch.backend.entity.Briefing
 import com.firewatch.backend.entity.DataSourceStatus
+import com.firewatch.backend.entity.NewsArticle
 import com.firewatch.backend.entity.toCommaSeparated
 import com.firewatch.backend.repository.BriefingRepository
+import com.firewatch.backend.repository.NewsArticleRepository
 import com.firewatch.backend.web.UnauthorizedException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -31,8 +33,10 @@ import java.time.ZoneId
 class SchedulerJob(
     private val geminiBriefingService: GeminiBriefingService,
     private val financialDataService: FinancialDataService,
+    private val newsService: NewsService,
     private val pushService: PushService,
     private val briefingRepository: BriefingRepository,
+    private val newsArticleRepository: NewsArticleRepository,
     @Value("\${firewatch.settings.api-key}") private val expectedApiKey: String,
     @Value("\${firewatch.scheduler.timezone}") private val schedulerTimezone: String,
 ) : AuditedComponent {
@@ -95,6 +99,23 @@ class SchedulerJob(
             ),
         )
         log.info("오늘($today)자 브리핑 저장 완료 (dataSourceStatus=${briefing.dataSourceStatus})")
+
+        val briefingId = briefing.id ?: error("저장된 Briefing에 id가 없음")
+        runCatching { newsService.fetchRelatedNews() }
+            .onSuccess { articles ->
+                newsArticleRepository.saveAll(
+                    articles.map { article ->
+                        NewsArticle(
+                            briefingId = briefingId,
+                            title = article.title,
+                            link = article.link,
+                            description = article.description,
+                            pubDate = article.pubDate,
+                        )
+                    },
+                )
+            }
+            .onFailure { log.warn("관련 뉴스 조회 실패 — 브리핑 저장은 이미 완료됐으므로 스케줄러 자체는 실패로 보지 않음", it) }
 
         runCatching { pushService.sendBriefingNotification(briefing) }
             .onFailure { log.warn("FCM 발송 실패 — 브리핑 저장은 이미 완료됐으므로 스케줄러 자체는 실패로 보지 않음", it) }
