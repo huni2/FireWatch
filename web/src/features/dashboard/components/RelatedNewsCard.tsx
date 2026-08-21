@@ -8,7 +8,7 @@ interface RelatedNewsCardProps {
   loading: boolean
 }
 
-// Gemini Search Grounding이 무료 티어에서 막혀(Next-Tasks.md BE-3) 대신 네이버 뉴스 검색 API로
+// Gemini Search Grounding이 무료 티어에서 막혀(Next-Tasks.md BE-3) 대신 RSS 피드로
 // 실제 클릭 가능한 기사 링크를 보여준다 — 사용자 요청(2026-08-21)으로 추가된 화면 요소.
 export function RelatedNewsCard({ news, loading }: RelatedNewsCardProps) {
   if (loading) {
