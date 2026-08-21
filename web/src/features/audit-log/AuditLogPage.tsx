@@ -46,16 +46,16 @@ export function AuditLogPage() {
 
   const columns: ColumnsType<AuditLogEntry> = [
     {
-      title: 'event_type',
+      title: '이벤트 유형',
       dataIndex: 'eventType',
       width: 140,
     },
     {
-      title: 'action_name',
+      title: '작업명',
       dataIndex: 'actionName',
     },
     {
-      title: 'status',
+      title: '상태',
       dataIndex: 'status',
       width: 120,
       render: (value: AuditLogEntry['status']) => <AuditStatusTag status={value} />,
@@ -67,7 +67,7 @@ export function AuditLogPage() {
       render: (value: number | null) => value ?? '—',
     },
     {
-      title: 'response_summary',
+      title: '응답 요약',
       dataIndex: 'responseSummary',
       ellipsis: true,
       render: (value: string | null) => (
@@ -89,7 +89,7 @@ export function AuditLogPage() {
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
         <Space wrap>
           <Select
-            placeholder="event_type"
+            placeholder="이벤트 유형"
             style={{ width: 160 }}
             value={eventType}
             options={EVENT_TYPE_OPTIONS}
@@ -99,7 +99,7 @@ export function AuditLogPage() {
             }}
           />
           <Select
-            placeholder="status"
+            placeholder="상태"
             style={{ width: 140 }}
             value={status}
             options={STATUS_OPTIONS}
