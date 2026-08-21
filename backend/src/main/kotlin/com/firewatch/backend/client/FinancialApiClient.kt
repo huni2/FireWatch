@@ -44,24 +44,34 @@ class FinancialApiClient(
         .defaultHeader("User-Agent", "Mozilla/5.0 (compatible; FireWatch/1.0)")
         .build()
 
+    // 은행 공지: "비영업일의 데이터, 혹은 영업당일 11시 이전에 해당일의 데이터를 요청할 경우 null 값이
+    // 반환"(2026-08-21 실측 확인 — 08:00 KST 스케줄러가 당일자를 요청해 매번 빈 배열을 받고 있었다).
+    // 스케줄러는 항상 11시 이전(08:00 KST)에 도니 애초에 "오늘"을 요청하면 안 된다 — 전일부터 거꾸로
+    // 조회해 데이터가 있는 가장 최근 영업일을 찾는다(주말/공휴일 며칠 연속 대비 최대 MAX_LOOKBACK_DAYS일).
     fun fetchExchangeRates(date: LocalDate = LocalDate.now()): ExchangeRates {
         check(eximApiKey.isNotBlank()) { "EXIM_API_KEY가 설정되지 않았습니다" }
 
-        val response = eximClient.get()
-            .uri { builder ->
-                builder.path("/site/program/financial/exchangeJSON")
-                    .queryParam("authkey", eximApiKey)
-                    .queryParam("searchdate", date.format(DATE_FORMAT))
-                    .queryParam("data", "AP01")
-                    .build()
-            }
-            .retrieve()
-            .bodyToMono<List<Map<String, Any?>>>()
-            .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
-            .block()
-            ?: error("한국수출입은행 API 응답이 비어 있음")
+        for (daysAgo in 1..MAX_LOOKBACK_DAYS) {
+            val searchDate = date.minusDays(daysAgo.toLong())
+            val response = eximClient.get()
+                .uri { builder ->
+                    builder.path("/site/program/financial/exchangeJSON")
+                        .queryParam("authkey", eximApiKey)
+                        .queryParam("searchdate", searchDate.format(DATE_FORMAT))
+                        .queryParam("data", "AP01")
+                        .build()
+                }
+                .retrieve()
+                .bodyToMono<List<Map<String, Any?>>>()
+                .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
+                .block()
+                ?: error("한국수출입은행 API 응답이 비어 있음")
 
-        return parseExchangeRates(response)
+            if (response.any { (it["result"] as? Number)?.toInt() == 1 }) {
+                return parseExchangeRates(response)
+            }
+        }
+        error("한국수출입은행 API가 최근 ${MAX_LOOKBACK_DAYS}일간 유효한 환율을 반환하지 않음")
     }
 
     fun fetchPreciousMetalPrices(): PreciousMetalPrices = PreciousMetalPrices(
@@ -82,6 +92,7 @@ class FinancialApiClient(
 
     companion object {
         private const val TIMEOUT_SECONDS = 15L
+        private const val MAX_LOOKBACK_DAYS = 7
         private const val GOLD_SYMBOL = "GC=F"
         private const val SILVER_SYMBOL = "SI=F"
         private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd")
