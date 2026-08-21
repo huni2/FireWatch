@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { DashboardPage } from './features/dashboard/DashboardPage'
 import { AuditLogPage } from './features/audit-log/AuditLogPage'
+import { StocksPage } from './features/stocks/StocksPage'
 import { SettingsPage } from './features/settings/SettingsPage'
 import { darkThemeConfig, lightThemeConfig } from './lib/theme'
 
@@ -18,6 +19,7 @@ export default function App() {
           <Route element={<AppShell darkMode={darkMode} onToggleDarkMode={setDarkMode} />}>
             <Route index element={<DashboardPage />} />
             <Route path="audit-log" element={<AuditLogPage />} />
+            <Route path="stocks" element={<StocksPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
         </Routes>

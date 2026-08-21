@@ -56,7 +56,18 @@ export interface AuditLogPage {
 export interface Settings {
   pushTime: string
   interestKeywords: string[]
+  watchedStocks: string[]
   updatedAt: string
+}
+
+export interface StockPricePoint {
+  date: string
+  close: number
+}
+
+export interface StockHistory {
+  symbol: string
+  points: StockPricePoint[]
 }
 
 export interface ApiErrorBody {
@@ -134,10 +145,18 @@ export function fetchSettings(): Promise<Settings> {
   return request<Settings>('/api/settings')
 }
 
-export function updateSettings(input: { pushTime: string; interestKeywords: string[] }): Promise<Settings> {
+export function updateSettings(input: {
+  pushTime: string
+  interestKeywords: string[]
+  watchedStocks: string[]
+}): Promise<Settings> {
   return request<Settings>('/api/settings', {
     method: 'PUT',
     headers: { 'X-API-Key': SETTINGS_API_KEY },
     body: JSON.stringify(input),
   })
+}
+
+export function fetchStockHistory(symbol: string): Promise<StockHistory> {
+  return request<StockHistory>(`/api/stocks/${encodeURIComponent(symbol)}/history`)
 }

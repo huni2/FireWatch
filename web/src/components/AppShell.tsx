@@ -1,5 +1,12 @@
 import { Layout, Menu, Switch } from 'antd'
-import { AuditOutlined, DashboardOutlined, MoonOutlined, SettingOutlined, SunOutlined } from '@ant-design/icons'
+import {
+  AuditOutlined,
+  DashboardOutlined,
+  LineChartOutlined,
+  MoonOutlined,
+  SettingOutlined,
+  SunOutlined,
+} from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 
 const { Header, Content } = Layout
@@ -16,6 +23,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
   const menuItems = [
     { key: '/', icon: <DashboardOutlined />, label: <Link to="/">대시보드</Link> },
     { key: '/audit-log', icon: <AuditOutlined />, label: <Link to="/audit-log">감사로그</Link> },
+    { key: '/stocks', icon: <LineChartOutlined />, label: <Link to="/stocks">종목</Link> },
     { key: '/settings', icon: <SettingOutlined />, label: <Link to="/settings">설정</Link> },
   ]
 

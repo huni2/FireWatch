@@ -10,6 +10,7 @@ export function SettingsPage() {
   const { data, loading, error, reload } = useSettings()
   const [pushTime, setPushTime] = useState<string>('08:00')
   const [keywords, setKeywords] = useState<string[]>([])
+  const [watchedStocks, setWatchedStocks] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
 
   // 서버(외부 시스템)에서 비동기로 도착한 값으로 편집 가능한 로컬 상태를 동기화 — 정당한 effect 용례.
@@ -17,13 +18,15 @@ export function SettingsPage() {
     if (data) {
       setPushTime(data.pushTime)
       setKeywords(data.interestKeywords)
+      setWatchedStocks(data.watchedStocks)
     }
   }, [data])
 
   const handleSave = async () => {
     setSaving(true)
     try {
-      await updateSettings({ pushTime, interestKeywords: keywords })
+      // 관심 종목은 이 화면이 아니라 종목 화면에서 관리 — 여기서는 그대로 넘겨서 덮어쓰지 않는다.
+      await updateSettings({ pushTime, interestKeywords: keywords, watchedStocks })
       message.success('설정을 저장했습니다.')
       reload()
     } catch (err) {

@@ -24,6 +24,9 @@ class UserSettings(
     @Column(name = "fcm_tokens")
     var fcmTokensRaw: String? = null,
 
+    @Column(name = "watched_stocks")
+    var watchedStocksRaw: String? = null,
+
     @Column(name = "updated_at")
     var updatedAt: Instant = Instant.now(),
 )
@@ -31,3 +34,5 @@ class UserSettings(
 fun UserSettings.interestKeywords(): List<String> = interestKeywordsRaw.toStringList()
 
 fun UserSettings.fcmTokens(): List<String> = fcmTokensRaw.toStringList()
+
+fun UserSettings.watchedStocks(): List<String> = watchedStocksRaw.toStringList()

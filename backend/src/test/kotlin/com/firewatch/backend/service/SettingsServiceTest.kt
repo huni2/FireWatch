@@ -3,6 +3,7 @@ package com.firewatch.backend.service
 import com.firewatch.backend.entity.SINGLETON_SETTINGS_ID
 import com.firewatch.backend.entity.UserSettings
 import com.firewatch.backend.entity.interestKeywords
+import com.firewatch.backend.entity.watchedStocks
 import com.firewatch.backend.repository.UserSettingsRepository
 import com.firewatch.backend.web.UnauthorizedException
 import io.mockk.every
@@ -31,6 +32,7 @@ class SettingsServiceTest {
             SettingsUpdateCommand(
                 pushTime = "07:30",
                 interestKeywords = listOf("반도체", "AI"),
+                watchedStocks = listOf("005930.KS", "AAPL"),
                 apiKey = "secret-key",
                 clientIp = "127.0.0.1",
             ),
@@ -38,6 +40,7 @@ class SettingsServiceTest {
 
         assertEquals("07:30", result.pushTime)
         assertEquals(listOf("반도체", "AI"), result.interestKeywords())
+        assertEquals(listOf("005930.KS", "AAPL"), result.watchedStocks())
     }
 
     @Test

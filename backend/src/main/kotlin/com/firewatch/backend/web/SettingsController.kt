@@ -43,6 +43,7 @@ class SettingsController(
         val command = SettingsUpdateCommand(
             pushTime = request.pushTime,
             interestKeywords = request.interestKeywords,
+            watchedStocks = request.watchedStocks,
             apiKey = apiKey,
             clientIp = clientIp,
         )

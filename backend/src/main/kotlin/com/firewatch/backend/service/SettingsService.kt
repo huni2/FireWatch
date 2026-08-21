@@ -17,6 +17,7 @@ import java.time.Instant
 data class SettingsUpdateCommand(
     val pushTime: String,
     val interestKeywords: List<String>,
+    val watchedStocks: List<String> = emptyList(),
     val apiKey: String?,
     override val clientIp: String?,
 ) : HasClientIp
@@ -37,6 +38,7 @@ class SettingsService(
             .orElseGet { UserSettings(id = SINGLETON_SETTINGS_ID) }
         settings.pushTime = command.pushTime
         settings.interestKeywordsRaw = command.interestKeywords.toCommaSeparated()
+        settings.watchedStocksRaw = command.watchedStocks.toCommaSeparated()
         settings.updatedAt = Instant.now()
         return userSettingsRepository.save(settings)
     }
