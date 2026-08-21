@@ -22,11 +22,6 @@ services:
         value: gemini-3.5-flash
       - key: EXIM_API_KEY
         sync: false
-      - key: NAVER_CLIENT_ID
-        # 네이버 개발자센터(developers.naver.com/apps)에서 발급 — 뉴스 검색 API. 무료 하루 25,000회.
-        sync: false
-      - key: NAVER_CLIENT_SECRET
-        sync: false
       - key: FIREBASE_SERVICE_ACCOUNT_JSON
         sync: false
       - key: SETTINGS_API_KEY

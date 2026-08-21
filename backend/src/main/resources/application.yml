@@ -55,12 +55,12 @@ firewatch:
   yahoo:
     # 비공식 엔드포인트 — User-Agent 없으면 429(실측 확인, FinancialApiClient 참고)
     base-url: "https://query1.finance.yahoo.com"
-  naver:
-    # 네이버 검색 오픈API(뉴스). Gemini Search Grounding이 무료 티어에서 막혀(2026-08-21) 대신 도입
-    # — 사용자 요청("클릭하면 실제로 볼 수 있게"), 무료 하루 25,000회(우리는 하루 1회만 씀).
-    client-id: ${NAVER_CLIENT_ID:}
-    client-secret: ${NAVER_CLIENT_SECRET:}
-    base-url: "https://openapi.naver.com"
+  news:
+    # 관련 뉴스 RSS. Gemini Search Grounding이 무료 티어에서 막혀(2026-08-21) 대신 도입 — 사용자
+    # 요청("클릭하면 실제로 볼 수 있게"). 네이버 검색 API는 NAVER API HUB로 이전되며 신규 신청이
+    # 막혔고, Google Custom Search·NCP는 카드 등록 불확실성이 있어 회원가입 자체가 필요 없는
+    # RSS로 최종 결정 — [[Decisions/0010-rss-news-instead-of-gemini-grounding]].
+    rss-url: ${NEWS_RSS_URL:https://view.asiae.co.kr/rss/stock.htm}
   firebase:
     # Firebase 콘솔 > 프로젝트 설정 > 서비스 계정에서 발급한 JSON 파일의 "내용 전체"를 문자열로 주입
     service-account-json: ${FIREBASE_SERVICE_ACCOUNT_JSON:}

@@ -1,31 +1,19 @@
 package com.firewatch.backend.service
 
 import com.firewatch.backend.audit.AuditedComponent
-import com.firewatch.backend.client.NaverNewsApiClient
 import com.firewatch.backend.client.NewsArticleResult
+import com.firewatch.backend.client.NewsRssClient
 import com.firewatch.backend.entity.AuditEventType
-import com.firewatch.backend.entity.SINGLETON_SETTINGS_ID
-import com.firewatch.backend.entity.interestKeywords
-import com.firewatch.backend.repository.UserSettingsRepository
 import org.springframework.stereotype.Service
 
-// 사용자 요청(2026-08-21)으로 추가 — Gemini Search Grounding이 막혀 있어 대신 실제 뉴스 링크를
-// 보여준다. 사용자가 설정한 관심 키워드(user_settings.interest_keywords)가 있으면 그걸로 검색하고,
-// 없으면 기본 검색어("코스피 증시")를 쓴다.
+// 사용자 요청(2026-08-21)으로 추가 — Gemini Search Grounding이 막혀 있어 실제 뉴스 링크를 대신
+// 보여준다. RSS 피드는 키워드 검색이 안 되고(NewsRssClient 참고) 이미 "국내 증시" 도메인으로
+// 고정된 피드라 최신순 그대로 쓴다 — 관심 키워드 기반 필터링은 하지 않는다(단순함 우선).
 @Service
 class NewsService(
-    private val naverNewsApiClient: NaverNewsApiClient,
-    private val userSettingsRepository: UserSettingsRepository,
+    private val newsRssClient: NewsRssClient,
 ) : AuditedComponent {
     override val auditEventType = AuditEventType.NEWS_API
 
-    fun fetchRelatedNews(): List<NewsArticleResult> {
-        val keywords = userSettingsRepository.findById(SINGLETON_SETTINGS_ID).orElse(null)?.interestKeywords().orEmpty()
-        val query = if (keywords.isEmpty()) DEFAULT_QUERY else keywords.joinToString(" ")
-        return naverNewsApiClient.searchNews(query)
-    }
-
-    companion object {
-        private const val DEFAULT_QUERY = "코스피 증시"
-    }
+    fun fetchRelatedNews(): List<NewsArticleResult> = newsRssClient.fetchLatest()
 }
