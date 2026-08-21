@@ -8,6 +8,7 @@ import com.firewatch.backend.entity.UserSettings
 import com.firewatch.backend.entity.toCommaSeparated
 import com.firewatch.backend.repository.UserSettingsRepository
 import com.firewatch.backend.web.UnauthorizedException
+import com.firewatch.backend.web.ValidationException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -34,6 +35,17 @@ class SettingsService(
             throw UnauthorizedException()
         }
 
+        // Kotlin의 `List<@Pattern String>` 타입-인자 애노테이션은 Jakarta Bean Validation이 실제로
+        // 검증하지 않는다(2026-08-21 실측 확인 — 프로덕션에 유효하지 않은 값이 그대로 저장됨). 그래서
+        // 컨테이너 요소 검증은 여기서 직접 한다.
+        val invalidTickers = command.watchedStocks.filterNot { TICKER_PATTERN.matches(it) }
+        if (invalidTickers.isNotEmpty()) {
+            throw ValidationException(
+                "입력값이 올바르지 않습니다.",
+                mapOf("watchedStocks" to "티커 형식이 아닙니다: ${invalidTickers.joinToString(", ")}"),
+            )
+        }
+
         val settings = userSettingsRepository.findById(SINGLETON_SETTINGS_ID)
             .orElseGet { UserSettings(id = SINGLETON_SETTINGS_ID) }
         settings.pushTime = command.pushTime
@@ -41,5 +53,9 @@ class SettingsService(
         settings.watchedStocksRaw = command.watchedStocks.toCommaSeparated()
         settings.updatedAt = Instant.now()
         return userSettingsRepository.save(settings)
+    }
+
+    companion object {
+        private val TICKER_PATTERN = Regex("^[A-Za-z0-9]+(\\.[A-Za-z0-9]+)?$")
     }
 }

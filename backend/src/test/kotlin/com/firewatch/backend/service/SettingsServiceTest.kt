@@ -6,6 +6,7 @@ import com.firewatch.backend.entity.interestKeywords
 import com.firewatch.backend.entity.watchedStocks
 import com.firewatch.backend.repository.UserSettingsRepository
 import com.firewatch.backend.web.UnauthorizedException
+import com.firewatch.backend.web.ValidationException
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -51,6 +52,24 @@ class SettingsServiceTest {
                     pushTime = "07:30",
                     interestKeywords = emptyList(),
                     apiKey = "wrong-key",
+                    clientIp = null,
+                ),
+            )
+        }
+
+        verify(exactly = 0) { userSettingsRepository.save(any()) }
+    }
+
+    @Test
+    fun `티커 형식이 아닌 관심 종목이 있으면 ValidationException을 던지고 저장하지 않는다`() {
+        // Kotlin의 List<@Pattern String> 타입-인자 애노테이션은 검증되지 않아(2026-08-21 실측) 서비스에서 직접 막는다.
+        assertFailsWith<ValidationException> {
+            settingsService.update(
+                SettingsUpdateCommand(
+                    pushTime = "07:30",
+                    interestKeywords = emptyList(),
+                    watchedStocks = listOf("005930.KS", "반도체"),
+                    apiKey = "secret-key",
                     clientIp = null,
                 ),
             )

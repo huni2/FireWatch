@@ -13,12 +13,11 @@ data class SettingsUpdateRequest(
     val pushTime: String,
     @field:Size(max = 20, message = "관심 키워드는 최대 20개까지입니다")
     val interestKeywords: List<@Size(max = 30, message = "키워드는 30자를 넘을 수 없습니다") String> = emptyList(),
+    // 개별 티커 형식(정규식) 검증은 여기 애노테이션이 아니라 SettingsService.update()에서 직접 한다 —
+    // Kotlin의 `List<@Pattern String>` 타입-인자 애노테이션은 Jakarta Bean Validation이 실제로 검증하지
+    // 않는 걸 실측 확인했다(2026-08-21, 프로덕션에 유효하지 않은 값이 그대로 저장됨).
     @field:Size(max = 20, message = "관심 종목은 최대 20개까지입니다")
-    val watchedStocks: List<
-        @Size(max = 20, message = "종목 티커는 20자를 넘을 수 없습니다")
-        @Pattern(regexp = "^[A-Za-z0-9]+(\\.[A-Za-z0-9]+)?$", message = "티커 형식이 아닙니다(예: 005930.KS, AAPL)")
-        String,
-        > = emptyList(),
+    val watchedStocks: List<@Size(max = 20, message = "종목 티커는 20자를 넘을 수 없습니다") String> = emptyList(),
 )
 
 data class SettingsResponse(
