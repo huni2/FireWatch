@@ -72,8 +72,21 @@ class SchedulerJob(
             .onFailure { log.warn("금융 API 실패 — 해당 필드는 비운 채 진행", it) }
             .getOrNull()
 
+        // Gemini가 grounding 없이 이 뉴스를 요약 재료로 쓰므로, 브리핑 저장보다 먼저 가져와둔다
+        // ([[llm-wiki/Decisions/0011-gemini-no-grounding]]). 실패해도 빈 목록으로 계속 진행.
+        val newsArticles = runCatching { newsService.fetchRelatedNews() }
+            .onFailure { log.warn("관련 뉴스 조회 실패 — 빈 목록으로 계속 진행", it) }
+            .getOrDefault(emptyList())
+
         val geminiResult: GeminiBriefingResult? = try {
-            geminiBriefingService.fetchTodaysBriefing()
+            geminiBriefingService.fetchTodaysBriefing(
+                goldPrice = financialSnapshot?.goldPrice,
+                silverPrice = financialSnapshot?.silverPrice,
+                usdKrw = financialSnapshot?.usdKrw,
+                jpy100Krw = financialSnapshot?.jpy100Krw,
+                cnyKrw = financialSnapshot?.cnyKrw,
+                newsArticles = newsArticles,
+            )
         } catch (ex: Exception) {
             log.warn("Gemini 실패 — FALLBACK으로 처리", ex)
             AuditContext.markFallback("Gemini 실패: ${(ex.message ?: ex.javaClass.simpleName).take(200)}")
@@ -101,21 +114,19 @@ class SchedulerJob(
         log.info("오늘($today)자 브리핑 저장 완료 (dataSourceStatus=${briefing.dataSourceStatus})")
 
         val briefingId = briefing.id ?: error("저장된 Briefing에 id가 없음")
-        runCatching { newsService.fetchRelatedNews() }
-            .onSuccess { articles ->
-                newsArticleRepository.saveAll(
-                    articles.map { article ->
-                        NewsArticle(
-                            briefingId = briefingId,
-                            title = article.title,
-                            link = article.link,
-                            description = article.description,
-                            pubDate = article.pubDate,
-                        )
-                    },
-                )
-            }
-            .onFailure { log.warn("관련 뉴스 조회 실패 — 브리핑 저장은 이미 완료됐으므로 스케줄러 자체는 실패로 보지 않음", it) }
+        if (newsArticles.isNotEmpty()) {
+            newsArticleRepository.saveAll(
+                newsArticles.map { article ->
+                    NewsArticle(
+                        briefingId = briefingId,
+                        title = article.title,
+                        link = article.link,
+                        description = article.description,
+                        pubDate = article.pubDate,
+                    )
+                },
+            )
+        }
 
         runCatching { pushService.sendBriefingNotification(briefing) }
             .onFailure { log.warn("FCM 발송 실패 — 브리핑 저장은 이미 완료됐으므로 스케줄러 자체는 실패로 보지 않음", it) }

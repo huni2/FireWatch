@@ -1,8 +1,11 @@
 package com.firewatch.backend.client
 
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
+import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 // Design Ref: docs/02-design/features/firewatch.design.md §8.3 — Gemini 응답 파싱 (네트워크 없이 순수 함수만 검증)
 class GeminiClientTest {
@@ -62,5 +65,44 @@ class GeminiClientTest {
         assertFailsWith<IllegalStateException> {
             GeminiClient.parseResponse(response)
         }
+    }
+
+    @Test
+    fun `프롬프트에 시세와 뉴스가 그대로 들어간다`() {
+        val prompt = GeminiClient.buildPrompt(
+            goldPrice = BigDecimal("4595.00"),
+            silverPrice = BigDecimal("69.08"),
+            usdKrw = BigDecimal("1402.50"),
+            jpy100Krw = BigDecimal("886.45"),
+            cnyKrw = BigDecimal("207.82"),
+            newsArticles = listOf(
+                NewsArticleResult(
+                    title = "코스피 강세 마감",
+                    link = "https://example.com/1",
+                    description = "코스피가 2%대 강세로 마감했다.",
+                    pubDate = Instant.now(),
+                ),
+            ),
+        )
+
+        assertTrue(prompt.contains("4595.00"))
+        assertTrue(prompt.contains("1402.50"))
+        assertTrue(prompt.contains("코스피 강세 마감"))
+        assertTrue(prompt.contains("코스피가 2%대 강세로 마감했다."))
+    }
+
+    @Test
+    fun `뉴스가 없으면 안내 문구로 대체한다`() {
+        val prompt = GeminiClient.buildPrompt(
+            goldPrice = null,
+            silverPrice = null,
+            usdKrw = null,
+            jpy100Krw = null,
+            cnyKrw = null,
+            newsArticles = emptyList(),
+        )
+
+        assertTrue(prompt.contains("참고할 뉴스 데이터가 없습니다"))
+        assertTrue(prompt.contains("정보 없음"))
     }
 }
