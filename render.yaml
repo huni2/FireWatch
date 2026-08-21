@@ -14,10 +14,10 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL
-        # Google Search Grounding(우리가 쓰는 기능)이 Gemini 3 계열 무료 티어에서 일일 0건으로
-        # 막혀있어(aistudio.google.com/rate-limit 실측 확인, 2026-08-20) Gemini 2.5로 고정.
-        # 기본 RPM/RPD 한도는 3.7과 동일(분당 5회/일 20회) — 성능 손해 없음.
-        value: gemini-2.5-flash
+        # 대시보드상 "Gemini 3" 계열은 검색 그라운딩 도구 자체가 세부 모델(Flash/Flash-Lite 불문) 상관없이
+        # 0건으로 묶여 보였으나, 2.5가 대시보드 표시와 달리 실제로는 404였던 전례가 있어(2026-08-21)
+        # 대시보드만 믿지 않고 3.5-flash로 실측 재확인 중.
+        value: gemini-3.5-flash
       - key: EXIM_API_KEY
         sync: false
       - key: FIREBASE_SERVICE_ACCOUNT_JSON
