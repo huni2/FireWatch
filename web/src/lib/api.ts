@@ -21,6 +21,12 @@ export interface Briefing {
   usdKrw: number | null
   jpy100Krw: number | null
   cnyKrw: number | null
+  kospi: number | null
+  kosdaq: number | null
+  sp500: number | null
+  nasdaq: number | null
+  dow: number | null
+  usBondYield10y: number | null
   dataSourceStatus: DataSourceStatus
   createdAt: string
   news: NewsArticle[]

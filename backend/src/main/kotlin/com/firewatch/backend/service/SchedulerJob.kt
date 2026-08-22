@@ -85,6 +85,12 @@ class SchedulerJob(
                 usdKrw = financialSnapshot?.usdKrw,
                 jpy100Krw = financialSnapshot?.jpy100Krw,
                 cnyKrw = financialSnapshot?.cnyKrw,
+                kospi = financialSnapshot?.kospi,
+                kosdaq = financialSnapshot?.kosdaq,
+                sp500 = financialSnapshot?.sp500,
+                nasdaq = financialSnapshot?.nasdaq,
+                dow = financialSnapshot?.dow,
+                usBondYield10y = financialSnapshot?.usBondYield10y,
                 newsArticles = newsArticles,
             )
         } catch (ex: Exception) {
@@ -108,6 +114,12 @@ class SchedulerJob(
                 usdKrw = financialSnapshot?.usdKrw,
                 jpy100Krw = financialSnapshot?.jpy100Krw,
                 cnyKrw = financialSnapshot?.cnyKrw,
+                kospi = financialSnapshot?.kospi,
+                kosdaq = financialSnapshot?.kosdaq,
+                sp500 = financialSnapshot?.sp500,
+                nasdaq = financialSnapshot?.nasdaq,
+                dow = financialSnapshot?.dow,
+                usBondYield10y = financialSnapshot?.usBondYield10y,
                 dataSourceStatus = if (geminiResult == null) DataSourceStatus.FALLBACK else DataSourceStatus.NORMAL,
             ),
         )

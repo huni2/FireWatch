@@ -8,13 +8,18 @@
 **BE는 번호가 곧 의존 순서**(스케줄러·감사로그 인프라가 먼저 서야 나머지가 그 위에 쌓인다).
 **WEB·APP은 서로 독립**이지만 대부분 특정 BE 과제에 의존한다 — 각 과제의 `무엇`에 명시.
 
-**진행 상황(2026-08-20)**: BE-1·BE-2·BE-4·BE-5·BE-6·BE-7·BE-8·WEB-1~5 전부 완료. Phase 1(BE+WEB) 종료. **남은 건 BE-3(Gemini 성공 응답 재확인, 현재 무료 티어 레이트리밋으로 FALLBACK만 확인됨)뿐.** APP은 Phase 2.
+**진행 상황(2026-08-23)**: BE-1·BE-2·BE-4·BE-5·BE-6·BE-7·BE-8·BE-9·WEB-1~5 전부 완료. Phase 1(BE+WEB) 종료. **남은 건 BE-3(Gemini 성공 응답 재확인, 현재 무료 티어 레이트리밋으로 FALLBACK만 확인됨)·BE-10(한국국채 수익률 데이터 소스).** APP은 Phase 2.
 
 **Phase 1(현재 Plan) = BE 전체 + WEB 전체. Phase 2(별도 Plan) = APP 전체.** 근거는 [[Decisions/0003-mvp-scope-and-user-model]] — 모바일 앱은 Expo 빌드·스토어 심사 등 원자재가 달라 `docs/01-plan/features/firewatch.plan.md`의 범위 밖이다. 아래 APP 섹션은 Phase 2 착수 시점에 별도 Plan 문서로 옮겨질 예정이며, 그 전까지는 백로그로만 유지한다.
 
 **Design 완료(2026-08-19)**: `docs/02-design/features/firewatch.design.md`, Option C(Pragmatic Balance) 채택. 아래 BE/WEB 과제 순서는 Design §11.3 Module Map과 1:1 대응하며, `/pdca do firewatch --scope module-N`으로 세션별 구현 가능.
 
 ## 열린 과제 — 백엔드(BE)
+
+### BE-10. 한국국채 10년물 수익률 데이터 소스 확보
+**무엇** — 한국 국고채 10년물 수익률(%)을 매일 브리핑 지표에 추가. **BE-9(완료, 종료 기록 참고) 후속.**
+**왜** — 사용자가 "금,은,환율,국채,국장,미장 다 볼 수 있고"라고 요청(2026-08-23)했는데, Yahoo Finance 비공식 API(`/v1/finance/search`, `/v8/finance/chart/`)로 여러 티커·검색어(`KR10YT=RR`, `KR10Y.B`, `098U`, `^KR10Y`, "Korea 10Y" 등)를 실측했지만 실제 수익률(%) 시계열을 주는 소스가 없었음(ETF 상품 가격만 검색됨 — `365780.KS`/`289670.KS`) — [[log]] 2026-08-23.
+**완료 기준** — 한국 국채(10년) 수익률이 브리핑에 실제 % 값으로 채워짐. 한국은행 ECOS Open API(가입·키 발급 필요) 등 대체 소스 조사부터 시작.
 
 ### BE-3. 스케줄러 + Gemini API 연동 (부분 완료)
 **무엇** — `@Scheduled` 잡 + Gemini API(Google Search Grounding) 호출로 국내/미국 증시 요약·추천 종목 텍스트 생성(FR-01, FR-02). **BE-2 의존.**
@@ -58,6 +63,7 @@ _(현재 없음 — WEB-5까지 전부 완료)_
 
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
+| BE-9 | 국내외 지수 + 미국채 수익률 브리핑 지표 추가 | 완료. 사용자가 리스킨 직후 "금,은,환율,국채,국장,미장 다 볼 수 있고 AI가 관련 뉴스보고 추천하는걸 원했음"이라고 지적 — 실제로 백엔드엔 금/은/환율 3종만 있고 지수·채권은 아예 미구현이었음. Yahoo Finance로 코스피(`^KS11`)·코스닥(`^KQ11`)·S&P500(`^GSPC`)·나스닥(`^IXIC`)·다우(`^DJI`)·미국채10년물(`^TNX`) 6종 실측 확인 후 `FinancialApiClient.fetchMarketIndices()` 신설, `FinancialSnapshot`→`GeminiClient`(프롬프트에 [오늘의 지수·채권] 섹션 추가)→`Briefing` 엔티티→DB 스키마(`ALTER TABLE ADD COLUMN IF NOT EXISTS`)→`BriefingResponse`까지 전체 파이프라인 관통. 웹 대시보드에 "국내외 지수 · 채권" 구분 라벨로 새 Row(MetricStat 6개) 추가, `RateChart` 지표 선택에도 6종 추가. 한국국채10년물은 Yahoo에 수익률 데이터가 없어 제외(→BE-10). `./gradlew build`/`test`, `npm run build` 전체 통과 | `backend/.../client/FinancialApiClient.kt`, `web/src/features/dashboard/DashboardPage.tsx` (2026-08-23 [[log]]) |
 | BE-1 | 백엔드 프로젝트 스캐폴딩 | 완료. Spring Initializr로 Kotlin+Spring Boot 4.1.0(+Boot 3.2 대신 채택, [[Decisions/0005-spring-boot-4]])+WebFlux+JPA+H2+Validation 생성, gradle wrapper 포함. `./gradlew build` 통과, `java -jar`로 기동 확인(Netty on port) | `backend/build.gradle.kts`, [[Decisions/0005-spring-boot-4]] (2026-08-19 [[log]]) |
 | BE-2 | 감사로그 AOP 인프라 | 완료. `AuditLogAspect`가 `service` 패키지 전체를 포인트컷으로 자동 감사(옵트아웃). SUCCESS/WARNING(임계값 초과)/FALLBACK(`AuditContext.markFallback`)/FAILURE(예외) 4개 상태 전부 단위테스트로 재현·확인(`AuditLogAspectTest`, 4 tests pass). response_summary는 반환값 요약(예: FCM 발송 건수)이 자동으로 남음 | `backend/.../audit/AuditLogAspect.kt`, `docs/02-design/features/firewatch.design.md` §2.0 (2026-08-19 [[log]]) |
 | BE-4 | 금융 API 연동 + FALLBACK 처리 | 완료. `FinancialApiClient`(한국수출입은행 exchangeJSON + Yahoo Finance 비공식 v8 chart) + `FinancialDataService`. 실측 확인: 수출입은행 위안화 cur_unit은 "CNY"가 아니라 **"CNH"**, Yahoo는 User-Agent 없으면 429. FALLBACK 범위는 "Gemini 실패 시만" 적용, 금융 API 단독 실패는 NORMAL+null 필드로 처리 — [[Decisions/0006-fallback-scope]]. `SchedulerJobTest` 4개 시나리오(둘 다 성공/Gemini만 실패/금융만 실패/둘 다 실패)로 검증. **실제 EXIM_API_KEY/Yahoo 라이브 호출 확인함(2026-08-20, Render 프로덕션)** — 금/은/환율(USD·JPY·CNY) 전부 실제 값으로 채워짐 | `backend/.../client/FinancialApiClient.kt`, [[Decisions/0006-fallback-scope]] (2026-08-19 [[log]]) |

@@ -109,6 +109,12 @@ class GeminiClientTest {
             usdKrw = BigDecimal("1402.50"),
             jpy100Krw = BigDecimal("886.45"),
             cnyKrw = BigDecimal("207.82"),
+            kospi = BigDecimal("2912.95"),
+            kosdaq = BigDecimal("801.94"),
+            sp500 = BigDecimal("7674.37"),
+            nasdaq = BigDecimal("26180.45"),
+            dow = BigDecimal("53277.00"),
+            usBondYield10y = BigDecimal("4.738"),
             newsArticles = listOf(
                 NewsArticleResult(
                     title = "코스피 강세 마감",
@@ -121,6 +127,9 @@ class GeminiClientTest {
 
         assertTrue(prompt.contains("4595.00"))
         assertTrue(prompt.contains("1402.50"))
+        assertTrue(prompt.contains("2912.95"))
+        assertTrue(prompt.contains("53277.00"))
+        assertTrue(prompt.contains("4.738"))
         assertTrue(prompt.contains("코스피 강세 마감"))
         assertTrue(prompt.contains("코스피가 2%대 강세로 마감했다."))
     }
@@ -133,6 +142,12 @@ class GeminiClientTest {
             usdKrw = null,
             jpy100Krw = null,
             cnyKrw = null,
+            kospi = null,
+            kosdaq = null,
+            sp500 = null,
+            nasdaq = null,
+            dow = null,
+            usBondYield10y = null,
             newsArticles = emptyList(),
         )
 

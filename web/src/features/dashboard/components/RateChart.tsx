@@ -19,6 +19,12 @@ const METRICS = [
   { key: 'usdKrw', label: 'USD/KRW' },
   { key: 'jpy100Krw', label: 'JPY(100)/KRW' },
   { key: 'cnyKrw', label: 'CNY/KRW' },
+  { key: 'kospi', label: '코스피' },
+  { key: 'kosdaq', label: '코스닥' },
+  { key: 'sp500', label: 'S&P500' },
+  { key: 'nasdaq', label: '나스닥' },
+  { key: 'dow', label: '다우존스' },
+  { key: 'usBondYield10y', label: '미국채 10년물(%)' },
 ] as const
 
 type MetricKey = (typeof METRICS)[number]['key']

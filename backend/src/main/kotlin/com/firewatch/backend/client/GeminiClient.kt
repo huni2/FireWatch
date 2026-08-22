@@ -41,11 +41,21 @@ class GeminiClient(
         usdKrw: BigDecimal?,
         jpy100Krw: BigDecimal?,
         cnyKrw: BigDecimal?,
+        kospi: BigDecimal?,
+        kosdaq: BigDecimal?,
+        sp500: BigDecimal?,
+        nasdaq: BigDecimal?,
+        dow: BigDecimal?,
+        usBondYield10y: BigDecimal?,
         newsArticles: List<NewsArticleResult>,
     ): GeminiBriefingResult {
         check(apiKey.isNotBlank()) { "GEMINI_API_KEY가 설정되지 않았습니다" }
 
-        val prompt = buildPrompt(goldPrice, silverPrice, usdKrw, jpy100Krw, cnyKrw, newsArticles)
+        val prompt = buildPrompt(
+            goldPrice, silverPrice, usdKrw, jpy100Krw, cnyKrw,
+            kospi, kosdaq, sp500, nasdaq, dow, usBondYield10y,
+            newsArticles,
+        )
         val requestBody = mapOf(
             "contents" to listOf(mapOf("parts" to listOf(mapOf("text" to prompt)))),
         )
@@ -73,6 +83,12 @@ class GeminiClient(
             usdKrw: BigDecimal?,
             jpy100Krw: BigDecimal?,
             cnyKrw: BigDecimal?,
+            kospi: BigDecimal?,
+            kosdaq: BigDecimal?,
+            sp500: BigDecimal?,
+            nasdaq: BigDecimal?,
+            dow: BigDecimal?,
+            usBondYield10y: BigDecimal?,
             newsArticles: List<NewsArticleResult>,
         ): String {
             val newsSection = if (newsArticles.isEmpty()) {
@@ -90,6 +106,14 @@ class GeminiClient(
                 - 원/달러: ${usdKrw ?: "정보 없음"}
                 - 원/엔(100엔): ${jpy100Krw ?: "정보 없음"}
                 - 원/위안: ${cnyKrw ?: "정보 없음"}
+
+                [오늘의 지수·채권]
+                - 코스피: ${kospi ?: "정보 없음"}
+                - 코스닥: ${kosdaq ?: "정보 없음"}
+                - S&P500: ${sp500 ?: "정보 없음"}
+                - 나스닥종합: ${nasdaq ?: "정보 없음"}
+                - 다우존스: ${dow ?: "정보 없음"}
+                - 미국채 10년물 수익률: ${usBondYield10y ?: "정보 없음"}%
 
                 [오늘의 관련 뉴스]
                 $newsSection

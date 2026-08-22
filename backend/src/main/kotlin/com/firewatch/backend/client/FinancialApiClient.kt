@@ -20,6 +20,17 @@ data class PreciousMetalPrices(
     val silverPriceUsd: BigDecimal?,
 )
 
+// 2026-08-23 사용자 요청("금,은,환율,국채,국장,미장 다 볼 수 있고") — 국내외 지수 + 미국채 수익률.
+// 한국국채 10년물은 Yahoo에 수익률(%) 데이터가 없어(ETF 가격만 검색됨, 실측 확인) 제외 — Next-Tasks BE-10.
+data class MarketIndices(
+    val kospi: BigDecimal?,
+    val kosdaq: BigDecimal?,
+    val sp500: BigDecimal?,
+    val nasdaq: BigDecimal?,
+    val dow: BigDecimal?,
+    val usBondYield10y: BigDecimal?,
+)
+
 /**
  * Design Ref: docs/02-design/features/firewatch.design.md §2.2 — 금/은/환율 수집.
  *
@@ -79,6 +90,17 @@ class FinancialApiClient(
         silverPriceUsd = fetchYahooPrice(SILVER_SYMBOL),
     )
 
+    // 2026-08-23 실측 확인(curl -A "Mozilla/5.0..."): ^KS11=코스피, ^KQ11=코스닥, ^GSPC=S&P500,
+    // ^IXIC=나스닥종합, ^DJI=다우존스 전부 정상 응답. ^TNX(미국채10년물)는 이미 %값 그대로 온다(×10 아님).
+    fun fetchMarketIndices(): MarketIndices = MarketIndices(
+        kospi = fetchYahooPrice(KOSPI_SYMBOL),
+        kosdaq = fetchYahooPrice(KOSDAQ_SYMBOL),
+        sp500 = fetchYahooPrice(SP500_SYMBOL),
+        nasdaq = fetchYahooPrice(NASDAQ_SYMBOL),
+        dow = fetchYahooPrice(DOW_SYMBOL),
+        usBondYield10y = fetchYahooPrice(US_BOND_10Y_SYMBOL),
+    )
+
     private fun fetchYahooPrice(symbol: String): BigDecimal {
         val response = yahooClient.get()
             .uri("/v8/finance/chart/$symbol?interval=1d&range=5d")
@@ -95,6 +117,12 @@ class FinancialApiClient(
         private const val MAX_LOOKBACK_DAYS = 7
         private const val GOLD_SYMBOL = "GC=F"
         private const val SILVER_SYMBOL = "SI=F"
+        private const val KOSPI_SYMBOL = "^KS11"
+        private const val KOSDAQ_SYMBOL = "^KQ11"
+        private const val SP500_SYMBOL = "^GSPC"
+        private const val NASDAQ_SYMBOL = "^IXIC"
+        private const val DOW_SYMBOL = "^DJI"
+        private const val US_BOND_10Y_SYMBOL = "^TNX"
         private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd")
 
         private const val CUR_UNIT_USD = "USD"

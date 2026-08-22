@@ -44,6 +44,25 @@ class Briefing(
     @Column(name = "cny_krw")
     var cnyKrw: BigDecimal? = null,
 
+    // 2026-08-23 사용자 요청 — 국내외 지수 + 미국채 수익률. 한국국채는 Yahoo에 데이터가 없어 제외(Next-Tasks BE-10).
+    @Column(name = "kospi")
+    var kospi: BigDecimal? = null,
+
+    @Column(name = "kosdaq")
+    var kosdaq: BigDecimal? = null,
+
+    @Column(name = "sp500")
+    var sp500: BigDecimal? = null,
+
+    @Column(name = "nasdaq")
+    var nasdaq: BigDecimal? = null,
+
+    @Column(name = "dow")
+    var dow: BigDecimal? = null,
+
+    @Column(name = "us_bond_yield_10y")
+    var usBondYield10y: BigDecimal? = null,
+
     @Enumerated(EnumType.STRING)
     @Column(name = "data_source_status", nullable = false, length = 20)
     var dataSourceStatus: DataSourceStatus,

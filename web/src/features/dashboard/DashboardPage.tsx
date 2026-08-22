@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Empty, Row, Col, Space } from 'antd'
+import { Alert, Empty, Row, Col, Space, Typography } from 'antd'
 import { BriefingSummaryCard } from './components/BriefingSummaryCard'
 import { MetricStat } from './components/MetricStat'
 import { RateChart } from './components/RateChart'
@@ -72,6 +72,36 @@ export function DashboardPage() {
         </Col>
         <Col xs={24} sm={12} md={8} lg={4}>
           <MetricStat index={4} title="CNY/KRW" value={latest.data?.cnyKrw ?? null} previousValue={previous?.cnyKrw} />
+        </Col>
+      </Row>
+
+      <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+        국내외 지수 · 채권
+      </Typography.Text>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat index={5} title="코스피" value={latest.data?.kospi ?? null} previousValue={previous?.kospi} />
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat index={6} title="코스닥" value={latest.data?.kosdaq ?? null} previousValue={previous?.kosdaq} />
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat index={7} title="S&P500" value={latest.data?.sp500 ?? null} previousValue={previous?.sp500} />
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat index={8} title="나스닥" value={latest.data?.nasdaq ?? null} previousValue={previous?.nasdaq} />
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat index={9} title="다우존스" value={latest.data?.dow ?? null} previousValue={previous?.dow} />
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat
+            index={10}
+            title="미국채 10년물(%)"
+            value={latest.data?.usBondYield10y ?? null}
+            previousValue={previous?.usBondYield10y}
+            precision={3}
+          />
         </Col>
       </Row>
 
