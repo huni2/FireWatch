@@ -3,8 +3,9 @@ import { Alert, Empty, Segmented, Skeleton, Typography } from 'antd'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { StockChartRange } from '../../../lib/api'
 import { useStockHistory } from '../hooks/useStockHistory'
+import { BRAND_GREEN } from '../../../lib/theme'
 
-const CHART_COLOR = '#4F46E5'
+const CHART_COLOR = BRAND_GREEN
 
 interface StockChartProps {
   symbol: string

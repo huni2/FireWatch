@@ -49,3 +49,20 @@
 ## 5. 다크 모드
 
 Web은 AntD `ConfigProvider` + `darkAlgorithm`으로 기본 제공. Mobile은 NativeWind의 다크 클래스(`dark:`)를 앱 전역 테마 설정과 연동. 두 플랫폼 모두 다크를 기본값으로 할지, 라이트/다크 토글을 둘지는 미결정 — [[OpenQuestions]] 참고.
+
+## 6. 브랜드 컬러 리스킨 (2026-08-23, 웹만)
+
+루트 `Design.md`(untracked — 스타벅스 사이트에서 추출한 범용 디자인 시스템 문서)를 웹 대시보드에 **토큰 레벨**로 적용. 프레임워크(AntD)·§1의 감사로그 4색·상승/하락 빨강파랑 관례는 그대로 두고, `web/src/lib/theme.ts`의 ConfigProvider 토큰만 교체했다.
+
+| Design.md 토큰 | 값 | 적용처 |
+|---|---|---|
+| Green Accent | `#00754A` | `colorPrimary`(버튼·링크·차트선·포커스링), 로고 텍스트 — `BRAND_GREEN` 상수 |
+| Neutral Warm | `#f2f0eb` | 라이트모드 페이지 캔버스 |
+| Ceramic | `#edebe9` | 라이트모드 사이드바 배경 |
+| House Green 파생 | `#0F1D19`/`#1E3932`/`#28483F`/`#152622` | 다크모드 캔버스/카드/엘리베이트/사이드바 — Design.md엔 전체앱 다크모드가 없어 House Green(`#1E3932`) 기준으로 직접 파생 |
+
+버튼은 AntD `Button` 컴포넌트 토큰(`borderRadius: 999`)으로 50px 풀필 적용, `active` 시 `scale(0.95)`는 `index.css`에 `.ant-btn:active` 규칙으로 보강(AntD 기본엔 없음). 카드 그림자는 Design.md §6 스펙(`0 0 .5px rgba(0,0,0,.14), 0 1px 1px rgba(0,0,0,.24)`)을 `boxShadow`/`Card.boxShadowTertiary`에 반영.
+
+**의도적으로 안 가져온 것**: 음수 자간(SoDoSans 라틴 전용 원칙 — 한글엔 부적합, Pretendard 유지), Frap 플로팅 버튼·Rewards 카드 등 FireWatch에 대응 개념 없는 컴포넌트, h1 헤딩 전역 색상 교체(가독성 리스크 + 토큰 레벨 범위 초과 판단).
+
+**실측 이슈**: AntD `Layout.Sider`는 `theme="light"/"dark"` prop이 켜지면 `components.Layout.siderBg` 토큰을 무시하고 라이트 프리셋에서 흰색으로 고정한다(다크 프리셋은 토큰을 따름 — 비대칭). `AppShell.tsx`에서 Sider에 인라인 `style.background`로 직접 줘서 우회.

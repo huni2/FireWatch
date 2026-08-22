@@ -35,6 +35,13 @@ body {
 .hoverable-card:hover {
   transform: translateY(-3px);
   box-shadow:
-    0 10px 24px rgba(16, 24, 40, 0.1),
-    0 3px 8px rgba(16, 24, 40, 0.08);
+    0 10px 24px rgba(0, 0, 0, 0.1),
+    0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Design Ref: llm-wiki/design.md §6 — Design.md(스타벅스 시스템)의 버튼 active 시 scale(0.95) 프레스,
+   AntD 기본 Button엔 없어 여기서 보강 */
+.ant-btn:active:not(:disabled) {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
 }

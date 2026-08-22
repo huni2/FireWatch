@@ -10,6 +10,7 @@ import {
   SunOutlined,
 } from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
+import { SIDER_BG_DARK, SIDER_BG_LIGHT } from '../lib/theme'
 
 const { Sider, Header, Content } = Layout
 
@@ -43,6 +44,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         breakpoint="lg"
         trigger={null}
         style={{
+          background: darkMode ? SIDER_BG_DARK : SIDER_BG_LIGHT,
           borderInlineEnd: '1px solid var(--ant-color-border-secondary)',
           position: 'sticky',
           insetInlineStart: 0,
