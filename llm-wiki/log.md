@@ -9,6 +9,9 @@
 > **담당 태그**: `[BE]` 백엔드(Kotlin/Spring) 코드 · `[WEB]` 웹(React/AntD) 코드 · `[APP]` 모바일(React Native) 코드 · `[PROJ]` 위키·문서·설정 등 코드 외 작업.
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
+## 2026-08-23
+- **[PROJ] 스케줄러 수동 트리거 + 웹 대시보드 실배포 검증**: 전날([[log]] 2026-08-22) 고친 fire-and-forget 트리거를 `gh workflow run daily-trigger.yml`로 실행 — 34초 만에 HTTP 202 확인(이전엔 항상 120초 타임아웃으로 실패), 감사로그(`id=129`, WARNING/OK, 32.8초)로 백그라운드 파이프라인이 끝까지 정상 완료된 것도 확인. `/api/briefings/latest`로 2026-08-22자 브리핑 본문(금/은/환율·Gemini 요약·추천종목 7개)이 실제로 채워진 것 확인. 이어서 Cloudflare Pages 배포(`firewatch-eqp.pages.dev`)를 브라우저로 열어 같은 내용이 뜨는지 보려 했는데, 확인 시점이 마침 KST 자정(00:18)을 막 넘긴 직후라 `/api/briefings/latest`가 404("오늘자 브리핑이 아직 생성되지 않았습니다")로 바뀌어 있었음 — 서버가 "오늘"을 KST 2026-08-23으로 새로 계산한 것이라 대시보드가 빈 상태("아직 생성된 브리핑이 없습니다")를 보여준 것이고, 이는 다음 자동 실행(08:00 KST) 전까지는 정상 동작임을 확인. 관심종목 카드·시세 차트 API(`/api/stocks/*/history`)는 정상 200으로 로드됨. 코드 변경 없음, 검증만 수행.
+
 ## 2026-08-22
 - **[BE] 스케줄러 트리거 엔드포인트가 202를 선언만 하고 실제로는 동기였던 버그 수정**: GitHub Actions "Daily Morning Briefing Trigger"가 이틀 연속(2026-08-20·21, `gh api .../jobs/.../logs`로 실측) `curl --max-time 120` 정확히 120.03초에 exit 28로 실패한 걸 확인. 원인은 `SchedulerController.trigger()`가 `@ResponseStatus(ACCEPTED)`(202)를 선언해놓고도 `withContext(Dispatchers.IO) { schedulerJob.triggerManually(...) }`로 파이프라인 전체(Gemini 20초+금융API 15초×2+뉴스RSS 10초+DB저장+FCM 발송)가 끝날 때까지 응답을 미루고 있었던 것 — 워크플로 주석은 "콜드스타트 30~60초만 흡수하면 된다"고 가정했지만 실제로는 그 위에 외부 API 타임아웃 합산까지 얹히는 구조였음([[Decisions/0008-deployment-render-github-actions]]이 이미 "반복되면 타임아웃 재검토"를 예고해둠). API 키 검증만 응답 전에 동기로 하고(`CoroutineScope(SupervisorJob()+Dispatchers.IO)`로 파이프라인은 fire-and-forget launch) 202를 즉시 반환하도록 수정 — 이제 HTTP 응답 시각은 콜드스타트만 좌우한다. 트레이드오프로, 파이프라인 실패(Gemini+금융 API 둘 다 실패 등)가 나도 워크플로 자체는 이제 항상 200대로 성공 처리되고 감사로그(DB)에서만 확인 가능해짐 — CI 레벨 알림은 잃는 대신 사용자가 명시적으로 선택.
   `backend/.../web/SchedulerController.kt` 변경. `./gradlew build`/`test` 전체 통과.
