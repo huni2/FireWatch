@@ -19,8 +19,10 @@ interface AppShellProps {
   onToggleDarkMode: (value: boolean) => void
 }
 
-// Design Ref: §5.1 Screen Layout — 왼쪽 사이드바(로고+메뉴) + 상단 헤더(다크토글) + 콘텐츠.
-// lg(992px) 아래에서는 사이드바가 자동으로 접혀 화면 밖으로 사라지고, 헤더의 햄버거 버튼으로 다시 연다.
+// Design Ref: §5.1 Screen Layout — 왼쪽 사이드바(메뉴) + 상단 헤더(로고+햄버거+다크토글) + 콘텐츠.
+// 로고는 헤더에 둔다 — 사이드바는 lg(992px) 아래에서 폭 0으로 완전히 사라지는데(collapsedWidth=0),
+// 로고가 사이드바 안에 있으면 접혔을 때 브랜드 자체가 안 보이는 문제가 있었다(2026-08-23 사용자 지적).
+// 사이드바가 접혀도 헤더는 항상 보이므로, 로고를 헤더로 옮겨 접힘 상태와 무관하게 항상 노출되게 한다.
 export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
   const location = useLocation()
   const [collapsed, setCollapsed] = useState(false)
@@ -53,12 +55,6 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
           overflow: 'auto',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '20px 24px' }}>
-          <span style={{ fontSize: 22 }}>🔥</span>
-          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.3, color: 'var(--ant-color-text)' }}>
-            FireWatch
-          </span>
-        </div>
         <Menu
           theme={darkMode ? 'dark' : 'light'}
           mode="inline"
@@ -78,7 +74,15 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
             borderBottom: '1px solid var(--ant-color-border-secondary)',
           }}
         >
-          <Button type="text" icon={<MenuOutlined />} onClick={() => setCollapsed((v) => !v)} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Button type="text" icon={<MenuOutlined />} onClick={() => setCollapsed((v) => !v)} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 20 }}>🔥</span>
+              <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, color: 'var(--ant-color-text)' }}>
+                FireWatch
+              </span>
+            </div>
+          </div>
           <Switch
             checked={darkMode}
             onChange={onToggleDarkMode}
