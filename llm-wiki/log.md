@@ -9,6 +9,12 @@
 > **담당 태그**: `[BE]` 백엔드(Kotlin/Spring) 코드 · `[WEB]` 웹(React/AntD) 코드 · `[APP]` 모바일(React Native) 코드 · `[PROJ]` 위키·문서·설정 등 코드 외 작업.
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
+## 2026-08-22
+- **[BE] 스케줄러 트리거 엔드포인트가 202를 선언만 하고 실제로는 동기였던 버그 수정**: GitHub Actions "Daily Morning Briefing Trigger"가 이틀 연속(2026-08-20·21, `gh api .../jobs/.../logs`로 실측) `curl --max-time 120` 정확히 120.03초에 exit 28로 실패한 걸 확인. 원인은 `SchedulerController.trigger()`가 `@ResponseStatus(ACCEPTED)`(202)를 선언해놓고도 `withContext(Dispatchers.IO) { schedulerJob.triggerManually(...) }`로 파이프라인 전체(Gemini 20초+금융API 15초×2+뉴스RSS 10초+DB저장+FCM 발송)가 끝날 때까지 응답을 미루고 있었던 것 — 워크플로 주석은 "콜드스타트 30~60초만 흡수하면 된다"고 가정했지만 실제로는 그 위에 외부 API 타임아웃 합산까지 얹히는 구조였음([[Decisions/0008-deployment-render-github-actions]]이 이미 "반복되면 타임아웃 재검토"를 예고해둠). API 키 검증만 응답 전에 동기로 하고(`CoroutineScope(SupervisorJob()+Dispatchers.IO)`로 파이프라인은 fire-and-forget launch) 202를 즉시 반환하도록 수정 — 이제 HTTP 응답 시각은 콜드스타트만 좌우한다. 트레이드오프로, 파이프라인 실패(Gemini+금융 API 둘 다 실패 등)가 나도 워크플로 자체는 이제 항상 200대로 성공 처리되고 감사로그(DB)에서만 확인 가능해짐 — CI 레벨 알림은 잃는 대신 사용자가 명시적으로 선택.
+  `backend/.../web/SchedulerController.kt` 변경. `./gradlew build`/`test` 전체 통과.
+- **[PROJ] GitHub Actions 워크플로 타임아웃 120→180초로 상향**: 위 항목과 세트 — fire-and-forget 전환 후에도 Render 콜드스타트가 60초를 넘는 경우(2026-08-20·21 실측)에 대비한 여유.
+  `.github/workflows/daily-trigger.yml` 변경.
+
 ## 2026-08-21
 - **[PROJ] 루트 README.md 신설 — 배포 링크·아키텍처·기술스택 근거·문제해결·AI 협업 체계 정리**: 채용/포트폴리오 열람을 염두에 두고 프로젝트 루트에 README.md를 새로 작성. 배포 URL(Cloudflare Pages/Render), Mermaid 아키텍처 다이어그램, 기술스택별 선택 이유(ADR 근거), 실제로 겪은 버그 6건(Kotlin `List<@Pattern>` 무효 검증, AuditContext ThreadLocal 오귀속, 스케줄러 타임존, 수출입은행 11시 정책, Gemini grounding 할당량 0건, 네이버 뉴스 API 좌절→RSS 전환), 상태관리·성능최적화·품질개선·배포방법·운영이슈 대응, 그리고 `llm-wiki/` 기반 AI 협업 체계(SessionStart/Stop 훅, ADR, bkit 기본 템플릿을 의도적으로 거부한 판단 등)를 정리. 초안 작성 후 사용자 요청으로 전체 재검토를 한 번 거쳐, 기술스택 표의 근거 일부(AntD 선택 이유, Cloudflare Pages 이유, 금융 API 가입 여부)가 실제 ADR·DEPLOY.md와 어긋나던 걸 원본과 대조해 수정하고, 품질개선 섹션의 "감사로그로 버그 대부분 발견" 같은 과장된 서술도 정정했다.
   `README.md` 신설.
