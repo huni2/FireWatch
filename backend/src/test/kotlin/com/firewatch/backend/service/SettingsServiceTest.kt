@@ -2,6 +2,7 @@ package com.firewatch.backend.service
 
 import com.firewatch.backend.entity.SINGLETON_SETTINGS_ID
 import com.firewatch.backend.entity.UserSettings
+import com.firewatch.backend.entity.fcmTokens
 import com.firewatch.backend.entity.interestKeywords
 import com.firewatch.backend.entity.watchedStocks
 import com.firewatch.backend.repository.UserSettingsRepository
@@ -76,6 +77,46 @@ class SettingsServiceTest {
         }
 
         verify(exactly = 0) { userSettingsRepository.save(any()) }
+    }
+
+    @Test
+    fun `fcmToken이 있으면 기존 토큰 목록에 병합한다`() {
+        val existing = UserSettings(id = SINGLETON_SETTINGS_ID, pushTime = "08:00", fcmTokensRaw = "token-a")
+        every { userSettingsRepository.findById(SINGLETON_SETTINGS_ID) } returns Optional.of(existing)
+        val saved = slot<UserSettings>()
+        every { userSettingsRepository.save(capture(saved)) } answers { saved.captured }
+
+        val result = settingsService.update(
+            SettingsUpdateCommand(
+                pushTime = "08:00",
+                interestKeywords = emptyList(),
+                fcmToken = "token-b",
+                apiKey = "secret-key",
+                clientIp = null,
+            ),
+        )
+
+        assertEquals(listOf("token-a", "token-b"), result.fcmTokens())
+    }
+
+    @Test
+    fun `이미 등록된 fcmToken이면 중복 추가하지 않는다`() {
+        val existing = UserSettings(id = SINGLETON_SETTINGS_ID, pushTime = "08:00", fcmTokensRaw = "token-a")
+        every { userSettingsRepository.findById(SINGLETON_SETTINGS_ID) } returns Optional.of(existing)
+        val saved = slot<UserSettings>()
+        every { userSettingsRepository.save(capture(saved)) } answers { saved.captured }
+
+        val result = settingsService.update(
+            SettingsUpdateCommand(
+                pushTime = "08:00",
+                interestKeywords = emptyList(),
+                fcmToken = "token-a",
+                apiKey = "secret-key",
+                clientIp = null,
+            ),
+        )
+
+        assertEquals(listOf("token-a"), result.fcmTokens())
     }
 
     @Test

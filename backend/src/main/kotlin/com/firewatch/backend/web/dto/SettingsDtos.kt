@@ -18,6 +18,10 @@ data class SettingsUpdateRequest(
     // 않는 걸 실측 확인했다(2026-08-21, 프로덕션에 유효하지 않은 값이 그대로 저장됨).
     @field:Size(max = 20, message = "관심 종목은 최대 20개까지입니다")
     val watchedStocks: List<@Size(max = 20, message = "종목 티커는 20자를 넘을 수 없습니다") String> = emptyList(),
+    // mobile-app Design §3.2 — 모바일 앱 시작 시 FCM 토큰을 등록/갱신하는 용도. 있으면 기존
+    // fcm_tokens 목록에 병합(중복 제거)만 하고, pushTime/keywords/watchedStocks는 그대로 둔다.
+    @field:Size(max = 512, message = "FCM 토큰 형식이 올바르지 않습니다")
+    val fcmToken: String? = null,
 )
 
 data class SettingsResponse(

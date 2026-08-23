@@ -44,6 +44,7 @@ class SettingsController(
             pushTime = request.pushTime,
             interestKeywords = request.interestKeywords,
             watchedStocks = request.watchedStocks,
+            fcmToken = request.fcmToken,
             apiKey = apiKey,
             clientIp = clientIp,
         )
