@@ -5,6 +5,7 @@ import {
   FundOutlined,
   LineChartOutlined,
   MoonOutlined,
+  QuestionCircleOutlined,
   ReadOutlined,
   SettingOutlined,
   SunOutlined,
@@ -33,6 +34,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
     { key: '/stocks', icon: <LineChartOutlined />, label: <Link to="/stocks">종목</Link> },
     { key: '/indices', icon: <FundOutlined />, label: <Link to="/indices">지수</Link> },
     { key: '/news', icon: <ReadOutlined />, label: <Link to="/news">뉴스</Link> },
+    { key: '/guide', icon: <QuestionCircleOutlined />, label: <Link to="/guide">가이드</Link> },
   ]
   const adminMenuItems = [
     { key: '/audit-log', icon: <AuditOutlined />, label: <Link to="/audit-log">감사로그</Link> },

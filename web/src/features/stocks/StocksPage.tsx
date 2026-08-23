@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Alert, Card, Empty, Segmented, Skeleton, Space, Typography } from 'antd'
 import { motion } from 'framer-motion'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { KeywordInput } from '../settings/components/KeywordInput'
 import { StockChart } from './components/StockChart'
 import { StockSearchInput } from './components/StockSearchInput'
 import { useSettings } from '../settings/hooks/useSettings'
 import { updateSettings } from '../../lib/api'
+import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 
 // 티커 형식: 영문/숫자, 선택적으로 .KS/.KQ 같은 거래소 접미사(예: 005930.KS, AAPL, BRK.B).
 // 검색 없이 직접 입력할 때 "반도체" 같은 일반 단어가 그대로 들어가던 문제(2026-08-21 실측 발견)를 막는다.
@@ -19,7 +20,7 @@ function validateTicker(value: string): string | null {
 // 2026-08-21 사용자 요청 "원하는 종목과 특정 주식에 대한 차트도 보고싶은데" — 관심 종목 등록 + 차트를 별도 화면으로.
 // 대시보드의 관심 종목 미니 요약에서 ?symbol=로 넘어오면 그 종목을 바로 선택해 보여준다.
 export function StocksPage() {
-  const { data, loading, error, reload } = useSettings()
+  const { data, loading, error, isSlow, reload } = useSettings()
   const [searchParams] = useSearchParams()
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
   const [selected, setSelected] = useState<string | null>(null)
@@ -62,6 +63,7 @@ export function StocksPage() {
         <Typography.Title level={4} style={{ margin: 0 }}>
           종목
         </Typography.Title>
+        <SlowLoadingHint loading={loading} isSlow={isSlow} />
         <Card className="hoverable-card" title="관심 종목">
           <Skeleton active />
         </Card>
@@ -89,7 +91,8 @@ export function StocksPage() {
           />
           <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
             직접 입력 시 국내 종목은 코스피 <code>005930.KS</code>, 코스닥은 <code>.KQ</code>, 해외는{' '}
-            <code>AAPL</code>처럼 티커 그대로 입력하세요.
+            <code>AAPL</code>처럼 티커 그대로 입력하세요. 티커가 낯설다면{' '}
+            <Link to="/guide">가이드</Link>에서 예시를 볼 수 있어요.
           </Typography.Text>
         </Card>
       </motion.div>

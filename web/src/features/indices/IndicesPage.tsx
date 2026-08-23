@@ -4,6 +4,7 @@ import { MetricStat } from './components/MetricStat'
 import { RateChart } from './components/RateChart'
 import { useBriefingHistory } from './hooks/useBriefingHistory'
 import { useLatestBriefing } from '../dashboard/hooks/useLatestBriefing'
+import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 
 // 2026-08-23 사용자 요청 — 대시보드에 몰려있던 금/은/환율/지수·채권 카드와 시계열 차트를
 // "종목"처럼 별도 메뉴로 분리. 대시보드는 시황 요약만 남긴다.
@@ -20,6 +21,8 @@ export function IndicesPage() {
       <Typography.Title level={4} style={{ margin: 0 }}>
         지수
       </Typography.Title>
+
+      <SlowLoadingHint loading={latest.loading || history.loading} isSlow={latest.isSlow || history.isSlow} />
 
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} md={8} lg={4}>

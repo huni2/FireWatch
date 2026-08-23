@@ -5,6 +5,7 @@ import dayjs, { type Dayjs } from 'dayjs'
 import { AuditStatusTag } from './components/AuditStatusTag'
 import { useAuditLogs } from './hooks/useAuditLogs'
 import type { AuditLogEntry } from '../../lib/api'
+import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 
 const { RangePicker } = DatePicker
 
@@ -35,7 +36,7 @@ export function AuditLogPage() {
   const [page, setPage] = useState(0)
   const size = 20
 
-  const { data, loading, error } = useAuditLogs({
+  const { data, loading, error, isSlow } = useAuditLogs({
     eventType,
     status,
     from: dateRange?.[0]?.startOf('day').toISOString(),
@@ -89,6 +90,7 @@ export function AuditLogPage() {
       <Typography.Title level={4} style={{ margin: 0 }}>
         감사로그
       </Typography.Title>
+      <SlowLoadingHint loading={loading} isSlow={isSlow} />
       <Card className="hoverable-card">
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
           <Space wrap>

@@ -4,6 +4,7 @@ interface UseApiResult<T> {
   data: T | null
   loading: boolean
   error: Error | null
+  isSlow: boolean
   reload: () => void
 }
 
@@ -15,10 +16,15 @@ interface UseApiResult<T> {
 // 유지하고, 전부 실패했을 때만 최종 에러를 보여준다. 누적 약 89초 — 실측된 최악의 콜드스타트를 커버.
 const RETRY_DELAYS_MS = [2000, 4000, 8000, 15000, 25000, 35000]
 
+// 재시도 중이라 스켈레톤만 계속 떠 있으면 이유 없이 오래 멈춘 것처럼 보인다는 지적(2026-08-23) —
+// 이 시간을 넘겨도 loading이면 isSlow를 켜서, 화면에서 "서버를 깨우는 중" 안내를 띄울 수 있게 한다.
+const SLOW_THRESHOLD_MS = 6000
+
 export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): UseApiResult<T> {
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
+  const [isSlow, setIsSlow] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
 
   const reload = useCallback(() => setReloadKey((key) => key + 1), [])
@@ -27,6 +33,11 @@ export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): UseA
     let cancelled = false
     setLoading(true)
     setError(null)
+    setIsSlow(false)
+
+    const slowTimer = setTimeout(() => {
+      if (!cancelled) setIsSlow(true)
+    }, SLOW_THRESHOLD_MS)
 
     const attempt = (retryIndex: number) => {
       fetcher()
@@ -52,9 +63,10 @@ export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): UseA
 
     return () => {
       cancelled = true
+      clearTimeout(slowTimer)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps, reloadKey])
 
-  return { data, loading, error, reload }
+  return { data, loading, error, isSlow, reload }
 }

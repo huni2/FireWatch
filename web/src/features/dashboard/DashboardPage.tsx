@@ -3,6 +3,7 @@ import { BriefingSummaryCard } from './components/BriefingSummaryCard'
 import { WatchlistSummaryCard } from './components/WatchlistSummaryCard'
 import { useLatestBriefing } from './hooks/useLatestBriefing'
 import { useBriefingHistory } from '../indices/hooks/useBriefingHistory'
+import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 
 // Design Ref: §5.4 Dashboard 체크리스트 — FR-04. 2026-08-23 사용자 요청으로 지표 카드·차트·
 // 관련 뉴스를 각각 "지수"·"뉴스" 메뉴로 분리 — 대시보드는 시황 요약(날짜 포함) + 관심종목만 남긴다.
@@ -18,6 +19,8 @@ export function DashboardPage() {
       <Typography.Title level={4} style={{ margin: 0 }}>
         대시보드
       </Typography.Title>
+
+      <SlowLoadingHint loading={latest.loading} isSlow={latest.isSlow} />
 
       {latest.error && (
         <Alert type="error" message="브리핑을 불러오지 못했습니다" description={latest.error.message} showIcon />

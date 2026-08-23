@@ -13,6 +13,7 @@ const StocksPage = lazy(() => import('./features/stocks/StocksPage').then((m) =>
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })))
 const IndicesPage = lazy(() => import('./features/indices/IndicesPage').then((m) => ({ default: m.IndicesPage })))
 const NewsPage = lazy(() => import('./features/news/NewsPage').then((m) => ({ default: m.NewsPage })))
+const GuidePage = lazy(() => import('./features/guide/GuidePage').then((m) => ({ default: m.GuidePage })))
 
 // OpenQuestions.md — 다크 모드 기본값 미정이라 라이트를 기본으로, 토글로 전환 가능하게 구현.
 export default function App() {
@@ -61,6 +62,14 @@ export default function App() {
               element={
                 <Suspense fallback={<Skeleton active />}>
                   <SettingsPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="guide"
+              element={
+                <Suspense fallback={<Skeleton active />}>
+                  <GuidePage />
                 </Suspense>
               }
             />

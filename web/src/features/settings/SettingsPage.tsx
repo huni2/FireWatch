@@ -4,10 +4,11 @@ import dayjs from 'dayjs'
 import { KeywordInput } from './components/KeywordInput'
 import { useSettings } from './hooks/useSettings'
 import { ApiRequestError, updateSettings } from '../../lib/api'
+import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 
 // Design Ref: §5.4 Settings 체크리스트 — FR-05
 export function SettingsPage() {
-  const { data, loading, error, reload } = useSettings()
+  const { data, loading, error, isSlow, reload } = useSettings()
   const [pushTime, setPushTime] = useState<string>('08:00')
   const [keywords, setKeywords] = useState<string[]>([])
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
@@ -48,6 +49,7 @@ export function SettingsPage() {
         <Typography.Title level={4} style={{ margin: 0 }}>
           설정
         </Typography.Title>
+        <SlowLoadingHint loading={loading} isSlow={isSlow} />
         <Card className="hoverable-card">
           <Skeleton active />
         </Card>
