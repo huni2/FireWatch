@@ -18,13 +18,13 @@ export function DashboardPage() {
   const previous = sortedHistory.find((b) => b.briefingDate !== latest.data?.briefingDate) ?? null
   const lastAvailableDate = sortedHistory[0]?.briefingDate ?? null
 
-  if (latest.error) {
-    return <Alert type="error" message="브리핑을 불러오지 못했습니다" description={latest.error.message} showIcon />
-  }
-
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
-      {!latest.loading && !latest.data && (
+      {latest.error && (
+        <Alert type="error" message="브리핑을 불러오지 못했습니다" description={latest.error.message} showIcon />
+      )}
+
+      {!latest.loading && !latest.error && !latest.data && (
         <Empty
           description={
             lastAvailableDate
