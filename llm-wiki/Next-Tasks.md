@@ -39,14 +39,9 @@ _(현재 없음 — WEB-5까지 전부 완료)_
 
 ## 열린 과제 — 모바일(APP)
 
-### APP-1. 모바일 프로젝트 스캐폴딩
-**무엇** — `mobile/`에 React Native(Expo SDK 50+) + NativeWind 프로젝트 생성. **BE 의존 없음.**
-**왜** — 나머지 APP 과제의 기반.
-**완료 기준** — Expo Go에서 빈 앱 실행 확인.
-
 ### APP-2. FCM 푸시 수신 핸들러
-**무엇** — Expo Notifications로 디바이스 토큰 등록·FCM 수신(FR-03). **BE-5 의존.**
-**왜** — 모바일이 브리핑을 받는 유일한 경로.
+**무엇** — Expo Notifications로 디바이스 토큰 등록·FCM 수신(FR-03). **BE-5 의존, 소폭의 신규 BE 작업 포함.**
+**왜** — 모바일이 브리핑을 받는 유일한 경로. mobile-app Design 단계에서 `fcm_tokens` 컬럼은 있는데 이를 등록할 API가 없다는 걸 발견([[log]] 2026-08-23) — `PUT /api/settings`에 선택적 `fcmToken` 필드를 추가하는 소규모 백엔드 확장이 이 과제 안에 포함된다(`SettingsDtos.kt`/`SettingsService.kt`, 새 엔드포인트 아님).
 **완료 기준** — 테스트 발송이 실제 기기(또는 시뮬레이터)에 도착.
 
 ### APP-3. 모바일 브리핑 UI
@@ -63,6 +58,7 @@ _(현재 없음 — WEB-5까지 전부 완료)_
 
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
+| APP-1 | 모바일 프로젝트 스캐폴딩 | 완료. `npx create-expo-app`(SDK 57 기본 템플릿)으로 `mobile/` 생성 후 데모 콘텐츠 전부 제거, NativeWind v4(babel/metro/tailwind config) 설치. 라우터 루트가 `mobile/app/`이 아니라 `mobile/src/app/`인 건 이 SDK 버전 템플릿의 최신 관례라 Design 문서 경로에서 소폭 벗어남(계층 분리 의도는 동일). `tsc --noEmit`·`expo lint`·`expo export --platform web`(정적 라우트 `/`·`/settings` 정상 생성) 통과. 실기기 Expo Go 검증은 사용자가 `npx expo start`로 직접 진행 필요 | `mobile/`, `docs/02-design/features/mobile-app.design.md` (2026-08-23 [[log]]) |
 | BE-9 | 국내외 지수 + 미국채 수익률 브리핑 지표 추가 | 완료. 사용자가 리스킨 직후 "금,은,환율,국채,국장,미장 다 볼 수 있고 AI가 관련 뉴스보고 추천하는걸 원했음"이라고 지적 — 실제로 백엔드엔 금/은/환율 3종만 있고 지수·채권은 아예 미구현이었음. Yahoo Finance로 코스피(`^KS11`)·코스닥(`^KQ11`)·S&P500(`^GSPC`)·나스닥(`^IXIC`)·다우(`^DJI`)·미국채10년물(`^TNX`) 6종 실측 확인 후 `FinancialApiClient.fetchMarketIndices()` 신설, `FinancialSnapshot`→`GeminiClient`(프롬프트에 [오늘의 지수·채권] 섹션 추가)→`Briefing` 엔티티→DB 스키마(`ALTER TABLE ADD COLUMN IF NOT EXISTS`)→`BriefingResponse`까지 전체 파이프라인 관통. 웹 대시보드에 "국내외 지수 · 채권" 구분 라벨로 새 Row(MetricStat 6개) 추가, `RateChart` 지표 선택에도 6종 추가. 한국국채10년물은 Yahoo에 수익률 데이터가 없어 제외(→BE-10). `./gradlew build`/`test`, `npm run build` 전체 통과 | `backend/.../client/FinancialApiClient.kt`, `web/src/features/dashboard/DashboardPage.tsx` (2026-08-23 [[log]]) |
 | BE-1 | 백엔드 프로젝트 스캐폴딩 | 완료. Spring Initializr로 Kotlin+Spring Boot 4.1.0(+Boot 3.2 대신 채택, [[Decisions/0005-spring-boot-4]])+WebFlux+JPA+H2+Validation 생성, gradle wrapper 포함. `./gradlew build` 통과, `java -jar`로 기동 확인(Netty on port) | `backend/build.gradle.kts`, [[Decisions/0005-spring-boot-4]] (2026-08-19 [[log]]) |
 | BE-2 | 감사로그 AOP 인프라 | 완료. `AuditLogAspect`가 `service` 패키지 전체를 포인트컷으로 자동 감사(옵트아웃). SUCCESS/WARNING(임계값 초과)/FALLBACK(`AuditContext.markFallback`)/FAILURE(예외) 4개 상태 전부 단위테스트로 재현·확인(`AuditLogAspectTest`, 4 tests pass). response_summary는 반환값 요약(예: FCM 발송 건수)이 자동으로 남음 | `backend/.../audit/AuditLogAspect.kt`, `docs/02-design/features/firewatch.design.md` §2.0 (2026-08-19 [[log]]) |
