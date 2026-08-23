@@ -1,10 +1,12 @@
 import { useState, type ReactNode } from 'react'
-import { Layout, Switch } from 'antd'
+import { Button, Layout, Switch } from 'antd'
 import {
   AuditOutlined,
   DashboardOutlined,
   FundOutlined,
   LineChartOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
   MoonOutlined,
   QuestionCircleOutlined,
   ReadOutlined,
@@ -66,11 +68,10 @@ function TopNavLink({ item, active }: { item: NavItem; active: boolean }) {
 }
 
 // Design Ref: §5.1 Screen Layout — 왼쪽 사이드바(콘텐츠 메뉴) + 상단 헤더(전체 메뉴, 절대 숨기지
-// 않음) 두 곳에 모두 메뉴를 노출한다 — 상단은 폭이 좁아지면 일부가 "..." 더보기 뒤로 숨는 게
-// 문제였고("메뉴가 왜 저기밖에 없냐"는 지적, 2026-08-23), 사이드바도 다시 보이길 원해서 화면 크기
-// 분기 없이 둘 다 켜둔다. 사이드바는 AntD 표준 접기 버튼(하단 화살표)으로 접었다 펼 수 있는데,
-// 완전히 폭 0으로 사라지는 게 아니라 아이콘만 남는 폭(80px)으로 접혀 로고가 사라지는 예전
-// 버그가 재발하지 않는다(2026-08-23 요청).
+// 않음) 두 곳에 모두 메뉴를 노출한다. 사이드바는 완전히 숨길 수 있어야 한다는 요청(2026-08-23)에
+// 따라 `collapsedWidth=0`으로 폭 0까지 접힌다 — 이 경우 Sider 내장 트리거(하단 화살표)도 같이
+// 사라져 다시 못 펼치게 되므로, 토글 버튼은 항상 보이는 헤더에 따로 둔다. 로고도 헤더에 둬서
+// 사이드바가 완전히 숨어도 브랜드가 사라지지 않는다(전에 겪은 "로고 사라짐" 버그 재발 방지).
 export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
   const location = useLocation()
   const [collapsed, setCollapsed] = useState(false)
@@ -79,56 +80,39 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
     <Layout style={{ minHeight: '100vh' }}>
       <Sider
         theme={darkMode ? 'dark' : 'light'}
+        trigger={null}
         collapsible
         collapsed={collapsed}
-        onCollapse={setCollapsed}
         width={200}
-        collapsedWidth={80}
+        collapsedWidth={0}
         style={{
           position: 'sticky',
           insetInlineStart: 0,
           top: 0,
           height: '100vh',
           overflow: 'auto',
-          borderInlineEnd: '1px solid var(--ant-color-border-secondary)',
+          borderInlineEnd: collapsed ? 'none' : '1px solid var(--ant-color-border-secondary)',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            gap: 8,
-            padding: collapsed ? '20px 0' : '20px 24px',
-          }}
-        >
-          <span style={{ fontSize: 20 }}>🔥</span>
-          {!collapsed && (
-            <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, color: 'var(--ant-color-text)' }}>
-              FireWatch
-            </span>
-          )}
-        </div>
-        <nav style={{ display: 'flex', flexDirection: 'column' }}>
+        <nav style={{ display: 'flex', flexDirection: 'column', paddingTop: 8 }}>
           {CONTENT_ITEMS.map((item) => (
             <Link
               key={item.key}
               to={item.key}
-              title={item.label}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: collapsed ? 'center' : 'flex-start',
                 gap: 10,
-                padding: collapsed ? '11px 0' : '11px 24px',
+                padding: '11px 24px',
                 fontSize: 14,
+                whiteSpace: 'nowrap',
                 color: location.pathname === item.key ? 'var(--ant-color-primary)' : 'var(--ant-color-text)',
                 fontWeight: location.pathname === item.key ? 600 : 400,
                 background: location.pathname === item.key ? 'var(--ant-color-primary-bg)' : 'transparent',
               }}
             >
               {item.icon}
-              {!collapsed && item.label}
+              {item.label}
             </Link>
           ))}
         </nav>
@@ -144,6 +128,19 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
             borderBottom: '1px solid var(--ant-color-border-secondary)',
           }}
         >
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed((v) => !v)}
+            aria-label={collapsed ? '사이드바 펼치기' : '사이드바 숨기기'}
+            style={{ flexShrink: 0 }}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginInlineEnd: 12 }}>
+            <span style={{ fontSize: 20 }}>🔥</span>
+            <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, color: 'var(--ant-color-text)' }}>
+              FireWatch
+            </span>
+          </div>
           {CONTENT_ITEMS.map((item) => (
             <TopNavLink key={item.key} item={item} active={location.pathname === item.key} />
           ))}
