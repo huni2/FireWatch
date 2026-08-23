@@ -95,6 +95,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
               size="small"
               icon={<MenuOutlined />}
               onClick={() => setCollapsed((v) => !v)}
+              aria-label={collapsed ? '메뉴 열기' : '메뉴 닫기'}
               style={{ height: 20, width: 20, minWidth: 20, padding: 0 }}
             />
           </div>

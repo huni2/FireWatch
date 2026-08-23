@@ -1,4 +1,4 @@
-import { Card, Empty, Skeleton, Typography } from 'antd'
+import { Alert, Card, Empty, Skeleton, Typography } from 'antd'
 import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
@@ -8,12 +8,20 @@ import { useWatchlistSummary } from '../hooks/useWatchlistSummary'
 // 2026-08-21 사용자 요청 — "대시보드는 한눈에 요약되는 게 맞지 않냐" — 종목 화면을 매번 들어가지 않아도
 // 관심 종목의 최근 등락을 대시보드에서 바로 보고, 클릭하면 해당 종목 차트로 이동한다.
 export function WatchlistSummaryCard() {
-  const { data, loading } = useWatchlistSummary()
+  const { data, loading, error } = useWatchlistSummary()
 
   if (loading) {
     return (
       <Card title="관심 종목">
         <Skeleton active paragraph={{ rows: 2 }} />
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card className="hoverable-card" title="관심 종목">
+        <Alert type="error" message="관심 종목 정보를 불러오지 못했습니다" description={error.message} showIcon />
       </Card>
     )
   }

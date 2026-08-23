@@ -58,14 +58,22 @@ export function StocksPage() {
 
   if (loading) {
     return (
-      <Card title="종목">
-        <Skeleton active />
-      </Card>
+      <Space direction="vertical" size={16} style={{ width: '100%' }}>
+        <Typography.Title level={4} style={{ margin: 0 }}>
+          종목
+        </Typography.Title>
+        <Card className="hoverable-card" title="관심 종목">
+          <Skeleton active />
+        </Card>
+      </Space>
     )
   }
 
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <Typography.Title level={4} style={{ margin: 0 }}>
+        종목
+      </Typography.Title>
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <Card className="hoverable-card" title="관심 종목">
           {error && <Alert type="error" message="관심 종목 정보를 불러오지 못했습니다" description={error.message} showIcon />}

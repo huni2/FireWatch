@@ -26,6 +26,18 @@ body {
   background-color: rgba(239, 68, 68, 0.08) !important;
 }
 
+/* 관련 뉴스 링크 — 카드 전체가 클릭 가능한데 hover 피드백이 없어 클릭 가능한지 알기 어렵던 문제 수정 */
+.news-link {
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin: -6px -8px;
+  transition: background-color 120ms ease-out;
+}
+.news-link:hover,
+.news-link:focus-visible {
+  background-color: var(--ant-color-fill-tertiary);
+}
+
 /* Design Ref: llm-wiki/design.md §3 — 페이지 전반 카드에 살짝 뜨는 hover(0.5초 이내, 3D 회전/줌 금지 원칙 준수) */
 .hoverable-card {
   transition:

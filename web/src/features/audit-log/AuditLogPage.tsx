@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Card, DatePicker, Select, Space, Table, Tooltip } from 'antd'
+import { Alert, Card, DatePicker, Select, Space, Table, Tooltip, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs, { type Dayjs } from 'dayjs'
 import { AuditStatusTag } from './components/AuditStatusTag'
@@ -85,57 +85,62 @@ export function AuditLogPage() {
   ]
 
   return (
-    <Card className="hoverable-card" title="감사로그(Audit Log)">
-      <Space direction="vertical" size={16} style={{ width: '100%' }}>
-        <Space wrap>
-          <Select
-            placeholder="이벤트 유형"
-            style={{ width: 160 }}
-            value={eventType}
-            options={EVENT_TYPE_OPTIONS}
-            onChange={(value) => {
-              setEventType(value)
-              setPage(0)
-            }}
-          />
-          <Select
-            placeholder="상태"
-            style={{ width: 140 }}
-            value={status}
-            options={STATUS_OPTIONS}
-            onChange={(value) => {
-              setStatus(value)
-              setPage(0)
-            }}
-          />
-          <RangePicker
-            value={dateRange}
-            onChange={(value) => {
-              setDateRange(value as [Dayjs, Dayjs] | null)
-              setPage(0)
+    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <Typography.Title level={4} style={{ margin: 0 }}>
+        감사로그
+      </Typography.Title>
+      <Card className="hoverable-card">
+        <Space direction="vertical" size={16} style={{ width: '100%' }}>
+          <Space wrap>
+            <Select
+              placeholder="이벤트 유형"
+              style={{ width: 160 }}
+              value={eventType}
+              options={EVENT_TYPE_OPTIONS}
+              onChange={(value) => {
+                setEventType(value)
+                setPage(0)
+              }}
+            />
+            <Select
+              placeholder="상태"
+              style={{ width: 140 }}
+              value={status}
+              options={STATUS_OPTIONS}
+              onChange={(value) => {
+                setStatus(value)
+                setPage(0)
+              }}
+            />
+            <RangePicker
+              value={dateRange}
+              onChange={(value) => {
+                setDateRange(value as [Dayjs, Dayjs] | null)
+                setPage(0)
+              }}
+            />
+          </Space>
+
+          {error && <Alert type="error" message="감사로그를 불러오지 못했습니다" description={error.message} showIcon />}
+
+          <Table
+            rowKey="id"
+            size="small"
+            loading={loading}
+            columns={columns}
+            dataSource={data?.data ?? []}
+            scroll={{ x: 'max-content' }}
+            rowClassName={(record) => (record.status === 'FAILURE' ? 'audit-row-failure' : '')}
+            pagination={{
+              current: page + 1,
+              pageSize: size,
+              total: data?.pagination.total ?? 0,
+              onChange: (nextPage) => setPage(nextPage - 1),
+              showTotal: (total) => `총 ${total}건`,
             }}
           />
         </Space>
-
-        {error && <Alert type="error" message="감사로그를 불러오지 못했습니다" description={error.message} showIcon />}
-
-        <Table
-          rowKey="id"
-          size="small"
-          loading={loading}
-          columns={columns}
-          dataSource={data?.data ?? []}
-          scroll={{ x: 'max-content' }}
-          rowClassName={(record) => (record.status === 'FAILURE' ? 'audit-row-failure' : '')}
-          pagination={{
-            current: page + 1,
-            pageSize: size,
-            total: data?.pagination.total ?? 0,
-            onChange: (nextPage) => setPage(nextPage - 1),
-            showTotal: (total) => `총 ${total}건`,
-          }}
-        />
-      </Space>
-    </Card>
+      </Card>
+    </Space>
   )
 }
