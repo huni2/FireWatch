@@ -3,6 +3,7 @@ import { ConfigProvider, Skeleton } from 'antd'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { DashboardPage } from './features/dashboard/DashboardPage'
+import { NotFoundPage } from './features/not-found/NotFoundPage'
 import { darkThemeConfig, lightThemeConfig } from './lib/theme'
 
 // 첫 화면(대시보드)만 즉시 로드하고 나머지 페이지는 방문 시점에 필요한 JS만 내려받는다
@@ -45,6 +46,7 @@ export default function App() {
                 </Suspense>
               }
             />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

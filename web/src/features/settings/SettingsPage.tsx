@@ -44,35 +44,47 @@ export function SettingsPage() {
 
   if (loading) {
     return (
-      <Card title="설정">
-        <Skeleton active />
-      </Card>
+      <Space direction="vertical" size={16} style={{ width: '100%' }}>
+        <Typography.Title level={4} style={{ margin: 0 }}>
+          설정
+        </Typography.Title>
+        <Card className="hoverable-card">
+          <Skeleton active />
+        </Card>
+      </Space>
     )
   }
 
   return (
-    <Card className="hoverable-card" title="설정">
-      <Space direction="vertical" size={16} style={{ width: '100%' }}>
-        {error && <Alert type="error" message="설정을 불러오지 못했습니다" description={error.message} showIcon />}
+    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <Typography.Title level={4} style={{ margin: 0 }}>
+        설정
+      </Typography.Title>
+      <Card className="hoverable-card">
+        <Space direction="vertical" size={16} style={{ width: '100%' }}>
+          {error && <Alert type="error" message="설정을 불러오지 못했습니다" description={error.message} showIcon />}
 
-        <Form layout="vertical">
-          <Form.Item label="푸시 수신 시간">
-            <TimePicker
-              value={dayjs(pushTime, 'HH:mm')}
-              format="HH:mm"
-              onChange={(value) => setPushTime(value ? value.format('HH:mm') : '08:00')}
-            />
-          </Form.Item>
-          <Form.Item label="관심 키워드">
-            <KeywordInput value={keywords} onChange={setKeywords} />
-          </Form.Item>
-          <Button type="primary" onClick={handleSave} loading={saving}>
-            저장
-          </Button>
-        </Form>
+          <Form layout="vertical">
+            <Form.Item label="푸시 수신 시간">
+              <TimePicker
+                value={dayjs(pushTime, 'HH:mm')}
+                format="HH:mm"
+                onChange={(value) => setPushTime(value ? value.format('HH:mm') : '08:00')}
+              />
+            </Form.Item>
+            <Form.Item label="관심 키워드">
+              <KeywordInput value={keywords} onChange={setKeywords} />
+            </Form.Item>
+            <Button type="primary" onClick={handleSave} loading={saving}>
+              저장
+            </Button>
+          </Form>
 
-        <Typography.Text type="secondary">모바일 앱은 Phase 2에서 제공됩니다.</Typography.Text>
-      </Space>
-    </Card>
+          <Typography.Text type="secondary" style={{ display: 'block' }}>
+            관심 종목(주식)은 종목 화면에서 관리합니다. 모바일 앱은 Phase 2에서 제공됩니다.
+          </Typography.Text>
+        </Space>
+      </Card>
+    </Space>
   )
 }

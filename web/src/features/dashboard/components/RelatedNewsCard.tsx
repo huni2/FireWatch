@@ -32,6 +32,7 @@ export function RelatedNewsCard({ news, loading }: RelatedNewsCardProps) {
                 href={article.link}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="news-link"
                 style={{ display: 'block', color: 'inherit' }}
               >
                 <Typography.Text strong style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
