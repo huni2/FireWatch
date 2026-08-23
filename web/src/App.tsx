@@ -11,6 +11,8 @@ import { darkThemeConfig, lightThemeConfig } from './lib/theme'
 const AuditLogPage = lazy(() => import('./features/audit-log/AuditLogPage').then((m) => ({ default: m.AuditLogPage })))
 const StocksPage = lazy(() => import('./features/stocks/StocksPage').then((m) => ({ default: m.StocksPage })))
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })))
+const IndicesPage = lazy(() => import('./features/indices/IndicesPage').then((m) => ({ default: m.IndicesPage })))
+const NewsPage = lazy(() => import('./features/news/NewsPage').then((m) => ({ default: m.NewsPage })))
 
 // OpenQuestions.md — 다크 모드 기본값 미정이라 라이트를 기본으로, 토글로 전환 가능하게 구현.
 export default function App() {
@@ -22,6 +24,22 @@ export default function App() {
         <Routes>
           <Route element={<AppShell darkMode={darkMode} onToggleDarkMode={setDarkMode} />}>
             <Route index element={<DashboardPage />} />
+            <Route
+              path="indices"
+              element={
+                <Suspense fallback={<Skeleton active />}>
+                  <IndicesPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="news"
+              element={
+                <Suspense fallback={<Skeleton active />}>
+                  <NewsPage />
+                </Suspense>
+              }
+            />
             <Route
               path="audit-log"
               element={
