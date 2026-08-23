@@ -63,7 +63,13 @@ export interface Settings {
   pushTime: string
   interestKeywords: string[]
   watchedStocks: string[]
+  webPushSubscribed: boolean
   updatedAt: string
+}
+
+export interface WebPushSubscriptionPayload {
+  endpoint: string
+  keys: { p256dh: string; auth: string }
 }
 
 export interface StockPricePoint {
@@ -163,6 +169,7 @@ export function updateSettings(input: {
   pushTime: string
   interestKeywords: string[]
   watchedStocks: string[]
+  webPushSubscription?: WebPushSubscriptionPayload
 }): Promise<Settings> {
   return request<Settings>('/api/settings', {
     method: 'PUT',
