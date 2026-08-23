@@ -44,10 +44,10 @@ _(현재 없음 — WEB-5까지 전부 완료)_
 **왜** — 모바일이 브리핑을 받는 유일한 경로. Design 단계에 없던 발견 2건으로 범위가 커짐 — ① `fcm_tokens` 컬럼은 있는데 등록 API가 없어 `PUT /api/settings`에 `fcmToken` 필드 추가(완료). ② 실기기 플랫폼을 "둘 다 열어두고 싶다"고 답해와, 기존 Firebase Admin SDK 직접 발송(iOS·Android 토큰 형식 차이로 react-native-firebase+커스텀 빌드가 필요해 Expo Go 원칙과 충돌)을 Expo Push Service(`exp.host`)로 전환(완료) — `FcmSender` 인터페이스 덕에 `PushService`는 무변경. 코드·`useNotificationRegistration` 훅·백엔드 `ExpoPushSender`까지 전부 구현·테스트 완료.
 **완료 기준** — 테스트 발송이 실제 기기에 도착. **아직 미충족** — `getExpoPushTokenAsync()`가 EAS `projectId`(`app.json`의 `extra.eas.projectId`)를 필요로 하는데, 무료 Expo 계정으로 `mobile/`에서 `npx eas login && npx eas init`을 한 번 실행해야 채워짐(계정 행동이라 세션이 대신 못 함, `mobile/README.md`에 절차 기록). 연결 전엔 앱이 콘솔 경고만 남기고 조용히 토큰 등록을 건너뜀(크래시 아님).
 
-### APP-3. 모바일 브리핑 UI
-**무엇** — 알림 터치 시 바텀시트로 상세 브리핑 카드가 올라오는 UI([[design]] 3절). **BE-6 의존.**
-**왜** — 모바일에서의 핵심 소비 경험.
-**완료 기준** — 알림 → 상세 화면 전환이 매끄럽고(피해야 할 애니메이션 목록 제외), 오프라인에서도 마지막 브리핑이 보임.
+### APP-3. 모바일 브리핑 UI (코드 완료, 사용자의 실기기 검증 대기)
+**무엇** — 알림 터치 시 바텀시트로 상세 브리핑 카드가 올라오는 UI([[design]] §5). **BE-6 의존, 코드는 끝났고 완료 기준만 미충족.**
+**왜** — 모바일에서의 핵심 소비 경험. `useLatestBriefing` 훅(조회 실패 시 AsyncStorage 캐시 폴백)+`BriefingScreen`(요약 카드·추천종목 칩)+`BriefingSheet`(`@gorhom/bottom-sheet`, 알림 탭 시 `useLastNotificationResponse`로 자동 오픈) 구현 완료. `@gorhom/bottom-sheet` v5가 RN 0.86/reanimated 4와 호환되는지 `npm info`로 먼저 확인 후 설치(Design이 "Do 단계에서 확인 후 확정"으로 미뤄뒀던 부분).
+**완료 기준** — 알림 → 상세 화면 전환이 매끄럽고, 오프라인에서도 마지막 브리핑이 보임. **아직 미충족** — APP-2와 마찬가지로 EAS 프로젝트 연결(`npx eas init`)과 실기기 검증이 필요(세션이 대신 못 함).
 
 ### APP-4. 설정 화면(모바일)
 **무엇** — 관심 키워드·수신 시간 설정 UI. **BE-7 의존.**
