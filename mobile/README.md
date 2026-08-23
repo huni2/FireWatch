@@ -28,15 +28,22 @@ npx eas init     # app.json에 extra.eas.projectId를 자동으로 채워준다
 스토어 등록 없이 APK 파일을 직접 받아 설치하는 방식 — Android만 지원한다(iOS 사이드로드는 Apple
 Developer Program 연 $99가 필요해 이 프로젝트의 "월 $0" 원칙과 맞지 않아 범위에서 제외, [[../llm-wiki/Decisions/0003-mvp-scope-and-user-model]]).
 
+**다운로드**: **[FireWatch-mobile.apk](https://github.com/huni2/FireWatch/releases/download/mobile-android-preview/FireWatch-mobile.apk)**
+([Release 페이지](https://github.com/huni2/FireWatch/releases/tag/mobile-android-preview)) — 폰에서 이 링크를 열어 받고
+"출처를 알 수 없는 앱 설치 허용"을 한 번 켜주면 설치된다. GitHub Release라 Expo 빌드 만료(14일)와 무관하게 계속 유효하다.
+
+새로 빌드해서 갱신하려면:
+
 ```bash
 npx eas build --platform android --profile preview
 ```
 
-빌드가 끝나면(보통 10~20분) 터미널에 다운로드 링크가 뜬다. 그 폰에서 링크를 열어 APK를 받고,
-"출처를 알 수 없는 앱 설치 허용"을 한 번 켜주면 설치된다. 링크는 아래에 최신 것으로 직접 갱신한다
-(Expo 무료 티어 빌드는 30일 후 만료 — 새로 빌드하면 이 줄만 바꾸면 된다):
+빌드가 끝나면(보통 10~20분) `eas build:view <buildId> --json`의 `artifacts.buildUrl`에서 APK를 받아
+같은 릴리스에 다시 올린다:
 
-**최신 다운로드 링크**: _(아직 빌드 전 — `eas build` 실행 후 여기에 링크를 붙여넣는다)_
+```bash
+gh release upload mobile-android-preview <다운로드한-apk-경로> --clobber
+```
 
 ## 구조
 
