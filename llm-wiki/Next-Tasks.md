@@ -8,7 +8,7 @@
 **BE는 번호가 곧 의존 순서**(스케줄러·감사로그 인프라가 먼저 서야 나머지가 그 위에 쌓인다).
 **WEB·APP은 서로 독립**이지만 대부분 특정 BE 과제에 의존한다 — 각 과제의 `무엇`에 명시.
 
-**진행 상황(2026-08-23)**: BE-1·BE-2·BE-4·BE-5·BE-6·BE-7·BE-8·BE-9·WEB-1~5 전부 완료. Phase 1(BE+WEB) 종료. **남은 건 BE-3(Gemini 성공 응답 재확인, 현재 무료 티어 레이트리밋으로 FALLBACK만 확인됨)·BE-10(한국국채 수익률 데이터 소스).** APP은 Phase 2.
+**진행 상황(2026-08-23)**: BE-1·BE-2·BE-4·BE-5·BE-6·BE-7·BE-8·BE-9·WEB-1~5 전부 완료. Phase 1(BE+WEB) 종료. **남은 건 BE-3(Gemini 성공 응답 재확인, 현재 무료 티어 레이트리밋으로 FALLBACK만 확인됨)·BE-10(한국국채 수익률 데이터 소스).** Phase 2(APP-1~4)는 **코드 전부 완료** — 남은 건 사용자의 EAS 프로젝트 연결(`npx eas login && npx eas init`)과 실기기 왕복 검증뿐(세션이 대신 못 하는 계정 행동).
 
 **Phase 1(현재 Plan) = BE 전체 + WEB 전체. Phase 2(별도 Plan) = APP 전체.** 근거는 [[Decisions/0003-mvp-scope-and-user-model]] — 모바일 앱은 Expo 빌드·스토어 심사 등 원자재가 달라 `docs/01-plan/features/firewatch.plan.md`의 범위 밖이다. 아래 APP 섹션은 Phase 2 착수 시점에 별도 Plan 문서로 옮겨질 예정이며, 그 전까지는 백로그로만 유지한다.
 
@@ -49,10 +49,10 @@ _(현재 없음 — WEB-5까지 전부 완료)_
 **왜** — 모바일에서의 핵심 소비 경험. `useLatestBriefing` 훅(조회 실패 시 AsyncStorage 캐시 폴백)+`BriefingScreen`(요약 카드·추천종목 칩)+`BriefingSheet`(`@gorhom/bottom-sheet`, 알림 탭 시 `useLastNotificationResponse`로 자동 오픈) 구현 완료. `@gorhom/bottom-sheet` v5가 RN 0.86/reanimated 4와 호환되는지 `npm info`로 먼저 확인 후 설치(Design이 "Do 단계에서 확인 후 확정"으로 미뤄뒀던 부분).
 **완료 기준** — 알림 → 상세 화면 전환이 매끄럽고, 오프라인에서도 마지막 브리핑이 보임. **아직 미충족** — APP-2와 마찬가지로 EAS 프로젝트 연결(`npx eas init`)과 실기기 검증이 필요(세션이 대신 못 함).
 
-### APP-4. 설정 화면(모바일)
-**무엇** — 관심 키워드·수신 시간 설정 UI. **BE-7 의존.**
-**왜** — WEB-4와 동일 기능의 모바일 대응.
-**완료 기준** — WEB-4와 동일 API로 왕복, 값이 양쪽에서 일치.
+### APP-4. 설정 화면(모바일) (코드 완료, 사용자의 실기기 검증 대기)
+**무엇** — 관심 키워드·수신 시간 설정 UI. **BE-7 의존, 코드는 끝났고 완료 기준만 미충족.**
+**왜** — WEB-4와 동일 기능의 모바일 대응. `@react-native-community/datetimepicker`로 수신 시간, 웹의 `KeywordInput`과 동일 동작(추가/삭제, 최대 20개)의 RN 버전으로 관심 키워드 — 관심 종목은 이 화면에서 안 건드리고 그대로 넘김(web과 동일 원칙). 구현 중 이 SDK의 React Compiler 린트(`react-hooks/set-state-in-effect`)가 "서버 값을 로컬 편집 상태로 동기화"하는 정당한 effect 패턴(web에 이미 문서화된 것과 동일)을 에러로 잡아, `eslint-disable-next-line`으로 명시 처리.
+**완료 기준** — WEB-4와 동일 API로 왕복, 값이 양쪽에서 일치. **아직 미충족** — APP-2/APP-3와 마찬가지로 EAS 프로젝트 연결과 실기기 검증이 필요(세션이 대신 못 함). **이걸로 Phase 2(APP-1~4) 코드는 전부 완료 — 남은 건 실기기 검증 하나뿐.**
 
 ## 종료 기록
 
