@@ -76,18 +76,27 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            height: 'auto',
             paddingInline: 24,
+            paddingBlock: 10,
             borderBottom: '1px solid var(--ant-color-border-secondary)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Button type="text" icon={<MenuOutlined />} onClick={() => setCollapsed((v) => !v)} />
+          {/* 타이틀-햄버거를 한 묶음으로 세로 배치 — 가로로 나란히 두면 서로 무관한 버튼처럼 보인다는 지적(2026-08-23) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 20 }}>🔥</span>
               <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, color: 'var(--ant-color-text)' }}>
                 FireWatch
               </span>
             </div>
+            <Button
+              type="text"
+              size="small"
+              icon={<MenuOutlined />}
+              onClick={() => setCollapsed((v) => !v)}
+              style={{ height: 20, width: 20, minWidth: 20, padding: 0 }}
+            />
           </div>
           <Switch
             checked={darkMode}
