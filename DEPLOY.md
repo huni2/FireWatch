@@ -35,6 +35,7 @@ Render 무료 티어는 15분 무활동 시 슬립한다. 내부 `@Scheduled` cr
    | `GEMINI_API_KEY` | Google AI Studio에서 발급(2026-08-21 기준 무료 티어에서 Search Grounding이 막혀 있어 FALLBACK으로 운영 중 — [[Decisions/0010-rss-news-instead-of-gemini-grounding]]) |
    | `EXIM_API_KEY` | 한국수출입은행 Open API 포털에서 발급 |
    | `SETTINGS_API_KEY` | `a5d86a770681da35bdbc73ccfc6c873fa20953008985b701` (이미 GitHub Actions 시크릿으로도 등록됨 — 아래 2번과 값이 반드시 같아야 한다) |
+   | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | `npx web-push generate-vapid-keys`로 발급. public은 `web/.env`의 `VITE_VAPID_PUBLIC_KEY`와 반드시 같은 값이어야 한다 |
    | `SPRING_DATASOURCE_URL` / `_USERNAME` / `_PASSWORD` | 0번에서 확인한 Supabase 값 |
 
    `SPRING_PROFILES_ACTIVE=prod`는 `render.yaml`에 이미 고정값으로 들어있어 따로 입력할 필요 없다.
@@ -70,6 +71,7 @@ CLOUDFLARE_API_TOKEN=<Pages:Edit 권한 토큰> npx wrangler pages deploy dist -
 |---|---|
 | `VITE_API_BASE_URL` | Render 백엔드 URL (1번의 4단계에서 확인한 값) |
 | `VITE_SETTINGS_API_KEY` | `a5d86a770681da35bdbc73ccfc6c873fa20953008985b701` (Render/GitHub Actions와 동일 값 — ADR 0004: 진짜 비밀 아님, 클라이언트에 노출됨) |
+| `VITE_VAPID_PUBLIC_KEY` | Render의 `VAPID_PUBLIC_KEY`와 동일 값(공개키라 노출돼도 됨) |
 
 `CLOUDFLARE_API_TOKEN`은 Cloudflare 대시보드 → 프로필 → **Account API Tokens**(User API Tokens 아님) → Create Token →
 "Edit Cloudflare Workers" 템플릿 선택 후 **Pages: Edit** 권한을 추가해서 발급한다. 기본 "Edit Cloudflare Workers" 템플릿에는

@@ -68,6 +68,12 @@ firewatch:
   expo:
     # Expo Push Service — 인증 불필요한 공개 엔드포인트(mobile-app.design.md §2.3)
     push-url: "https://exp.host/--/api/v2/push/send"
+  web-push:
+    # 2026-08-24 — 앱 설치 없이 브라우저로 알림 받는 채널. `npx web-push generate-vapid-keys`로 생성.
+    # private-key는 진짜 비밀(FCM 서비스 계정 JSON과 동급) — 반드시 환경변수로만 주입한다.
+    public-key: ${VAPID_PUBLIC_KEY:}
+    private-key: ${VAPID_PRIVATE_KEY:}
+    subject: ${VAPID_SUBJECT:mailto:powerhch@gmail.com}
 
 logging:
   level:

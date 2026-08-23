@@ -1,8 +1,10 @@
 package com.firewatch.backend.web.dto
 
 import com.firewatch.backend.entity.UserSettings
+import com.firewatch.backend.entity.WebPushSubscription
 import com.firewatch.backend.entity.interestKeywords
 import com.firewatch.backend.entity.watchedStocks
+import com.firewatch.backend.entity.webPushSubscriptions
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 import java.time.Instant
@@ -22,12 +24,16 @@ data class SettingsUpdateRequest(
     // fcm_tokens 목록에 병합(중복 제거)만 하고, pushTime/keywords/watchedStocks는 그대로 둔다.
     @field:Size(max = 512, message = "FCM 토큰 형식이 올바르지 않습니다")
     val fcmToken: String? = null,
+    // 웹 푸시 확장 — 브라우저 PushSubscription.toJSON()을 그대로 넘긴다. 있으면 기존 구독 목록에
+    // 병합(endpoint 기준 중복 제거)만 하고, 나머지 필드는 fcmToken과 동일한 원칙(그대로 둠).
+    val webPushSubscription: WebPushSubscription? = null,
 )
 
 data class SettingsResponse(
     val pushTime: String,
     val interestKeywords: List<String>,
     val watchedStocks: List<String>,
+    val webPushSubscribed: Boolean,
     val updatedAt: Instant,
 )
 
@@ -35,5 +41,6 @@ fun UserSettings.toResponse() = SettingsResponse(
     pushTime = pushTime,
     interestKeywords = interestKeywords(),
     watchedStocks = watchedStocks(),
+    webPushSubscribed = webPushSubscriptions().isNotEmpty(),
     updatedAt = updatedAt,
 )

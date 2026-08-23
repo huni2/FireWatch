@@ -45,6 +45,7 @@ class SettingsController(
             interestKeywords = request.interestKeywords,
             watchedStocks = request.watchedStocks,
             fcmToken = request.fcmToken,
+            webPushSubscription = request.webPushSubscription,
             apiKey = apiKey,
             clientIp = clientIp,
         )

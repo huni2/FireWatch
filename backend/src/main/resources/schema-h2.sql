@@ -57,10 +57,12 @@ CREATE TABLE IF NOT EXISTS user_settings (
   interest_keywords TEXT,              -- 쉼표 구분 문자열
   fcm_tokens TEXT,                     -- 쉼표 구분 문자열 (Phase 2에서 실사용)
   watched_stocks TEXT,                 -- 쉼표 구분 문자열, 관심 종목 티커(예: 005930.KS,AAPL)
+  web_push_subscriptions TEXT,         -- JSON 배열 문자열, 브라우저 Web Push 구독 정보(endpoint+keys)
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- 기존에 만들어진 테이블에도 새 컬럼을 추가(신규 설치는 위 CREATE TABLE에 이미 포함돼 무해).
 ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS watched_stocks TEXT;
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS web_push_subscriptions TEXT;
 
 MERGE INTO user_settings (id, push_time, interest_keywords, fcm_tokens)
   KEY (id) VALUES (1, '08:00', '', '');

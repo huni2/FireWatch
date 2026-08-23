@@ -27,6 +27,9 @@ class UserSettings(
     @Column(name = "watched_stocks")
     var watchedStocksRaw: String? = null,
 
+    @Column(name = "web_push_subscriptions")
+    var webPushSubscriptionsRaw: String? = null,
+
     @Column(name = "updated_at")
     var updatedAt: Instant = Instant.now(),
 )
@@ -36,3 +39,5 @@ fun UserSettings.interestKeywords(): List<String> = interestKeywordsRaw.toString
 fun UserSettings.fcmTokens(): List<String> = fcmTokensRaw.toStringList()
 
 fun UserSettings.watchedStocks(): List<String> = watchedStocksRaw.toStringList()
+
+fun UserSettings.webPushSubscriptions(): List<WebPushSubscription> = webPushSubscriptionsRaw.toWebPushSubscriptions()

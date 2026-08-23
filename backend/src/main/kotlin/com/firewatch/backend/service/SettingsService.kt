@@ -5,8 +5,11 @@ import com.firewatch.backend.audit.HasClientIp
 import com.firewatch.backend.entity.AuditEventType
 import com.firewatch.backend.entity.SINGLETON_SETTINGS_ID
 import com.firewatch.backend.entity.UserSettings
+import com.firewatch.backend.entity.WebPushSubscription
 import com.firewatch.backend.entity.fcmTokens
 import com.firewatch.backend.entity.toCommaSeparated
+import com.firewatch.backend.entity.toJsonString
+import com.firewatch.backend.entity.webPushSubscriptions
 import com.firewatch.backend.repository.UserSettingsRepository
 import com.firewatch.backend.web.UnauthorizedException
 import com.firewatch.backend.web.ValidationException
@@ -21,6 +24,7 @@ data class SettingsUpdateCommand(
     val interestKeywords: List<String>,
     val watchedStocks: List<String> = emptyList(),
     val fcmToken: String? = null,
+    val webPushSubscription: WebPushSubscription? = null,
     val apiKey: String?,
     override val clientIp: String?,
 ) : HasClientIp
@@ -57,6 +61,13 @@ class SettingsService(
             val existingTokens = settings.fcmTokens()
             if (command.fcmToken !in existingTokens) {
                 settings.fcmTokensRaw = (existingTokens + command.fcmToken).toCommaSeparated()
+            }
+        }
+        if (command.webPushSubscription != null) {
+            val existingSubscriptions = settings.webPushSubscriptions()
+            val newEndpoint = command.webPushSubscription.endpoint
+            if (existingSubscriptions.none { it.endpoint == newEndpoint }) {
+                settings.webPushSubscriptionsRaw = (existingSubscriptions + command.webPushSubscription).toJsonString()
             }
         }
         settings.updatedAt = Instant.now()

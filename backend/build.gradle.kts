@@ -31,6 +31,13 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("tools.jackson.module:jackson-module-kotlin")
+	// Design Ref: 웹 푸시 확장(2026-08-24) — VAPID 서명·페이로드 암호화(RFC 8291/8292) 직접 구현 대신 검증된 라이브러리 사용.
+	implementation("nl.martijndwars:web-push:5.1.2")
+	// web-push가 선언한 bcprov는 optional=true라 전이 포함이 안 돼 직접 추가(EC 키 로딩에 "BC" provider 필요).
+	implementation("org.bouncycastle:bcprov-jdk18on:1.80")
+	// web-push의 httpasyncclient는 runtime scope라 PushService.send()의 반환 타입(HttpResponse)이
+	// 컴파일 타임에 안 보임 — implementation으로 승격.
+	implementation("org.apache.httpcomponents:httpasyncclient:4.1.5")
 	runtimeOnly("com.h2database:h2")
 	// prod 프로필(Render)에서 Supabase Postgres 연결용 — ADR 0009
 	runtimeOnly("org.postgresql:postgresql")

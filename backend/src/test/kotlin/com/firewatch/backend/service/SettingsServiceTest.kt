@@ -2,9 +2,13 @@ package com.firewatch.backend.service
 
 import com.firewatch.backend.entity.SINGLETON_SETTINGS_ID
 import com.firewatch.backend.entity.UserSettings
+import com.firewatch.backend.entity.WebPushKeys
+import com.firewatch.backend.entity.WebPushSubscription
 import com.firewatch.backend.entity.fcmTokens
 import com.firewatch.backend.entity.interestKeywords
+import com.firewatch.backend.entity.toJsonString
 import com.firewatch.backend.entity.watchedStocks
+import com.firewatch.backend.entity.webPushSubscriptions
 import com.firewatch.backend.repository.UserSettingsRepository
 import com.firewatch.backend.web.UnauthorizedException
 import com.firewatch.backend.web.ValidationException
@@ -117,6 +121,59 @@ class SettingsServiceTest {
         )
 
         assertEquals(listOf("token-a"), result.fcmTokens())
+    }
+
+    @Test
+    fun `webPushSubscription이 있으면 기존 구독 목록에 병합한다`() {
+        val existingSub = WebPushSubscription("https://push.example/a", WebPushKeys("p256dh-a", "auth-a"))
+        val newSub = WebPushSubscription("https://push.example/b", WebPushKeys("p256dh-b", "auth-b"))
+        val existing = UserSettings(
+            id = SINGLETON_SETTINGS_ID,
+            pushTime = "08:00",
+            webPushSubscriptionsRaw = listOf(existingSub).toJsonString(),
+        )
+        every { userSettingsRepository.findById(SINGLETON_SETTINGS_ID) } returns Optional.of(existing)
+        val saved = slot<UserSettings>()
+        every { userSettingsRepository.save(capture(saved)) } answers { saved.captured }
+
+        val result = settingsService.update(
+            SettingsUpdateCommand(
+                pushTime = "08:00",
+                interestKeywords = emptyList(),
+                webPushSubscription = newSub,
+                apiKey = "secret-key",
+                clientIp = null,
+            ),
+        )
+
+        assertEquals(listOf(existingSub, newSub), result.webPushSubscriptions())
+    }
+
+    @Test
+    fun `이미 등록된 endpoint의 webPushSubscription이면 중복 추가하지 않는다`() {
+        val existingSub = WebPushSubscription("https://push.example/a", WebPushKeys("p256dh-a", "auth-a"))
+        val existing = UserSettings(
+            id = SINGLETON_SETTINGS_ID,
+            pushTime = "08:00",
+            webPushSubscriptionsRaw = listOf(existingSub).toJsonString(),
+        )
+        every { userSettingsRepository.findById(SINGLETON_SETTINGS_ID) } returns Optional.of(existing)
+        val saved = slot<UserSettings>()
+        every { userSettingsRepository.save(capture(saved)) } answers { saved.captured }
+
+        // endpoint는 같지만 keys가 다른 재구독 시도 — endpoint 기준으로만 중복 판정하므로 갱신되지 않는다(현재 정책).
+        val resubscribed = existingSub.copy(keys = WebPushKeys("different", "different"))
+        val result = settingsService.update(
+            SettingsUpdateCommand(
+                pushTime = "08:00",
+                interestKeywords = emptyList(),
+                webPushSubscription = resubscribed,
+                apiKey = "secret-key",
+                clientIp = null,
+            ),
+        )
+
+        assertEquals(listOf(existingSub), result.webPushSubscriptions())
     }
 
     @Test
