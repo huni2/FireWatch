@@ -8,12 +8,6 @@ const FONT_FAMILY = "'Pretendard Variable', Pretendard, -apple-system, BlinkMacS
 // Design.md §2 Green Accent — 버튼/링크/차트선/포커스링 등 colorPrimary가 파생시키는 모든 곳의 브랜드 시그널.
 export const BRAND_GREEN = '#00754A'
 
-// AntD Layout.Sider는 theme="light"/"dark" prop이 켜져 있으면 components.Layout.siderBg 토큰을
-// 무시하고 자체 프리셋(라이트=흰색)을 쓴다(실측 확인) — 그래서 AppShell에서 Sider에 직접 인라인
-// 스타일로 준다. Design.md Ceramic(라이트) / House Green 파생 다크 톤.
-export const SIDER_BG_LIGHT = '#edebe9'
-export const SIDER_BG_DARK = '#152622'
-
 const CARD_SHADOW_LIGHT = '0 0 0.5px rgba(0, 0, 0, 0.14), 0 1px 1px rgba(0, 0, 0, 0.24)'
 const CARD_SHADOW_DARK = '0 0 0.5px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.5)'
 
