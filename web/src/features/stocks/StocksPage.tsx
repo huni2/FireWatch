@@ -68,7 +68,7 @@ export function StocksPage() {
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <Card className="hoverable-card" title="관심 종목">
-          {error && <Alert type="error" message="설정을 불러오지 못했습니다" description={error.message} showIcon />}
+          {error && <Alert type="error" message="관심 종목 정보를 불러오지 못했습니다" description={error.message} showIcon />}
           <StockSearchInput onSelect={handleAddFromSearch} />
           <Typography.Text type="secondary" style={{ display: 'block', margin: '8px 0' }}>
             국내 대형주는 한글명(예: 삼성전자)으로 찾을 수 있고, 그 외는 영문 사명(예: Tesla)으로 검색하세요.

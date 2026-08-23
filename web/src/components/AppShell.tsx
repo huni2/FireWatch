@@ -26,6 +26,7 @@ interface AppShellProps {
 export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
   const location = useLocation()
   const [collapsed, setCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   const menuItems = [
     { key: '/', icon: <DashboardOutlined />, label: <Link to="/">대시보드</Link> },
@@ -41,7 +42,10 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         width={220}
         collapsedWidth={0}
         collapsed={collapsed}
-        onBreakpoint={setCollapsed}
+        onBreakpoint={(broken) => {
+          setIsMobile(broken)
+          setCollapsed(broken)
+        }}
         onCollapse={setCollapsed}
         breakpoint="lg"
         trigger={null}
@@ -60,7 +64,9 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
           mode="inline"
           selectedKeys={[location.pathname]}
           items={menuItems}
-          onClick={() => setCollapsed(true)}
+          onClick={() => {
+            if (isMobile) setCollapsed(true)
+          }}
           style={{ borderInlineEnd: 'none' }}
         />
       </Sider>
