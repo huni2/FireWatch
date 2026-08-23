@@ -33,9 +33,13 @@ firewatch:
   # 로컬 dev(Vite 5173) + 배포 후 Cloudflare Pages 도메인(BE-8/WEB-5에서 추가). Design 문서가 놓쳐 module-7에서 발견.
   allowed-origins: ${FIREWATCH_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:4173}
   scheduler:
-    # 매일 08:00 KST. Asia/Seoul 타임존을 SchedulerJob의 @Scheduled에 명시적으로 지정한다.
+    # 매일 08:00 KST(고정 폴백 — 인스턴스가 우연히 떠있을 때만 동작, 실제 트리거는 GitHub Actions).
+    # Asia/Seoul 타임존을 SchedulerJob의 @Scheduled에 명시적으로 지정한다.
     cron: "0 0 8 * * *"
     timezone: "Asia/Seoul"
+    # 2026-08-23 — 사용자가 설정한 pushTime을 실제로 반영하기 위해 GitHub Actions가 15분마다
+    # /api/scheduler/trigger-if-due를 폴링한다. 이 값은 그 폴링 주기보다 커야 놓치는 창이 없다.
+    poll-window-minutes: 20
   audit:
     # 이 시간(ms)을 넘긴 "성공" 호출은 AuditLogAspect가 WARNING으로 기록한다 (명세서 5.1절)
     warning-threshold-ms: 3000

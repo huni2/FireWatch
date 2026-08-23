@@ -21,7 +21,7 @@
 
 ```mermaid
 flowchart TB
-    GHA["GitHub Actions<br/>매일 08:00 KST cron"] -->|"POST /api/scheduler/trigger<br/>(Render 슬립 웨이크업 겸용)"| BE
+    GHA["GitHub Actions<br/>15분마다 폴링"] -->|"POST /api/scheduler/trigger-if-due<br/>(설정한 pushTime일 때만 실행, Render 슬립 웨이크업 겸용)"| BE
 
     subgraph BE["Backend — Render (Kotlin + Spring Boot)"]
         SCHED["SchedulerJob"] --> FIN["FinancialApiClient<br/>Yahoo Finance / 수출입은행"]
@@ -60,7 +60,7 @@ flowchart TB
 | DB | Supabase Postgres (운영) / H2 (로컬) | Render 무료 티어가 영구 디스크를 제공하지 않아 슬립→재기동만으로 데이터가 초기화되는 걸 실제로 겪은 뒤 전환 |
 | Backend 호스팅 | Render 무료 플랜 | Oracle Cloud Always Free Tier 가입이 본인인증 단계에서 막혀 카드 등록 불필요한 대안으로 전환 |
 | Web 호스팅 | Cloudflare Pages | 월 $0 하드 제약(카드 등록 불가) 안에서 무료로 정적 사이트를 배포할 수 있어 원본 명세서가 지정 |
-| 스케줄 트리거 | GitHub Actions cron | Render가 15분 무활동 시 슬립하므로 내부 `@Scheduled`만으로는 08:00 실행을 보장할 수 없어, 외부에서 API를 호출해 깨우는 방식으로 보완 |
+| 스케줄 트리거 | GitHub Actions cron(15분 폴링) | Render가 15분 무활동 시 슬립하므로 내부 `@Scheduled`만으로는 실행을 보장할 수 없어, 외부에서 API를 호출해 깨우는 방식으로 보완. 사용자가 설정한 pushTime을 실제로 반영하려고 고정 1일 1회 대신 폴링 + 백엔드 due 판정으로 전환(2026-08-23) |
 | AI | Gemini API | 일 1,500회 무료 티어가 월 $0 제약과 맞아 채택했으나, 실제로는 grounding 없이 이미 확보한 데이터를 요약·해설하는 용도로 한정 (아래 문제 해결 참고) |
 | 금융 데이터 | Yahoo Finance / 한국수출입은행 API | 둘 다 무료 — Yahoo는 비공식 엔드포인트라 가입 자체가 불필요하고, 수출입은행은 카드 등록 없이 API 키만 발급하면 된다 |
 
@@ -117,9 +117,9 @@ API 문서의 "영업일 11시 이전에 당일 데이터를 요청하면 null �
 무료 등급 조합(카드 등록 불필요): **Render(백엔드) + Supabase(DB) + Cloudflare Pages(웹) + GitHub Actions(스케줄러 트리거)**. 상세 단계는 [`DEPLOY.md`](./DEPLOY.md) 참고.
 
 1. Supabase에 Postgres 프로젝트 생성 (Render는 영구 디스크가 없어 외부 DB 필수)
-2. Render에서 `render.yaml`(Blueprint)로 백엔드 배포, 환경변수(`GEMINI_API_KEY`, `EXIM_API_KEY`, `FIREBASE_SERVICE_ACCOUNT_JSON`, DB 접속정보 등) 입력
+2. Render에서 `render.yaml`(Blueprint)로 백엔드 배포, 환경변수(`GEMINI_API_KEY`, `EXIM_API_KEY`, DB 접속정보 등) 입력
 3. `wrangler pages deploy`로 웹을 Cloudflare Pages에 배포, `VITE_API_BASE_URL`을 실제 백엔드 URL로 설정
-4. GitHub Actions 워크플로(`.github/workflows/daily-trigger.yml`)가 매일 08:00 KST에 `/api/scheduler/trigger`를 호출해 슬립 중인 백엔드를 깨우고 파이프라인을 실행
+4. GitHub Actions 워크플로(`.github/workflows/daily-trigger.yml`)가 15분마다 `/api/scheduler/trigger-if-due`를 호출 — 저장된 pushTime일 때만 실제로 슬립 중인 백엔드를 깨우고 파이프라인을 실행
 
 ## 운영 이슈 대응
 

@@ -22,8 +22,9 @@ Render 무료 웹서비스는 **영구 디스크가 없어서** 슬립→재기�
 
 ## 1. 백엔드 — Render
 
-Render 무료 티어는 15분 무활동 시 슬립한다. 내부 `@Scheduled` cron 대신 **GitHub Actions가 매일 08:00 KST에
-`/api/scheduler/trigger`를 호출해 깨우는 방식**을 쓴다(`.github/workflows/daily-trigger.yml`).
+Render 무료 티어는 15분 무활동 시 슬립한다. 내부 `@Scheduled` cron 대신 **GitHub Actions가 15분마다
+`/api/scheduler/trigger-if-due`를 호출해 깨우는 방식**을 쓴다(`.github/workflows/daily-trigger.yml`) —
+저장된 pushTime일 때만 백엔드가 실제로 파이프라인을 실행한다.
 
 1. [render.com](https://render.com)에서 GitHub 계정으로 가입(카드 불필요).
 2. Render 대시보드 → **New > Blueprint** → `huni2/FireWatch` 저장소 연결. `render.yaml`을 자동 인식한다.
