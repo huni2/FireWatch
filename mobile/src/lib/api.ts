@@ -1,5 +1,5 @@
 // 백엔드(FireWatch backend) REST API 클라이언트. web/src/lib/api.ts와 동일 스타일 —
-// Design Ref: docs/02-design/features/mobile-app.design.md §4. 브리핑 조회는 APP-3에서 추가.
+// Design Ref: docs/02-design/features/mobile-app.design.md §4.
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:8080'
 const SETTINGS_API_KEY = process.env.EXPO_PUBLIC_SETTINGS_API_KEY ?? ''
 
@@ -8,6 +8,16 @@ export interface Settings {
   interestKeywords: string[]
   watchedStocks: string[]
   updatedAt: string
+}
+
+export type DataSourceStatus = 'NORMAL' | 'FALLBACK'
+
+// 홈 화면·바텀시트가 실제로 쓰는 필드만 우선 반영 — 지수/뉴스 등 나머지는 웹 전용(Design §2.2 Out of Scope).
+export interface Briefing {
+  briefingDate: string
+  marketSummary: string
+  recommendedStocks: string[]
+  dataSourceStatus: DataSourceStatus
 }
 
 export interface ApiErrorBody {
@@ -44,6 +54,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   return (await response.json()) as T
+}
+
+export function fetchLatestBriefing(): Promise<Briefing> {
+  return request<Briefing>('/api/briefings/latest')
 }
 
 export function fetchSettings(): Promise<Settings> {
