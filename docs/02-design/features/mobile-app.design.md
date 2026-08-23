@@ -92,7 +92,7 @@ mobile/
 ### 2.2 Data Flow
 
 ```
-[백엔드 스케줄러] --FCM 발송(기존, 무변경)--> [expo-notifications 리스너]
+[백엔드 스케줄러] --ExpoPushSender(exp.host 호출)--> [Expo Push Service] --> [expo-notifications 리스너]
                                                       │
                                           알림 터치 시 app/index.tsx 진입
                                                       ▼
@@ -104,8 +104,10 @@ mobile/
                                           BriefingSheet(바텀시트)로 상세 표시
 
 [앱 시작 시] useNotificationRegistration → expo-notifications 권한 요청
-                                          → 토큰 발급 → PUT /api/settings { fcmToken } (신규 필드)
+                                          → getExpoPushTokenAsync() → PUT /api/settings { fcmToken } (신규 필드)
 ```
+
+> **2026-08-23 갱신(APP-2 진행 중)**: 원래는 백엔드가 Firebase Admin SDK로 원시 FCM 토큰에 직접 발송할 계획이었으나, iOS(APNs)·Android(FCM) 토큰 형식 차이를 브리지하려면 react-native-firebase+커스텀 개발 빌드가 필요해(Expo Go 불가) 대신 **Expo Push Service**로 전환했다. 모바일은 `getExpoPushTokenAsync()`로 Expo 토큰을 받고, 백엔드(`ExpoPushSender`)는 `https://exp.host/--/api/v2/push/send`를 호출한다 — `FcmSender` 인터페이스는 그대로라 `PushService`는 무변경, 구현체만 교체. 부수효과로 Firebase 서비스 계정 JSON·`firebase-admin` gradle 의존성이 전부 불필요해짐.
 
 ### 2.3 Dependencies
 
@@ -113,7 +115,7 @@ mobile/
 |---------|---------|
 | `expo`, `expo-router` | 스캐폴딩 + 파일 기반 라우팅 |
 | `nativewind`, `tailwindcss` | 스타일링 |
-| `expo-notifications` | FCM 토큰 발급/권한/수신 리스너 |
+| `expo-notifications` | Expo 푸시 토큰 발급/권한/수신 리스너 |
 | `@react-native-async-storage/async-storage` | 오프라인 캐시 |
 | `@gorhom/bottom-sheet` (또는 `react-native-modal` 대체 검토) | 바텀시트 — Do 단계에서 실제 설치 가능 여부 확인 후 확정 |
 

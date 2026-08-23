@@ -33,7 +33,6 @@ Render 무료 티어는 15분 무활동 시 슬립한다. 내부 `@Scheduled` cr
    |---|---|
    | `GEMINI_API_KEY` | Google AI Studio에서 발급(2026-08-21 기준 무료 티어에서 Search Grounding이 막혀 있어 FALLBACK으로 운영 중 — [[Decisions/0010-rss-news-instead-of-gemini-grounding]]) |
    | `EXIM_API_KEY` | 한국수출입은행 Open API 포털에서 발급 |
-   | `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase 콘솔 > 프로젝트 설정 > 서비스 계정 > 새 비공개 키 생성(JSON 파일 내용 전체를 문자열로 붙여넣기) |
    | `SETTINGS_API_KEY` | `a5d86a770681da35bdbc73ccfc6c873fa20953008985b701` (이미 GitHub Actions 시크릿으로도 등록됨 — 아래 2번과 값이 반드시 같아야 한다) |
    | `SPRING_DATASOURCE_URL` / `_USERNAME` / `_PASSWORD` | 0번에서 확인한 Supabase 값 |
 

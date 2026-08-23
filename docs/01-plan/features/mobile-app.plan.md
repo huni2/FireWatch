@@ -166,7 +166,7 @@ N/A — `backend/` API를 읽기만 하는 새 소비자 추가, 기존 API 스�
 | 스타일링 | NativeWind / StyleSheet / Tamagui | **NativeWind**(Tailwind for RN) | [[../../llm-wiki/design]] §2에서 이미 확정 |
 | 네비게이션 | Expo Router / React Navigation | **Expo Router**(파일 기반) | 이번 세션 체크포인트에서 확정 — 웹의 react-router와 개념이 비슷해 컨텍스트 전환 비용이 낮음 |
 | 상태 관리 | Context / Zustand / Redux | **로컬 상태 + AsyncStorage**(오프라인 캐시) | 웹과 동일 원칙(Plan §7.2) — 화면 규모상 전역 상태 라이브러리는 과설계 |
-| 푸시 알림 | expo-notifications / react-native-firebase | **expo-notifications** | Expo 관리형 워크플로와 가장 잘 맞음, 백엔드는 이미 Firebase Admin SDK로 발송 중이라 모바일은 수신 SDK만 필요 |
+| 푸시 알림 | expo-notifications / react-native-firebase | **expo-notifications** | Expo 관리형 워크플로와 가장 잘 맞음. **APP-2 진행 중 갱신(2026-08-23)**: 백엔드가 원래 쓰던 Firebase Admin SDK 직접 발송은 iOS(APNs)·Android(FCM) 토큰 형식이 달라 react-native-firebase+커스텀 빌드 없이는 iOS를 못 받아, Expo Push Service(`getExpoPushTokenAsync`+백엔드가 `exp.host` 호출)로 전환 — 두 플랫폼 다 Expo Go로 커버 |
 | API 클라이언트 | fetch / axios | **fetch** | 웹(`web/src/lib/api.ts`)과 동일 스타일 유지 |
 | 스토어 배포 | 실제 제출 / 개발 빌드까지만 | **개발 빌드까지만**(Expo Go) | 이번 세션 체크포인트에서 확정 — $0 원칙([[../../llm-wiki/Decisions/0003-mvp-scope-and-user-model]]) 유지 |
 

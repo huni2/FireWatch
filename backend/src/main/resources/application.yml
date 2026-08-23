@@ -61,9 +61,9 @@ firewatch:
     # 막혔고, Google Custom Search·NCP는 카드 등록 불확실성이 있어 회원가입 자체가 필요 없는
     # RSS로 최종 결정 — [[Decisions/0010-rss-news-instead-of-gemini-grounding]].
     rss-url: ${NEWS_RSS_URL:https://view.asiae.co.kr/rss/stock.htm}
-  firebase:
-    # Firebase 콘솔 > 프로젝트 설정 > 서비스 계정에서 발급한 JSON 파일의 "내용 전체"를 문자열로 주입
-    service-account-json: ${FIREBASE_SERVICE_ACCOUNT_JSON:}
+  expo:
+    # Expo Push Service — 인증 불필요한 공개 엔드포인트(mobile-app.design.md §2.3)
+    push-url: "https://exp.host/--/api/v2/push/send"
 
 logging:
   level:
