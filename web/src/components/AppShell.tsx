@@ -138,7 +138,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
             style={{ flexShrink: 0 }}
           />
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginInlineEnd: 12 }}>
-            <span style={{ fontSize: 20 }}>🔥</span>
+            <img src="/favicon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
             <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, color: 'var(--ant-color-text)' }}>
               FireWatch
             </span>

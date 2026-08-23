@@ -1,4 +1,6 @@
-# FireWatch 🔥
+<img src="asset/firewatchlogo.png" width="140" alt="FireWatch" />
+
+# FireWatch
 
 매일 아침 8시, 국내/미국 증시 요약·호재/악재 뉴스·금/은 시세·환율(USD·JPY·CNY)을 자동 수집·분석해 웹 대시보드와 모바일 푸시(FCM)로 전달하는 시스템이다. 스케줄러·AI 호출·푸시 발송 전 과정을 **감사로그(Audit Log)**로 남겨 "오늘 브리핑이 왜 이런 모양인지"를 이벤트 단위로 추적할 수 있게 한 것이 이 프로젝트의 핵심 차별점이다.
 
