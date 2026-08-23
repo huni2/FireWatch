@@ -2,7 +2,11 @@ import '../global.css'
 
 import { Stack } from 'expo-router'
 
+import { useNotificationRegistration } from '@/features/notifications/hooks/useNotificationRegistration'
+
 export default function RootLayout() {
+  useNotificationRegistration()
+
   return (
     <Stack
       screenOptions={{

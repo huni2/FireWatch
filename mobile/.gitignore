@@ -30,8 +30,9 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# local env files — web/.gitignore와 동일 관례(EXPO_PUBLIC_SETTINGS_API_KEY 등 실제 값이 담김)
+.env*
+!.env.example
 
 # typescript
 *.tsbuildinfo
