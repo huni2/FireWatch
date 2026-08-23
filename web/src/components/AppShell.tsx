@@ -19,17 +19,22 @@ interface AppShellProps {
   onToggleDarkMode: (value: boolean) => void
 }
 
-// Design Ref: §5.1 Screen Layout — lg(992px) 이상은 왼쪽에 항상 열려있는 사이드바(메뉴+로고),
+// Design Ref: §5.1 Screen Layout — lg(992px) 이상은 왼쪽 사이드바(햄버거로 접기/펼치기 가능),
 // 그 아래(모바일)는 헤더 아래로 펼쳐지는 드롭다운 메뉴로 완전히 다른 레이아웃을 쓴다.
 // 이전엔 모바일에서도 Sider(화면 맨 왼쪽 끝에 도킹된 컬럼)를 그대로 썼는데, 헤더 안 햄버거
 // 버튼을 눌러도 메뉴가 버튼 바로 아래가 아니라 화면 반대편 왼쪽 끝에서 나타나 위치가 어긋난다는
 // 지적(2026-08-23) — Sider는 구조상 "옆 컬럼"이라 버튼 아래에서 나올 수 없어, 모바일은 Sider를
 // 아예 안 쓰고 헤더와 같은 세로 흐름 안에 Menu를 조건부로 넣는 방식으로 바꿨다.
+// 로고는 데스크톱·모바일 둘 다 헤더에 둔다 — 사이드바 안에 있으면 접었을 때 브랜드가 같이
+// 사라지는 문제가 있었다(2026-08-23 앞서 수정한 버그, 데스크톱 접기를 다시 허용하며 재발 방지).
 export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
   const location = useLocation()
   const screens = Grid.useBreakpoint()
   const isDesktop = screens.lg ?? true
+  const [desktopCollapsed, setDesktopCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const menuOpen = isDesktop ? !desktopCollapsed : mobileMenuOpen
+  const toggleMenu = () => (isDesktop ? setDesktopCollapsed((v) => !v) : setMobileMenuOpen((v) => !v))
 
   const menuItems = [
     { key: '/', icon: <DashboardOutlined />, label: <Link to="/">대시보드</Link> },
@@ -53,6 +58,9 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         <Sider
           theme={darkMode ? 'dark' : 'light'}
           width={220}
+          collapsedWidth={0}
+          collapsed={desktopCollapsed}
+          trigger={null}
           style={{
             background: darkMode ? SIDER_BG_DARK : SIDER_BG_LIGHT,
             borderInlineEnd: '1px solid var(--ant-color-border-secondary)',
@@ -63,7 +71,6 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
             overflow: 'auto',
           }}
         >
-          <div style={{ padding: '20px 24px' }}>{logo}</div>
           <Menu
             theme={darkMode ? 'dark' : 'light'}
             mode="inline"
@@ -83,19 +90,15 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
             borderBottom: '1px solid var(--ant-color-border-secondary)',
           }}
         >
-          {isDesktop ? (
-            <span />
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <Button
-                type="text"
-                icon={<MenuOutlined />}
-                onClick={() => setMobileMenuOpen((v) => !v)}
-                aria-label={mobileMenuOpen ? '메뉴 닫기' : '메뉴 열기'}
-              />
-              {logo}
-            </div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Button
+              type="text"
+              icon={<MenuOutlined />}
+              onClick={toggleMenu}
+              aria-label={menuOpen ? '메뉴 닫기' : '메뉴 열기'}
+            />
+            {logo}
+          </div>
           <Switch
             checked={darkMode}
             onChange={onToggleDarkMode}
