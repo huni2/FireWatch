@@ -65,7 +65,8 @@ FireWatch의 핵심 가치("매일 아침 자동 브리핑")를 실제로 소비
 
 ### 2.2 Out of Scope
 
-- **Apple App Store / Google Play 실제 제출·심사** — Apple Developer Program 연 $99, Google Play 등록 $25(일회성)가 발생해 "월 $0 유지" 원칙([[../../llm-wiki/Decisions/0003-mvp-scope-and-user-model]])과 충돌. 개발 빌드(Expo Go/`expo run`)까지만.
+- **Apple App Store / Google Play 실제 제출·심사** — Apple Developer Program 연 $99, Google Play 등록 $25(일회성)가 발생해 "월 $0 유지" 원칙([[../../llm-wiki/Decisions/0003-mvp-scope-and-user-model]])과 충돌.
+- **iOS 설치형 빌드(스토어 미경유 사이드로드 포함)** — 2026-08-23 확인: Apple Developer Program 없이는 APNs 서명 자체가 안 돼 Expo Go 밖에서 못 씀. 연 $99를 낼지는 나중에 별도 결정 — 지금은 Android EAS Build(내부배포 APK)만 진행.
 - **감사로그 뷰어 모바일 이식** — 감사로그는 운영자(개발자) 도구 성격이 강해 웹 전용으로 유지.
 - **지수/뉴스/가이드/사용방법 등 웹에 있는 부가 화면** — 원본 명세서 FR-03의 모바일 범위는 "수신 UI"(브리핑 상세)뿐이었고, 나머지 화면들은 이번 세션 중 웹에만 추가된 확장 기능. 모바일까지 미러링할지는 이 Phase 2 완료 후 별도 판단.
 - **다중 사용자·로그인** — 기존 결정([[../../llm-wiki/Decisions/0003-mvp-scope-and-user-model]]) 유지.
@@ -168,7 +169,7 @@ N/A — `backend/` API를 읽기만 하는 새 소비자 추가, 기존 API 스�
 | 상태 관리 | Context / Zustand / Redux | **로컬 상태 + AsyncStorage**(오프라인 캐시) | 웹과 동일 원칙(Plan §7.2) — 화면 규모상 전역 상태 라이브러리는 과설계 |
 | 푸시 알림 | expo-notifications / react-native-firebase | **expo-notifications** | Expo 관리형 워크플로와 가장 잘 맞음. **APP-2 진행 중 갱신(2026-08-23)**: 백엔드가 원래 쓰던 Firebase Admin SDK 직접 발송은 iOS(APNs)·Android(FCM) 토큰 형식이 달라 react-native-firebase+커스텀 빌드 없이는 iOS를 못 받아, Expo Push Service(`getExpoPushTokenAsync`+백엔드가 `exp.host` 호출)로 전환 — 두 플랫폼 다 Expo Go로 커버 |
 | API 클라이언트 | fetch / axios | **fetch** | 웹(`web/src/lib/api.ts`)과 동일 스타일 유지 |
-| 스토어 배포 | 실제 제출 / 개발 빌드까지만 | **개발 빌드까지만**(Expo Go) | 이번 세션 체크포인트에서 확정 — $0 원칙([[../../llm-wiki/Decisions/0003-mvp-scope-and-user-model]]) 유지 |
+| 배포 | Expo Go만 / EAS Build로 설치형 빌드 | **Android: EAS Build 내부배포(APK 직접 다운로드)** / **iOS: 보류** | 2026-08-23 갱신 — 스토어 제출은 여전히 Out of Scope지만, "폰에 앱으로 설치해서 쓰고 싶다"는 요청으로 EAS Build 무료 티어 내부배포(스토어 미경유)까지는 범위에 포함. iOS 사이드로드는 Apple Developer Program 연 $99가 필요해 $0 원칙([[../../llm-wiki/Decisions/0003-mvp-scope-and-user-model]])과 충돌 — Android만 진행, iOS는 가입 여부를 나중에 별도 결정 |
 
 ### 7.3 Clean Architecture Approach
 
