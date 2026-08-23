@@ -50,6 +50,7 @@ export function GuidePage() {
           pagination={false}
           rowKey="example"
           dataSource={TICKER_EXAMPLES}
+          scroll={{ x: 'max-content' }}
           columns={[
             { title: '시장', dataIndex: 'market' },
             { title: '접미사', dataIndex: 'suffix' },
@@ -69,6 +70,7 @@ export function GuidePage() {
           pagination={false}
           rowKey="term"
           dataSource={GLOSSARY}
+          scroll={{ x: 'max-content' }}
           columns={[
             { title: '용어', dataIndex: 'term', width: 180 },
             { title: '설명', dataIndex: 'desc' },
