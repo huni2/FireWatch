@@ -39,10 +39,10 @@ _(현재 없음 — WEB-5까지 전부 완료)_
 
 ## 열린 과제 — 모바일(APP)
 
-### APP-2. FCM 푸시 수신 핸들러
-**무엇** — Expo Notifications로 디바이스 토큰 등록·FCM 수신(FR-03). **BE-5 의존, 소폭의 신규 BE 작업 포함.**
-**왜** — 모바일이 브리핑을 받는 유일한 경로. mobile-app Design 단계에서 `fcm_tokens` 컬럼은 있는데 이를 등록할 API가 없다는 걸 발견([[log]] 2026-08-23) — `PUT /api/settings`에 선택적 `fcmToken` 필드를 추가하는 소규모 백엔드 확장이 이 과제 안에 포함된다(`SettingsDtos.kt`/`SettingsService.kt`, 새 엔드포인트 아님).
-**완료 기준** — 테스트 발송이 실제 기기(또는 시뮬레이터)에 도착.
+### APP-2. FCM 푸시 수신 핸들러 (코드 완료, 사용자의 EAS 연결 대기)
+**무엇** — Expo Notifications로 디바이스 토큰 등록·FCM 수신(FR-03). **BE-5 의존, 코드는 끝났고 완료 기준만 미충족.**
+**왜** — 모바일이 브리핑을 받는 유일한 경로. Design 단계에 없던 발견 2건으로 범위가 커짐 — ① `fcm_tokens` 컬럼은 있는데 등록 API가 없어 `PUT /api/settings`에 `fcmToken` 필드 추가(완료). ② 실기기 플랫폼을 "둘 다 열어두고 싶다"고 답해와, 기존 Firebase Admin SDK 직접 발송(iOS·Android 토큰 형식 차이로 react-native-firebase+커스텀 빌드가 필요해 Expo Go 원칙과 충돌)을 Expo Push Service(`exp.host`)로 전환(완료) — `FcmSender` 인터페이스 덕에 `PushService`는 무변경. 코드·`useNotificationRegistration` 훅·백엔드 `ExpoPushSender`까지 전부 구현·테스트 완료.
+**완료 기준** — 테스트 발송이 실제 기기에 도착. **아직 미충족** — `getExpoPushTokenAsync()`가 EAS `projectId`(`app.json`의 `extra.eas.projectId`)를 필요로 하는데, 무료 Expo 계정으로 `mobile/`에서 `npx eas login && npx eas init`을 한 번 실행해야 채워짐(계정 행동이라 세션이 대신 못 함, `mobile/README.md`에 절차 기록). 연결 전엔 앱이 콘솔 경고만 남기고 조용히 토큰 등록을 건너뜀(크래시 아님).
 
 ### APP-3. 모바일 브리핑 UI
 **무엇** — 알림 터치 시 바텀시트로 상세 브리핑 카드가 올라오는 UI([[design]] 3절). **BE-6 의존.**
