@@ -35,7 +35,10 @@
 
 ## 열린 과제 — 웹(WEB)
 
-_(현재 없음 — WEB-5까지 전부 완료)_
+### WEB-6. 웹 푸시(Web Push) 알림 배포 (코드 완료, 사용자의 Render 설정 + 실사용자 클릭 대기)
+**무엇** — 앱 설치 없이 브라우저로 알림 받는 채널. **BE 무의존(자체 완결), 코드는 끝났고 배포·검증만 남음.**
+**왜** — 모바일 APK 사이드로드가 Play Protect에 막혀 대안으로 도입(2026-08-24). `nl.martijndwars:web-push`로 VAPID 서명+RFC 8291 암호화, `UserSettings.web_push_subscriptions`(JSON 배열)에 구독 저장, `PushService`가 FCM과 독립적으로 발송. 설정 화면에 "브라우저 알림 켜기" 카드+`public/sw.js` 구현 완료.
+**완료 기준** — 실제 브라우저에서 구독 → 브리핑 발송 시 알림 도착. **아직 미충족** — ① Render 대시보드에 `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` 입력 후 재배포(계정 행동, 세션이 대신 못 함), ② `web/.env`의 `VITE_VAPID_PUBLIC_KEY` 채워서 Cloudflare Pages 재배포, ③ 실제 사용자가 "브라우저 알림 켜기" 클릭 → 브라우저 네이티브 권한 팝업에서 "허용" — 이 마지막 클릭은 브라우저 자동화로 못 해(실측 확인, CDP eval로 직접 호출 시 사람 입력 대기하며 탭이 멈춤).
 
 ## 열린 과제 — 모바일(APP)
 
