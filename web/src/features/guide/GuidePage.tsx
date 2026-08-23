@@ -1,4 +1,4 @@
-import { Card, Space, Table, Typography } from 'antd'
+import { Card, Space, Typography } from 'antd'
 
 const { Title, Paragraph, Text } = Typography
 
@@ -32,7 +32,10 @@ const GLOSSARY: GlossaryTerm[] = [
 ]
 
 // 2026-08-23 사용자 요청 — "005930.ks이거랑 aapl 난 이런거 뭔지 잘 모르는데" 종목 티커 표기·
-// 지수 용어를 처음 보는 사람도 이해할 수 있게 설명하는 페이지.
+// 지수 용어를 처음 보는 사람도 이해할 수 있게 설명하는 페이지. 처음엔 AntD `Table`로 만들었는데
+// 고정폭 표라 좁은 화면에서 가로 스크롤이 필요해 "기본적인 반응형이 아니다"는 지적을 받음 — 표
+// 대신 CSS grid(auto-fit)와 세로로 쌓이는 목록으로 바꿔, 폭에 따라 별도 분기 없이 자연스럽게
+// 열 개수가 줄고 텍스트가 줄바꿈되게 했다.
 export function GuidePage() {
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
@@ -45,37 +48,49 @@ export function GuidePage() {
           <Text strong>티커(ticker)</Text>는 증시에서 개별 종목을 가리키는 약속된 코드예요. 국내 종목은 숫자 코드 뒤에
           거래소를 나타내는 접미사가 붙고, 해외 종목은 회사 이름을 줄인 영문 코드를 그대로 씁니다.
         </Paragraph>
-        <Table<TickerExample>
-          size="small"
-          pagination={false}
-          rowKey="example"
-          dataSource={TICKER_EXAMPLES}
-          scroll={{ x: 'max-content' }}
-          columns={[
-            { title: '시장', dataIndex: 'market' },
-            { title: '접미사', dataIndex: 'suffix' },
-            { title: '티커 예시', dataIndex: 'example' },
-            { title: '종목명', dataIndex: 'name' },
-          ]}
-        />
-        <Paragraph style={{ marginTop: 12, marginBottom: 0 }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+            gap: 12,
+          }}
+        >
+          {TICKER_EXAMPLES.map((ex) => (
+            <div
+              key={ex.example}
+              style={{
+                border: '1px solid var(--ant-color-border-secondary)',
+                borderRadius: 8,
+                padding: '10px 12px',
+              }}
+            >
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {ex.market} {ex.suffix}
+              </Text>
+              <div style={{ fontSize: 16, fontWeight: 700, marginTop: 2 }}>{ex.example}</div>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                {ex.name}
+              </Text>
+            </div>
+          ))}
+        </div>
+        <Paragraph style={{ marginTop: 16, marginBottom: 0 }}>
           티커를 몰라도 <Text strong>종목</Text> 화면에서 이름으로 검색할 수 있어요 — 국내 대형주는 한글(예: "삼성전자"),
           나머지는 영문 사명(예: "Tesla")으로 찾으면 자동으로 정확한 티커가 채워집니다.
         </Paragraph>
       </Card>
 
       <Card className="hoverable-card" title="지수 화면에 나오는 용어">
-        <Table<GlossaryTerm>
-          size="small"
-          pagination={false}
-          rowKey="term"
-          dataSource={GLOSSARY}
-          scroll={{ x: 'max-content' }}
-          columns={[
-            { title: '용어', dataIndex: 'term', width: 180 },
-            { title: '설명', dataIndex: 'desc' },
-          ]}
-        />
+        <Space direction="vertical" size={16} style={{ width: '100%' }}>
+          {GLOSSARY.map((item) => (
+            <div key={item.term}>
+              <Text strong>{item.term}</Text>
+              <Paragraph type="secondary" style={{ margin: '4px 0 0' }}>
+                {item.desc}
+              </Paragraph>
+            </div>
+          ))}
+        </Space>
       </Card>
     </Space>
   )

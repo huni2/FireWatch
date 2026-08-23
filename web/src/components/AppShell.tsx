@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { Button, Layout, Switch } from 'antd'
 import {
   AuditOutlined,
+  BookOutlined,
   DashboardOutlined,
   FundOutlined,
   LineChartOutlined,
@@ -34,6 +35,7 @@ const CONTENT_ITEMS: NavItem[] = [
   { key: '/indices', icon: <FundOutlined />, label: '지수' },
   { key: '/news', icon: <ReadOutlined />, label: '뉴스' },
   { key: '/guide', icon: <QuestionCircleOutlined />, label: '가이드' },
+  { key: '/usage', icon: <BookOutlined />, label: '사용방법' },
 ]
 
 const ADMIN_ITEMS: NavItem[] = [
