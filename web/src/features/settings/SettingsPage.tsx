@@ -6,10 +6,16 @@ import { useSettings } from './hooks/useSettings'
 import { useWebPushSubscription } from './hooks/useWebPushSubscription'
 import { ApiRequestError, updateSettings, type Settings } from '../../lib/api'
 import { SlowLoadingHint } from '../../components/SlowLoadingHint'
+import { useLatestBriefing } from '../dashboard/hooks/useLatestBriefing'
+
+// KeywordInput 기본값(components/KeywordInput.tsx)과 동일한 상한 — 추천 칩 클릭이 onChange를
+// 직접 호출해 KeywordInput 내부 가드를 안 거치므로 여기서 별도로 체크해야 한다(2026-09-01).
+const MAX_KEYWORDS = 20
 
 // Design Ref: §5.4 Settings 체크리스트 — FR-05
 export function SettingsPage() {
   const { data, loading, error, isSlow, reload } = useSettings()
+  const latestBriefing = useLatestBriefing()
   const [pushTime, setPushTime] = useState<string>('08:00')
   const [keywords, setKeywords] = useState<string[]>([])
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
@@ -77,6 +83,14 @@ export function SettingsPage() {
             </Form.Item>
             <Form.Item label="관심 키워드">
               <KeywordInput value={keywords} onChange={setKeywords} />
+              <TrendingKeywordSuggestions
+                trendingKeywords={latestBriefing.data?.trendingKeywords ?? []}
+                current={keywords}
+                onAdd={(keyword) => {
+                  if (keywords.length >= MAX_KEYWORDS) return
+                  setKeywords([...keywords, keyword])
+                }}
+              />
             </Form.Item>
             <Button type="primary" onClick={handleSave} loading={saving}>
               저장
@@ -90,6 +104,36 @@ export function SettingsPage() {
       </Card>
 
       {data && <WebPushCard settings={data} onSubscribed={reload} />}
+    </Space>
+  )
+}
+
+// 오늘자 브리핑에서 Gemini가 뽑은 트렌드 키워드를 클릭 한 번으로 관심 키워드에 추가할 수 있게
+// 보여준다(2026-09-01, BE-11/WEB-7). 이미 등록된 키워드는 후보에서 뺀다.
+function TrendingKeywordSuggestions({
+  trendingKeywords,
+  current,
+  onAdd,
+}: {
+  trendingKeywords: string[]
+  current: string[]
+  onAdd: (keyword: string) => void
+}) {
+  const suggestions = trendingKeywords.filter((keyword) => !current.includes(keyword))
+  if (suggestions.length === 0) return null
+
+  return (
+    <Space direction="vertical" size={4} style={{ marginTop: 8 }}>
+      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+        오늘의 추천 키워드 (클릭하면 추가)
+      </Typography.Text>
+      <Space wrap>
+        {suggestions.map((keyword) => (
+          <Tag key={keyword} style={{ cursor: 'pointer' }} onClick={() => onAdd(keyword)}>
+            + {keyword}
+          </Tag>
+        ))}
+      </Space>
     </Space>
   )
 }

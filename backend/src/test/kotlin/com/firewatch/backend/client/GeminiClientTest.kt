@@ -86,6 +86,30 @@ class GeminiClientTest {
 
         assertEquals("코스피는 반도체 강세.", result.marketSummary)
         assertEquals(emptyList(), result.recommendedStocks)
+        assertEquals(emptyList(), result.trendingKeywords)
+    }
+
+    @Test
+    fun `마지막 두 줄의 추천종목과 핵심키워드를 각각 뽑아내고 본문에서는 뺀다`() {
+        val response = mapOf(
+            "candidates" to listOf(
+                mapOf(
+                    "content" to mapOf(
+                        "parts" to listOf(
+                            mapOf(
+                                "text" to "코스피는 반도체 강세.\n추천종목: 삼성전자, SK하이닉스\n핵심키워드: 반도체, 금리인하",
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val result = GeminiClient.parseResponse(response)
+
+        assertEquals("코스피는 반도체 강세.", result.marketSummary)
+        assertEquals(listOf("삼성전자", "SK하이닉스"), result.recommendedStocks)
+        assertEquals(listOf("반도체", "금리인하"), result.trendingKeywords)
     }
 
     @Test
@@ -132,6 +156,7 @@ class GeminiClientTest {
         assertTrue(prompt.contains("4.738"))
         assertTrue(prompt.contains("코스피 강세 마감"))
         assertTrue(prompt.contains("코스피가 2%대 강세로 마감했다."))
+        assertTrue(prompt.contains("핵심키워드"))
     }
 
     @Test

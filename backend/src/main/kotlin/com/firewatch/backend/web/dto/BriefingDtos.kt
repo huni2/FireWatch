@@ -4,6 +4,7 @@ import com.firewatch.backend.entity.Briefing
 import com.firewatch.backend.entity.DataSourceStatus
 import com.firewatch.backend.entity.NewsArticle
 import com.firewatch.backend.entity.recommendedStocks
+import com.firewatch.backend.entity.trendingKeywords
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -29,6 +30,7 @@ data class BriefingResponse(
     val briefingDate: LocalDate,
     val marketSummary: String,
     val recommendedStocks: List<String>,
+    val trendingKeywords: List<String>,
     val goldPrice: BigDecimal?,
     val silverPrice: BigDecimal?,
     val usdKrw: BigDecimal?,
@@ -50,6 +52,7 @@ fun Briefing.toResponse(news: List<NewsArticle> = emptyList()) = BriefingRespons
     briefingDate = briefingDate,
     marketSummary = marketSummary,
     recommendedStocks = recommendedStocks(),
+    trendingKeywords = trendingKeywords(),
     goldPrice = goldPrice,
     silverPrice = silverPrice,
     usdKrw = usdKrw,

@@ -74,9 +74,14 @@ class SchedulerJob(
 
         // Gemini가 grounding 없이 이 뉴스를 요약 재료로 쓰므로, 브리핑 저장보다 먼저 가져와둔다
         // ([[llm-wiki/Decisions/0011-gemini-no-grounding]]). 실패해도 빈 목록으로 계속 진행.
+        // 2026-09-01 — 관심 키워드 기반 핫이슈 매칭(WEB-7) 여지를 넓히려고 수집량을 20건으로 늘렸는데
+        // (NewsRssClient), 이 20건을 그대로 Gemini 프롬프트에 다 넣으면 프롬프트가 커져 타임아웃
+        // 위험이 늘어난다(2026-08-28 실제 TimeoutException 이력 있음) — DB 저장·응답용은 20건 그대로,
+        // Gemini에는 기존과 동일하게 상위 5건만 넘긴다.
         val newsArticles = runCatching { newsService.fetchRelatedNews() }
             .onFailure { log.warn("관련 뉴스 조회 실패 — 빈 목록으로 계속 진행", it) }
             .getOrDefault(emptyList())
+        val newsArticlesForGemini = newsArticles.take(GEMINI_NEWS_LIMIT)
 
         val geminiResult: GeminiBriefingResult? = try {
             geminiBriefingService.fetchTodaysBriefing(
@@ -91,7 +96,7 @@ class SchedulerJob(
                 nasdaq = financialSnapshot?.nasdaq,
                 dow = financialSnapshot?.dow,
                 usBondYield10y = financialSnapshot?.usBondYield10y,
-                newsArticles = newsArticles,
+                newsArticles = newsArticlesForGemini,
             )
         } catch (ex: Exception) {
             log.warn("Gemini 실패 — FALLBACK으로 처리", ex)
@@ -109,6 +114,7 @@ class SchedulerJob(
                 marketSummary = geminiResult?.marketSummary
                     ?: "AI 브리핑 생성에 실패했습니다. 금/은/환율 정보만 제공됩니다.",
                 recommendedStocksRaw = geminiResult?.recommendedStocks?.toCommaSeparated(),
+                trendingKeywordsRaw = geminiResult?.trendingKeywords?.toCommaSeparated(),
                 goldPrice = financialSnapshot?.goldPrice,
                 silverPrice = financialSnapshot?.silverPrice,
                 usdKrw = financialSnapshot?.usdKrw,
@@ -142,5 +148,9 @@ class SchedulerJob(
 
         runCatching { pushService.sendBriefingNotification(briefing) }
             .onFailure { log.warn("FCM 발송 실패 — 브리핑 저장은 이미 완료됐으므로 스케줄러 자체는 실패로 보지 않음", it) }
+    }
+
+    companion object {
+        private const val GEMINI_NEWS_LIMIT = 5
     }
 }

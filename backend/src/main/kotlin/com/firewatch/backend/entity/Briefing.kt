@@ -29,6 +29,10 @@ class Briefing(
     @Column(name = "recommended_stocks")
     var recommendedStocksRaw: String? = null,
 
+    // 2026-09-01 사용자 요청 — 관심 키워드 추천(BE-11). recommendedStocksRaw와 동일하게 쉼표 구분 문자열.
+    @Column(name = "trending_keywords")
+    var trendingKeywordsRaw: String? = null,
+
     @Column(name = "gold_price")
     var goldPrice: BigDecimal? = null,
 
@@ -73,3 +77,4 @@ class Briefing(
 
 // Hibernate 엔티티 내부에 계산 프로퍼티를 두면 매핑 대상으로 오인될 수 있어 확장 함수로 분리
 fun Briefing.recommendedStocks(): List<String> = recommendedStocksRaw.toStringList()
+fun Briefing.trendingKeywords(): List<String> = trendingKeywordsRaw.toStringList()

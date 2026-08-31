@@ -47,7 +47,10 @@ class NewsRssClient(
 
     companion object {
         private const val TIMEOUT_SECONDS = 10L
-        private const val DEFAULT_LIMIT = 5
+        // 2026-09-01 — 관심 키워드 기반 핫이슈 필터링(WEB-7)의 매칭 여지를 넓히려고 5→20으로 확대.
+        // Gemini 프롬프트에는 여전히 상위 5건만 넘긴다(SchedulerJob 참고) — 프롬프트 비대화로 인한
+        // 타임아웃 위험을 늘리지 않기 위해서다.
+        private const val DEFAULT_LIMIT = 20
         private val HTML_TAG_REGEX = Regex("<[^>]*>")
 
         internal fun parseRss(xml: String): List<NewsArticleResult> {

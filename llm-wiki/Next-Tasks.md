@@ -16,11 +16,6 @@
 
 ## 열린 과제 — 백엔드(BE)
 
-### BE-11. 관심 키워드 추천 + 핫이슈용 트렌드 키워드 API
-**무엇** — 최근 수집된 관련 뉴스(`NewsArticle`, 브리핑 생성 시 이미 저장 중)에서 자주 등장하는 키워드를 추출해 반환하는 신규 API. 설정 화면의 "키워드 추천"과 대시보드 "핫이슈" 섹션(WEB-7)이 공유해서 쓸 데이터 소스.
-**왜** — 사용자 요청(2026-08-31) — "설정에 관심 키워드 추천 기능", "매일 그날그날 핫이슈도 보이게". 사용자가 원하는 방식은 ① 최근 뉴스 기반 트렌드 키워드 제안(소셜/타 사용자 트렌드 아님 — 싱글유저 앱), ② 관심 키워드 기반 별도 핫이슈 섹션(기존 브리핑 딸림 뉴스와는 별개).
-**완료 기준** — 신규 GET 엔드포인트가 최근 뉴스 기반 트렌드 키워드 목록(및 키워드별 관련 기사)을 반환. 감사로그 기록. 키워드 추출 방식(단순 빈도 집계 vs Gemini 활용)은 Design 단계에서 결정 — Gemini 활용 시 BE-3에서 이미 겪은 무료 티어 쿼터 제약([[Decisions/0011-gemini-no-grounding]]) 재확인 필요.
-
 ### BE-10. 한국국채 10년물 수익률 데이터 소스 확보
 **무엇** — 한국 국고채 10년물 수익률(%)을 매일 브리핑 지표에 추가. **BE-9(완료, 종료 기록 참고) 후속.**
 **왜** — 사용자가 "금,은,환율,국채,국장,미장 다 볼 수 있고"라고 요청(2026-08-23)했는데, Yahoo Finance 비공식 API(`/v1/finance/search`, `/v8/finance/chart/`)로 여러 티커·검색어(`KR10YT=RR`, `KR10Y.B`, `098U`, `^KR10Y`, "Korea 10Y" 등)를 실측했지만 실제 수익률(%) 시계열을 주는 소스가 없었음(ETF 상품 가격만 검색됨 — `365780.KS`/`289670.KS`) — [[log]] 2026-08-23.
@@ -39,11 +34,6 @@
   - 이 조사 과정에서 **별개의 진짜 버그 2개**를 더 발견해 수정함 — 스케줄러 날짜가 컨테이너 기본(UTC) 타임존을 써서 매일 자동 실행마다 스킵될 뻔한 버그, 한국수출입은행 API가 08:00(영업일 11시 이전) 요청이라 항상 빈 응답이던 버그. 둘 다 재배포 후 프로덕션에서 왕복 확인 완료 — 자세한 내용은 [[log]] 2026-08-21.
 
 ## 열린 과제 — 웹(WEB)
-
-### WEB-7. 설정 화면 키워드 추천 UI + 대시보드 핫이슈 섹션
-**무엇** — 설정 `KeywordInput` 옆에 추천 키워드 후보를 태그로 노출(클릭 시 바로 추가), 대시보드에 관심 키워드 기반 "오늘의 핫이슈" 카드/리스트 신설. **BE-11 의존.**
-**왜** — 사용자 요청(2026-08-31), BE-11과 세트.
-**완료 기준** — 추천 키워드 클릭으로 관심 키워드에 추가됨. 대시보드에 그날 수신 시간 기준 핫이슈가 표시되고, 관심 키워드가 비어 있을 때의 빈 상태 처리도 됨.
 
 ### WEB-6. 웹 푸시(Web Push) 알림 배포 (코드 완료, 사용자의 Render 설정 + 실사용자 클릭 대기)
 **무엇** — 앱 설치 없이 브라우저로 알림 받는 채널. **BE 무의존(자체 완결), 코드는 끝났고 배포·검증만 남음.**
@@ -71,6 +61,8 @@
 
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
+| BE-11 | 관심 키워드 추천 + 핫이슈용 트렌드 키워드 | 완료. 등록 당시 가정했던 "신규 GET 엔드포인트"는 불필요했음 — `/api/briefings/latest`가 이미 그날 뉴스 전체를 내려주고 있어, 트렌드 키워드는 기존 1일 1회 Gemini 호출에 얹는 걸로 스코프 축소(별도 호출 없음, 무료 티어 쿼터 절약). `GeminiClient` 프롬프트에 "핵심키워드: A, B, C" 트레일링 라인 요청 추가(추천종목과 동일 정규식 패턴), `Briefing.trendingKeywordsRaw` 컬럼 추가. `NewsRssClient` 수집량을 5→20으로 늘리되(핫이슈 매칭 여지 확보), Gemini 프롬프트에는 여전히 상위 5건만 전달(8/28 Gemini TimeoutException 실측 이력이 있어 프롬프트 비대화로 인한 타임아웃 위험을 늘리지 않기 위함) — `SchedulerJob`이 DB 저장용과 Gemini 입력용 뉴스 목록을 분리. `./gradlew build`(신규 테스트 포함) 통과 | `backend/.../client/GeminiClient.kt`, `backend/.../service/SchedulerJob.kt`, `backend/.../entity/Briefing.kt` (2026-09-01 [[log]]) |
+| WEB-7 | 설정 화면 키워드 추천 UI + 대시보드 핫이슈 섹션 | 완료. RSS가 키워드 검색을 지원하지 않아([[Decisions/0010-rss-news-instead-of-gemini-grounding]]) 핫이슈는 "새로 검색"이 아니라 "오늘 이미 받은 뉴스를 관심 키워드로 클라이언트 사이드 필터링"으로 구현 — 새 백엔드 로직 없이 기존 `useLatestBriefing`(news)·`useSettings`(interestKeywords) 두 훅만으로 처리. `RelatedNewsCard`를 `title`/`emptyDescription` prop화해 재사용(새 컴포넌트 안 만듦). 설정 화면엔 오늘자 브리핑의 `trendingKeywords`를 클릭 가능한 추천 태그로 노출(이미 등록된 건 자동 제외, `KeywordInput` 내부 20개 상한 가드를 우회하므로 별도 체크 추가). 로컬 H2에 SQL로 브리핑·뉴스·설정을 직접 시드해 브라우저로 3가지 상태(키워드 없음=숨김/매칭 있음=필터링된 기사만 노출/매칭 없음=빈 상태 문구) 전부 실제 확인. `npm run build`·`npm run lint` 통과 | `web/src/features/dashboard/DashboardPage.tsx`, `web/src/features/settings/SettingsPage.tsx`, `web/src/features/news/components/RelatedNewsCard.tsx` (2026-09-01 [[log]]) |
 | APP-1 | 모바일 프로젝트 스캐폴딩 | 완료. `npx create-expo-app`(SDK 57 기본 템플릿)으로 `mobile/` 생성 후 데모 콘텐츠 전부 제거, NativeWind v4(babel/metro/tailwind config) 설치. 라우터 루트가 `mobile/app/`이 아니라 `mobile/src/app/`인 건 이 SDK 버전 템플릿의 최신 관례라 Design 문서 경로에서 소폭 벗어남(계층 분리 의도는 동일). `tsc --noEmit`·`expo lint`·`expo export --platform web`(정적 라우트 `/`·`/settings` 정상 생성) 통과. 실기기 Expo Go 검증은 사용자가 `npx expo start`로 직접 진행 필요 | `mobile/`, `docs/02-design/features/mobile-app.design.md` (2026-08-23 [[log]]) |
 | BE-9 | 국내외 지수 + 미국채 수익률 브리핑 지표 추가 | 완료. 사용자가 리스킨 직후 "금,은,환율,국채,국장,미장 다 볼 수 있고 AI가 관련 뉴스보고 추천하는걸 원했음"이라고 지적 — 실제로 백엔드엔 금/은/환율 3종만 있고 지수·채권은 아예 미구현이었음. Yahoo Finance로 코스피(`^KS11`)·코스닥(`^KQ11`)·S&P500(`^GSPC`)·나스닥(`^IXIC`)·다우(`^DJI`)·미국채10년물(`^TNX`) 6종 실측 확인 후 `FinancialApiClient.fetchMarketIndices()` 신설, `FinancialSnapshot`→`GeminiClient`(프롬프트에 [오늘의 지수·채권] 섹션 추가)→`Briefing` 엔티티→DB 스키마(`ALTER TABLE ADD COLUMN IF NOT EXISTS`)→`BriefingResponse`까지 전체 파이프라인 관통. 웹 대시보드에 "국내외 지수 · 채권" 구분 라벨로 새 Row(MetricStat 6개) 추가, `RateChart` 지표 선택에도 6종 추가. 한국국채10년물은 Yahoo에 수익률 데이터가 없어 제외(→BE-10). `./gradlew build`/`test`, `npm run build` 전체 통과 | `backend/.../client/FinancialApiClient.kt`, `web/src/features/dashboard/DashboardPage.tsx` (2026-08-23 [[log]]) |
 | BE-1 | 백엔드 프로젝트 스캐폴딩 | 완료. Spring Initializr로 Kotlin+Spring Boot 4.1.0(+Boot 3.2 대신 채택, [[Decisions/0005-spring-boot-4]])+WebFlux+JPA+H2+Validation 생성, gradle wrapper 포함. `./gradlew build` 통과, `java -jar`로 기동 확인(Netty on port) | `backend/build.gradle.kts`, [[Decisions/0005-spring-boot-4]] (2026-08-19 [[log]]) |

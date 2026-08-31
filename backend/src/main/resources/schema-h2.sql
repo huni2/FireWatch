@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS briefings (
   briefing_date DATE NOT NULL UNIQUE,
   market_summary TEXT NOT NULL,
   recommended_stocks TEXT,             -- 쉼표 구분 문자열(단순화 — Design §3.1 "JSON" 표기에서 변경, Do 단계 판단)
+  trending_keywords TEXT,              -- 쉼표 구분 문자열, 관심 키워드 추천용(2026-09-01 사용자 요청)
   gold_price DECIMAL(12,2),
   silver_price DECIMAL(12,2),
   usd_krw DECIMAL(10,2),
@@ -39,6 +40,7 @@ ALTER TABLE briefings ADD COLUMN IF NOT EXISTS sp500 DECIMAL(12,2);
 ALTER TABLE briefings ADD COLUMN IF NOT EXISTS nasdaq DECIMAL(12,2);
 ALTER TABLE briefings ADD COLUMN IF NOT EXISTS dow DECIMAL(12,2);
 ALTER TABLE briefings ADD COLUMN IF NOT EXISTS us_bond_yield_10y DECIMAL(6,3);
+ALTER TABLE briefings ADD COLUMN IF NOT EXISTS trending_keywords TEXT;
 
 -- 설계 문서 원본엔 없던 테이블 — 사용자 요청(2026-08-21)으로 추가. Gemini Search Grounding이
 -- 무료 티어에서 막혀 있어 네이버 뉴스 검색 API로 실제 기사 링크를 대신 제공한다.

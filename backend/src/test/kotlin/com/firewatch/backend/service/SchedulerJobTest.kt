@@ -1,6 +1,7 @@
 package com.firewatch.backend.service
 
 import com.firewatch.backend.client.GeminiBriefingResult
+import com.firewatch.backend.client.NewsArticleResult
 import com.firewatch.backend.entity.Briefing
 import com.firewatch.backend.entity.DataSourceStatus
 import com.firewatch.backend.repository.BriefingRepository
@@ -62,7 +63,11 @@ class SchedulerJobTest {
     fun `둘 다 성공하면 NORMAL로 저장하고 푸시를 보낸다`() {
         every { briefingRepository.findByBriefingDate(today) } returns null
         every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns
-            GeminiBriefingResult(marketSummary = "요약", recommendedStocks = listOf("삼성전자"))
+            GeminiBriefingResult(
+                marketSummary = "요약",
+                recommendedStocks = listOf("삼성전자"),
+                trendingKeywords = listOf("반도체", "금리인하"),
+            )
         every { financialDataService.fetchLatestSnapshot() } returns sampleSnapshot
         val saved = slot<Briefing>()
         every { briefingRepository.save(capture(saved)) } answers { saved.captured.also { it.id = 1L } }
@@ -71,7 +76,28 @@ class SchedulerJobTest {
 
         assertEquals(DataSourceStatus.NORMAL, saved.captured.dataSourceStatus)
         assertEquals(BigDecimal("4406.1"), saved.captured.goldPrice)
+        assertEquals("반도체,금리인하", saved.captured.trendingKeywordsRaw)
         verify { pushService.sendBriefingNotification(saved.captured) }
+    }
+
+    @Test
+    fun `뉴스가 5건보다 많아도 Gemini에는 상위 5건만 넘긴다`() {
+        every { briefingRepository.findByBriefingDate(today) } returns null
+        val eightArticles = (1..8).map {
+            NewsArticleResult(title = "기사$it", link = "https://example.com/$it", description = "설명$it", pubDate = null)
+        }
+        every { newsService.fetchRelatedNews() } returns eightArticles
+        val newsArg = slot<List<NewsArticleResult>>()
+        every {
+            geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), capture(newsArg))
+        } returns GeminiBriefingResult(marketSummary = "요약", recommendedStocks = emptyList())
+        every { financialDataService.fetchLatestSnapshot() } returns sampleSnapshot
+        every { briefingRepository.save(any()) } answers { (firstArg() as Briefing).also { it.id = 1L } }
+
+        schedulerJob.runMorningBriefing()
+
+        assertEquals(5, newsArg.captured.size)
+        assertEquals(eightArticles.take(5), newsArg.captured)
     }
 
     @Test

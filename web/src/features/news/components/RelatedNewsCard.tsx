@@ -6,14 +6,18 @@ import type { NewsArticle } from '../../../lib/api'
 interface RelatedNewsCardProps {
   news: NewsArticle[]
   loading: boolean
+  title?: string
+  emptyDescription?: string
 }
 
 // Gemini Search Grounding이 무료 티어에서 막혀(Next-Tasks.md BE-3) 대신 RSS 피드로
 // 실제 클릭 가능한 기사 링크를 보여준다 — 사용자 요청(2026-08-21)으로 추가된 화면 요소.
-export function RelatedNewsCard({ news, loading }: RelatedNewsCardProps) {
+// title/emptyDescription을 prop으로 뺀 건 2026-09-01 — 대시보드 "오늘의 핫이슈" 섹션(WEB-7)에서도
+// 동일 UI를 재사용하기 위해서다.
+export function RelatedNewsCard({ news, loading, title = '관련 뉴스', emptyDescription = '관련 뉴스가 없습니다' }: RelatedNewsCardProps) {
   if (loading) {
     return (
-      <Card title="관련 뉴스">
+      <Card title={title}>
         <Skeleton active paragraph={{ rows: 3 }} />
       </Card>
     )
@@ -21,9 +25,9 @@ export function RelatedNewsCard({ news, loading }: RelatedNewsCardProps) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }}>
-      <Card className="hoverable-card" title="관련 뉴스">
+      <Card className="hoverable-card" title={title}>
         {news.length === 0 ? (
-          <Empty description="관련 뉴스가 없습니다" />
+          <Empty description={emptyDescription} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {news.map((article) => (

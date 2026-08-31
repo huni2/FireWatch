@@ -10,6 +10,9 @@ import java.time.Duration
 data class GeminiBriefingResult(
     val marketSummary: String,
     val recommendedStocks: List<String>,
+    // 2026-09-01 — 관심 키워드 추천(BE-11). 기본값 필수: 기존 테스트가 named-arg로 이 필드 없이
+    // 생성 중이라 기본값이 없으면 전부 깨진다.
+    val trendingKeywords: List<String> = emptyList(),
 )
 
 /**
@@ -76,6 +79,7 @@ class GeminiClient(
     companion object {
         private const val TIMEOUT_SECONDS = 20L
         private val STOCK_LINE_REGEX = Regex("""^추천\s*종목\s*[:：]\s*(.+)$""", RegexOption.MULTILINE)
+        private val KEYWORD_LINE_REGEX = Regex("""^핵심\s*키워드\s*[:：]\s*(.+)$""", RegexOption.MULTILINE)
 
         internal fun buildPrompt(
             goldPrice: BigDecimal?,
@@ -122,8 +126,11 @@ class GeminiClient(
                 1. 위 시세 데이터를 참고해 오늘 국내외 증시에 참고할 만한 코멘트를 3분 안에 읽을 분량으로 정리해줘.
                 2. 위 뉴스와 시세 흐름을 참고해 관심 가질 만한 테마주나 섹터를 2~3개 추천하고 간단한 이유를 붙여줘
                    — 실시간 시세 조회 없이 일반적인 상관관계 수준의 참고용 추천이라는 점을 자연스럽게 녹여줘.
-                3. 마지막 줄에는 위에서 언급한 구체적인 종목명만 쉼표로 구분해서 정확히 이 형식으로 딱 한 줄 추가해줘
-                   (다른 설명 없이): 추천종목: 삼성전자, SK하이닉스
+                3. 마지막 두 줄에는 아래 두 형식을 각각 정확히 지켜서 딱 한 줄씩 추가해줘(다른 설명 없이) —
+                   첫 줄은 위에서 언급한 구체적인 종목명만 쉼표로 구분, 둘째 줄은 위 뉴스에서 오늘 자주
+                   등장한 핵심 키워드나 이슈 3~5개를 쉼표로 구분:
+                   추천종목: 삼성전자, SK하이닉스
+                   핵심키워드: 반도체, 금리인하, 환율
             """.trimIndent()
         }
 
@@ -139,16 +146,31 @@ class GeminiClient(
             val text = parts.joinToString("\n") { it["text"]?.toString().orEmpty() }.trim()
             check(text.isNotEmpty()) { "Gemini 응답 텍스트가 비어 있음" }
 
-            // 프롬프트가 마지막 줄에 "추천종목: A, B" 형식을 요청 — 그 줄만 뽑아 구조화하고 본문에서는 뺀다.
+            // 프롬프트가 마지막 두 줄에 "추천종목: A, B"·"핵심키워드: A, B" 형식을 요청 — 각각 뽑아
+            // 구조화하고 본문에서는 뺀다. 형식을 안 지키면(정규식 매칭 실패) 그냥 빈 리스트로 떨어진다 —
+            // 크래시 없이 열화되는 기존 추천종목과 동일한 방식.
             val stockLine = STOCK_LINE_REGEX.find(text)
             val recommendedStocks = stockLine?.groupValues?.get(1)
                 ?.split(",", "、")
                 ?.map { it.trim() }
                 ?.filter { it.isNotEmpty() }
                 ?: emptyList()
-            val marketSummary = if (stockLine != null) text.replace(stockLine.value, "").trim() else text
+            val keywordLine = KEYWORD_LINE_REGEX.find(text)
+            val trendingKeywords = keywordLine?.groupValues?.get(1)
+                ?.split(",", "、")
+                ?.map { it.trim() }
+                ?.filter { it.isNotEmpty() }
+                ?: emptyList()
+            var marketSummary = text
+            if (stockLine != null) marketSummary = marketSummary.replace(stockLine.value, "")
+            if (keywordLine != null) marketSummary = marketSummary.replace(keywordLine.value, "")
+            marketSummary = marketSummary.trim()
 
-            return GeminiBriefingResult(marketSummary = marketSummary, recommendedStocks = recommendedStocks)
+            return GeminiBriefingResult(
+                marketSummary = marketSummary,
+                recommendedStocks = recommendedStocks,
+                trendingKeywords = trendingKeywords,
+            )
         }
     }
 }

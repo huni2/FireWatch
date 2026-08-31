@@ -16,6 +16,7 @@ export interface Briefing {
   briefingDate: string
   marketSummary: string
   recommendedStocks: string[]
+  trendingKeywords: string[]
   goldPrice: number | null
   silverPrice: number | null
   usdKrw: number | null
