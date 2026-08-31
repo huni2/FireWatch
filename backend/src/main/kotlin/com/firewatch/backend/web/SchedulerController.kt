@@ -1,6 +1,7 @@
 package com.firewatch.backend.web
 
 import com.firewatch.backend.entity.SINGLETON_SETTINGS_ID
+import com.firewatch.backend.repository.BriefingRepository
 import com.firewatch.backend.repository.UserSettingsRepository
 import com.firewatch.backend.service.SchedulerJob
 import kotlinx.coroutines.CoroutineScope
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 
@@ -27,6 +29,7 @@ import java.time.ZoneId
 class SchedulerController(
     private val schedulerJob: SchedulerJob,
     private val userSettingsRepository: UserSettingsRepository,
+    private val briefingRepository: BriefingRepository,
     @Value("\${firewatch.settings.api-key}") private val expectedApiKey: String,
     @Value("\${firewatch.scheduler.timezone}") private val schedulerTimezone: String,
     @Value("\${firewatch.scheduler.poll-window-minutes}") private val pollWindowMinutes: Long,
@@ -55,8 +58,20 @@ class SchedulerController(
         }
         val settings = userSettingsRepository.findById(SINGLETON_SETTINGS_ID).orElse(null)
             ?: return mapOf("triggered" to false)
-        val now = LocalTime.now(ZoneId.of(schedulerTimezone))
-        val due = isDue(settings.pushTime, now, pollWindowMinutes)
+        val zone = ZoneId.of(schedulerTimezone)
+        val now = LocalTime.now(zone)
+        val pushTime = LocalTime.parse(settings.pushTime)
+
+        // 2026-08-31 — GitHub Actions의 `*/15 * * * *` 크론이 실제로는 정시 근처 혼잡으로 몇 시간씩
+        // 밀리는 걸 실측(마지막 폴링이 그날의 pollWindowMinutes 창을 통째로 건너뜀 → 그날 브리핑 자체가
+        // 생성 안 됨, 3일 연속 발생). due-window를 놓쳐도 그날 안에 폴링이 한 번이라도 들어오면 놓친 걸
+        // 따라잡도록 보강 — SchedulerJob.executePipeline()이 이미 "오늘자 브리핑 존재 시 스킵"으로
+        // 멱등성을 보장하므로, 하루 한 번만 실행되고 이후 폴링은 조용히 스킵된다(감사로그 스팸 없음).
+        val windowDue = isDue(settings.pushTime, now, pollWindowMinutes)
+        val missedWindowCatchUp = !windowDue &&
+            now.isAfter(pushTime) &&
+            briefingRepository.findByBriefingDate(LocalDate.now(zone)) == null
+        val due = windowDue || missedWindowCatchUp
         if (due) {
             triggerScope.launch { schedulerJob.triggerManually(apiKey) }
         }

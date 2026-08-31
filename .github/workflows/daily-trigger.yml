@@ -6,9 +6,14 @@ name: Briefing Scheduler Poll
 # 백엔드(/api/scheduler/trigger-if-due)가 저장된 pushTime과 현재 시각을 비교해 판정한다
 # (firewatch.scheduler.poll-window-minutes, 기본 20분 — 이 폴링 주기보다 넉넉해야 놓치지 않는다).
 # Render 무료 티어는 15분 무활동 시 슬립하는데, 이 폴링 자체가 그 슬립을 막아주는 부수효과도 있다.
+#
+# 2026-08-31 — 정각(:00/:15/:30/:45)에 맞춘 크론은 전 세계 워크플로가 같은 시각에 몰려 GitHub 쪽
+# 지연이 특히 심하다는 게 GitHub 공식 문서의 권고사항. 실제로 이 지연이 누적돼 due-window(20분)를
+# 통째로 건너뛰어 8/29~31 사흘 연속 스케줄러가 안 돈 걸 확인 — 정각에서 벗어난 오프셋(:07/:22/:37/:52)
+# 으로 옮겨 혼잡을 피한다. due-window 미스에 대한 근본 대응은 SchedulerController의 catch-up 로직.
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch: {} # 수동 테스트용 — 이것도 due 판정을 거친다. 강제 실행은 /api/scheduler/trigger를 직접 curl.
 
 jobs:
