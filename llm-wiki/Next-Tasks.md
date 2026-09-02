@@ -35,6 +35,11 @@
 
 ## 열린 과제 — 웹(WEB)
 
+### WEB-8. Cloudflare Pages 재배포 (WEB-7 반영, 사용자의 wrangler 로그인 대기)
+**무엇** — WEB-7(관심 키워드 추천 + 오늘의 핫이슈)에서 바꾼 `web/` 코드를 Cloudflare Pages에 반영. **BE 무의존(자체 완결), 코드는 끝났고 배포만 남음.**
+**왜** — Render(백엔드)는 git push로 자동 배포되지만 Cloudflare Pages(웹)는 `DEPLOY.md`에 명시된 대로 `wrangler pages deploy` 수동 실행이 필요하다 — 2026-09-01 세션이 이걸 놓쳐 "재배포 불필요"로 잘못 판단했다가, 2026-09-02 사용자가 "로컬에 있는게 배포쪽에 적용이 안 된 것 같다"고 지적해 발견([[log]] 2026-09-02). 라이브 번들에 "오늘의 핫이슈"/"오늘의 추천 키워드" 문자열이 전혀 없는 걸로 직접 확인.
+**완료 기준** — `npx wrangler pages deploy dist --project-name=firewatch` 실행 후 라이브 사이트에 새 UI가 뜸. **아직 미충족** — 이 환경에 `CLOUDFLARE_API_TOKEN`이 없어 `npx wrangler login`(브라우저 OAuth)이 필요한데, 두 차례 시도 모두 Cloudflare 로그인 자체가 안 돼 있어 콜백 타임아웃(`Timed out waiting for authorization code`)으로 실패 — 사용자가 브라우저에서 Cloudflare 계정에 먼저 로그인한 뒤 `wrangler login`을 재시도해야 함(계정 행동, 세션이 대신 못 함). 다음 세션에서 로그인 여부 확인 후 `npm run build`(이미 로컬에서 통과 확인됨) + `wrangler pages deploy`로 이어서 진행.
+
 ### WEB-6. 웹 푸시(Web Push) 알림 배포 (코드 완료, 사용자의 Render 설정 + 실사용자 클릭 대기)
 **무엇** — 앱 설치 없이 브라우저로 알림 받는 채널. **BE 무의존(자체 완결), 코드는 끝났고 배포·검증만 남음.**
 **왜** — 모바일 APK 사이드로드가 Play Protect에 막혀 대안으로 도입(2026-08-24). `nl.martijndwars:web-push`로 VAPID 서명+RFC 8291 암호화, `UserSettings.web_push_subscriptions`(JSON 배열)에 구독 저장, `PushService`가 FCM과 독립적으로 발송. 설정 화면에 "브라우저 알림 켜기" 카드+`public/sw.js` 구현 완료.
