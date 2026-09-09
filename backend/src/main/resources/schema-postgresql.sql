@@ -69,3 +69,10 @@ ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS web_push_subscriptions TEXT;
 INSERT INTO user_settings (id, push_time, interest_keywords, fcm_tokens)
   VALUES (1, '08:00', '', '')
   ON CONFLICT (id) DO NOTHING;
+
+-- Supabase Security Advisor(RLS Disabled in Public) 대응 — 백엔드는 BYPASSRLS 권한을 가진
+-- postgres 계정(Session Pooler)으로 접속해 영향 없음. PostgREST(anon/authenticated) 경로만 차단.
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE briefings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE briefing_news ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
