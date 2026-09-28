@@ -38,9 +38,7 @@ export function SettingsPage() {
       message.success('설정을 저장했습니다.')
       reload()
     } catch (err) {
-      if (err instanceof ApiRequestError && err.status === 401) {
-        message.error('API 키가 올바르지 않습니다. VITE_SETTINGS_API_KEY 설정을 확인하세요.')
-      } else if (err instanceof ApiRequestError) {
+      if (err instanceof ApiRequestError) {
         message.error(err.apiError.message)
       } else {
         message.error('설정 저장에 실패했습니다.')

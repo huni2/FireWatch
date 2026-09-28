@@ -1,6 +1,7 @@
 // 백엔드(FireWatch backend) REST API 클라이언트. Design Ref: docs/02-design/features/firewatch.design.md §4.
+import { getDeviceId } from './deviceId'
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
-const SETTINGS_API_KEY = import.meta.env.VITE_SETTINGS_API_KEY ?? ''
 
 export type DataSourceStatus = 'NORMAL' | 'FALLBACK'
 
@@ -163,7 +164,7 @@ export function fetchAuditLogs(params: {
 }
 
 export function fetchSettings(): Promise<Settings> {
-  return request<Settings>('/api/settings')
+  return request<Settings>('/api/settings', { headers: { 'X-Device-Id': getDeviceId() } })
 }
 
 export function updateSettings(input: {
@@ -174,7 +175,7 @@ export function updateSettings(input: {
 }): Promise<Settings> {
   return request<Settings>('/api/settings', {
     method: 'PUT',
-    headers: { 'X-API-Key': SETTINGS_API_KEY },
+    headers: { 'X-Device-Id': getDeviceId() },
     body: JSON.stringify(input),
   })
 }
