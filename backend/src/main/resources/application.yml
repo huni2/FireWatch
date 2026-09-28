@@ -43,6 +43,14 @@ firewatch:
     # 2026-08-23 — 사용자가 설정한 pushTime을 실제로 반영하기 위해 GitHub Actions가 15분마다
     # /api/scheduler/trigger-if-due를 폴링한다. 이 값은 그 폴링 주기보다 커야 놓치는 창이 없다.
     poll-window-minutes: 20
+    # 2026-09 공개 배포 전환 — 사용자마다 pushTime이 달라져 "브리핑 생성 시각"과 "발송 시각"을
+    # 분리했다. 이 시각을 지나야(그리고 오늘자 브리핑이 아직 없어야) 생성 파이프라인을 돌린다 —
+    # 어떤 사용자의 이른 pushTime보다도 먼저 데이터가 준비되도록 여유를 둔 고정값.
+    generate-after: "07:00"
+  google:
+    # Google 로그인(선택적 기기 간 동기화) ID 토큰 검증용 audience. 모바일 앱의 Android OAuth
+    # 클라이언트 ID — 여러 개면 쉼표로 구분(예: 웹 클라이언트 ID를 추가로 발급한 경우).
+    oauth-client-ids: ${GOOGLE_OAUTH_CLIENT_IDS:}
   audit:
     # 이 시간(ms)을 넘긴 "성공" 호출은 AuditLogAspect가 WARNING으로 기록한다 (명세서 5.1절)
     warning-threshold-ms: 3000

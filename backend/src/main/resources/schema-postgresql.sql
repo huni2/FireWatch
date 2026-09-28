@@ -70,9 +70,32 @@ INSERT INTO user_settings (id, push_time, interest_keywords, fcm_tokens)
   VALUES (1, '08:00', '', '')
   ON CONFLICT (id) DO NOTHING;
 
+-- 공개 배포 전환(2026-09) — 기기별 익명 저장이 기본, Google 계정 연동은 선택(entity/UserSettings.kt 참고).
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS device_id VARCHAR(64) UNIQUE;
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS user_id BIGINT;
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS last_notified_date DATE;
+-- 기존 유일한 행(소유자, id=1)에 고정 device_id를 부여 — 웹 클라이언트가 로컬에 deviceId가 없으면
+-- 이 값으로 폴백해 기존 설정을 그대로 이어받는다(web/src/lib/deviceId.ts 참고).
+UPDATE user_settings SET device_id = 'legacy-owner-device' WHERE id = 1 AND device_id IS NULL;
+
+CREATE TABLE IF NOT EXISTS app_users (
+  id BIGSERIAL PRIMARY KEY,
+  google_sub VARCHAR(255) NOT NULL UNIQUE,
+  email VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS device_links (
+  device_id VARCHAR(64) PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  linked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Supabase Security Advisor(RLS Disabled in Public) 대응 — 백엔드는 BYPASSRLS 권한을 가진
 -- postgres 계정(Session Pooler)으로 접속해 영향 없음. PostgREST(anon/authenticated) 경로만 차단.
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE briefings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE briefing_news ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE app_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE device_links ENABLE ROW LEVEL SECURITY;

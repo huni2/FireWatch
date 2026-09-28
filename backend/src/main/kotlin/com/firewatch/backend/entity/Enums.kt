@@ -8,6 +8,7 @@ enum class AuditEventType {
     NEWS_API,
     FCM_PUSH,
     USER_SETTING,
+    AUTH,
     ERROR,
     // service 패키지 클래스가 AuditedComponent를 구현하지 않았을 때의 기본값(개발 중 누락을 눈에 띄게 함)
     UNCATEGORIZED,

@@ -38,6 +38,9 @@ dependencies {
 	// web-push의 httpasyncclient는 runtime scope라 PushService.send()의 반환 타입(HttpResponse)이
 	// 컴파일 타임에 안 보임 — implementation으로 승격.
 	implementation("org.apache.httpcomponents:httpasyncclient:4.1.5")
+	// Design Ref: 공개 배포 전환(2026-09) — Google 로그인 ID 토큰 검증(GoogleIdTokenVerifier). JWKS 캐싱·
+	// 키 로테이션·서명 검증을 직접 구현하지 않고 Google 공식 라이브러리에 위임(보안에 직결되는 부분).
+	implementation("com.google.api-client:google-api-client:2.7.0")
 	runtimeOnly("com.h2database:h2")
 	// prod 프로필(Render)에서 Supabase Postgres 연결용 — ADR 0009
 	runtimeOnly("org.postgresql:postgresql")

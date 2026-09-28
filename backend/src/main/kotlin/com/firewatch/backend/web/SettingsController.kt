@@ -1,8 +1,6 @@
 package com.firewatch.backend.web
 
-import com.firewatch.backend.entity.SINGLETON_SETTINGS_ID
-import com.firewatch.backend.entity.UserSettings
-import com.firewatch.backend.repository.UserSettingsRepository
+import com.firewatch.backend.repository.SettingsIdentityResolver
 import com.firewatch.backend.service.SettingsService
 import com.firewatch.backend.service.SettingsUpdateCommand
 import com.firewatch.backend.web.dto.SettingsResponse
@@ -19,24 +17,25 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
 
-// Design Ref: §4.1 — GET/PUT /api/settings. PUT은 X-API-Key 필요(ADR 0004).
+// Design Ref: §4.1 — GET/PUT /api/settings. 공개 배포 전환(2026-09)으로 둘 다 X-Device-Id가
+// 필요하다 — 예전엔 사용자가 하나뿐이라 GET이 인증 없이 그 하나를 그냥 돌려줬지만, 지금은 "누구의
+// 설정인지" 알아야 한다. 쓰기 권한은 공유 API 키 대신 "이 deviceId를 안다"는 사실 자체다.
 @RestController
 @RequestMapping("/api/settings")
 class SettingsController(
-    private val userSettingsRepository: UserSettingsRepository,
+    private val identityResolver: SettingsIdentityResolver,
     private val settingsService: SettingsService,
     private val rateLimiter: SettingsRateLimiter,
 ) {
     @GetMapping
-    suspend fun get(): SettingsResponse = withContext(Dispatchers.IO) {
-        val settings = userSettingsRepository.findById(SINGLETON_SETTINGS_ID)
-            .orElseGet { UserSettings(id = SINGLETON_SETTINGS_ID) }
-        settings.toResponse()
-    }
+    suspend fun get(@RequestHeader("X-Device-Id", required = false) deviceId: String?): SettingsResponse =
+        withContext(Dispatchers.IO) {
+            identityResolver.resolveForDevice(deviceId.requireDeviceId()).toResponse()
+        }
 
     @PutMapping
     suspend fun update(
-        @RequestHeader("X-API-Key", required = false) apiKey: String?,
+        @RequestHeader("X-Device-Id", required = false) deviceId: String?,
         @Valid @RequestBody request: SettingsUpdateRequest,
         exchange: ServerWebExchange,
     ): SettingsResponse = withContext(Dispatchers.IO) {
@@ -45,12 +44,12 @@ class SettingsController(
             throw TooManyRequestsException()
         }
         val command = SettingsUpdateCommand(
+            deviceId = deviceId.requireDeviceId(),
             pushTime = request.pushTime,
             interestKeywords = request.interestKeywords,
             watchedStocks = request.watchedStocks,
             fcmToken = request.fcmToken,
             webPushSubscription = request.webPushSubscription,
-            apiKey = apiKey,
             clientIp = clientIp,
         )
         settingsService.update(command).toResponse()

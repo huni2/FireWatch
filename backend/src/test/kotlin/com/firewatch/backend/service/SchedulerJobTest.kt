@@ -24,14 +24,12 @@ class SchedulerJobTest {
     private val geminiBriefingService = mockk<GeminiBriefingService>()
     private val financialDataService = mockk<FinancialDataService>()
     private val newsService = mockk<NewsService>(relaxed = true)
-    private val pushService = mockk<PushService>(relaxed = true)
     private val briefingRepository = mockk<BriefingRepository>(relaxed = true)
     private val newsArticleRepository = mockk<com.firewatch.backend.repository.NewsArticleRepository>(relaxed = true)
     private val schedulerJob = SchedulerJob(
         geminiBriefingService,
         financialDataService,
         newsService,
-        pushService,
         briefingRepository,
         newsArticleRepository,
         expectedApiKey = "secret-key",
@@ -60,7 +58,7 @@ class SchedulerJobTest {
     }
 
     @Test
-    fun `둘 다 성공하면 NORMAL로 저장하고 푸시를 보낸다`() {
+    fun `둘 다 성공하면 NORMAL로 저장한다`() {
         every { briefingRepository.findByBriefingDate(today) } returns null
         every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns
             GeminiBriefingResult(
@@ -77,7 +75,6 @@ class SchedulerJobTest {
         assertEquals(DataSourceStatus.NORMAL, saved.captured.dataSourceStatus)
         assertEquals(BigDecimal("4406.1"), saved.captured.goldPrice)
         assertEquals("반도체,금리인하", saved.captured.trendingKeywordsRaw)
-        verify { pushService.sendBriefingNotification(saved.captured) }
     }
 
     @Test

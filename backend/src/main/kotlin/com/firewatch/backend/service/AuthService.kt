@@ -1,0 +1,53 @@
+package com.firewatch.backend.service
+
+import com.firewatch.backend.audit.AuditedComponent
+import com.firewatch.backend.client.GoogleIdentityVerifier
+import com.firewatch.backend.entity.AppUser
+import com.firewatch.backend.entity.AuditEventType
+import com.firewatch.backend.entity.DeviceLink
+import com.firewatch.backend.entity.UserSettings
+import com.firewatch.backend.repository.AppUserRepository
+import com.firewatch.backend.repository.DeviceLinkRepository
+import com.firewatch.backend.repository.UserSettingsRepository
+import com.firewatch.backend.web.UnauthorizedException
+import org.springframework.stereotype.Service
+
+/**
+ * Design Ref: 공개 배포 전환(2026-09) — 기기별 익명 저장이 기본이고, 이 서비스는 사용자가 설정
+ * 화면에서 "Google 계정 연동"을 선택했을 때만 호출된다. 로그인 세션이라는 개념이 없다 — 연동은
+ * device_links에 한 번 기록되는 걸로 끝나고, 이후 요청은 계속 X-Device-Id만으로 식별된다.
+ *
+ * 최초로 이 계정에 연동하는 기기의 기존 설정(관심 종목 등)을 그대로 그 계정의 공유 행으로
+ * 승격시킨다 — "연동하면 지금까지 쓰던 게 사라진다"는 걱정을 없애려는 의도(사용자 요청 배경).
+ * 이미 다른 기기가 먼저 연동해 공유 행이 있으면(두 번째 이후 기기), 이 기기의 기존 데이터는
+ * 버리고 계정의 공유 행에 합류한다 — 동기화가 목적이므로 의도된 동작.
+ */
+@Service
+class AuthService(
+    private val googleIdentityVerifier: GoogleIdentityVerifier,
+    private val appUserRepository: AppUserRepository,
+    private val deviceLinkRepository: DeviceLinkRepository,
+    private val userSettingsRepository: UserSettingsRepository,
+) : AuditedComponent {
+    override val auditEventType = AuditEventType.AUTH
+
+    fun linkGoogleAccount(deviceId: String, idToken: String): UserSettings {
+        val identity = googleIdentityVerifier.verify(idToken)
+            ?: throw UnauthorizedException("Google 로그인 확인에 실패했습니다.")
+
+        val appUser = appUserRepository.findByGoogleSub(identity.googleSub)
+            ?: appUserRepository.save(AppUser(googleSub = identity.googleSub, email = identity.email))
+        val userId = appUser.id ?: error("저장된 AppUser에 id가 없음")
+
+        val settings = userSettingsRepository.findByUserId(userId)
+            ?: userSettingsRepository.findByDeviceId(deviceId)?.also {
+                it.deviceId = null
+                it.userId = userId
+            }
+            ?: UserSettings(userId = userId)
+        val saved = userSettingsRepository.save(settings)
+
+        deviceLinkRepository.save(DeviceLink(deviceId = deviceId, userId = userId))
+        return saved
+    }
+}

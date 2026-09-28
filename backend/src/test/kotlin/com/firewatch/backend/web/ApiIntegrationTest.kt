@@ -97,20 +97,26 @@ class ApiIntegrationTest @Autowired constructor(
     }
 
     @Test
-    fun `설정 변경은 X-API-Key 없으면 401을 반환한다`() {
+    fun `설정 조회 갱신 모두 X-Device-Id 없으면 400을 반환한다`() {
+        webTestClient.get().uri("/api/settings")
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody()
+            .jsonPath("$.error.code").isEqualTo("VALIDATION_ERROR")
+
         webTestClient.put().uri("/api/settings")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(mapOf("pushTime" to "07:30", "interestKeywords" to listOf("AI")))
             .exchange()
-            .expectStatus().isUnauthorized
+            .expectStatus().isBadRequest
             .expectBody()
-            .jsonPath("$.error.code").isEqualTo("UNAUTHORIZED")
+            .jsonPath("$.error.code").isEqualTo("VALIDATION_ERROR")
     }
 
     @Test
-    fun `설정 변경은 올바른 X-API-Key로 성공한다`() {
+    fun `설정 변경은 X-Device-Id만으로 성공하고, 그 기기로 다시 조회하면 갱신된 값이 보인다`() {
         webTestClient.put().uri("/api/settings")
-            .header("X-API-Key", "test-key")
+            .header("X-Device-Id", "device-1")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(mapOf("pushTime" to "07:30", "interestKeywords" to listOf("AI", "반도체")))
             .exchange()
@@ -118,12 +124,36 @@ class ApiIntegrationTest @Autowired constructor(
             .expectBody()
             .jsonPath("$.pushTime").isEqualTo("07:30")
             .jsonPath("$.interestKeywords.length()").isEqualTo(2)
+
+        webTestClient.get().uri("/api/settings")
+            .header("X-Device-Id", "device-1")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.pushTime").isEqualTo("07:30")
+    }
+
+    @Test
+    fun `기기가 다르면 서로 다른 설정을 갖는다`() {
+        webTestClient.put().uri("/api/settings")
+            .header("X-Device-Id", "device-a")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(mapOf("pushTime" to "06:00", "interestKeywords" to emptyList<String>()))
+            .exchange()
+            .expectStatus().isOk
+
+        webTestClient.get().uri("/api/settings")
+            .header("X-Device-Id", "device-b")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.pushTime").isEqualTo("08:00") // device-b는 아직 만들어진 적 없어 기본값
     }
 
     @Test
     fun `설정 변경은 pushTime 형식이 틀리면 400과 fieldErrors를 반환한다`() {
         webTestClient.put().uri("/api/settings")
-            .header("X-API-Key", "test-key")
+            .header("X-Device-Id", "device-1")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(mapOf("pushTime" to "25:99", "interestKeywords" to emptyList<String>()))
             .exchange()

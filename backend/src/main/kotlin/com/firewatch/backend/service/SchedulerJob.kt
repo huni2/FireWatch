@@ -19,10 +19,12 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 /**
- * Design Ref: §2.2 — 매일 08:00 KST(cron `firewatch.scheduler.cron`) 파이프라인 오케스트레이션.
+ * Design Ref: §2.2 — 매일 08:00 KST(cron `firewatch.scheduler.cron`) "오늘자 브리핑 생성" 오케스트레이션.
  * 이 클래스 자체가 audit_logs에 event_type=SCHEDULER로 기록되고, 내부에서 부르는
- * [GeminiBriefingService](GEMINI_API), [FinancialDataService](FINANCIAL_API), [PushService](FCM_PUSH)는
- * 각자 독립된 이벤트로 남는다(명세서 1.2절이 요구하는 감사 항목 그대로).
+ * [GeminiBriefingService](GEMINI_API), [FinancialDataService](FINANCIAL_API)는 각자 독립된 이벤트로
+ * 남는다(명세서 1.2절이 요구하는 감사 항목 그대로). 푸시 발송([PushService], FCM_PUSH)은 사용자마다
+ * pushTime이 다를 수 있어(공개 배포 전환, 2026-09) 이 클래스가 아니라 [com.firewatch.backend.web.SchedulerController]가
+ * 별도로 호출한다 — 생성(전역, 하루 1회)과 발송(사용자별)의 책임을 분리했다.
  *
  * FALLBACK 판정(명세서 5.1절 "Gemini API 장애로 Yahoo/수출입은행 기본 지표로 대체 발송")은
  * **Gemini가 실패했을 때만** 적용한다 — 금융 API만 실패한 경우는 해당 필드만 비운 채 NORMAL로 저장한다
@@ -34,7 +36,6 @@ class SchedulerJob(
     private val geminiBriefingService: GeminiBriefingService,
     private val financialDataService: FinancialDataService,
     private val newsService: NewsService,
-    private val pushService: PushService,
     private val briefingRepository: BriefingRepository,
     private val newsArticleRepository: NewsArticleRepository,
     @Value("\${firewatch.settings.api-key}") private val expectedApiKey: String,
@@ -145,9 +146,10 @@ class SchedulerJob(
                 },
             )
         }
-
-        runCatching { pushService.sendBriefingNotification(briefing) }
-            .onFailure { log.warn("FCM 발송 실패 — 브리핑 저장은 이미 완료됐으므로 스케줄러 자체는 실패로 보지 않음", it) }
+        // 푸시 발송은 여기서 하지 않는다 — 공개 배포 전환(2026-09) 이후 사용자마다 pushTime이 달라서,
+        // "생성"(여기, 하루 1회 전역)과 "발송"(사용자별 pushTime)을 분리했다. SchedulerController가
+        // 매 폴링마다 PushService.notifyDueUsers()를 별도로 호출해 지금 시각이 자기 pushTime인
+        // 사용자에게만 보낸다.
     }
 
     companion object {
