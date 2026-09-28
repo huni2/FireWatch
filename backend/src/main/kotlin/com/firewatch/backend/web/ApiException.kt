@@ -17,3 +17,6 @@ class UnauthorizedException(message: String = "API 키가 올바르지 않습니
 
 class ValidationException(message: String, fieldErrors: Map<String, String>) :
     ApiException("VALIDATION_ERROR", message, HttpStatus.BAD_REQUEST, mapOf("fieldErrors" to fieldErrors))
+
+class TooManyRequestsException(message: String = "요청이 너무 많습니다. 잠시 후 다시 시도하세요.") :
+    ApiException("TOO_MANY_REQUESTS", message, HttpStatus.TOO_MANY_REQUESTS)

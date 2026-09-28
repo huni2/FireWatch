@@ -25,6 +25,7 @@ import org.springframework.web.server.ServerWebExchange
 class SettingsController(
     private val userSettingsRepository: UserSettingsRepository,
     private val settingsService: SettingsService,
+    private val rateLimiter: SettingsRateLimiter,
 ) {
     @GetMapping
     suspend fun get(): SettingsResponse = withContext(Dispatchers.IO) {
@@ -40,6 +41,9 @@ class SettingsController(
         exchange: ServerWebExchange,
     ): SettingsResponse = withContext(Dispatchers.IO) {
         val clientIp = exchange.request.remoteAddress?.address?.hostAddress
+        if (!rateLimiter.allow(clientIp ?: "unknown")) {
+            throw TooManyRequestsException()
+        }
         val command = SettingsUpdateCommand(
             pushTime = request.pushTime,
             interestKeywords = request.interestKeywords,

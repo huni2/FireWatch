@@ -1,6 +1,9 @@
 server:
   # Render 등 대부분의 PaaS가 PORT 환경변수로 리스닝 포트를 지정한다.
   port: ${PORT:8080}
+  # Render가 리버스 프록시 뒤에서 요청을 넘기므로, 이게 없으면 exchange.request.remoteAddress가
+  # 항상 프록시 IP로 찍혀 감사로그의 clientIp도, IP 기준 rate limit(SettingsRateLimiter)도 무의미해진다.
+  forward-headers-strategy: framework
 
 spring:
   application:
