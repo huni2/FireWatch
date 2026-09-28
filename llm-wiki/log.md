@@ -9,6 +9,10 @@
 > **담당 태그**: `[BE]` 백엔드(Kotlin/Spring) 코드 · `[WEB]` 웹(React/AntD) 코드 · `[APP]` 모바일(React Native) 코드 · `[PROJ]` 위키·문서·설정 등 코드 외 작업.
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
+## 2026-09-28
+- **[BE] Gemini API 감사로그 FAILURE 원인 규명 — 20초 클라이언트 타임아웃이 실제 응답 지연보다 타이트했음**: 사용자가 "감사로그 보니 Gemini API 실패가 뜬다"고 보고. 프로덕션 `/api/audit-logs?eventType=GEMINI_API`를 직접 조회해 최근 46건을 확인한 결과, FAILURE 6건 전부 정확히 20000~20054ms에서 `TimeoutException`(WebClient `.timeout(Duration.ofSeconds(20))` 경계), WARNING 3건은 18.2~19.8초 만에 실제로는 성공 — 429/404 같은 무료 티어 쿼터 문제([[Decisions/0011-gemini-no-grounding]])가 아니라 `GeminiClient.TIMEOUT_SECONDS`(20L)가 실측 지연(18~20초대)에 비해 여유가 없어 경계선에서 자주 떨어지는 것으로 확정. `SchedulerController`의 `/trigger`·`/trigger-if-due`가 파이프라인을 백그라운드 코루틴으로 돌려 202 즉시 응답하는 구조(HTTP 호출자가 기다리지 않음)라 이 타임아웃을 늘려도 GitHub Actions curl 타임아웃(280s)이나 다른 곳과 충돌 없음을 확인 후, 사용자 확인을 거쳐 60초로 상향. `./gradlew build` 전체 통과.
+  `backend/src/main/kotlin/com/firewatch/backend/client/GeminiClient.kt` 변경.
+
 ## 2026-09-09
 - **[PROJ] GitHub Actions 스케줄러 폴링 반복 실패(curl exit 28) 원인 진단 + cron-job.org 상시 핑 도입**: 사용자가 "이번 주 내내 폴링 실패가 뜬다"고 보고. `gh run list`/`gh run view --json jobs`로 9/2~9/9 실행 이력을 전수 조사한 결과 7건 실패 중 6건이 정확히 `curl --max-time 180`에서 끊긴 완전 무응답 타임아웃(HTTP 상태 코드조차 못 받음) — Render 무료 티어 콜드스타트(JVM+Supabase 커넥션 초기화)가 180초를 넘는 경우가 매주 몇 차례 반복되는 패턴으로 확인. 처음엔 당일 재배포와 겹친 우연으로 오판했으나 사용자 지적으로 재조사해 지난 일주일 내내 있던 기존 패턴임을 정정. 단, `/api/audit-logs?eventType=SCHEDULER` 조회로 실제 브리핑은 catch-up 로직 덕에 거의 매일 정상 생성되고 있음을 확인 — 기능 장애가 아니라 알림 노이즈 문제로 성격을 규정. 대응 2단계: ① `.github/workflows/daily-trigger.yml`의 `--max-time`을 180→280초로 늘림(public repo라 GitHub Actions 과금 문제 없음, 근거 주석 추가) — 커밋 후 push해 Render 재배포. ② 사용자가 cron-job.org에 가입해, `/api/settings`(인증 불필요 엔드포인트)를 10분 간격으로 GET하는 "FireWatch Backend Keep-Alive" 크론잡을 브라우저로 직접 생성 — Render 15분 무활동 슬립 자체를 막아 콜드스타트 발생 빈도를 원천적으로 줄이는 게 목적. 기존 GitHub Actions 폴링(`/api/scheduler/trigger-if-due`)은 "언제 브리핑을 실행할지" 판단 역할로 그대로 유지 — 두 메커니즘의 책임 분리(cron-job.org=안 재우기, GH Actions=트리거 판단), API 키를 제3자 서비스에 넘기지 않음.
   `.github/workflows/daily-trigger.yml` 변경. cron-job.org에 크론잡 1건 신규 생성(리포 외부, 코드 변경 아님).

@@ -77,7 +77,7 @@ class GeminiClient(
     }
 
     companion object {
-        private const val TIMEOUT_SECONDS = 20L
+        private const val TIMEOUT_SECONDS = 60L
         private val STOCK_LINE_REGEX = Regex("""^추천\s*종목\s*[:：]\s*(.+)$""", RegexOption.MULTILINE)
         private val KEYWORD_LINE_REGEX = Regex("""^핵심\s*키워드\s*[:：]\s*(.+)$""", RegexOption.MULTILINE)
 
