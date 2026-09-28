@@ -50,17 +50,17 @@
 ### APP-2. FCM 푸시 수신 핸들러 (코드 완료, 사용자의 EAS 연결 대기)
 **무엇** — Expo Notifications로 디바이스 토큰 등록·FCM 수신(FR-03). **BE-5 의존, 코드는 끝났고 완료 기준만 미충족.**
 **왜** — 모바일이 브리핑을 받는 유일한 경로. Design 단계에 없던 발견 2건으로 범위가 커짐 — ① `fcm_tokens` 컬럼은 있는데 등록 API가 없어 `PUT /api/settings`에 `fcmToken` 필드 추가(완료). ② 실기기 플랫폼을 "둘 다 열어두고 싶다"고 답해와, 기존 Firebase Admin SDK 직접 발송(iOS·Android 토큰 형식 차이로 react-native-firebase+커스텀 빌드가 필요해 Expo Go 원칙과 충돌)을 Expo Push Service(`exp.host`)로 전환(완료) — `FcmSender` 인터페이스 덕에 `PushService`는 무변경. 코드·`useNotificationRegistration` 훅·백엔드 `ExpoPushSender`까지 전부 구현·테스트 완료.
-**완료 기준** — 테스트 발송이 실제 기기에 도착. **아직 미충족** — `getExpoPushTokenAsync()`가 EAS `projectId`(`app.json`의 `extra.eas.projectId`)를 필요로 하는데, 무료 Expo 계정으로 `mobile/`에서 `npx eas login && npx eas init`을 한 번 실행해야 채워짐(계정 행동이라 세션이 대신 못 함, `mobile/README.md`에 절차 기록). 연결 전엔 앱이 콘솔 경고만 남기고 조용히 토큰 등록을 건너뜀(크래시 아님).
+**완료 기준** — 테스트 발송이 실제 기기에 도착. **EAS 연결은 완료됨(2026-09-28 확인 — `app.json`의 `extra.eas.projectId`에 실제 값이 채워져 있고 EAS CLI가 huni2 계정으로 로그인돼 있음)**. 남은 건 실기기 왕복 검증뿐.
 
 ### APP-3. 모바일 브리핑 UI (코드 완료, 사용자의 실기기 검증 대기)
 **무엇** — 알림 터치 시 바텀시트로 상세 브리핑 카드가 올라오는 UI([[design]] §5). **BE-6 의존, 코드는 끝났고 완료 기준만 미충족.**
 **왜** — 모바일에서의 핵심 소비 경험. `useLatestBriefing` 훅(조회 실패 시 AsyncStorage 캐시 폴백)+`BriefingScreen`(요약 카드·추천종목 칩)+`BriefingSheet`(`@gorhom/bottom-sheet`, 알림 탭 시 `useLastNotificationResponse`로 자동 오픈) 구현 완료. `@gorhom/bottom-sheet` v5가 RN 0.86/reanimated 4와 호환되는지 `npm info`로 먼저 확인 후 설치(Design이 "Do 단계에서 확인 후 확정"으로 미뤄뒀던 부분).
-**완료 기준** — 알림 → 상세 화면 전환이 매끄럽고, 오프라인에서도 마지막 브리핑이 보임. **아직 미충족** — APP-2와 마찬가지로 EAS 프로젝트 연결(`npx eas init`)과 실기기 검증이 필요(세션이 대신 못 함).
+**완료 기준** — 알림 → 상세 화면 전환이 매끄럽고, 오프라인에서도 마지막 브리핑이 보임. EAS 연결은 완료됨(APP-2 참고) — 남은 건 실기기 검증뿐(세션이 대신 못 함).
 
 ### APP-4. 설정 화면(모바일) (코드 완료, 사용자의 실기기 검증 대기)
 **무엇** — 관심 키워드·수신 시간 설정 UI. **BE-7 의존, 코드는 끝났고 완료 기준만 미충족.**
 **왜** — WEB-4와 동일 기능의 모바일 대응. `@react-native-community/datetimepicker`로 수신 시간, 웹의 `KeywordInput`과 동일 동작(추가/삭제, 최대 20개)의 RN 버전으로 관심 키워드 — 관심 종목은 이 화면에서 안 건드리고 그대로 넘김(web과 동일 원칙). 구현 중 이 SDK의 React Compiler 린트(`react-hooks/set-state-in-effect`)가 "서버 값을 로컬 편집 상태로 동기화"하는 정당한 effect 패턴(web에 이미 문서화된 것과 동일)을 에러로 잡아, `eslint-disable-next-line`으로 명시 처리.
-**완료 기준** — WEB-4와 동일 API로 왕복, 값이 양쪽에서 일치. **아직 미충족** — APP-2/APP-3와 마찬가지로 EAS 프로젝트 연결과 실기기 검증이 필요(세션이 대신 못 함). **이걸로 Phase 2(APP-1~4) 코드는 전부 완료 — 남은 건 실기기 검증 하나뿐.**
+**완료 기준** — WEB-4와 동일 API로 왕복, 값이 양쪽에서 일치. EAS 연결은 완료됨(APP-2 참고) — 남은 건 실기기 검증뿐(세션이 대신 못 함). **이걸로 Phase 2(APP-1~4) 코드는 전부 완료 — 남은 건 실기기 검증 하나뿐.**
 
 ## 종료 기록
 
