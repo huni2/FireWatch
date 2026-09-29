@@ -1,7 +1,8 @@
 // 백엔드(FireWatch backend) REST API 클라이언트. web/src/lib/api.ts와 동일 스타일 —
 // Design Ref: docs/02-design/features/mobile-app.design.md §4.
+import { getDeviceId } from './deviceId'
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:8080'
-const SETTINGS_API_KEY = process.env.EXPO_PUBLIC_SETTINGS_API_KEY ?? ''
 
 export interface Settings {
   pushTime: string
@@ -60,21 +61,23 @@ export function fetchLatestBriefing(): Promise<Briefing> {
   return request<Briefing>('/api/briefings/latest')
 }
 
-export function fetchSettings(): Promise<Settings> {
-  return request<Settings>('/api/settings')
+export async function fetchSettings(): Promise<Settings> {
+  const deviceId = await getDeviceId()
+  return request<Settings>('/api/settings', { headers: { 'X-Device-Id': deviceId } })
 }
 
 // fcmToken만 새로 등록하고 기존 pushTime/keywords/watchedStocks는 그대로 유지 — 호출부가
 // fetchSettings()로 먼저 현재 값을 읽어 함께 넘겨야 한다(백엔드는 값을 그대로 덮어씀).
-export function updateSettings(input: {
+export async function updateSettings(input: {
   pushTime: string
   interestKeywords: string[]
   watchedStocks: string[]
   fcmToken?: string
 }): Promise<Settings> {
+  const deviceId = await getDeviceId()
   return request<Settings>('/api/settings', {
     method: 'PUT',
-    headers: { 'X-API-Key': SETTINGS_API_KEY },
+    headers: { 'X-Device-Id': deviceId },
     body: JSON.stringify(input),
   })
 }

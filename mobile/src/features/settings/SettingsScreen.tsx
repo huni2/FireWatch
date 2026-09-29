@@ -50,9 +50,7 @@ export function SettingsScreen() {
       await updateSettings({ pushTime, interestKeywords: keywords, watchedStocks })
       Alert.alert('저장 완료', '설정을 저장했습니다.')
     } catch (error) {
-      if (error instanceof ApiRequestError && error.status === 401) {
-        Alert.alert('저장 실패', 'API 키가 올바르지 않습니다. EXPO_PUBLIC_SETTINGS_API_KEY 설정을 확인하세요.')
-      } else if (error instanceof ApiRequestError) {
+      if (error instanceof ApiRequestError) {
         Alert.alert('저장 실패', error.apiError.message)
       } else {
         Alert.alert('저장 실패', '설정 저장에 실패했습니다.')
