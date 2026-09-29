@@ -16,6 +16,11 @@
 
 ## 열린 과제 — 백엔드(BE)
 
+### BE-12. Google OAuth 클라이언트 ID 발급 + GOOGLE_OAUTH_CLIENT_IDS 환경변수 설정
+**무엇** — Google Cloud Console에서 이 앱용 OAuth 2.0 클라이언트 ID(Android 앱 + 필요 시 웹)를 발급하고, Render 백엔드 환경변수 `GOOGLE_OAUTH_CLIENT_IDS`(쉼표 구분, `firewatch.google.oauth-client-ids`가 읽음)에 등록. **APP-6(모바일 Google Sign-In UI) 선행 조건 — 계정 행동이라 세션이 대신 못 함.**
+**왜** — 공개 배포 전환(ADR 0012)으로 `GoogleIdTokenVerifierClient`가 ID 토큰의 audience를 검증하는데, 발급된 클라이언트 ID 없이는 실제 Google 로그인 왕복 자체가 불가능함.
+**완료 기준** — Google Cloud Console에 프로젝트+OAuth 동의 화면+클라이언트 ID(패키지명 `com.firewatch.mobile`, SHA-1 지문 등록) 준비 완료, Render에 `GOOGLE_OAUTH_CLIENT_IDS` 설정 후 재배포. 이후 모바일에서 실제 ID 토큰으로 `POST /api/auth/google/link` 왕복 확인.
+
 ### BE-10. 한국국채 10년물 수익률 데이터 소스 확보
 **무엇** — 한국 국고채 10년물 수익률(%)을 매일 브리핑 지표에 추가. **BE-9(완료, 종료 기록 참고) 후속.**
 **왜** — 사용자가 "금,은,환율,국채,국장,미장 다 볼 수 있고"라고 요청(2026-08-23)했는데, Yahoo Finance 비공식 API(`/v1/finance/search`, `/v8/finance/chart/`)로 여러 티커·검색어(`KR10YT=RR`, `KR10Y.B`, `098U`, `^KR10Y`, "Korea 10Y" 등)를 실측했지만 실제 수익률(%) 시계열을 주는 소스가 없었음(ETF 상품 가격만 검색됨 — `365780.KS`/`289670.KS`) — [[log]] 2026-08-23.
@@ -35,10 +40,10 @@
 
 ## 열린 과제 — 웹(WEB)
 
-### WEB-8. Cloudflare Pages 재배포 (WEB-7 반영, 사용자의 wrangler 로그인 대기)
-**무엇** — WEB-7(관심 키워드 추천 + 오늘의 핫이슈)에서 바꾼 `web/` 코드를 Cloudflare Pages에 반영. **BE 무의존(자체 완결), 코드는 끝났고 배포만 남음.**
-**왜** — Render(백엔드)는 git push로 자동 배포되지만 Cloudflare Pages(웹)는 `DEPLOY.md`에 명시된 대로 `wrangler pages deploy` 수동 실행이 필요하다 — 2026-09-01 세션이 이걸 놓쳐 "재배포 불필요"로 잘못 판단했다가, 2026-09-02 사용자가 "로컬에 있는게 배포쪽에 적용이 안 된 것 같다"고 지적해 발견([[log]] 2026-09-02). 라이브 번들에 "오늘의 핫이슈"/"오늘의 추천 키워드" 문자열이 전혀 없는 걸로 직접 확인.
-**완료 기준** — `npx wrangler pages deploy dist --project-name=firewatch` 실행 후 라이브 사이트에 새 UI가 뜸. **아직 미충족** — 이 환경에 `CLOUDFLARE_API_TOKEN`이 없어 `npx wrangler login`(브라우저 OAuth)이 필요한데, 두 차례 시도 모두 Cloudflare 로그인 자체가 안 돼 있어 콜백 타임아웃(`Timed out waiting for authorization code`)으로 실패 — 사용자가 브라우저에서 Cloudflare 계정에 먼저 로그인한 뒤 `wrangler login`을 재시도해야 함(계정 행동, 세션이 대신 못 함). 다음 세션에서 로그인 여부 확인 후 `npm run build`(이미 로컬에서 통과 확인됨) + `wrangler pages deploy`로 이어서 진행.
+### WEB-8. Cloudflare Pages 재배포 (WEB-7 반영, 사용자의 wrangler 로그인 대기) — 🚨 백엔드 배포 전에 반드시 선행 필요
+**무엇** — WEB-7(관심 키워드 추천 + 오늘의 핫이슈) + 2026-09-29 X-Device-Id 변경(ADR 0012)까지 바뀐 `web/` 코드를 Cloudflare Pages에 반영. **더 이상 "BE 무의존"이 아니다** — X-Device-Id 변경으로 지금은 웹↔백엔드 배포 순서가 서로 얽혀 있다.
+**왜** — Render(백엔드)는 git push로 자동 배포되지만 Cloudflare Pages(웹)는 `DEPLOY.md`에 명시된 대로 `wrangler pages deploy` 수동 실행이 필요하다 — 2026-09-01 세션이 이걸 놓쳐 "재배포 불필요"로 잘못 판단했다가, 2026-09-02 사용자가 "로컬에 있는게 배포쪽에 적용이 안 된 것 같다"고 지적해 발견([[log]] 2026-09-02). **2026-09-29부로 긴급도가 올라감** — 백엔드가 `X-Device-Id` 헤더 없는 요청을 이제 400으로 거부하는데(공개 배포 전환, ADR 0012), 지금 라이브인 웹 번들은 이 헤더를 안 보낸다. **백엔드를 웹보다 먼저(또는 웹 없이) 배포하면 설정 화면이 그 즉시 깨진다** — 반드시 웹을 먼저(또는 같이) 배포해야 한다.
+**완료 기준** — `npx wrangler pages deploy dist --project-name=firewatch` 실행 후 라이브 사이트에 새 UI가 뜸. **아직 미충족** — 이 환경에 `CLOUDFLARE_API_TOKEN`이 없어 `npx wrangler login`(브라우저 OAuth)이 필요한데, 두 차례 시도 모두 Cloudflare 로그인 자체가 안 돼 있어 콜백 타임아웃(`Timed out waiting for authorization code`)으로 실패 — 사용자가 브라우저에서 Cloudflare 계정에 먼저 로그인한 뒤 `wrangler login`을 재시도해야 함(계정 행동, 세션이 대신 못 함). 다음 세션에서 로그인 여부 확인 후 `npm run build`(이미 로컬에서 통과 확인됨) + `wrangler pages deploy`로 이어서 진행 — **끝난 뒤에야 백엔드 커밋(c17078f)을 push하는 순서를 지킬 것.**
 
 ### WEB-6. 웹 푸시(Web Push) 알림 배포 (코드 완료, 사용자의 Render 설정 + 실사용자 클릭 대기)
 **무엇** — 앱 설치 없이 브라우저로 알림 받는 채널. **BE 무의존(자체 완결), 코드는 끝났고 배포·검증만 남음.**
@@ -62,10 +67,16 @@
 **왜** — WEB-4와 동일 기능의 모바일 대응. `@react-native-community/datetimepicker`로 수신 시간, 웹의 `KeywordInput`과 동일 동작(추가/삭제, 최대 20개)의 RN 버전으로 관심 키워드 — 관심 종목은 이 화면에서 안 건드리고 그대로 넘김(web과 동일 원칙). 구현 중 이 SDK의 React Compiler 린트(`react-hooks/set-state-in-effect`)가 "서버 값을 로컬 편집 상태로 동기화"하는 정당한 effect 패턴(web에 이미 문서화된 것과 동일)을 에러로 잡아, `eslint-disable-next-line`으로 명시 처리.
 **완료 기준** — WEB-4와 동일 API로 왕복, 값이 양쪽에서 일치. EAS 연결은 완료됨(APP-2 참고) — 남은 건 실기기 검증뿐(세션이 대신 못 함). **이걸로 Phase 2(APP-1~4) 코드는 전부 완료 — 남은 건 실기기 검증 하나뿐.**
 
+### APP-6. 설정 화면에 "Google 계정 연동"(선택) 버튼 추가
+**무엇** — 공개 배포 전환(ADR 0012)으로 백엔드에 `POST /api/auth/google/link`가 생겼다 — 설정 화면에 선택적 연동 버튼을 추가해 기기 간 설정 동기화를 제공. **BE-12(Google OAuth 클라이언트 ID 발급) 선행 필요, APP-5 의존(X-Device-Id가 먼저 있어야 연동 요청의 기준이 됨).**
+**왜** — 사용자가 "즐겨찾기한 주식을 유지하려면 계정이 있어야 하지 않냐"고 요청한 배경 — 로그인 없이도 앱은 계속 쓸 수 있어야 하므로(기본은 익명 기기별 저장) 이건 "선택" 기능이다.
+**완료 기준** — 설정 화면에서 Google 로그인 → 서버가 반환한 설정(연동 전 이 기기의 관심종목 등이 유지됨)으로 화면이 갱신됨. 네이티브 Google Sign-In SDK(`@react-native-google-signin/google-signin` 등, Expo config plugin 필요) 도입 검토부터 시작 — Expo Go로는 커스텀 네이티브 모듈 제약이 있을 수 있어 dev build 필요 여부 먼저 확인.
+
 ## 종료 기록
 
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
+| APP-5 | 모바일 X-Device-Id 적용 | 완료. 공개 배포 전환(ADR 0012)에 맞춰 웹과 동일 패턴으로 갱신 — `deviceId.ts`(신규)는 웹의 `legacy-owner-device` 마이그레이션 없이 AsyncStorage에 없으면 새 익명 ID를 생성해 고정(모바일은 아직 실사용자 데이터가 없는 사이드로드 APK 단계). `getDeviceId()`가 비동기라 `fetchSettings`/`updateSettings`를 `async`로 전환. `EXPO_PUBLIC_SETTINGS_API_KEY` 제거(`.env.example`·`SettingsScreen` 401 분기 포함). `tsc --noEmit`·`expo lint` 통과 | `mobile/src/lib/{api.ts,deviceId.ts}` (2026-09-29 [[log]]) |
 | BE-11 | 관심 키워드 추천 + 핫이슈용 트렌드 키워드 | 완료. 등록 당시 가정했던 "신규 GET 엔드포인트"는 불필요했음 — `/api/briefings/latest`가 이미 그날 뉴스 전체를 내려주고 있어, 트렌드 키워드는 기존 1일 1회 Gemini 호출에 얹는 걸로 스코프 축소(별도 호출 없음, 무료 티어 쿼터 절약). `GeminiClient` 프롬프트에 "핵심키워드: A, B, C" 트레일링 라인 요청 추가(추천종목과 동일 정규식 패턴), `Briefing.trendingKeywordsRaw` 컬럼 추가. `NewsRssClient` 수집량을 5→20으로 늘리되(핫이슈 매칭 여지 확보), Gemini 프롬프트에는 여전히 상위 5건만 전달(8/28 Gemini TimeoutException 실측 이력이 있어 프롬프트 비대화로 인한 타임아웃 위험을 늘리지 않기 위함) — `SchedulerJob`이 DB 저장용과 Gemini 입력용 뉴스 목록을 분리. `./gradlew build`(신규 테스트 포함) 통과 | `backend/.../client/GeminiClient.kt`, `backend/.../service/SchedulerJob.kt`, `backend/.../entity/Briefing.kt` (2026-09-01 [[log]]) |
 | WEB-7 | 설정 화면 키워드 추천 UI + 대시보드 핫이슈 섹션 | 완료. RSS가 키워드 검색을 지원하지 않아([[Decisions/0010-rss-news-instead-of-gemini-grounding]]) 핫이슈는 "새로 검색"이 아니라 "오늘 이미 받은 뉴스를 관심 키워드로 클라이언트 사이드 필터링"으로 구현 — 새 백엔드 로직 없이 기존 `useLatestBriefing`(news)·`useSettings`(interestKeywords) 두 훅만으로 처리. `RelatedNewsCard`를 `title`/`emptyDescription` prop화해 재사용(새 컴포넌트 안 만듦). 설정 화면엔 오늘자 브리핑의 `trendingKeywords`를 클릭 가능한 추천 태그로 노출(이미 등록된 건 자동 제외, `KeywordInput` 내부 20개 상한 가드를 우회하므로 별도 체크 추가). 로컬 H2에 SQL로 브리핑·뉴스·설정을 직접 시드해 브라우저로 3가지 상태(키워드 없음=숨김/매칭 있음=필터링된 기사만 노출/매칭 없음=빈 상태 문구) 전부 실제 확인. `npm run build`·`npm run lint` 통과 | `web/src/features/dashboard/DashboardPage.tsx`, `web/src/features/settings/SettingsPage.tsx`, `web/src/features/news/components/RelatedNewsCard.tsx` (2026-09-01 [[log]]) |
 | APP-1 | 모바일 프로젝트 스캐폴딩 | 완료. `npx create-expo-app`(SDK 57 기본 템플릿)으로 `mobile/` 생성 후 데모 콘텐츠 전부 제거, NativeWind v4(babel/metro/tailwind config) 설치. 라우터 루트가 `mobile/app/`이 아니라 `mobile/src/app/`인 건 이 SDK 버전 템플릿의 최신 관례라 Design 문서 경로에서 소폭 벗어남(계층 분리 의도는 동일). `tsc --noEmit`·`expo lint`·`expo export --platform web`(정적 라우트 `/`·`/settings` 정상 생성) 통과. 실기기 Expo Go 검증은 사용자가 `npx expo start`로 직접 진행 필요 | `mobile/`, `docs/02-design/features/mobile-app.design.md` (2026-08-23 [[log]]) |
