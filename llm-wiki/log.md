@@ -9,6 +9,9 @@
 > **담당 태그**: `[BE]` 백엔드(Kotlin/Spring) 코드 · `[WEB]` 웹(React/AntD) 코드 · `[APP]` 모바일(React Native) 코드 · `[PROJ]` 위키·문서·설정 등 코드 외 작업.
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
+## 2026-10-02
+- **[PROJ] WEB-8 완료 기록을 llm-wiki에 반영**: 세션이 재개된 시점(실제 작업은 2026-09-30에 수행 — 아래 섹션)에 그 작업 내용을 `log.md`에 기록하고 `Next-Tasks.md`에서 WEB-8을 종료 기록으로 이동, 커밋·push. 코드 변경 없음.
+
 ## 2026-09-30
 - **[WEB] Cloudflare Pages 재배포(WEB-8) — wrangler 로그인 완료 후 진행**: 사용자가 Cloudflare 계정에 로그인한 뒤 `npx wrangler login`을 재시도하자 이번엔 OAuth 콜백이 즉시 성공(이전 두 차례는 계정 로그인 자체가 안 돼 있어 타임아웃 — [[log]] 2026-09-02). `npm run build` 통과 후 `npx wrangler pages deploy dist --project-name=firewatch` 실행, `https://firewatch-eqp.pages.dev`에 X-Device-Id 헤더 포함 최신 번들 반영 확인(curl 200). WEB-8 완료.
   리포 외부 작업(Cloudflare 계정 인증) + 웹 재배포. 코드 변경 없음.
