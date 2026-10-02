@@ -9,6 +9,12 @@
 > **담당 태그**: `[BE]` 백엔드(Kotlin/Spring) 코드 · `[WEB]` 웹(React/AntD) 코드 · `[APP]` 모바일(React Native) 코드 · `[PROJ]` 위키·문서·설정 등 코드 외 작업.
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
+## 2026-09-30
+- **[WEB] Cloudflare Pages 재배포(WEB-8) — wrangler 로그인 완료 후 진행**: 사용자가 Cloudflare 계정에 로그인한 뒤 `npx wrangler login`을 재시도하자 이번엔 OAuth 콜백이 즉시 성공(이전 두 차례는 계정 로그인 자체가 안 돼 있어 타임아웃 — [[log]] 2026-09-02). `npm run build` 통과 후 `npx wrangler pages deploy dist --project-name=firewatch` 실행, `https://firewatch-eqp.pages.dev`에 X-Device-Id 헤더 포함 최신 번들 반영 확인(curl 200). WEB-8 완료.
+  리포 외부 작업(Cloudflare 계정 인증) + 웹 재배포. 코드 변경 없음.
+- **[BE] 공개 배포 전환 커밋 7개 push 후 Render 배포 실패 — healthCheckPath가 X-Device-Id 요구 엔드포인트와 충돌해 발생, `/api/health` 신설로 해결**: WEB-8 완료 후 순서대로 대기 중이던 백엔드 커밋 7개(`c17078f` 등, X-Device-Id 필수화 포함)를 origin/main에 push — Render 배포가 "Timed Out"으로 실패(사용자가 배포 로그 공유). 원인 분석: `render.yaml`의 `healthCheckPath: /api/settings`가 바로 이번 변경으로 X-Device-Id 헤더를 요구하게 된 그 엔드포인트라, Render의 헬스체크 요청(헤더 없음)이 200 대신 400을 받아 "서비스 다운"으로 오판 → 타임아웃. 구버전 배포는 Render가 유지해 실제 다운타임은 없었음. 인증·업무 로직과 분리된 `HealthController`(`GET /api/health` → 항상 `"OK"`)를 신설하고 `render.yaml`의 `healthCheckPath`를 거기로 변경 — 로컬에서 jar를 직접 띄워 `/api/health` 200·`/api/settings`(헤더 없이) 400을 재현·확인 후 커밋·push. 재배포 완료 확인(`/api/health` 200), 프로덕션에서 X-Device-Id 유/무에 따른 200/400 분기도 재검증.
+  `backend/.../web/HealthController.kt`(신규)·`render.yaml` 변경.
+
 ## 2026-09-28
 - **[BE] Gemini API 감사로그 FAILURE 원인 규명 — 20초 클라이언트 타임아웃이 실제 응답 지연보다 타이트했음**: 사용자가 "감사로그 보니 Gemini API 실패가 뜬다"고 보고. 프로덕션 `/api/audit-logs?eventType=GEMINI_API`를 직접 조회해 최근 46건을 확인한 결과, FAILURE 6건 전부 정확히 20000~20054ms에서 `TimeoutException`(WebClient `.timeout(Duration.ofSeconds(20))` 경계), WARNING 3건은 18.2~19.8초 만에 실제로는 성공 — 429/404 같은 무료 티어 쿼터 문제([[Decisions/0011-gemini-no-grounding]])가 아니라 `GeminiClient.TIMEOUT_SECONDS`(20L)가 실측 지연(18~20초대)에 비해 여유가 없어 경계선에서 자주 떨어지는 것으로 확정. `SchedulerController`의 `/trigger`·`/trigger-if-due`가 파이프라인을 백그라운드 코루틴으로 돌려 202 즉시 응답하는 구조(HTTP 호출자가 기다리지 않음)라 이 타임아웃을 늘려도 GitHub Actions curl 타임아웃(280s)이나 다른 곳과 충돌 없음을 확인 후, 사용자 확인을 거쳐 60초로 상향. `./gradlew build` 전체 통과.
   `backend/src/main/kotlin/com/firewatch/backend/client/GeminiClient.kt` 변경.
