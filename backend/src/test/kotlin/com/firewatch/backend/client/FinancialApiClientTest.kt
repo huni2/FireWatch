@@ -67,4 +67,27 @@ class FinancialApiClientTest {
             FinancialApiClient.parseYahooPrice(mapOf("chart" to mapOf("result" to emptyList<Any>())), "SI=F")
         }
     }
+
+    @Test
+    fun `ECOS 응답에서 가장 최신 날짜의 DATA_VALUE를 뽑는다`() {
+        val response = mapOf(
+            "StatisticSearch" to mapOf(
+                "row" to listOf(
+                    mapOf("TIME" to "20260930", "DATA_VALUE" to "4.407"),
+                    mapOf("TIME" to "20261001", "DATA_VALUE" to "4.436"),
+                ),
+            ),
+        )
+
+        val yield10y = FinancialApiClient.parseEcosLatestYield(response)
+
+        assertEquals(BigDecimal("4.436"), yield10y)
+    }
+
+    @Test
+    fun `ECOS 응답에 row가 없으면 예외를 던진다`() {
+        assertFailsWith<IllegalStateException> {
+            FinancialApiClient.parseEcosLatestYield(mapOf("StatisticSearch" to mapOf("row" to emptyList<Any>())))
+        }
+    }
 }

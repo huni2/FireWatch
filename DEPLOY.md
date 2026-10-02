@@ -34,6 +34,7 @@ Render 무료 티어는 15분 무활동 시 슬립한다. 내부 `@Scheduled` cr
    |---|---|
    | `GEMINI_API_KEY` | Google AI Studio에서 발급(2026-08-21 기준 무료 티어에서 Search Grounding이 막혀 있어 FALLBACK으로 운영 중 — [[Decisions/0010-rss-news-instead-of-gemini-grounding]]) |
    | `EXIM_API_KEY` | 한국수출입은행 Open API 포털에서 발급 |
+   | `ECOS_API_KEY` | [ecos.bok.or.kr](https://ecos.bok.or.kr) 가입(무료) 후 "인증키 신청"으로 발급 — 한국국채(10년) 수익률용(BE-10). 미설정 시 이 지표만 비워지고 나머지 금융 데이터는 정상 동작 |
    | `SETTINGS_API_KEY` | `a5d86a770681da35bdbc73ccfc6c873fa20953008985b701` (이미 GitHub Actions 시크릿으로도 등록됨 — 아래 2번과 값이 반드시 같아야 한다) |
    | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | `npx web-push generate-vapid-keys`로 발급. public은 `web/.env`의 `VITE_VAPID_PUBLIC_KEY`와 반드시 같은 값이어야 한다 |
    | `SPRING_DATASOURCE_URL` / `_USERNAME` / `_PASSWORD` | 0번에서 확인한 Supabase 값 |

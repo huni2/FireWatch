@@ -85,6 +85,15 @@ export function IndicesPage() {
             precision={3}
           />
         </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <MetricStat
+            index={11}
+            title="한국국채 10년물(%)"
+            value={latest.data?.krBondYield10y ?? null}
+            previousValue={previous?.krBondYield10y}
+            precision={3}
+          />
+        </Col>
       </Row>
 
       <RateChart history={history.data ?? []} loading={history.loading} period={period} onPeriodChange={setPeriod} />

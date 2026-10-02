@@ -97,6 +97,7 @@ class SchedulerJob(
                 nasdaq = financialSnapshot?.nasdaq,
                 dow = financialSnapshot?.dow,
                 usBondYield10y = financialSnapshot?.usBondYield10y,
+                krBondYield10y = financialSnapshot?.krBondYield10y,
                 newsArticles = newsArticlesForGemini,
             )
         } catch (ex: Exception) {
@@ -127,6 +128,7 @@ class SchedulerJob(
                 nasdaq = financialSnapshot?.nasdaq,
                 dow = financialSnapshot?.dow,
                 usBondYield10y = financialSnapshot?.usBondYield10y,
+                krBondYield10y = financialSnapshot?.krBondYield10y,
                 dataSourceStatus = if (geminiResult == null) DataSourceStatus.FALLBACK else DataSourceStatus.NORMAL,
             ),
         )

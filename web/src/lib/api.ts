@@ -29,6 +29,7 @@ export interface Briefing {
   nasdaq: number | null
   dow: number | null
   usBondYield10y: number | null
+  krBondYield10y: number | null
   dataSourceStatus: DataSourceStatus
   createdAt: string
   news: NewsArticle[]

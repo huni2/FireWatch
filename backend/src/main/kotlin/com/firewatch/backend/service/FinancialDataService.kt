@@ -19,6 +19,7 @@ data class FinancialSnapshot(
     val nasdaq: BigDecimal? = null,
     val dow: BigDecimal? = null,
     val usBondYield10y: BigDecimal? = null,
+    val krBondYield10y: BigDecimal? = null,
 )
 
 // Design Ref: §2.2 — 환율 API와 금/은 시세를 하나로 묶어 FINANCIAL_API 이벤트로 감사 기록.
@@ -45,6 +46,7 @@ class FinancialDataService(
             nasdaq = indices.nasdaq,
             dow = indices.dow,
             usBondYield10y = indices.usBondYield10y,
+            krBondYield10y = indices.krBondYield10y,
         )
     }
 }

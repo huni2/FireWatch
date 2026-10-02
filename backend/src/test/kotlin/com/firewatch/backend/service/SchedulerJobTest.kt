@@ -44,6 +44,7 @@ class SchedulerJobTest {
         usdKrw = BigDecimal("1384.2"),
         jpy100Krw = BigDecimal("920.1"),
         cnyKrw = BigDecimal("190.5"),
+        krBondYield10y = BigDecimal("2.872"),
     )
 
     @Test
@@ -52,7 +53,7 @@ class SchedulerJobTest {
 
         schedulerJob.runMorningBriefing()
 
-        verify(exactly = 0) { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+        verify(exactly = 0) { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
         verify(exactly = 0) { financialDataService.fetchLatestSnapshot() }
         verify(exactly = 0) { briefingRepository.save(any()) }
     }
@@ -60,7 +61,7 @@ class SchedulerJobTest {
     @Test
     fun `둘 다 성공하면 NORMAL로 저장한다`() {
         every { briefingRepository.findByBriefingDate(today) } returns null
-        every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns
+        every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns
             GeminiBriefingResult(
                 marketSummary = "요약",
                 recommendedStocks = listOf("삼성전자"),
@@ -74,6 +75,7 @@ class SchedulerJobTest {
 
         assertEquals(DataSourceStatus.NORMAL, saved.captured.dataSourceStatus)
         assertEquals(BigDecimal("4406.1"), saved.captured.goldPrice)
+        assertEquals(BigDecimal("2.872"), saved.captured.krBondYield10y)
         assertEquals("반도체,금리인하", saved.captured.trendingKeywordsRaw)
     }
 
@@ -86,7 +88,7 @@ class SchedulerJobTest {
         every { newsService.fetchRelatedNews() } returns eightArticles
         val newsArg = slot<List<NewsArticleResult>>()
         every {
-            geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), capture(newsArg))
+            geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), capture(newsArg))
         } returns GeminiBriefingResult(marketSummary = "요약", recommendedStocks = emptyList())
         every { financialDataService.fetchLatestSnapshot() } returns sampleSnapshot
         every { briefingRepository.save(any()) } answers { (firstArg() as Briefing).also { it.id = 1L } }
@@ -100,7 +102,7 @@ class SchedulerJobTest {
     @Test
     fun `Gemini만 실패하면 FALLBACK으로 저장하고 금융 데이터는 채운다`() {
         every { briefingRepository.findByBriefingDate(today) } returns null
-        every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws
+        every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws
             IllegalStateException("gemini down")
         every { financialDataService.fetchLatestSnapshot() } returns sampleSnapshot
         val saved = slot<Briefing>()
@@ -116,7 +118,7 @@ class SchedulerJobTest {
     @Test
     fun `금융 API만 실패하면 NORMAL로 저장하되 금융 필드는 비어있다`() {
         every { briefingRepository.findByBriefingDate(today) } returns null
-        every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns
+        every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns
             GeminiBriefingResult(marketSummary = "요약", recommendedStocks = emptyList())
         every { financialDataService.fetchLatestSnapshot() } throws IllegalStateException("yahoo down")
         val saved = slot<Briefing>()
@@ -132,7 +134,7 @@ class SchedulerJobTest {
     @Test
     fun `둘 다 실패하면 예외를 던지고 아무것도 저장하지 않는다`() {
         every { briefingRepository.findByBriefingDate(today) } returns null
-        every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws
+        every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws
             IllegalStateException("gemini down")
         every { financialDataService.fetchLatestSnapshot() } throws IllegalStateException("yahoo down")
 
@@ -144,7 +146,7 @@ class SchedulerJobTest {
     @Test
     fun `triggerManually는 API 키가 맞으면 파이프라인을 실행한다`() {
         every { briefingRepository.findByBriefingDate(today) } returns null
-        every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns
+        every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns
             GeminiBriefingResult(marketSummary = "요약", recommendedStocks = emptyList())
         every { financialDataService.fetchLatestSnapshot() } returns sampleSnapshot
         // 제네릭 save(S): S 브리지 메서드는 relaxed mock의 자동 답변이 캐스팅에 실패해 명시 스텁이 필요하다.
@@ -159,7 +161,7 @@ class SchedulerJobTest {
     fun `triggerManually는 API 키가 틀리면 UnauthorizedException을 던지고 아무것도 하지 않는다`() {
         assertFailsWith<UnauthorizedException> { schedulerJob.triggerManually("wrong-key") }
 
-        verify(exactly = 0) { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+        verify(exactly = 0) { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
         verify(exactly = 0) { briefingRepository.save(any()) }
     }
 }

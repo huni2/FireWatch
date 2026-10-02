@@ -22,6 +22,10 @@ services:
         value: gemini-3.5-flash
       - key: EXIM_API_KEY
         sync: false
+      - key: ECOS_API_KEY
+        # 한국은행 ECOS Open API(ecos.bok.or.kr) — 한국국채(10년) 수익률(BE-10). 무료 가입, 키 미설정 시
+        # 이 지표만 null로 비워지고 나머지 금융 데이터(금/은/환율/지수)는 영향 없음(FinancialApiClient 참고).
+        sync: false
       - key: SETTINGS_API_KEY
         sync: false
       - key: VAPID_PUBLIC_KEY

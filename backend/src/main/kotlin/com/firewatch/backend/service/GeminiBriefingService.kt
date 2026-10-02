@@ -27,10 +27,11 @@ class GeminiBriefingService(
         nasdaq: BigDecimal?,
         dow: BigDecimal?,
         usBondYield10y: BigDecimal?,
+        krBondYield10y: BigDecimal?,
         newsArticles: List<NewsArticleResult>,
     ): GeminiBriefingResult = geminiClient.fetchMarketBriefing(
         goldPrice, silverPrice, usdKrw, jpy100Krw, cnyKrw,
-        kospi, kosdaq, sp500, nasdaq, dow, usBondYield10y,
+        kospi, kosdaq, sp500, nasdaq, dow, usBondYield10y, krBondYield10y,
         newsArticles,
     )
 }

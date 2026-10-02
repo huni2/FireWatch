@@ -70,6 +70,12 @@ firewatch:
   yahoo:
     # 비공식 엔드포인트 — User-Agent 없으면 429(실측 확인, FinancialApiClient 참고)
     base-url: "https://query1.finance.yahoo.com"
+  ecos:
+    # 한국은행 ECOS Open API — 한국국채(10년) 수익률(Yahoo엔 없음, BE-9에서 확인). 인증키가 쿼리파라미터가
+    # 아니라 URL 경로 자체에 들어가는 방식이라 FinancialApiClient가 원본 예외를 그대로 던지지 않고
+    # 안전한 메시지로 교체한다(감사로그·서버로그로 키가 새는 걸 막기 위함) — 절대 그 처리를 건드리지 말 것.
+    api-key: ${ECOS_API_KEY:}
+    base-url: "https://ecos.bok.or.kr"
   news:
     # 관련 뉴스 RSS. Gemini Search Grounding이 무료 티어에서 막혀(2026-08-21) 대신 도입 — 사용자
     # 요청("클릭하면 실제로 볼 수 있게"). 네이버 검색 API는 NAVER API HUB로 이전되며 신규 신청이

@@ -25,6 +25,7 @@ const METRICS = [
   { key: 'nasdaq', label: '나스닥' },
   { key: 'dow', label: '다우존스' },
   { key: 'usBondYield10y', label: '미국채 10년물(%)' },
+  { key: 'krBondYield10y', label: '한국국채 10년물(%)' },
 ] as const
 
 type MetricKey = (typeof METRICS)[number]['key']

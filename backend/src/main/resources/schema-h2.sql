@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS briefings (
   nasdaq DECIMAL(12,2),
   dow DECIMAL(12,2),
   us_bond_yield_10y DECIMAL(6,3),
+  kr_bond_yield_10y DECIMAL(6,3),       -- 2026-10-02 — 한국은행 ECOS Open API로 확보(BE-10)
   data_source_status VARCHAR(20) NOT NULL, -- NORMAL, FALLBACK
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -41,6 +42,7 @@ ALTER TABLE briefings ADD COLUMN IF NOT EXISTS nasdaq DECIMAL(12,2);
 ALTER TABLE briefings ADD COLUMN IF NOT EXISTS dow DECIMAL(12,2);
 ALTER TABLE briefings ADD COLUMN IF NOT EXISTS us_bond_yield_10y DECIMAL(6,3);
 ALTER TABLE briefings ADD COLUMN IF NOT EXISTS trending_keywords TEXT;
+ALTER TABLE briefings ADD COLUMN IF NOT EXISTS kr_bond_yield_10y DECIMAL(6,3);
 
 -- 설계 문서 원본엔 없던 테이블 — 사용자 요청(2026-08-21)으로 추가. Gemini Search Grounding이
 -- 무료 티어에서 막혀 있어 네이버 뉴스 검색 API로 실제 기사 링크를 대신 제공한다.

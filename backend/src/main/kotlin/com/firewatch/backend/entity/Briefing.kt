@@ -48,7 +48,7 @@ class Briefing(
     @Column(name = "cny_krw")
     var cnyKrw: BigDecimal? = null,
 
-    // 2026-08-23 사용자 요청 — 국내외 지수 + 미국채 수익률. 한국국채는 Yahoo에 데이터가 없어 제외(Next-Tasks BE-10).
+    // 2026-08-23 사용자 요청 — 국내외 지수 + 미국채 수익률.
     @Column(name = "kospi")
     var kospi: BigDecimal? = null,
 
@@ -66,6 +66,10 @@ class Briefing(
 
     @Column(name = "us_bond_yield_10y")
     var usBondYield10y: BigDecimal? = null,
+
+    // 2026-10-02 — 한국은행 ECOS Open API로 확보(BE-10, Yahoo엔 수익률 데이터 없음).
+    @Column(name = "kr_bond_yield_10y")
+    var krBondYield10y: BigDecimal? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "data_source_status", nullable = false, length = 20)

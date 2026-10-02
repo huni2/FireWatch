@@ -50,13 +50,14 @@ class GeminiClient(
         nasdaq: BigDecimal?,
         dow: BigDecimal?,
         usBondYield10y: BigDecimal?,
+        krBondYield10y: BigDecimal?,
         newsArticles: List<NewsArticleResult>,
     ): GeminiBriefingResult {
         check(apiKey.isNotBlank()) { "GEMINI_API_KEY가 설정되지 않았습니다" }
 
         val prompt = buildPrompt(
             goldPrice, silverPrice, usdKrw, jpy100Krw, cnyKrw,
-            kospi, kosdaq, sp500, nasdaq, dow, usBondYield10y,
+            kospi, kosdaq, sp500, nasdaq, dow, usBondYield10y, krBondYield10y,
             newsArticles,
         )
         val requestBody = mapOf(
@@ -93,6 +94,7 @@ class GeminiClient(
             nasdaq: BigDecimal?,
             dow: BigDecimal?,
             usBondYield10y: BigDecimal?,
+            krBondYield10y: BigDecimal?,
             newsArticles: List<NewsArticleResult>,
         ): String {
             val newsSection = if (newsArticles.isEmpty()) {
@@ -118,6 +120,7 @@ class GeminiClient(
                 - 나스닥종합: ${nasdaq ?: "정보 없음"}
                 - 다우존스: ${dow ?: "정보 없음"}
                 - 미국채 10년물 수익률: ${usBondYield10y ?: "정보 없음"}%
+                - 한국국채 10년물 수익률: ${krBondYield10y ?: "정보 없음"}%
 
                 [오늘의 관련 뉴스]
                 $newsSection
