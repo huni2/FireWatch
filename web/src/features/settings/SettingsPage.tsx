@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Alert, Button, Card, Form, message, Skeleton, Space, Tag, TimePicker, Typography } from 'antd'
+import { Alert, App, Button, Card, Form, Skeleton, Space, Tag, TimePicker, Typography } from 'antd'
+import { CheckCircleFilled } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { KeywordInput } from './components/KeywordInput'
 import { useSettings } from './hooks/useSettings'
@@ -7,6 +8,12 @@ import { useWebPushSubscription } from './hooks/useWebPushSubscription'
 import { ApiRequestError, updateSettings, type Settings } from '../../lib/api'
 import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 import { useLatestBriefing } from '../dashboard/hooks/useLatestBriefing'
+import { BRAND_GREEN } from '../../lib/theme'
+
+// AntD 정적 message는 ConfigProvider 테마를 못 받는 v5 known limitation이 있어, App.useApp()으로
+// 받은 인스턴스에만 브랜드 그린 성공 아이콘을 지정한다(에러는 AntD 기본 색 그대로 — 감사로그 고정 4색과
+// 마찬가지로 의미색은 건드리지 않는다).
+const successIcon = <CheckCircleFilled style={{ color: BRAND_GREEN }} />
 
 // KeywordInput 기본값(components/KeywordInput.tsx)과 동일한 상한 — 추천 칩 클릭이 onChange를
 // 직접 호출해 KeywordInput 내부 가드를 안 거치므로 여기서 별도로 체크해야 한다(2026-09-01).
@@ -14,6 +21,7 @@ const MAX_KEYWORDS = 20
 
 // Design Ref: §5.4 Settings 체크리스트 — FR-05
 export function SettingsPage() {
+  const { message } = App.useApp()
   const { data, loading, error, isSlow, reload } = useSettings()
   const latestBriefing = useLatestBriefing()
   const [pushTime, setPushTime] = useState<string>('08:00')
@@ -35,7 +43,7 @@ export function SettingsPage() {
     try {
       // 관심 종목은 이 화면이 아니라 종목 화면에서 관리 — 여기서는 그대로 넘겨서 덮어쓰지 않는다.
       await updateSettings({ pushTime, interestKeywords: keywords, watchedStocks })
-      message.success('설정을 저장했습니다.')
+      message.success({ content: '설정을 저장했습니다.', icon: successIcon })
       reload()
     } catch (err) {
       if (err instanceof ApiRequestError) {
@@ -140,6 +148,7 @@ function TrendingKeywordSuggestions({
 // 막혀서 대안으로 추가. 여기서만 구독 버튼을 누르므로 "저장 안 된 편집 초안"이 아니라 서버에 이미
 // 저장된 값(settings)을 그대로 같이 보낸다.
 function WebPushCard({ settings, onSubscribed }: { settings: Settings; onSubscribed: () => void }) {
+  const { message } = App.useApp()
   const { status, subscribe } = useWebPushSubscription()
   const [subscribing, setSubscribing] = useState(false)
 
@@ -153,7 +162,7 @@ function WebPushCard({ settings, onSubscribed }: { settings: Settings; onSubscri
         watchedStocks: settings.watchedStocks,
         webPushSubscription,
       })
-      message.success('브라우저 알림을 켰습니다.')
+      message.success({ content: '브라우저 알림을 켰습니다.', icon: successIcon })
       onSubscribed()
     } catch (err) {
       message.error(err instanceof Error ? err.message : '브라우저 알림 등록에 실패했습니다.')

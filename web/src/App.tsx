@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react'
-import { ConfigProvider, Skeleton } from 'antd'
+import { App as AntApp, ConfigProvider, Skeleton } from 'antd'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { DashboardPage } from './features/dashboard/DashboardPage'
@@ -22,70 +22,72 @@ export default function App() {
 
   return (
     <ConfigProvider theme={darkMode ? darkThemeConfig : lightThemeConfig}>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<AppShell darkMode={darkMode} onToggleDarkMode={setDarkMode} />}>
-            <Route index element={<DashboardPage />} />
-            <Route
-              path="indices"
-              element={
-                <Suspense fallback={<Skeleton active />}>
-                  <IndicesPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="news"
-              element={
-                <Suspense fallback={<Skeleton active />}>
-                  <NewsPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="audit-log"
-              element={
-                <Suspense fallback={<Skeleton active />}>
-                  <AuditLogPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="stocks"
-              element={
-                <Suspense fallback={<Skeleton active />}>
-                  <StocksPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="settings"
-              element={
-                <Suspense fallback={<Skeleton active />}>
-                  <SettingsPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="guide"
-              element={
-                <Suspense fallback={<Skeleton active />}>
-                  <GuidePage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="usage"
-              element={
-                <Suspense fallback={<Skeleton active />}>
-                  <UsagePage />
-                </Suspense>
-              }
-            />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <AntApp>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<AppShell darkMode={darkMode} onToggleDarkMode={setDarkMode} />}>
+              <Route index element={<DashboardPage />} />
+              <Route
+                path="indices"
+                element={
+                  <Suspense fallback={<Skeleton active />}>
+                    <IndicesPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="news"
+                element={
+                  <Suspense fallback={<Skeleton active />}>
+                    <NewsPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="audit-log"
+                element={
+                  <Suspense fallback={<Skeleton active />}>
+                    <AuditLogPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="stocks"
+                element={
+                  <Suspense fallback={<Skeleton active />}>
+                    <StocksPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="settings"
+                element={
+                  <Suspense fallback={<Skeleton active />}>
+                    <SettingsPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="guide"
+                element={
+                  <Suspense fallback={<Skeleton active />}>
+                    <GuidePage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="usage"
+                element={
+                  <Suspense fallback={<Skeleton active />}>
+                    <UsagePage />
+                  </Suspense>
+                }
+              />
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AntApp>
     </ConfigProvider>
   )
 }
