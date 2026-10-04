@@ -9,6 +9,9 @@
 > **담당 태그**: `[BE]` 백엔드(Kotlin/Spring) 코드 · `[WEB]` 웹(React/AntD) 코드 · `[APP]` 모바일(React Native) 코드 · `[PROJ]` 위키·문서·설정 등 코드 외 작업.
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
+## 2026-10-04
+- **[PROJ] BE-10 ECOS_API_KEY Render 등록 진행 중**: 사용자가 ecos.bok.or.kr 인증키를 발급받아, Render 대시보드(`firewatch-backend` → Environment)에서 브라우저 자동화로 `ECOS_API_KEY` 변수 행을 새로 추가하는 중 — 키 값 자체는 보안상 채팅에 노출하지 않고 사용자가 직접 Render 입력창에 붙여넣도록 안내. 아직 저장·재배포 전(세션 진행 중). 코드 변경 없음.
+
 ## 2026-10-02
 - **[PROJ] WEB-8 완료 기록을 llm-wiki에 반영**: 세션이 재개된 시점(실제 작업은 2026-09-30에 수행 — 아래 섹션)에 그 작업 내용을 `log.md`에 기록하고 `Next-Tasks.md`에서 WEB-8을 종료 기록으로 이동, 커밋·push. 코드 변경 없음.
 - **[BE] 한국국채 10년물 수익률 추가(BE-10) — 한국은행 ECOS Open API, 인증키 URL 노출 방어 포함**: Yahoo Finance엔 수익률(%) 데이터가 없어(기존 조사 결론) 한국은행 ECOS를 조사 — `sample` 키로 실제 호출해 통계표 `817Y002`(시장금리, 일별)·항목코드 `010210000`(국고채 10년)이 매일 갱신되는 걸 확인(2026-09-28~10-01 실데이터 4.5%대로 응답). 사용자가 "URL 패턴이 안 보이게 보안 철저히"를 명시적으로 요구 — ECOS는 인증키가 쿼리파라미터가 아니라 URL 경로 자체(`/api/StatisticSearch/{키}/...`)에 들어가는 방식이라, HTTP 에러·타임아웃 시 Spring 기본 예외(`WebClientResponseException` 등)의 메시지에 그 요청 URI(키 포함)가 그대로 담긴다는 걸 확인 — 이게 그대로 올라가면 `AuditLogAspect`가 FAILURE의 response_summary로 저장하고 `GET /api/audit-logs`로 웹 감사로그 화면에 공개 노출돼 키가 샌다. `FinancialApiClient.fetchKoreaBondYield10y()`가 어떤 예외든(원인 체이닝 없이) 키·URL이 전혀 없는 고정 메시지로 교체해서만 던지도록 방어. `Briefing`/스키마(H2·Postgres 양쪽 CREATE+ALTER)/`BriefingResponse`/`GeminiClient` 프롬프트까지 `krBondYield10y`로 관통, 웹 `IndicesPage`/`RateChart`에 지표 추가. `ECOS_API_KEY` 미설정이면 이 필드만 null — 다른 금융 데이터엔 영향 없음(기존 "환율/금은 중 하나 실패하면 전체 버림" 올오어낫싱과 구분). `./gradlew build`(신규 파싱 테스트 포함)·`npm run build`·`npm run lint` 통과. **아직 미충족** — 사용자가 ecos.bok.or.kr 가입 후 실제 키를 Render `ECOS_API_KEY`에 등록해야 데이터가 채워짐(계정 행동).
