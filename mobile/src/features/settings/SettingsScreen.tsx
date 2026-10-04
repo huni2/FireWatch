@@ -2,7 +2,8 @@
 // (관심 종목은 이 화면이 아니라 웹 종목 화면에서 관리, 그대로 넘겨서 덮어쓰지 않음).
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import { useEffect, useState } from 'react'
-import { Alert, Platform, Pressable, ScrollView, Text, View } from 'react-native'
+import { Platform, Pressable, ScrollView, Text, View } from 'react-native'
+import Toast from 'react-native-toast-message'
 
 import { ApiRequestError, updateSettings } from '@/lib/api'
 
@@ -48,12 +49,12 @@ export function SettingsScreen() {
     setSaving(true)
     try {
       await updateSettings({ pushTime, interestKeywords: keywords, watchedStocks })
-      Alert.alert('저장 완료', '설정을 저장했습니다.')
+      Toast.show({ type: 'success', text1: '저장 완료', text2: '설정을 저장했습니다.' })
     } catch (error) {
       if (error instanceof ApiRequestError) {
-        Alert.alert('저장 실패', error.apiError.message)
+        Toast.show({ type: 'error', text1: '저장 실패', text2: error.apiError.message })
       } else {
-        Alert.alert('저장 실패', '설정 저장에 실패했습니다.')
+        Toast.show({ type: 'error', text1: '저장 실패', text2: '설정 저장에 실패했습니다.' })
       }
     } finally {
       setSaving(false)

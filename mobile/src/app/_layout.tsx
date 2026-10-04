@@ -3,8 +3,10 @@ import '../global.css'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { Stack } from 'expo-router'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import Toast from 'react-native-toast-message'
 
 import { useNotificationRegistration } from '@/features/notifications/hooks/useNotificationRegistration'
+import { toastConfig } from '@/lib/toastConfig'
 
 export default function RootLayout() {
   useNotificationRegistration()
@@ -23,6 +25,7 @@ export default function RootLayout() {
           <Stack.Screen name="settings" options={{ title: '설정' }} />
         </Stack>
       </BottomSheetModalProvider>
+      <Toast config={toastConfig} />
     </GestureHandlerRootView>
   )
 }
