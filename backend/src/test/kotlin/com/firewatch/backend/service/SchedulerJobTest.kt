@@ -24,12 +24,14 @@ class SchedulerJobTest {
     private val geminiBriefingService = mockk<GeminiBriefingService>()
     private val financialDataService = mockk<FinancialDataService>()
     private val newsService = mockk<NewsService>(relaxed = true)
+    private val recommendedStockSnapshotService = mockk<RecommendedStockSnapshotService>(relaxed = true)
     private val briefingRepository = mockk<BriefingRepository>(relaxed = true)
     private val newsArticleRepository = mockk<com.firewatch.backend.repository.NewsArticleRepository>(relaxed = true)
     private val schedulerJob = SchedulerJob(
         geminiBriefingService,
         financialDataService,
         newsService,
+        recommendedStockSnapshotService,
         briefingRepository,
         newsArticleRepository,
         expectedApiKey = "secret-key",
@@ -77,6 +79,7 @@ class SchedulerJobTest {
         assertEquals(BigDecimal("4406.1"), saved.captured.goldPrice)
         assertEquals(BigDecimal("2.872"), saved.captured.krBondYield10y)
         assertEquals("반도체,금리인하", saved.captured.trendingKeywordsRaw)
+        verify { recommendedStockSnapshotService.saveSnapshots(today, listOf("삼성전자")) }
     }
 
     @Test

@@ -93,6 +93,17 @@ CREATE TABLE IF NOT EXISTS device_links (
   linked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- BE-13(2026-10-04 앱 리뷰) — AI 추천종목 가상매매 트래킹. 같은 종목이 여러 날 반복 추천되면
+-- 매번 새 행(중복 제거 안 함, entity/RecommendedStockSnapshot.kt 참고).
+CREATE TABLE IF NOT EXISTS recommended_stock_snapshots (
+  id BIGSERIAL PRIMARY KEY,
+  briefing_date DATE NOT NULL,
+  stock_name VARCHAR(100) NOT NULL,
+  symbol VARCHAR(20),
+  price_at_recommendation DECIMAL(16,4),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Supabase Security Advisor(RLS Disabled in Public) 대응 — 백엔드는 BYPASSRLS 권한을 가진
 -- postgres 계정(Session Pooler)으로 접속해 영향 없음. PostgREST(anon/authenticated) 경로만 차단.
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
@@ -101,3 +112,4 @@ ALTER TABLE briefing_news ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE device_links ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recommended_stock_snapshots ENABLE ROW LEVEL SECURITY;

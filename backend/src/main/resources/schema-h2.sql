@@ -91,3 +91,14 @@ CREATE TABLE IF NOT EXISTS device_links (
   user_id BIGINT NOT NULL,
   linked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- BE-13(2026-10-04 앱 리뷰) — AI 추천종목 가상매매 트래킹. 같은 종목이 여러 날 반복 추천되면
+-- 매번 새 행(중복 제거 안 함, entity/RecommendedStockSnapshot.kt 참고).
+CREATE TABLE IF NOT EXISTS recommended_stock_snapshots (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  briefing_date DATE NOT NULL,
+  stock_name VARCHAR(100) NOT NULL,
+  symbol VARCHAR(20),
+  price_at_recommendation DECIMAL(16,4),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

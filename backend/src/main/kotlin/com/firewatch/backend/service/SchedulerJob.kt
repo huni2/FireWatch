@@ -36,6 +36,7 @@ class SchedulerJob(
     private val geminiBriefingService: GeminiBriefingService,
     private val financialDataService: FinancialDataService,
     private val newsService: NewsService,
+    private val recommendedStockSnapshotService: RecommendedStockSnapshotService,
     private val briefingRepository: BriefingRepository,
     private val newsArticleRepository: NewsArticleRepository,
     @Value("\${firewatch.settings.api-key}") private val expectedApiKey: String,
@@ -147,6 +148,14 @@ class SchedulerJob(
                     )
                 },
             )
+        }
+
+        // BE-13(2026-10-04) — "AI 추천을 왜 믿어야 하나"에 답을 주는 가상매매 트래킹용 스냅샷.
+        // 브리핑 저장 자체는 이미 끝났으니 실패해도 전체 파이프라인을 막지 않는다(다른 외부 API 호출과 동일 원칙).
+        val recommendedStocks = geminiResult?.recommendedStocks
+        if (!recommendedStocks.isNullOrEmpty()) {
+            runCatching { recommendedStockSnapshotService.saveSnapshots(today, recommendedStocks) }
+                .onFailure { log.warn("추천종목 스냅샷 저장 실패 — 브리핑 자체는 정상 저장됨", it) }
         }
         // 푸시 발송은 여기서 하지 않는다 — 공개 배포 전환(2026-09) 이후 사용자마다 pushTime이 달라서,
         // "생성"(여기, 하루 1회 전역)과 "발송"(사용자별 pushTime)을 분리했다. SchedulerController가
