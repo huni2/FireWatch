@@ -1,6 +1,6 @@
 import { Card, Space, Typography } from 'antd'
 
-const { Title, Paragraph, Text } = Typography
+const { Paragraph, Text } = Typography
 
 interface TickerExample {
   market: string
@@ -51,13 +51,11 @@ const GLOSSARY: GlossaryTerm[] = [
 // 고정폭 표라 좁은 화면에서 가로 스크롤이 필요해 "기본적인 반응형이 아니다"는 지적을 받음 — 표
 // 대신 CSS grid(auto-fit)와 세로로 쌓이는 목록으로 바꿔, 폭에 따라 별도 분기 없이 자연스럽게
 // 열 개수가 줄고 텍스트가 줄바꿈되게 했다.
+// WEB-12(2026-10-04) — "사용방법"과 메뉴 자리를 두 칸 차지한다는 지적으로 HelpPage 탭 안에
+// 통합. 독립된 페이지였을 때 쓰던 자체 제목(Title)은 HelpPage의 탭 라벨이 대신하므로 뺐다.
 export function GuidePage() {
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
-      <Title level={4} style={{ margin: 0 }}>
-        가이드
-      </Title>
-
       <Card className="hoverable-card" title="종목 티커가 뭔가요?">
         <Paragraph>
           <Text strong>티커(ticker)</Text>는 증시에서 개별 종목을 가리키는 약속된 코드예요. 국내 종목은 숫자 코드 뒤에

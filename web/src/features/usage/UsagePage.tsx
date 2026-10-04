@@ -10,7 +10,7 @@ import {
   SettingOutlined,
 } from '@ant-design/icons'
 
-const { Title, Paragraph, Text } = Typography
+const { Paragraph, Text } = Typography
 
 interface UsageSection {
   icon: ReactNode
@@ -58,13 +58,10 @@ const MENU_SECTIONS: UsageSection[] = [
 
 // 2026-08-23 사용자 요청 — 화면별 용어 설명("가이드")과는 별개로, 앱 자체를 처음 쓰는
 // 사람을 위해 메뉴별로 뭘 할 수 있는지 안내하는 페이지.
+// WEB-12(2026-10-04) — HelpPage 탭으로 통합되며 자체 제목(Title)은 뺐다(GuidePage와 동일 이유).
 export function UsagePage() {
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
-      <Title level={4} style={{ margin: 0 }}>
-        사용방법
-      </Title>
-
       <Card className="hoverable-card" title="메뉴별 기능">
         <div
           style={{

@@ -2,7 +2,6 @@ import { useState, type ReactNode } from 'react'
 import { Button, Layout, Switch } from 'antd'
 import {
   AuditOutlined,
-  BookOutlined,
   DashboardOutlined,
   FundOutlined,
   LineChartOutlined,
@@ -29,13 +28,14 @@ interface NavItem {
   label: string
 }
 
+// WEB-12(2026-10-04) — "가이드"·"사용방법"이 각자 자리를 차지해 메뉴 8자리 중 2자리를 썼다는
+// 지적(2026-09-28)으로 "도움말" 하나로 통합(HelpPage 내부 탭으로 두 콘텐츠 모두 접근 가능).
 const CONTENT_ITEMS: NavItem[] = [
   { key: '/', icon: <DashboardOutlined />, label: '대시보드' },
   { key: '/stocks', icon: <LineChartOutlined />, label: '종목' },
   { key: '/indices', icon: <FundOutlined />, label: '지수' },
   { key: '/news', icon: <ReadOutlined />, label: '뉴스' },
-  { key: '/guide', icon: <QuestionCircleOutlined />, label: '가이드' },
-  { key: '/usage', icon: <BookOutlined />, label: '사용방법' },
+  { key: '/guide', icon: <QuestionCircleOutlined />, label: '도움말' },
 ]
 
 const ADMIN_ITEMS: NavItem[] = [
