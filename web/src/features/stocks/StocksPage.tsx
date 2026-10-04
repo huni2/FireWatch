@@ -19,11 +19,15 @@ function validateTicker(value: string): string | null {
 
 // 2026-08-21 사용자 요청 "원하는 종목과 특정 주식에 대한 차트도 보고싶은데" — 관심 종목 등록 + 차트를 별도 화면으로.
 // 대시보드의 관심 종목 미니 요약에서 ?symbol=로 넘어오면 그 종목을 바로 선택해 보여준다.
+type AddMode = 'search' | 'ticker'
+
 export function StocksPage() {
   const { data, loading, error, isSlow, reload } = useSettings()
   const [searchParams] = useSearchParams()
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
   const [selected, setSelected] = useState<string | null>(null)
+  // 검색창·직접입력창이 둘 다 항상 떠있던 걸 탭으로 분리(2026-10-04 앱 리뷰, WEB-11) — 기본은 검색.
+  const [addMode, setAddMode] = useState<AddMode>('search')
 
   useEffect(() => {
     if (data) {
@@ -89,21 +93,39 @@ export function StocksPage() {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <Card className="hoverable-card" title="관심 종목">
           {error && <Alert type="error" message="관심 종목 정보를 불러오지 못했습니다" description={error.message} showIcon />}
-          <StockSearchInput onSelect={handleAddFromSearch} />
-          <Typography.Text type="secondary" style={{ display: 'block', margin: '8px 0' }}>
-            국내 대형주는 한글명(예: 삼성전자)으로 찾을 수 있고, 그 외는 영문 사명(예: Tesla)으로 검색하세요.
-          </Typography.Text>
-          <KeywordInput
-            value={watchedStocks}
-            onChange={handleChange}
-            placeholder="정확한 티커를 알면 직접 입력 후 Enter"
-            validate={validateTicker}
+
+          <Segmented
+            value={addMode}
+            onChange={(value) => setAddMode(value as AddMode)}
+            options={[
+              { label: '이름으로 찾기', value: 'search' },
+              { label: '티커 직접 입력', value: 'ticker' },
+            ]}
+            style={{ marginTop: 12, marginBottom: 8 }}
           />
-          <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-            직접 입력 시 국내 종목은 코스피 <code>005930.KS</code>, 코스닥은 <code>.KQ</code>, 해외는{' '}
-            <code>AAPL</code>처럼 티커 그대로 입력하세요. 티커가 낯설다면{' '}
-            <Link to="/guide">가이드</Link>에서 예시를 볼 수 있어요.
-          </Typography.Text>
+
+          {addMode === 'search' ? (
+            <>
+              <StockSearchInput onSelect={handleAddFromSearch} />
+              <Typography.Text type="secondary" style={{ display: 'block', margin: '8px 0' }}>
+                국내 대형주는 한글명(예: 삼성전자)으로 찾을 수 있고, 그 외는 영문 사명(예: Tesla)으로 검색하세요.
+              </Typography.Text>
+              <KeywordInput value={watchedStocks} onChange={handleChange} showInput={false} />
+            </>
+          ) : (
+            <>
+              <KeywordInput
+                value={watchedStocks}
+                onChange={handleChange}
+                placeholder="정확한 티커를 알면 직접 입력 후 Enter"
+                validate={validateTicker}
+              />
+              <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+                국내 종목은 코스피 <code>005930.KS</code>, 코스닥은 <code>.KQ</code>, 해외는 <code>AAPL</code>처럼
+                티커 그대로 입력하세요. 티커가 낯설다면 <Link to="/guide">가이드</Link>에서 예시를 볼 수 있어요.
+              </Typography.Text>
+            </>
+          )}
         </Card>
       </motion.div>
 
