@@ -40,10 +40,7 @@
 
 ## 열린 과제 — 웹(WEB)
 
-### WEB-6. 웹 푸시(Web Push) 알림 배포 (①②는 이미 완료됨, 사용자의 실제 클릭 한 번만 남음)
-**무엇** — 앱 설치 없이 브라우저로 알림 받는 채널. **BE 무의존(자체 완결), 코드는 끝났고 배포·검증만 남음.**
-**왜** — 모바일 APK 사이드로드가 Play Protect에 막혀 대안으로 도입(2026-08-24). `nl.martijndwars:web-push`로 VAPID 서명+RFC 8291 암호화, `UserSettings.web_push_subscriptions`(JSON 배열)에 구독 저장, `PushService`가 FCM과 독립적으로 발송. 설정 화면에 "브라우저 알림 켜기" 카드+`public/sw.js` 구현 완료.
-**완료 기준** — 실제 브라우저에서 구독 → 브리핑 발송 시 알림 도착. **진행 상황(2026-10-04 재확인)** — ①② 이전 세션에서 이미 처리돼 있었음(Next-Tasks 서술이 stale했음): Render `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` 등록 확인(값 자체는 비공개 유지), `web/.env`의 `VITE_VAPID_PUBLIC_KEY`도 채워져 있고 **라이브 배포 번들(`SettingsPage-Dtfzf244.js`)에 실제로 그 키가 박혀있는 것까지 확인**(Cloudflare Pages 대시보드 값과 로컬 `.env` 값이 일치). **남은 건 ③ 하나뿐** — 실제 사용자가 설정 화면에서 "브라우저 알림 켜기" 클릭 → 브라우저 네이티브 권한 팝업에서 "허용". 이 클릭은 브라우저 자동화로 못 함(실측 확인, CDP eval로 직접 호출 시 사람 입력 대기하며 탭이 멈춤) — 사용자가 `https://firewatch-eqp.pages.dev` 설정 화면에서 직접 누르면 그걸로 끝.
+(현재 열린 과제 없음)
 
 ## 열린 과제 — 모바일(APP)
 
@@ -71,6 +68,7 @@
 
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
+| WEB-6 | 웹 푸시(Web Push) 알림 배포 | 완료. ①②(Render VAPID 키, `web/.env`+Cloudflare Pages 배포)는 이전 세션에 이미 끝나 있었음(Next-Tasks 서술이 stale했던 것으로 2026-10-04 재확인). 남은 ③(사용자의 실제 "허용" 클릭)을 세션이 `https://firewatch-eqp.pages.dev` 설정 화면을 직접 열어 "브라우저 알림 켜기" 클릭까지 진행 → 네이티브 권한 팝업에서 사용자가 직접 "허용" → 재클릭 시 "브라우저 알림을 켰습니다" 성공 토스트 + `PUT /api/settings` 저장까지 확인. 브리핑 실제 발송 시 알림 도착 여부는 다음 날 08:00 KST 발송에서 자연 확인 예정 | `web/src/features/settings/{SettingsPage.tsx,hooks/useWebPushSubscription.ts}` (2026-10-04 [[log]]) |
 | WEB-8 | Cloudflare Pages 재배포 | 완료. 사용자가 Cloudflare 계정 로그인 후 `wrangler login` 재시도 → 성공(이전 두 차례는 계정 로그인 자체가 안 돼 있어 타임아웃). `npm run build` + `wrangler pages deploy dist --project-name=firewatch`로 X-Device-Id 헤더 포함 최신 번들 배포 완료. 이어서 대기 중이던 백엔드 커밋 7개(X-Device-Id 필수화 포함) push 중 **Render 배포가 한 번 실패**(healthCheckPath였던 `/api/settings`가 이번 변경으로 인증을 요구하게 돼 헬스체크가 400을 받음) — `HealthController`(`/api/health`) 신설 + `render.yaml` 헬스체크 경로 수정으로 해결, 재배포 확인까지 완료 | `web/`(재배포), `backend/.../web/HealthController.kt`, `render.yaml` (2026-09-30 [[log]]) |
 | APP-5 | 모바일 X-Device-Id 적용 | 완료. 공개 배포 전환(ADR 0012)에 맞춰 웹과 동일 패턴으로 갱신 — `deviceId.ts`(신규)는 웹의 `legacy-owner-device` 마이그레이션 없이 AsyncStorage에 없으면 새 익명 ID를 생성해 고정(모바일은 아직 실사용자 데이터가 없는 사이드로드 APK 단계). `getDeviceId()`가 비동기라 `fetchSettings`/`updateSettings`를 `async`로 전환. `EXPO_PUBLIC_SETTINGS_API_KEY` 제거(`.env.example`·`SettingsScreen` 401 분기 포함). `tsc --noEmit`·`expo lint` 통과 | `mobile/src/lib/{api.ts,deviceId.ts}` (2026-09-29 [[log]]) |
 | BE-11 | 관심 키워드 추천 + 핫이슈용 트렌드 키워드 | 완료. 등록 당시 가정했던 "신규 GET 엔드포인트"는 불필요했음 — `/api/briefings/latest`가 이미 그날 뉴스 전체를 내려주고 있어, 트렌드 키워드는 기존 1일 1회 Gemini 호출에 얹는 걸로 스코프 축소(별도 호출 없음, 무료 티어 쿼터 절약). `GeminiClient` 프롬프트에 "핵심키워드: A, B, C" 트레일링 라인 요청 추가(추천종목과 동일 정규식 패턴), `Briefing.trendingKeywordsRaw` 컬럼 추가. `NewsRssClient` 수집량을 5→20으로 늘리되(핫이슈 매칭 여지 확보), Gemini 프롬프트에는 여전히 상위 5건만 전달(8/28 Gemini TimeoutException 실측 이력이 있어 프롬프트 비대화로 인한 타임아웃 위험을 늘리지 않기 위함) — `SchedulerJob`이 DB 저장용과 Gemini 입력용 뉴스 목록을 분리. `./gradlew build`(신규 테스트 포함) 통과 | `backend/.../client/GeminiClient.kt`, `backend/.../service/SchedulerJob.kt`, `backend/.../entity/Briefing.kt` (2026-09-01 [[log]]) |
