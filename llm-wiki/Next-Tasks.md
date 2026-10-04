@@ -45,11 +45,6 @@
 
 ## 열린 과제 — 웹(WEB)
 
-### WEB-10. AI 추천종목 가상매매 결과 UI (착수 가능 — BE-13 완료됨)
-**무엇** — `GET /api/stocks/recommendations/performance`(BE-13, 2026-10-04 완료)를 가져와 대시보드 또는 종목 화면에 "AI 추천 성과" 카드로 표시.
-**왜** — BE-13으로 만든 데이터를 실제로 보여줘야 가치가 생김 — "AI 브리핑 신뢰도 트랙레코드"가 핵심 가치제안을 숫자로 증명하는 효과.
-**완료 기준** — 추천종목별 가상매매 수익률이 화면에 표시됨. 프로덕션엔 아직 스냅샷이 없음(스케줄러가 매일 08:00 KST에만 쌓음) — 화면 작업 시 빈 상태 처리를 반드시 같이 구현할 것.
-
 ### WEB-11. 종목 페이지 검색창/직접입력창 중복 노출 정리
 **무엇** — `StocksPage.tsx`의 종목명 검색창과 티커 직접입력창이 항상 동시에 떠 있는 걸 탭 전환 또는 기본 숨김으로 정리.
 **왜** — 2026-09-28 프로덕트 디자이너 리뷰 지적, 2026-10-04 재확인했지만 아직 미해결.
@@ -101,6 +96,7 @@
 
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
+| WEB-10 | AI 추천종목 가상매매 결과 UI | 완료. 대시보드 브리핑 요약 바로 아래 "AI 추천 성과" 카드 추가 — 종목명·추천일·수익률(%, 상승 빨강/하락 파랑 기존 토큰 재사용), 현재가 조회 실패는 안내 문구, 데이터 0건이면 Empty 안내("아직 쌓인 추천 기록이 없어요"). 프로덕션 배포 후 빈 상태 렌더링까지 브라우저로 확인(실데이터는 스케줄러가 쌓은 뒤 자연 확인 예정). `npm run build`·`npm run lint` 통과 | `web/src/{lib/api.ts,features/dashboard/{DashboardPage.tsx,hooks/useRecommendedStockPerformance.ts,components/RecommendedStockPerformanceCard.tsx}}` (2026-10-04 [[log]]) |
 | BE-13 | AI 추천종목 가상매매 트래킹 데이터 모델·API | 완료. `recommended_stock_snapshots` 신규 테이블(H2/Postgres 양쪽, Postgres는 RLS도 활성화) — 스케줄러가 브리핑 저장 후 그날 추천종목마다 이름→티커 검색+그 시점 가격을 스냅샷으로 저장(종목 하나 실패해도 나머지 계속). `GET /api/stocks/recommendations/performance`가 스냅샷 대비 현재가 수익률 계산(같은 symbol 중복 조회 방지). 로컬 H2에 직접 시드 데이터 넣고 실제 Yahoo 가격으로 수익률 계산(294.29%)까지 종단 검증, 종목 못 찾은 케이스의 null 처리도 확인. `./gradlew build` 전체 통과, Render 재배포 후 프로덕션에서 빈 배열 정상 응답(스냅샷은 아직 없음 — 내일 08:00 KST부터 쌓임) 확인 | `backend/.../{entity/RecommendedStockSnapshot,repository/RecommendedStockSnapshotRepository,service/{RecommendedStockSnapshotService,RecommendedStockPerformanceService,SchedulerJob},web/StockController}.kt`(+테스트), `backend/src/main/resources/schema-{h2,postgresql}.sql` (2026-10-04 [[log]]) |
 | APP-7 | 모바일 추천종목 칩을 클릭 가능하게 | 완료(범위 조정). 모바일엔 아직 종목 화면이 없어(APP-8 예정) 당초 계획했던 "화면 이동"은 빼고, "이름→티커 검색 → 관심종목 자동 추가 → 토스트 안내"로 축소 — APP-8이 생기면 자동으로 거기 반영됨. `mobile/src/lib/api.ts`에 `searchStocks` 신규 추가(웹과 동일 엔드포인트). `tsc --noEmit`·`expo lint` 통과, 실기기 검증은 기존과 동일하게 사용자 몫 | `mobile/src/{lib/api.ts,features/briefing/components/RecommendedStockChip.tsx}` (2026-10-04 [[log]]) |
 | WEB-9 | 브리핑 추천종목 칩을 클릭 가능하게 | 완료. 클릭 시 기존 `searchStocks` API로 이름→티커 변환 후 `/stocks?add=<티커>`로 이동, `StocksPage`의 기존 `handleAddFromSearch` 재사용해 관심종목 추가+차트 표시. 프로덕션 배포 후 "삼성전자" 태그 클릭 → `005930.KS` 자동 추가·차트 렌더링까지 브라우저로 실제 확인 | `web/src/features/dashboard/components/BriefingSummaryCard.tsx`, `web/src/features/stocks/StocksPage.tsx` (2026-10-04 [[log]]) |
