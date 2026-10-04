@@ -1,5 +1,5 @@
-import { BriefingScreen } from '@/features/briefing/BriefingScreen'
+import { HomeScreen } from '@/features/home/HomeScreen'
 
 export default function IndexRoute() {
-  return <BriefingScreen />
+  return <HomeScreen />
 }

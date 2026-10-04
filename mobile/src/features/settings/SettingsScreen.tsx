@@ -1,5 +1,5 @@
 // 설정 화면 — 수신 시간·관심 키워드. web/src/features/settings/SettingsPage.tsx와 동일 원칙
-// (관심 종목은 이 화면이 아니라 웹 종목 화면에서 관리, 그대로 넘겨서 덮어쓰지 않음).
+// (관심 종목은 이 화면이 아니라 홈의 "종목" 탭에서 관리, 그대로 넘겨서 덮어쓰지 않음).
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import { useEffect, useState } from 'react'
 import { Platform, Pressable, ScrollView, Text, View } from 'react-native'
@@ -104,7 +104,7 @@ export function SettingsScreen() {
         <Text className="text-base font-semibold text-white">{saving ? '저장 중...' : '저장'}</Text>
       </Pressable>
 
-      <Text className="text-xs text-neutral-400">관심 종목(주식)은 웹 대시보드의 종목 화면에서 관리합니다.</Text>
+      <Text className="text-xs text-neutral-400">관심 종목(주식)은 홈의 {'"종목"'} 탭에서 관리합니다.</Text>
     </ScrollView>
   )
 }
