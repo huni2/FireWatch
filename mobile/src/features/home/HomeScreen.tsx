@@ -9,13 +9,15 @@ import { Pressable, Text, View } from 'react-native'
 import { BriefingSheet, type BriefingSheetRef } from '../briefing/components/BriefingSheet'
 import { BriefingScreen } from '../briefing/BriefingScreen'
 import { useLatestBriefing } from '../briefing/hooks/useLatestBriefing'
+import { IndicesScreen } from '../indices/IndicesScreen'
 import { StocksScreen } from '../stocks/StocksScreen'
 
-type HomeTab = 'brief' | 'stocks'
+type HomeTab = 'brief' | 'stocks' | 'indices'
 
 const TABS: { key: HomeTab; label: string }[] = [
   { key: 'brief', label: '홈' },
   { key: 'stocks', label: '종목' },
+  { key: 'indices', label: '지수' },
 ]
 
 export function HomeScreen() {
@@ -56,16 +58,16 @@ export function HomeScreen() {
         ))}
       </View>
 
-      {activeTab === 'brief' ? (
+      {activeTab === 'brief' && (
         <BriefingScreen
           briefing={briefing}
           cachedAt={cachedAt}
           loading={loading}
           onOpenSheet={() => sheetRef.current?.present()}
         />
-      ) : (
-        <StocksScreen />
       )}
+      {activeTab === 'stocks' && <StocksScreen />}
+      {activeTab === 'indices' && <IndicesScreen />}
 
       {briefing && <BriefingSheet ref={sheetRef} briefing={briefing} />}
     </View>
