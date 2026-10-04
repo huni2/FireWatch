@@ -21,6 +21,12 @@ export interface Briefing {
   dataSourceStatus: DataSourceStatus
 }
 
+export interface StockSearchResult {
+  symbol: string
+  name: string
+  exchange: string | null
+}
+
 export interface ApiErrorBody {
   code: string
   message: string
@@ -59,6 +65,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export function fetchLatestBriefing(): Promise<Briefing> {
   return request<Briefing>('/api/briefings/latest')
+}
+
+// 조회 전용 + 인증 불필요(web/src/lib/api.ts의 searchStocks와 동일 엔드포인트) — 추천종목 칩 클릭(APP-7) 전용.
+export function searchStocks(query: string): Promise<StockSearchResult[]> {
+  return request<StockSearchResult[]>(`/api/stocks/search?q=${encodeURIComponent(query)}`)
 }
 
 export async function fetchSettings(): Promise<Settings> {
