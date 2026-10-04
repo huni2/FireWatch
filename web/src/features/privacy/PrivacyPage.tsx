@@ -1,0 +1,124 @@
+import { Card, Space, Typography } from 'antd'
+
+const { Title, Paragraph, Text } = Typography
+
+// Play 스토어 공개 배포(ADR 0012) 요건 — 기기 식별자·푸시 토큰·선택적 Google 계정을 수집하므로
+// Play Console의 "Privacy policy URL" 등록에 필요. 이 페이지 자체가 그 URL이 가리키는 대상이다.
+// 수집 항목은 전부 코드(UserSettings/AppUser 엔티티, SettingsRateLimiter)에서 실제로 확인한 내용만
+// 적었다 — 法 자문이 아니라 일반적인 고지 템플릿이므로, 게시 전 한 번 검토가 필요하다.
+const EFFECTIVE_DATE = '2026-10-04'
+const CONTACT_EMAIL = 'powerhch@gmail.com'
+
+export function PrivacyPage() {
+  return (
+    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <Title level={4} style={{ margin: 0 }}>
+        개인정보처리방침
+      </Title>
+
+      <Card className="hoverable-card">
+        <Space direction="vertical" size={20} style={{ width: '100%' }}>
+          <Paragraph type="secondary" style={{ margin: 0 }}>
+            시행일자: {EFFECTIVE_DATE}
+          </Paragraph>
+
+          <Paragraph style={{ margin: 0 }}>
+            FireWatch(이하 &quot;서비스&quot;)는 이용자의 개인정보를 소중히 다루며, 아래와 같이 수집·이용·보관합니다.
+          </Paragraph>
+
+          <section>
+            <Title level={5}>1. 수집하는 개인정보 항목</Title>
+            <Paragraph style={{ marginBottom: 8 }}>
+              <Text strong>필수(서비스 이용 시 자동/입력 수집)</Text>
+            </Paragraph>
+            <ul style={{ marginTop: 0 }}>
+              <li>기기 식별자 — 로그인 없이 기기에서 자동 생성되는 익명 ID(앱/브라우저 최초 실행 시)</li>
+              <li>푸시 알림 수신 희망 시간, 관심 키워드, 관심 종목 — 이용자가 직접 입력한 값</li>
+              <li>푸시 알림 토큰 — 알림 발송을 위한 기기별 토큰(모바일 FCM 토큰, 웹 브라우저 푸시 구독 정보)</li>
+              <li>접속 IP 주소 — 설정 저장 요청 시 남용 방지(요청 빈도 제한) 목적으로만 일시 처리되며, 운영 기록(감사 로그)에 남습니다</li>
+            </ul>
+            <Paragraph style={{ marginBottom: 8 }}>
+              <Text strong>선택(Google 계정 연동 시에만)</Text>
+            </Paragraph>
+            <ul style={{ marginTop: 0, marginBottom: 0 }}>
+              <li>Google 계정 고유 식별자, 이메일 주소 — 여러 기기 간 설정을 동기화하기 위해서만 사용</li>
+            </ul>
+          </section>
+
+          <section>
+            <Title level={5}>2. 수집하지 않는 항목</Title>
+            <Paragraph style={{ margin: 0 }}>
+              비밀번호, 실명, 전화번호, 결제 정보, 위치 정보는 수집하지 않습니다. 서비스는 비밀번호 로그인 자체가 없습니다.
+            </Paragraph>
+          </section>
+
+          <section>
+            <Title level={5}>3. 개인정보의 이용 목적</Title>
+            <ul style={{ margin: 0 }}>
+              <li>매일 아침 증시 브리핑 푸시 알림 발송</li>
+              <li>이용자가 설정한 관심 종목·키워드 저장 및 기기 간 동기화(계정 연동 시)</li>
+              <li>비정상적인 요청(어뷰징) 방지</li>
+            </ul>
+          </section>
+
+          <section>
+            <Title level={5}>4. 보유 및 이용 기간</Title>
+            <Paragraph style={{ margin: 0 }}>
+              이용자가 앱을 삭제하거나 계정 연동을 해제해도 서버에 저장된 데이터는 자동으로 삭제되지 않습니다. 삭제를 원하시면
+              아래 문의처로 요청해주세요 — 확인 후 지체 없이 삭제합니다.
+            </Paragraph>
+          </section>
+
+          <section>
+            <Title level={5}>5. 제3자 제공 및 처리 위탁</Title>
+            <Paragraph style={{ margin: 0 }}>
+              이용자의 개인정보를 제3자에게 판매하거나 제공하지 않습니다. 다만 서비스 운영을 위해 아래 업체의 인프라를
+              이용하며, 그 과정에서 일부 정보가 해당 업체 서버(국외 포함)에 저장·처리될 수 있습니다.
+            </Paragraph>
+            <ul>
+              <li>Google(Firebase/Expo Push Service) — 푸시 알림 발송</li>
+              <li>Google — 선택적 계정 연동(Google 로그인)</li>
+              <li>Render, Supabase — 서버·데이터베이스 호스팅</li>
+              <li>Cloudflare — 웹 페이지 호스팅</li>
+            </ul>
+          </section>
+
+          <section>
+            <Title level={5}>6. 안전성 확보조치</Title>
+            <ul style={{ margin: 0 }}>
+              <li>모든 통신은 HTTPS로 암호화됩니다.</li>
+              <li>설정 변경 등 쓰기 요청은 기기 식별자 기반으로만 허용되며, IP 기준 요청 빈도 제한이 적용됩니다.</li>
+              <li>Google 계정 연동은 Google 공식 라이브러리로 토큰 서명을 검증하며, 자체적으로 비밀번호를 보관하지 않습니다.</li>
+            </ul>
+          </section>
+
+          <section>
+            <Title level={5}>7. 이용자의 권리</Title>
+            <Paragraph style={{ margin: 0 }}>
+              이용자는 언제든지 자신의 데이터 열람·삭제를 요청할 수 있습니다. 아래 문의처로 연락해주세요.
+            </Paragraph>
+          </section>
+
+          <section>
+            <Title level={5}>8. 아동의 개인정보</Title>
+            <Paragraph style={{ margin: 0 }}>
+              이 서비스는 만 14세 미만 아동을 대상으로 하지 않으며, 아동의 개인정보를 의도적으로 수집하지 않습니다.
+            </Paragraph>
+          </section>
+
+          <section>
+            <Title level={5}>9. 문의처</Title>
+            <Paragraph style={{ margin: 0 }}>{CONTACT_EMAIL}</Paragraph>
+          </section>
+
+          <section>
+            <Title level={5}>10. 고지의 의무</Title>
+            <Paragraph style={{ margin: 0 }}>
+              이 방침은 법령·서비스 변경에 따라 개정될 수 있으며, 변경 시 이 페이지를 통해 고지합니다.
+            </Paragraph>
+          </section>
+        </Space>
+      </Card>
+    </Space>
+  )
+}

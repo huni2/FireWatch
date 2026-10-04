@@ -22,6 +22,21 @@ interface GlossaryTerm {
   desc: string
 }
 
+interface DataSource {
+  name: string
+  desc: string
+}
+
+// 사용자 요청(2026-10-04) — 어떤 외부 API·데이터를 쓰는지 공개. 실제로 호출하는 소스만 기재
+// (backend/.../client/{FinancialApiClient,GeminiClient,NewsRssClient}.kt 기준).
+const DATA_SOURCES: DataSource[] = [
+  { name: '한국수출입은행 Open API', desc: '원/달러·원/엔·원/위안 환율' },
+  { name: 'Yahoo Finance', desc: '금·은 시세, 코스피·코스닥·S&P500·나스닥·다우존스 지수, 미국채 10년물 수익률(비공식 엔드포인트)' },
+  { name: '한국은행 ECOS Open API', desc: '한국국채 10년물 수익률' },
+  { name: '아시아경제 증권 RSS', desc: '오늘의 관련 뉴스' },
+  { name: 'Google Gemini', desc: '위 시세·뉴스를 바탕으로 한 브리핑 요약·테마 추천 문구 생성(실시간 검색은 하지 않음)' },
+]
+
 const GLOSSARY: GlossaryTerm[] = [
   { term: '코스피(KOSPI)', desc: '한국거래소 유가증권시장 — 삼성전자·SK하이닉스 같은 대형주가 속한 대표 국내 지수.' },
   { term: '코스닥(KOSDAQ)', desc: '코스피보다 규모가 작은 기업 위주의 국내 지수(중소·벤처 기업 비중이 높음).' },
@@ -91,6 +106,23 @@ export function GuidePage() {
             </div>
           ))}
         </Space>
+      </Card>
+
+      <Card className="hoverable-card" title="이 서비스가 쓰는 데이터 출처">
+        <Space direction="vertical" size={12} style={{ width: '100%' }}>
+          {DATA_SOURCES.map((source) => (
+            <div key={source.name}>
+              <Text strong>{source.name}</Text>
+              <Paragraph type="secondary" style={{ margin: '2px 0 0' }}>
+                {source.desc}
+              </Paragraph>
+            </div>
+          ))}
+        </Space>
+        <Paragraph type="secondary" style={{ marginTop: 16, marginBottom: 0, fontSize: 13 }}>
+          브리핑 요약과 추천 종목·테마는 AI(Gemini)가 위 데이터를 참고해 자동 생성한 참고용 정보이며, 투자 권유나
+          투자자문이 아닙니다. 실제 투자 결정과 그 결과에 대한 책임은 이용자 본인에게 있습니다.
+        </Paragraph>
       </Card>
     </Space>
   )

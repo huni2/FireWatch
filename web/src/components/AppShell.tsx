@@ -16,7 +16,7 @@ import {
 } from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 
-const { Sider, Header, Content } = Layout
+const { Sider, Header, Content, Footer } = Layout
 
 interface AppShellProps {
   darkMode: boolean
@@ -162,6 +162,11 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         <Content style={{ padding: 24, maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
           <Outlet />
         </Content>
+        <Footer style={{ textAlign: 'center', fontSize: 13 }}>
+          <Link to="/privacy" style={{ color: 'var(--ant-color-text-secondary)' }}>
+            개인정보처리방침
+          </Link>
+        </Footer>
       </Layout>
     </Layout>
   )
