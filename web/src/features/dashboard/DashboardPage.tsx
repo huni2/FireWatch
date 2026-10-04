@@ -1,7 +1,9 @@
 import { Alert, Empty, Space, Typography } from 'antd'
 import { BriefingSummaryCard } from './components/BriefingSummaryCard'
+import { RecommendedStockPerformanceCard } from './components/RecommendedStockPerformanceCard'
 import { WatchlistSummaryCard } from './components/WatchlistSummaryCard'
 import { useLatestBriefing } from './hooks/useLatestBriefing'
+import { useRecommendedStockPerformance } from './hooks/useRecommendedStockPerformance'
 import { useBriefingHistory } from '../indices/hooks/useBriefingHistory'
 import { useSettings } from '../settings/hooks/useSettings'
 import { RelatedNewsCard } from '../news/components/RelatedNewsCard'
@@ -12,6 +14,7 @@ import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 export function DashboardPage() {
   const latest = useLatestBriefing()
   const settings = useSettings()
+  const recommendedPerformance = useRecommendedStockPerformance()
   // "오늘자 브리핑이 아직 없음" 빈 상태 문구에 마지막 브리핑 날짜를 보여주기 위해서만 이력 조회.
   const history = useBriefingHistory(7)
   const lastAvailableDate = [...(history.data ?? [])].sort((a, b) => b.briefingDate.localeCompare(a.briefingDate))[0]
@@ -52,6 +55,8 @@ export function DashboardPage() {
       )}
 
       <BriefingSummaryCard briefing={latest.data} loading={latest.loading} />
+
+      <RecommendedStockPerformanceCard data={recommendedPerformance.data} loading={recommendedPerformance.loading} />
 
       {interestKeywords.length > 0 && (
         <RelatedNewsCard

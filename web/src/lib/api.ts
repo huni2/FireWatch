@@ -93,6 +93,15 @@ export interface StockSearchResult {
   exchange: string | null
 }
 
+export interface RecommendedStockPerformance {
+  stockName: string
+  symbol: string | null
+  briefingDate: string
+  priceAtRecommendation: number | null
+  currentPrice: number | null
+  returnPercent: number | null
+}
+
 export interface ApiErrorBody {
   code: string
   message: string
@@ -187,4 +196,8 @@ export function fetchStockHistory(symbol: string, range: StockChartRange = '6mo'
 
 export function searchStocks(query: string): Promise<StockSearchResult[]> {
   return request<StockSearchResult[]>(`/api/stocks/search?q=${encodeURIComponent(query)}`)
+}
+
+export function fetchRecommendedStockPerformance(): Promise<RecommendedStockPerformance[]> {
+  return request<RecommendedStockPerformance[]>('/api/stocks/recommendations/performance')
 }
