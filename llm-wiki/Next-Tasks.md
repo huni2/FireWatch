@@ -67,11 +67,6 @@
 
 ## 열린 과제 — 모바일(APP)
 
-### APP-7. 모바일 추천종목 칩도 클릭 가능하게
-**무엇** — `mobile/src/features/briefing/components/RecommendedStockChip.tsx`도 WEB-9과 동일하게 클릭 시 관심종목 추가·화면 이동.
-**왜** — WEB-9과 동일한 문제가 모바일에도 있음(2026-10-04 리뷰).
-**완료 기준** — WEB-9과 동일한 동작이 모바일에서도 재현.
-
 ### APP-8. 모바일 종목 화면 추가
 **무엇** — 웹 `StocksPage`에 대응하는 관심종목 목록 + 차트 화면을 모바일에 추가.
 **왜** — 2026-10-04 리뷰 — 모바일 앱이 지금 브리핑 요약+설정뿐이라 Play스토어 심사자·첫 사용자에게 "기능이 적다"는 인상을 줄 수 있음.
@@ -111,6 +106,7 @@
 
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
+| APP-7 | 모바일 추천종목 칩을 클릭 가능하게 | 완료(범위 조정). 모바일엔 아직 종목 화면이 없어(APP-8 예정) 당초 계획했던 "화면 이동"은 빼고, "이름→티커 검색 → 관심종목 자동 추가 → 토스트 안내"로 축소 — APP-8이 생기면 자동으로 거기 반영됨. `mobile/src/lib/api.ts`에 `searchStocks` 신규 추가(웹과 동일 엔드포인트). `tsc --noEmit`·`expo lint` 통과, 실기기 검증은 기존과 동일하게 사용자 몫 | `mobile/src/{lib/api.ts,features/briefing/components/RecommendedStockChip.tsx}` (2026-10-04 [[log]]) |
 | WEB-9 | 브리핑 추천종목 칩을 클릭 가능하게 | 완료. 클릭 시 기존 `searchStocks` API로 이름→티커 변환 후 `/stocks?add=<티커>`로 이동, `StocksPage`의 기존 `handleAddFromSearch` 재사용해 관심종목 추가+차트 표시. 프로덕션 배포 후 "삼성전자" 태그 클릭 → `005930.KS` 자동 추가·차트 렌더링까지 브라우저로 실제 확인 | `web/src/features/dashboard/components/BriefingSummaryCard.tsx`, `web/src/features/stocks/StocksPage.tsx` (2026-10-04 [[log]]) |
 | WEB-6 | 웹 푸시(Web Push) 알림 배포 | 완료. ①②(Render VAPID 키, `web/.env`+Cloudflare Pages 배포)는 이전 세션에 이미 끝나 있었음(Next-Tasks 서술이 stale했던 것으로 2026-10-04 재확인). 남은 ③(사용자의 실제 "허용" 클릭)을 세션이 `https://firewatch-eqp.pages.dev` 설정 화면을 직접 열어 "브라우저 알림 켜기" 클릭까지 진행 → 네이티브 권한 팝업에서 사용자가 직접 "허용" → 재클릭 시 "브라우저 알림을 켰습니다" 성공 토스트 + `PUT /api/settings` 저장까지 확인. 브리핑 실제 발송 시 알림 도착 여부는 다음 날 08:00 KST 발송에서 자연 확인 예정 | `web/src/features/settings/{SettingsPage.tsx,hooks/useWebPushSubscription.ts}` (2026-10-04 [[log]]) |
 | WEB-8 | Cloudflare Pages 재배포 | 완료. 사용자가 Cloudflare 계정 로그인 후 `wrangler login` 재시도 → 성공(이전 두 차례는 계정 로그인 자체가 안 돼 있어 타임아웃). `npm run build` + `wrangler pages deploy dist --project-name=firewatch`로 X-Device-Id 헤더 포함 최신 번들 배포 완료. 이어서 대기 중이던 백엔드 커밋 7개(X-Device-Id 필수화 포함) push 중 **Render 배포가 한 번 실패**(healthCheckPath였던 `/api/settings`가 이번 변경으로 인증을 요구하게 돼 헬스체크가 400을 받음) — `HealthController`(`/api/health`) 신설 + `render.yaml` 헬스체크 경로 수정으로 해결, 재배포 확인까지 완료 | `web/`(재배포), `backend/.../web/HealthController.kt`, `render.yaml` (2026-09-30 [[log]]) |
