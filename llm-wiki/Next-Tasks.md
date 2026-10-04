@@ -44,11 +44,6 @@
 
 ## 열린 과제 — 모바일(APP)
 
-### APP-8. 모바일 종목 화면 추가
-**무엇** — 웹 `StocksPage`에 대응하는 관심종목 목록 + 차트 화면을 모바일에 추가.
-**왜** — 2026-10-04 리뷰 — 모바일 앱이 지금 브리핑 요약+설정뿐이라 Play스토어 심사자·첫 사용자에게 "기능이 적다"는 인상을 줄 수 있음.
-**완료 기준** — 모바일에서 관심종목 목록 조회 + 차트 확인 가능.
-
 ### APP-9. 모바일 지수 화면 추가
 **무엇** — 웹 `IndicesPage`에 대응하는 지표 화면을 모바일에 추가.
 **왜** — APP-8과 동일 배경.
@@ -83,6 +78,7 @@
 
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
+| APP-8 | 모바일 종목 화면 추가 | 완료. 웹 `StocksPage` 대응 — 관심종목 검색/티커 직접입력 탭(`StockSearchInput` 신규, RN엔 AntD Select가 없어 TextInput+결과목록 직접 구현) + `react-native-gifted-charts` LineChart로 기간별(하루~5년) 차트. 네비게이션은 사용자가 명시적으로 하단 탭·드로어를 거부("너무 AI티 나는데")하고 고른 **상단 세그먼트 탭**(홈/종목) — 로컬 state, 별도 라우팅 라이브러리 없음. 알림 탭 시 탭 전환에도 바텀시트가 정상 동작해야 해서 브리핑 조회·바텀시트·알림 처리를 `BriefingScreen`에서 신설 `HomeScreen`(상위)으로 끌어올리고 `BriefingScreen`은 표시 전용으로 축소. `KeywordInput`에 웹(WEB-11)과 동일한 `showInput` prop 추가해 검색 탭에서 태그만 노출. `tsc --noEmit`·`expo lint` 통과, 실기기 검증은 기존과 동일하게 사용자 몫 | `mobile/src/{app/index.tsx,features/{home/HomeScreen.tsx,briefing/BriefingScreen.tsx,stocks/**,settings/{SettingsScreen.tsx,components/KeywordInput.tsx},lib/api.ts}}` (2026-10-04 [[log]]) |
 | BE-14 | 감사로그 응답요약 포맷 정리 | 완료. `PushSendResult`에 `toString()` 오버라이드 추가 — "PushSendResult(recipientCount=3, ...)" 대신 "대상 3명 — FCM 5/5건, 웹푸시 1/2건 성공" 형태. `AuditLogAspect` 쪽은 안 건드리고(`result.toString()` 호출 자체는 범용적으로 맞는 설계) 노출되는 data class가 자기 자리에서 가독성 책임을 지는 패턴 — 나중에 다른 data class도 같은 방식으로 확장 가능. 기존 equals 기반 테스트 그대로 통과, 포맷 검증 테스트 추가. `./gradlew build` 전체 통과, Render 재배포 성공(`bb16790` Live) 확인 | `backend/.../service/PushService.kt`(+테스트) (2026-10-04 [[log]]) |
 | WEB-12 | 가이드·사용방법 메뉴 통합 | 완료. `HelpPage` 신설, AntD `Tabs`로 기존 `GuidePage`/`UsagePage`를 그대로 탭 콘텐츠로 재사용(각자 쓰던 자체 Title만 제거). `/guide`·`/usage` 라우트 둘 다 유지(StocksPage의 `/guide` 링크가 안 깨지게, URL로 초기 탭만 결정). 사이드바·헤더 메뉴가 "도움말" 하나로 줄어듦. 프로덕션에서 메뉴·탭 전환 둘 다 브라우저로 확인. `npm run build`·`npm run lint` 통과 | `web/src/{App.tsx,components/AppShell.tsx,features/{help/HelpPage.tsx,guide/GuidePage.tsx,usage/UsagePage.tsx}}` (2026-10-04 [[log]]) |
 | WEB-11 | 종목 페이지 검색창/직접입력창 중복 노출 정리 | 완료. "이름으로 찾기"/"티커 직접 입력" Segmented 탭으로 분리(기본은 검색). `KeywordInput`에 `showInput` prop 추가해 Settings 화면(관심 키워드)은 변경 없이 그대로, 종목 화면만 탭에 따라 태그 목록+입력 필드를 분리 렌더링(태그 중복 렌더링 버그를 수정 중 한 번 거쳐감 — 최종은 탭마다 한 번씩만). 프로덕션에서 두 탭 다 브라우저로 확인. `npm run build`·`npm run lint` 통과 | `web/src/features/{stocks/StocksPage.tsx,settings/components/KeywordInput.tsx}` (2026-10-04 [[log]]) |
