@@ -16,10 +16,10 @@
 
 ## 열린 과제 — 백엔드(BE)
 
-### BE-12. Google OAuth 클라이언트 ID 발급 + GOOGLE_OAUTH_CLIENT_IDS 환경변수 설정
-**무엇** — Google Cloud Console에서 이 앱용 OAuth 2.0 클라이언트 ID(Android 앱 + 필요 시 웹)를 발급하고, Render 백엔드 환경변수 `GOOGLE_OAUTH_CLIENT_IDS`(쉼표 구분, `firewatch.google.oauth-client-ids`가 읽음)에 등록. **APP-6(모바일 Google Sign-In UI) 선행 조건 — 계정 행동이라 세션이 대신 못 함.**
+### BE-12. Google OAuth 클라이언트 ID 발급 + GOOGLE_OAUTH_CLIENT_IDS 환경변수 설정 (계정 행동 끝, 실왕복 검증만 남음)
+**무엇** — Google Cloud Console에서 이 앱용 OAuth 2.0 클라이언트 ID(Android 앱)를 발급하고, Render 백엔드 환경변수 `GOOGLE_OAUTH_CLIENT_IDS`(쉼표 구분, `firewatch.google.oauth-client-ids`가 읽음)에 등록.
 **왜** — 공개 배포 전환(ADR 0012)으로 `GoogleIdTokenVerifierClient`가 ID 토큰의 audience를 검증하는데, 발급된 클라이언트 ID 없이는 실제 Google 로그인 왕복 자체가 불가능함.
-**완료 기준** — Google Cloud Console에 프로젝트+OAuth 동의 화면+클라이언트 ID(패키지명 `com.firewatch.mobile`, SHA-1 지문 등록) 준비 완료, Render에 `GOOGLE_OAUTH_CLIENT_IDS` 설정 후 재배포. 이후 모바일에서 실제 ID 토큰으로 `POST /api/auth/google/link` 왕복 확인.
+**완료 기준** — Google Cloud Console에 프로젝트+OAuth 동의 화면+클라이언트 ID(패키지명 `com.firewatch.mobile`, SHA-1 지문 등록) 준비 완료, Render에 `GOOGLE_OAUTH_CLIENT_IDS` 설정 후 재배포. 이후 모바일에서 실제 ID 토큰으로 `POST /api/auth/google/link` 왕복 확인. **진행 상황(2026-10-04)** — 사용자가 Google Cloud Console에서 클라이언트 ID 발급 완료, Render에 `GOOGLE_OAUTH_CLIENT_IDS` 등록·재배포까지 끝남(세션이 배포 성공·`/api/health` 200 확인). **남은 건 실제 왕복 확인뿐 — APP-6(모바일 Google Sign-In UI, 아직 코드 없음)이 먼저 구현돼야 가능하므로, 사실상 APP-6 쪽에 남은 작업.**
 
 ### BE-10. 한국국채 10년물 수익률 데이터 소스 확보 (코드 완료, 사용자의 ECOS 키 발급 대기)
 **무엇** — 한국 국고채 10년물 수익률(%)을 매일 브리핑 지표에 추가. **BE-9(완료, 종료 기록 참고) 후속. 코드는 끝났고 완료 기준만 미충족.**
@@ -59,8 +59,8 @@
 **왜** — WEB-4와 동일 기능의 모바일 대응. `@react-native-community/datetimepicker`로 수신 시간, 웹의 `KeywordInput`과 동일 동작(추가/삭제, 최대 20개)의 RN 버전으로 관심 키워드 — 관심 종목은 이 화면에서 안 건드리고 그대로 넘김(web과 동일 원칙). 구현 중 이 SDK의 React Compiler 린트(`react-hooks/set-state-in-effect`)가 "서버 값을 로컬 편집 상태로 동기화"하는 정당한 effect 패턴(web에 이미 문서화된 것과 동일)을 에러로 잡아, `eslint-disable-next-line`으로 명시 처리.
 **완료 기준** — WEB-4와 동일 API로 왕복, 값이 양쪽에서 일치. EAS 연결은 완료됨(APP-2 참고) — 남은 건 실기기 검증뿐(세션이 대신 못 함). **이걸로 Phase 2(APP-1~4) 코드는 전부 완료 — 남은 건 실기기 검증 하나뿐.**
 
-### APP-6. 설정 화면에 "Google 계정 연동"(선택) 버튼 추가
-**무엇** — 공개 배포 전환(ADR 0012)으로 백엔드에 `POST /api/auth/google/link`가 생겼다 — 설정 화면에 선택적 연동 버튼을 추가해 기기 간 설정 동기화를 제공. **BE-12(Google OAuth 클라이언트 ID 발급) 선행 필요, APP-5 의존(X-Device-Id가 먼저 있어야 연동 요청의 기준이 됨).**
+### APP-6. 설정 화면에 "Google 계정 연동"(선택) 버튼 추가 (착수 가능 — BE-12 선행조건 충족됨)
+**무엇** — 공개 배포 전환(ADR 0012)으로 백엔드에 `POST /api/auth/google/link`가 생겼다 — 설정 화면에 선택적 연동 버튼을 추가해 기기 간 설정 동기화를 제공. **BE-12(Google OAuth 클라이언트 ID 발급)는 2026-10-04 완료됨 — 이제 바로 착수 가능. APP-5 의존(X-Device-Id, 완료됨).**
 **왜** — 사용자가 "즐겨찾기한 주식을 유지하려면 계정이 있어야 하지 않냐"고 요청한 배경 — 로그인 없이도 앱은 계속 쓸 수 있어야 하므로(기본은 익명 기기별 저장) 이건 "선택" 기능이다.
 **완료 기준** — 설정 화면에서 Google 로그인 → 서버가 반환한 설정(연동 전 이 기기의 관심종목 등이 유지됨)으로 화면이 갱신됨. 네이티브 Google Sign-In SDK(`@react-native-google-signin/google-signin` 등, Expo config plugin 필요) 도입 검토부터 시작 — Expo Go로는 커스텀 네이티브 모듈 제약이 있을 수 있어 dev build 필요 여부 먼저 확인.
 
