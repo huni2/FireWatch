@@ -9,6 +9,10 @@
 > **담당 태그**: `[BE]` 백엔드(Kotlin/Spring) 코드 · `[WEB]` 웹(React/AntD) 코드 · `[APP]` 모바일(React Native) 코드 · `[PROJ]` 위키·문서·설정 등 코드 외 작업.
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
+## 2026-10-05
+- **[APP] 모바일 뉴스 화면 추가(APP-10) — 2026-10-04 앱 리뷰 모바일 기능보강(APP-8~10) 마지막**: 웹 `NewsPage`에 대응 — 오늘의 관련 뉴스 목록을 홈 세그먼트 탭 4번째("뉴스")에 추가. RN엔 `<a target="_blank">` 같은 새 탭 개념이 없어 항목을 탭하면 `Linking.openURL`로 외부 브라우저를 명시적으로 연다. 모바일 `Briefing` 인터페이스에 `news: NewsArticle[]` 필드 추가(APP-9의 지수 필드 확장과 같은 맥락 — 그동안 홈 화면만 쓰는 좁은 선언이었던 걸 웹과 맞춤). 이걸로 2026-10-04 리뷰로 시작된 모바일 기능보강 3건(APP-8 종목·APP-9 지수·APP-10 뉴스)이 전부 끝나 모바일 홈이 4개 탭(홈/종목/지수/뉴스)을 전부 갖춤 — 남은 모바일 과제는 APP-2~4(실기기 검증 대기)·APP-6(Google 계정 연동, 착수 가능)뿐. `tsc --noEmit`·`expo lint` 통과, 실기기 검증은 기존과 동일하게 사용자 몫.
+  `mobile/src/{features/{home/HomeScreen.tsx,news/NewsScreen.tsx(신규)},lib/api.ts}` 변경.
+
 ## 2026-10-04
 - **[APP] 모바일 지수 화면 추가(APP-9) — 신규 과제 9건 이후 모바일 기능보강 2번째**: 웹 `IndicesPage`에 대응 — 금/은/환율 + 국내외 지수·채권 수익률 현재값을 홈 세그먼트 탭에 "지수" 탭으로 추가(`HomeScreen`의 `TABS`에 3번째 항목). 완료 기준이 "확인 가능"까지라 웹의 시계열 `RateChart`나 전일대비 트렌드 화살표는 이번엔 빼고 현재값 그리드만 — 범위를 완료 기준에 정확히 맞춰 과하게 만들지 않음. 모바일 `lib/api.ts`의 `Briefing` 인터페이스가 그동안 "홈 화면·바텀시트가 쓰는 필드만" 선언해둔 상태였어서(원래 지수는 웹 전용으로 설계 — 이번 리뷰로 뒤집힘), 백엔드 `BriefingDtos.kt` 실제 응답 구조를 확인하고 금/은/환율/코스피/코스닥/S&P500/나스닥/다우/미국채·한국채 10년물 필드까지 확장. `tsc --noEmit`·`expo lint` 통과, 실기기 검증은 기존과 동일하게 사용자 몫. 남은 건 APP-10(뉴스)뿐.
   `mobile/src/{features/{home/HomeScreen.tsx,indices/IndicesScreen.tsx(신규),indices/components/MetricCard.tsx(신규)},lib/api.ts}` 변경.
