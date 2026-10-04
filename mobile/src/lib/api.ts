@@ -13,8 +13,15 @@ export interface Settings {
 
 export type DataSourceStatus = 'NORMAL' | 'FALLBACK'
 
-// 홈 화면·바텀시트·지수 화면(APP-9)이 쓰는 필드 — web/src/lib/api.ts의 Briefing과 동일 응답을
-// 모바일이 실제로 쓰는 범위까지만 선언(news는 아직 APP-10 전이라 미포함).
+export interface NewsArticle {
+  title: string
+  link: string
+  description: string | null
+  pubDate: string | null
+}
+
+// 홈 화면·바텀시트·지수 화면(APP-9)·뉴스 화면(APP-10)이 쓰는 필드 — web/src/lib/api.ts의
+// Briefing과 동일 응답을 모바일이 실제로 쓰는 범위까지만 선언.
 export interface Briefing {
   briefingDate: string
   marketSummary: string
@@ -32,6 +39,7 @@ export interface Briefing {
   dow: number | null
   usBondYield10y: number | null
   krBondYield10y: number | null
+  news: NewsArticle[]
 }
 
 export interface StockSearchResult {
