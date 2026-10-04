@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Card, Skeleton, Space, Tag, Typography } from 'antd'
+import { App, Card, Skeleton, Space, Tag, Typography } from 'antd'
 import { motion } from 'framer-motion'
-import type { Briefing } from '../../../lib/api'
+import { useNavigate } from 'react-router-dom'
+import { searchStocks, type Briefing } from '../../../lib/api'
 import { renderMarkdownLite } from '../../../lib/markdownLite'
 
 interface BriefingSummaryCardProps {
@@ -14,6 +15,23 @@ const COLLAPSED_HEIGHT = 160
 // Design Ref: §5.4 Dashboard 체크리스트 — 증시 요약 + 추천 종목 + FALLBACK 배지 + 로딩 스켈레톤
 export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardProps) {
   const [expanded, setExpanded] = useState(false)
+  const navigate = useNavigate()
+  const { message } = App.useApp()
+
+  // 추천종목 태그가 그냥 텍스트라 눌러도 아무 일이 없다는 지적(2026-10-04 리뷰) — 이름으로 티커를
+  // 찾아 종목 화면에서 바로 관심종목에 추가되게 한다. 기존 검색(StockSearchInput)과 동일한 API 재사용.
+  const handleStockClick = async (stockName: string) => {
+    try {
+      const results = await searchStocks(stockName)
+      if (results.length === 0) {
+        message.warning(`"${stockName}" 종목을 찾지 못했습니다.`)
+        return
+      }
+      navigate(`/stocks?add=${encodeURIComponent(results[0].symbol)}`)
+    } catch {
+      message.error('종목 검색에 실패했습니다.')
+    }
+  }
 
   if (loading) {
     return (
@@ -58,7 +76,12 @@ export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardPr
         {briefing.recommendedStocks.length > 0 && (
           <Space wrap size={6}>
             {briefing.recommendedStocks.map((stock) => (
-              <Tag key={stock} color="blue" style={{ borderRadius: 999, paddingInline: 10 }}>
+              <Tag
+                key={stock}
+                color="blue"
+                style={{ borderRadius: 999, paddingInline: 10, cursor: 'pointer' }}
+                onClick={() => handleStockClick(stock)}
+              >
                 {stock}
               </Tag>
             ))}

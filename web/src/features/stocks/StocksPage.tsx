@@ -57,6 +57,16 @@ export function StocksPage() {
     setSelected(symbol)
   }
 
+  // 대시보드 추천종목 태그 클릭(2026-10-04, WEB-9) — 이미 티커를 알고 있는 상태로 넘어오므로
+  // 검색 없이 바로 추가한다(handleAddFromSearch 재사용).
+  useEffect(() => {
+    const toAdd = searchParams.get('add')
+    if (toAdd && data && !watchedStocks.includes(toAdd)) {
+      handleAddFromSearch(toAdd)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, searchParams])
+
   if (loading) {
     return (
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
