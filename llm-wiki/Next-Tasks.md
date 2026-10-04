@@ -16,11 +16,6 @@
 
 ## 열린 과제 — 백엔드(BE)
 
-### BE-14. 감사로그 응답요약 포맷 정리
-**무엇** — `PushSendResult` 등 반환값의 Kotlin data class 기본 `toString()`이 그대로 감사로그 `response_summary`에 노출되는 걸 사람이 읽기 좋은 문자열로 정리.
-**왜** — 2026-09-28 프로덕트 디자이너 리뷰 지적, 2026-10-04 재확인 — 여전히 미해결. 웹이 소유자 전용이라 치명적은 아니지만 지저분함.
-**완료 기준** — 감사로그 응답요약이 "발송 3건 중 성공 3건" 같은 읽기 쉬운 문장으로 표시됨.
-
 ### BE-12. Google OAuth 클라이언트 ID 발급 + GOOGLE_OAUTH_CLIENT_IDS 환경변수 설정 (계정 행동 끝, 실왕복 검증만 남음)
 **무엇** — Google Cloud Console에서 이 앱용 OAuth 2.0 클라이언트 ID(Android 앱)를 발급하고, Render 백엔드 환경변수 `GOOGLE_OAUTH_CLIENT_IDS`(쉼표 구분, `firewatch.google.oauth-client-ids`가 읽음)에 등록.
 **왜** — 공개 배포 전환(ADR 0012)으로 `GoogleIdTokenVerifierClient`가 ID 토큰의 audience를 검증하는데, 발급된 클라이언트 ID 없이는 실제 Google 로그인 왕복 자체가 불가능함.
@@ -88,6 +83,7 @@
 
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
+| BE-14 | 감사로그 응답요약 포맷 정리 | 완료. `PushSendResult`에 `toString()` 오버라이드 추가 — "PushSendResult(recipientCount=3, ...)" 대신 "대상 3명 — FCM 5/5건, 웹푸시 1/2건 성공" 형태. `AuditLogAspect` 쪽은 안 건드리고(`result.toString()` 호출 자체는 범용적으로 맞는 설계) 노출되는 data class가 자기 자리에서 가독성 책임을 지는 패턴 — 나중에 다른 data class도 같은 방식으로 확장 가능. 기존 equals 기반 테스트 그대로 통과, 포맷 검증 테스트 추가. `./gradlew build` 전체 통과, Render 재배포 성공(`bb16790` Live) 확인 | `backend/.../service/PushService.kt`(+테스트) (2026-10-04 [[log]]) |
 | WEB-12 | 가이드·사용방법 메뉴 통합 | 완료. `HelpPage` 신설, AntD `Tabs`로 기존 `GuidePage`/`UsagePage`를 그대로 탭 콘텐츠로 재사용(각자 쓰던 자체 Title만 제거). `/guide`·`/usage` 라우트 둘 다 유지(StocksPage의 `/guide` 링크가 안 깨지게, URL로 초기 탭만 결정). 사이드바·헤더 메뉴가 "도움말" 하나로 줄어듦. 프로덕션에서 메뉴·탭 전환 둘 다 브라우저로 확인. `npm run build`·`npm run lint` 통과 | `web/src/{App.tsx,components/AppShell.tsx,features/{help/HelpPage.tsx,guide/GuidePage.tsx,usage/UsagePage.tsx}}` (2026-10-04 [[log]]) |
 | WEB-11 | 종목 페이지 검색창/직접입력창 중복 노출 정리 | 완료. "이름으로 찾기"/"티커 직접 입력" Segmented 탭으로 분리(기본은 검색). `KeywordInput`에 `showInput` prop 추가해 Settings 화면(관심 키워드)은 변경 없이 그대로, 종목 화면만 탭에 따라 태그 목록+입력 필드를 분리 렌더링(태그 중복 렌더링 버그를 수정 중 한 번 거쳐감 — 최종은 탭마다 한 번씩만). 프로덕션에서 두 탭 다 브라우저로 확인. `npm run build`·`npm run lint` 통과 | `web/src/features/{stocks/StocksPage.tsx,settings/components/KeywordInput.tsx}` (2026-10-04 [[log]]) |
 | WEB-10 | AI 추천종목 가상매매 결과 UI | 완료. 대시보드 브리핑 요약 바로 아래 "AI 추천 성과" 카드 추가 — 종목명·추천일·수익률(%, 상승 빨강/하락 파랑 기존 토큰 재사용), 현재가 조회 실패는 안내 문구, 데이터 0건이면 Empty 안내("아직 쌓인 추천 기록이 없어요"). 프로덕션 배포 후 빈 상태 렌더링까지 브라우저로 확인(실데이터는 스케줄러가 쌓은 뒤 자연 확인 예정). `npm run build`·`npm run lint` 통과 | `web/src/{lib/api.ts,features/dashboard/{DashboardPage.tsx,hooks/useRecommendedStockPerformance.ts,components/RecommendedStockPerformanceCard.tsx}}` (2026-10-04 [[log]]) |
