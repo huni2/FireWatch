@@ -128,4 +128,19 @@ class PushServiceTest {
             result,
         )
     }
+
+    // BE-14(2026-10-04) — data class 기본 toString()("PushSendResult(recipientCount=...)")이
+    // 그대로 감사로그 response_summary에 노출되던 걸(2026-09-28 지적) 사람이 읽기 좋게 고침.
+    @Test
+    fun `toString은 사람이 읽기 좋은 문장이다`() {
+        val result = PushSendResult(
+            recipientCount = 3,
+            tokenCount = 5,
+            successCount = 5,
+            webPushSubscriberCount = 2,
+            webPushSuccessCount = 1,
+        )
+
+        assertEquals("대상 3명 — FCM 5/5건, 웹푸시 1/2건 성공", result.toString())
+    }
 }

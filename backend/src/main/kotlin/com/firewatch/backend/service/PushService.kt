@@ -18,14 +18,19 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 // 명세서 FR-07 "전체 발송 수, 성공 수" — AuditLogAspect가 반환값을 response_summary에 그대로 남기므로
-// 이 데이터 클래스의 toString()이 곧 감사로그 내용이 된다(별도 감사 호출 불필요).
+// 이 데이터 클래스의 toString()이 곧 감사로그 내용이 된다(별도 감사 호출 불필요). 그래서 data class
+// 기본 toString()(생성자 형태 그대로 노출돼 읽기 불편하다는 2026-09-28 지적, BE-14)이 아니라
+// 사람이 읽기 좋은 문장을 직접 반환하도록 오버라이드한다.
 data class PushSendResult(
     val recipientCount: Int,
     val tokenCount: Int,
     val successCount: Int,
     val webPushSubscriberCount: Int = 0,
     val webPushSuccessCount: Int = 0,
-)
+) {
+    override fun toString(): String =
+        "대상 ${recipientCount}명 — FCM ${successCount}/${tokenCount}건, 웹푸시 ${webPushSuccessCount}/${webPushSubscriberCount}건 성공"
+}
 
 /**
  * Design Ref: §2.2 — FR-03 "발송". 공개 배포 전환(2026-09) 이후로는 user_settings가 행 하나가
