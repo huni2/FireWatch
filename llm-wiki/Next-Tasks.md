@@ -45,11 +45,6 @@
 
 ## 열린 과제 — 웹(WEB)
 
-### WEB-11. 종목 페이지 검색창/직접입력창 중복 노출 정리
-**무엇** — `StocksPage.tsx`의 종목명 검색창과 티커 직접입력창이 항상 동시에 떠 있는 걸 탭 전환 또는 기본 숨김으로 정리.
-**왜** — 2026-09-28 프로덕트 디자이너 리뷰 지적, 2026-10-04 재확인했지만 아직 미해결.
-**완료 기준** — 두 입력 방식 중 하나가 기본으로 숨겨지거나 탭으로 전환됨.
-
 ### WEB-12. 가이드·사용방법 메뉴 통합
 **무엇** — `AppShell.tsx`의 "가이드"·"사용방법" 두 메뉴를 하나의 메뉴 아래 탭 두 개로 통합.
 **왜** — 둘 다 안내문서 성격인데 주메뉴 8자리 중 2자리를 차지(2026-09-28 지적, 미해결).
@@ -96,6 +91,7 @@
 
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
+| WEB-11 | 종목 페이지 검색창/직접입력창 중복 노출 정리 | 완료. "이름으로 찾기"/"티커 직접 입력" Segmented 탭으로 분리(기본은 검색). `KeywordInput`에 `showInput` prop 추가해 Settings 화면(관심 키워드)은 변경 없이 그대로, 종목 화면만 탭에 따라 태그 목록+입력 필드를 분리 렌더링(태그 중복 렌더링 버그를 수정 중 한 번 거쳐감 — 최종은 탭마다 한 번씩만). 프로덕션에서 두 탭 다 브라우저로 확인. `npm run build`·`npm run lint` 통과 | `web/src/features/{stocks/StocksPage.tsx,settings/components/KeywordInput.tsx}` (2026-10-04 [[log]]) |
 | WEB-10 | AI 추천종목 가상매매 결과 UI | 완료. 대시보드 브리핑 요약 바로 아래 "AI 추천 성과" 카드 추가 — 종목명·추천일·수익률(%, 상승 빨강/하락 파랑 기존 토큰 재사용), 현재가 조회 실패는 안내 문구, 데이터 0건이면 Empty 안내("아직 쌓인 추천 기록이 없어요"). 프로덕션 배포 후 빈 상태 렌더링까지 브라우저로 확인(실데이터는 스케줄러가 쌓은 뒤 자연 확인 예정). `npm run build`·`npm run lint` 통과 | `web/src/{lib/api.ts,features/dashboard/{DashboardPage.tsx,hooks/useRecommendedStockPerformance.ts,components/RecommendedStockPerformanceCard.tsx}}` (2026-10-04 [[log]]) |
 | BE-13 | AI 추천종목 가상매매 트래킹 데이터 모델·API | 완료. `recommended_stock_snapshots` 신규 테이블(H2/Postgres 양쪽, Postgres는 RLS도 활성화) — 스케줄러가 브리핑 저장 후 그날 추천종목마다 이름→티커 검색+그 시점 가격을 스냅샷으로 저장(종목 하나 실패해도 나머지 계속). `GET /api/stocks/recommendations/performance`가 스냅샷 대비 현재가 수익률 계산(같은 symbol 중복 조회 방지). 로컬 H2에 직접 시드 데이터 넣고 실제 Yahoo 가격으로 수익률 계산(294.29%)까지 종단 검증, 종목 못 찾은 케이스의 null 처리도 확인. `./gradlew build` 전체 통과, Render 재배포 후 프로덕션에서 빈 배열 정상 응답(스냅샷은 아직 없음 — 내일 08:00 KST부터 쌓임) 확인 | `backend/.../{entity/RecommendedStockSnapshot,repository/RecommendedStockSnapshotRepository,service/{RecommendedStockSnapshotService,RecommendedStockPerformanceService,SchedulerJob},web/StockController}.kt`(+테스트), `backend/src/main/resources/schema-{h2,postgresql}.sql` (2026-10-04 [[log]]) |
 | APP-7 | 모바일 추천종목 칩을 클릭 가능하게 | 완료(범위 조정). 모바일엔 아직 종목 화면이 없어(APP-8 예정) 당초 계획했던 "화면 이동"은 빼고, "이름→티커 검색 → 관심종목 자동 추가 → 토스트 안내"로 축소 — APP-8이 생기면 자동으로 거기 반영됨. `mobile/src/lib/api.ts`에 `searchStocks` 신규 추가(웹과 동일 엔드포인트). `tsc --noEmit`·`expo lint` 통과, 실기기 검증은 기존과 동일하게 사용자 몫 | `mobile/src/{lib/api.ts,features/briefing/components/RecommendedStockChip.tsx}` (2026-10-04 [[log]]) |
