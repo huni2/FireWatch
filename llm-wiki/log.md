@@ -10,7 +10,8 @@
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
 ## 2026-10-04
-- **[PROJ] BE-10 ECOS_API_KEY Render 등록 진행 중**: 사용자가 ecos.bok.or.kr 인증키를 발급받아, Render 대시보드(`firewatch-backend` → Environment)에서 브라우저 자동화로 `ECOS_API_KEY` 변수 행을 새로 추가하는 중 — 키 값 자체는 보안상 채팅에 노출하지 않고 사용자가 직접 Render 입력창에 붙여넣도록 안내. 아직 저장·재배포 전(세션 진행 중). 코드 변경 없음.
+- **[PROJ] BE-10 ECOS_API_KEY Render 등록 완료 — 재배포까지 확인**: 사용자가 ecos.bok.or.kr 인증키를 발급받아 Render 대시보드(`firewatch-backend` → Environment)에 `ECOS_API_KEY` 등록(값은 사용자가 직접 입력창에 붙여넣음, 세션엔 노출 안 함). 저장 즉시 Render가 자동 재배포(`ed13b3d`), `/api/health` 200으로 정상 기동 확인. 단 오늘자 브리핑(`id:46`)은 키 등록 **전**인 어제 23:13 UTC에 이미 생성된 거라 `krBondYield10y`는 아직 null(`usBondYield10y`는 5.277로 정상 — 나머지 파이프라인은 멀쩡함을 재확인). 스케줄러가 오늘자 브리핑 존재 시 재실행을 스킵해 강제 재생성은 불가 — **내일 08:00 KST 자동 실행부터 실제 값이 채워질 것으로 예상, 아직 최종 확인 전**. 코드 변경 없음.
+- **[PROJ] cron-job.org Keep-Alive 크론잡 실패 원인 규명 + 복구**: 사용자가 "cron-job.org에서 비활성화당했어"라고 보고. 확인해보니 원인은 명확 — 2026-09-29 공개 배포 전환(ADR 0012)으로 `/api/settings`가 `X-Device-Id` 헤더를 요구하게 됐는데, 이 크론잡은 헤더 없이 그냥 `/api/settings`를 핑하고 있어서 그날부터 계속 400을 받았고 cron-job.org가 연속 실패로 자동 비활성화한 것(실측: `/api/settings` 무헤더 400, `/api/health` 200). 브라우저로 cron-job.org 콘솔에 로그인해 핑 대상 URL을 `/api/health`(WEB-8 때 만든 인증 불필요 헬스체크)로 변경하고 "Enable job" 재활성화, 저장 확인. "즉시 테스트 실행" 버튼은 cron-job.org 쪽 자체 오류로 못 썼지만 설정 저장 자체는 확인됨 — 10분 간격 다음 실행부터 정상화될 것으로 예상. 코드 변경 없음(외부 서비스 설정 변경).
 
 ## 2026-10-02
 - **[PROJ] WEB-8 완료 기록을 llm-wiki에 반영**: 세션이 재개된 시점(실제 작업은 2026-09-30에 수행 — 아래 섹션)에 그 작업 내용을 `log.md`에 기록하고 `Next-Tasks.md`에서 WEB-8을 종료 기록으로 이동, 커밋·push. 코드 변경 없음.
