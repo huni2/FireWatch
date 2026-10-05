@@ -13,6 +13,7 @@ const StocksPage = lazy(() => import('./features/stocks/StocksPage').then((m) =>
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })))
 const IndicesPage = lazy(() => import('./features/indices/IndicesPage').then((m) => ({ default: m.IndicesPage })))
 const NewsPage = lazy(() => import('./features/news/NewsPage').then((m) => ({ default: m.NewsPage })))
+const GamePage = lazy(() => import('./features/game/GamePage').then((m) => ({ default: m.GamePage })))
 const HelpPage = lazy(() => import('./features/help/HelpPage').then((m) => ({ default: m.HelpPage })))
 const PrivacyPage = lazy(() => import('./features/privacy/PrivacyPage').then((m) => ({ default: m.PrivacyPage })))
 
@@ -40,6 +41,14 @@ export default function App() {
                 element={
                   <Suspense fallback={<Skeleton active />}>
                     <NewsPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="game"
+                element={
+                  <Suspense fallback={<Skeleton active />}>
+                    <GamePage />
                   </Suspense>
                 }
               />

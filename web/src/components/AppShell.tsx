@@ -10,6 +10,7 @@ import {
   ReadOutlined,
   SettingOutlined,
   SunOutlined,
+  TrophyOutlined,
 } from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 
@@ -33,6 +34,7 @@ const CONTENT_ITEMS: NavItem[] = [
   { key: '/stocks', icon: <LineChartOutlined />, label: '종목' },
   { key: '/indices', icon: <FundOutlined />, label: '지수' },
   { key: '/news', icon: <ReadOutlined />, label: '뉴스' },
+  { key: '/game', icon: <TrophyOutlined />, label: '가상투자' },
   { key: '/guide', icon: <QuestionCircleOutlined />, label: '도움말' },
 ]
 

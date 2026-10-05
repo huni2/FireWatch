@@ -201,3 +201,55 @@ export function searchStocks(query: string): Promise<StockSearchResult[]> {
 export function fetchRecommendedStockPerformance(): Promise<RecommendedStockPerformance[]> {
   return request<RecommendedStockPerformance[]>('/api/stocks/recommendations/performance')
 }
+
+// 가상투자 게임(2026-10-05) — 실제로 쌓인 Briefing 날짜를 셔플한 덱을 턴 순서로 쓰는 턴제 게임.
+export type GameSessionStatus = 'ACTIVE' | 'ENDED'
+export type GameInstrumentType = 'GOLD' | 'SILVER' | 'USD' | 'KOSPI' | 'KOSDAQ' | 'SP500' | 'NASDAQ' | 'DOW' | 'STOCK'
+export type GameTradeAction = 'BUY' | 'SELL'
+
+export interface GameHolding {
+  instrumentType: GameInstrumentType
+  symbol: string | null
+  quantity: number
+  currentPrice: number | null
+  value: number
+}
+
+export interface GameTurn {
+  sessionId: number
+  status: GameSessionStatus
+  turnIndex: number
+  totalTurns: number
+  turnDate: string
+  briefing: Briefing
+  holdings: GameHolding[]
+  cash: number
+  portfolioValue: number
+  startingCash: number
+  returnPercent: number
+}
+
+export function startGame(): Promise<GameTurn> {
+  return request<GameTurn>('/api/game/start', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() } })
+}
+
+export function fetchCurrentTurn(): Promise<GameTurn> {
+  return request<GameTurn>('/api/game/current', { headers: { 'X-Device-Id': getDeviceId() } })
+}
+
+export function tradeGame(input: {
+  instrumentType: GameInstrumentType
+  symbol?: string
+  action: GameTradeAction
+  quantity: number
+}): Promise<GameTurn> {
+  return request<GameTurn>('/api/game/trade', {
+    method: 'POST',
+    headers: { 'X-Device-Id': getDeviceId() },
+    body: JSON.stringify(input),
+  })
+}
+
+export function nextGameTurn(): Promise<GameTurn> {
+  return request<GameTurn>('/api/game/next-turn', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() } })
+}
