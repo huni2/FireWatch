@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Alert, Card, Empty, Segmented, Skeleton, Space, Typography } from 'antd'
+import { Alert, App, Card, Empty, Segmented, Skeleton, Space, Typography } from 'antd'
 import { motion } from 'framer-motion'
 import { Link, useSearchParams } from 'react-router-dom'
 import { KeywordInput } from '../settings/components/KeywordInput'
 import { StockChart } from './components/StockChart'
 import { StockSearchInput } from './components/StockSearchInput'
 import { useSettings } from '../settings/hooks/useSettings'
-import { updateSettings } from '../../lib/api'
+import { ApiRequestError, updateSettings } from '../../lib/api'
 import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 
 // 티커 형식: 영문/숫자, 선택적으로 .KS/.KQ 같은 거래소 접미사(예: 005930.KS, AAPL, BRK.B).
@@ -22,6 +22,7 @@ function validateTicker(value: string): string | null {
 type AddMode = 'search' | 'ticker'
 
 export function StocksPage() {
+  const { message } = App.useApp()
   const { data, loading, error, isSlow, reload } = useSettings()
   const [searchParams] = useSearchParams()
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
@@ -43,13 +44,23 @@ export function StocksPage() {
   }, [data])
 
   const handleChange = async (next: string[]) => {
+    const previous = watchedStocks
+    const previousSelected = selected
     setWatchedStocks(next)
     if (selected && !next.includes(selected)) {
       setSelected(next[0] ?? null)
     }
     if (!data) return
-    await updateSettings({ pushTime: data.pushTime, interestKeywords: data.interestKeywords, watchedStocks: next })
-    reload()
+    try {
+      await updateSettings({ pushTime: data.pushTime, interestKeywords: data.interestKeywords, watchedStocks: next })
+      reload()
+    } catch (err) {
+      // 낙관적으로 먼저 반영한 태그를 저장 실패 시 되돌린다 — 전엔 실패해도 아무 알림 없이 조용히
+      // 저장 안 된 상태로 남아있던 버그(2026-10-05 지적).
+      setWatchedStocks(previous)
+      setSelected(previousSelected)
+      message.error(err instanceof ApiRequestError ? err.apiError.message : '관심 종목 저장에 실패했습니다.')
+    }
   }
 
   const handleAddFromSearch = (symbol: string) => {
