@@ -53,9 +53,8 @@ export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardPr
         variant="borderless"
         style={{ background: 'transparent' }}
         styles={{
-          header: { paddingInline: 0, borderBottomWidth: 2 },
+          header: { borderBottomWidth: 2 },
           title: { fontSize: 24, fontWeight: 800, letterSpacing: -0.4 },
-          body: { paddingInline: 0, paddingBlockStart: 16 },
         }}
         title={`오늘의 증시 요약 · ${briefing.briefingDate}`}
         extra={
@@ -78,11 +77,11 @@ export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardPr
             />
           )}
         </div>
-        <Typography.Link onClick={() => setExpanded((v) => !v)} style={{ display: 'inline-block', marginBlock: 8 }}>
+        <Typography.Link onClick={() => setExpanded((v) => !v)} style={{ display: 'block', marginBlock: 8 }}>
           {expanded ? '접기' : '더보기'}
         </Typography.Link>
         {briefing.recommendedStocks.length > 0 && (
-          <Space wrap size={6}>
+          <Space wrap size={6} style={{ marginTop: 8 }}>
             {briefing.recommendedStocks.map((stock) => (
               <Tag
                 key={stock}

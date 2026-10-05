@@ -78,8 +78,9 @@ export const TREND_DOWN_COLOR = '#1677FF'
 // 신문 1면형 섹션 카드(WEB-14, 2026-10-05) — Card를 박스가 아니라 제목 밑줄만 있는 지면 섹션처럼
 // 보이게 하는 공통 prop 묶음. 처음엔 대시보드 3곳에서만 썼다가 종목·설정·감사로그 페이지에도
 // 같은 스타일을 적용하면서(WEB-15) 반복되길래 여기로 모음.
+// paddingInline:0으로 완전히 눕혔더니 "카드 여백이 아예 없다"는 지적(2026-10-05)을 받아
+// AntD 기본 패딩은 유지하고 테두리·배경·그림자만 없앤다(= 박스만 빠지고 여백은 그대로).
 export const SECTION_CARD_PROPS = {
   variant: 'borderless' as const,
   style: { background: 'transparent' },
-  styles: { header: { paddingInline: 0 }, body: { paddingInline: 0 } },
 }
