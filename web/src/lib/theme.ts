@@ -1,12 +1,15 @@
 import { theme as antdTheme, type ThemeConfig } from 'antd'
 
-// Design Ref: llm-wiki/design.md §6 — 루트 Design.md(스타벅스 디자인 시스템 추출본)를 토큰
-// 레벨로 리스킨. 브랜드 컬러(Green Accent)·따뜻한 크림 캔버스·50px 필 버튼·위스퍼소프트 카드
-// 섀도만 가져오고, 프레임워크(AntD)·감사로그 고정 4색·상승↓하락 관례는 그대로 둔다.
-const FONT_FAMILY = "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+// Design Ref: llm-wiki/design.md §6 — 2026-10-05 재설계(메뉴 중복 제거·ECOS 참고 리스킨). 크림
+// 캔버스는 AI 생성 디자인에 흔한 클리셰 배색이라 빼고 채도를 낮춘 세이지그레이로, 서체는 Noto Sans
+// KR로 교체. 다크모드는 카드와 배경이 거의 구분 안 되던 문제(그림자만으로 구분해 어두운 바탕에서
+// 그림자 자체가 안 보임)를 실측 발견해 카드 표면색·테두리를 배경과 분명히 분리했다.
+const FONT_FAMILY = "'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
 
 // Design.md §2 Green Accent — 버튼/링크/차트선/포커스링 등 colorPrimary가 파생시키는 모든 곳의 브랜드 시그널.
 export const BRAND_GREEN = '#00754A'
+// 다크 배경에서 #00754A는 채도가 낮아 보여 밝힌 값 — 라이트는 그대로, 다크 전용.
+const BRAND_GREEN_DARK = '#35C080'
 
 const CARD_SHADOW_LIGHT = '0 0 0.5px rgba(0, 0, 0, 0.14), 0 1px 1px rgba(0, 0, 0, 0.24)'
 const CARD_SHADOW_DARK = '0 0 0.5px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.5)'
@@ -22,12 +25,12 @@ export const lightThemeConfig: ThemeConfig = {
   algorithm: antdTheme.defaultAlgorithm,
   token: {
     ...sharedTokens,
-    colorBgLayout: '#f2f0eb', // Design.md Neutral Warm — 크림 페이지 캔버스
+    colorBgLayout: '#EEF1ED', // 채도 낮춘 세이지그레이 페이지 캔버스(크림 클리셰 대체)
     colorBgContainer: '#FFFFFF',
     boxShadow: CARD_SHADOW_LIGHT,
   },
   components: {
-    Layout: { headerBg: '#FFFFFF', bodyBg: '#f2f0eb' },
+    Layout: { headerBg: '#FFFFFF', bodyBg: '#EEF1ED' },
     Card: { boxShadowTertiary: CARD_SHADOW_LIGHT },
     Button: { borderRadius: 999 }, // Design.md "모든 버튼 50px 풀필" — 실제 높이보다 큰 값으로 항상 완전한 필 보장
   },
@@ -37,15 +40,17 @@ export const darkThemeConfig: ThemeConfig = {
   algorithm: antdTheme.darkAlgorithm,
   token: {
     ...sharedTokens,
-    // Design.md엔 전체앱 다크모드가 없어(House Green은 "밴드"로만 등장) House Green(#1E3932)을
-    // 기준으로 직접 파생 — 카드=House Green 그대로, 캔버스=더 어둡게, 엘리베이트=더 밝게.
-    colorBgLayout: '#0F1D19',
-    colorBgContainer: '#1E3932',
-    colorBgElevated: '#28483F',
+    colorPrimary: BRAND_GREEN_DARK,
+    // 카드 표면을 배경보다 뚜렷이 밝게 + 테두리를 명시적으로 줘서 그림자에만 기대지 않게 함
+    // (실측: 그림자 기반 구분은 어두운 바탕 위에서 그림자 자체가 거의 안 보여 카드 경계가 사라짐).
+    colorBgLayout: '#0E1512',
+    colorBgContainer: '#17221C',
+    colorBgElevated: '#1C2821',
+    colorBorderSecondary: 'rgba(255, 255, 255, 0.09)',
     boxShadow: CARD_SHADOW_DARK,
   },
   components: {
-    Layout: { headerBg: '#0F1D19', bodyBg: '#0F1D19' },
+    Layout: { headerBg: '#0E1512', bodyBg: '#0E1512' },
     Card: { boxShadowTertiary: CARD_SHADOW_DARK },
     Button: { borderRadius: 999 },
   },

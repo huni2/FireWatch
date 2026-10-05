@@ -49,6 +49,9 @@ export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardPr
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
       <Card
         className="hoverable-card"
+        // 핵심 콘텐츠라 틴트 배경으로 강조(ECOS 선택 카드 참고, 2026-10-05 재설계) — colorPrimary
+        // 파생 토큰이라 다크모드에서도 자동으로 맞는 명암으로 바뀐다.
+        style={{ background: 'var(--ant-color-primary-bg)', borderColor: 'var(--ant-color-primary-border)' }}
         title={`오늘의 증시 요약 · ${briefing.briefingDate}`}
         extra={
           briefing.dataSourceStatus === 'FALLBACK' ? (
@@ -65,7 +68,7 @@ export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardPr
                 insetInline: 0,
                 bottom: 0,
                 height: 48,
-                background: 'linear-gradient(transparent, var(--ant-color-bg-container))',
+                background: 'linear-gradient(transparent, var(--ant-color-primary-bg))',
               }}
             />
           )}

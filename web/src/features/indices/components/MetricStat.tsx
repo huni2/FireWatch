@@ -30,7 +30,9 @@ export function MetricStat({ title, value, previousValue, precision = 2, suffix,
         size="small"
         className="hoverable-card"
         style={{
-          borderTop: `3px solid ${trendColor ?? 'var(--ant-color-border-secondary)'}`,
+          // 비교값이 없어 trend가 없는 카드는 border-secondary(거의 안 보임)라 색 있는 카드 옆에서
+          // "테두리가 없다"처럼 보이던 비일관성(2026-10-05 지적) — border(더 또렷한 중립색)로 교체.
+          borderTop: `3px solid ${trendColor ?? 'var(--ant-color-border)'}`,
           height: '100%',
           position: 'relative',
           overflow: 'hidden',
@@ -71,8 +73,9 @@ export function MetricStat({ title, value, previousValue, precision = 2, suffix,
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 4,
-                  fontSize: 22,
-                  fontWeight: 700,
+                  fontSize: 26,
+                  fontWeight: 300, // ECOS 참고(2026-10-05) — 핵심 수치는 가는 굵기로 크게, 색은 trend에만
+                  letterSpacing: -0.3,
                   fontVariantNumeric: 'tabular-nums',
                   color: trendColor,
                 }}

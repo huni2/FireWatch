@@ -1,12 +1,10 @@
-import { useState, type ReactNode } from 'react'
-import { Button, Layout, Switch } from 'antd'
+import type { ReactNode } from 'react'
+import { Layout, Switch } from 'antd'
 import {
   AuditOutlined,
-  DashboardOutlined,
   FundOutlined,
   LineChartOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
+  DashboardOutlined,
   MoonOutlined,
   QuestionCircleOutlined,
   ReadOutlined,
@@ -15,7 +13,7 @@ import {
 } from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 
-const { Sider, Header, Content, Footer } = Layout
+const { Header, Content, Footer } = Layout
 
 interface AppShellProps {
   darkMode: boolean
@@ -69,105 +67,57 @@ function TopNavLink({ item, active }: { item: NavItem; active: boolean }) {
   )
 }
 
-// Design Ref: §5.1 Screen Layout — 왼쪽 사이드바(콘텐츠 메뉴) + 상단 헤더(전체 메뉴, 절대 숨기지
-// 않음) 두 곳에 모두 메뉴를 노출한다. 사이드바는 완전히 숨길 수 있어야 한다는 요청(2026-08-23)에
-// 따라 `collapsedWidth=0`으로 폭 0까지 접힌다 — 이 경우 Sider 내장 트리거(하단 화살표)도 같이
-// 사라져 다시 못 펼치게 되므로, 토글 버튼은 항상 보이는 헤더에 따로 둔다. 로고도 헤더에 둬서
-// 사이드바가 완전히 숨어도 브랜드가 사라지지 않는다(전에 겪은 "로고 사라짐" 버그 재발 방지).
+// Design Ref: §5.1 Screen Layout. 2026-10-05 재설계 — 왼쪽 사이드바 + 상단 헤더가 같은 5개
+// 메뉴를 동시에 보여주던 중복을 없애고 상단 바 하나로 통합(2026-10-04 리뷰 지적 "햄버거 구성").
+// 사이드바의 완전 숨김 토글도 더는 필요 없어 헤더가 그 자체로 항상 보이는 메뉴가 된다.
 export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
   const location = useLocation()
-  const [collapsed, setCollapsed] = useState(false)
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider
-        theme={darkMode ? 'dark' : 'light'}
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
-        width={200}
-        collapsedWidth={0}
+      <Header
         style={{
           position: 'sticky',
-          insetInlineStart: 0,
-          top: 0,
-          height: '100vh',
-          overflow: 'auto',
-          borderInlineEnd: collapsed ? 'none' : '1px solid var(--ant-color-border-secondary)',
+          insetBlockStart: 0,
+          zIndex: 10,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          paddingInline: 24,
+          overflowX: 'auto',
+          borderBottom: '1px solid var(--ant-color-border-secondary)',
         }}
       >
-        <nav style={{ display: 'flex', flexDirection: 'column', paddingTop: 8 }}>
-          {CONTENT_ITEMS.map((item) => (
-            <Link
-              key={item.key}
-              to={item.key}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '11px 24px',
-                fontSize: 14,
-                whiteSpace: 'nowrap',
-                color: location.pathname === item.key ? 'var(--ant-color-primary)' : 'var(--ant-color-text)',
-                fontWeight: location.pathname === item.key ? 600 : 400,
-                background: location.pathname === item.key ? 'var(--ant-color-primary-bg)' : 'transparent',
-              }}
-            >
-              {item.icon}
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </Sider>
-      <Layout>
-        <Header
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            paddingInline: 24,
-            overflowX: 'auto',
-            borderBottom: '1px solid var(--ant-color-border-secondary)',
-          }}
-        >
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed((v) => !v)}
-            aria-label={collapsed ? '사이드바 펼치기' : '사이드바 숨기기'}
-            style={{ flexShrink: 0 }}
-          />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginInlineEnd: 12 }}>
-            <img src="/favicon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
-            <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, color: 'var(--ant-color-text)' }}>
-              FireWatch
-            </span>
-          </div>
-          {CONTENT_ITEMS.map((item) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginInlineEnd: 16 }}>
+          <img src="/favicon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+          <span style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.4, color: 'var(--ant-color-text)' }}>
+            FireWatch
+          </span>
+        </div>
+        {CONTENT_ITEMS.map((item) => (
+          <TopNavLink key={item.key} item={item} active={location.pathname === item.key} />
+        ))}
+        <div style={{ display: 'flex', marginInlineStart: 'auto', flexShrink: 0 }}>
+          {ADMIN_ITEMS.map((item) => (
             <TopNavLink key={item.key} item={item} active={location.pathname === item.key} />
           ))}
-          <div style={{ display: 'flex', marginInlineStart: 'auto', flexShrink: 0 }}>
-            {ADMIN_ITEMS.map((item) => (
-              <TopNavLink key={item.key} item={item} active={location.pathname === item.key} />
-            ))}
-          </div>
-          <Switch
-            checked={darkMode}
-            onChange={onToggleDarkMode}
-            checkedChildren={<MoonOutlined />}
-            unCheckedChildren={<SunOutlined />}
-            style={{ flexShrink: 0, marginInlineStart: 16 }}
-          />
-        </Header>
-        <Content style={{ padding: 24, maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
-          <Outlet />
-        </Content>
-        <Footer style={{ textAlign: 'center', fontSize: 13 }}>
-          <Link to="/privacy" style={{ color: 'var(--ant-color-text-secondary)' }}>
-            개인정보처리방침
-          </Link>
-        </Footer>
-      </Layout>
+        </div>
+        <Switch
+          checked={darkMode}
+          onChange={onToggleDarkMode}
+          checkedChildren={<MoonOutlined />}
+          unCheckedChildren={<SunOutlined />}
+          style={{ flexShrink: 0, marginInlineStart: 16 }}
+        />
+      </Header>
+      <Content style={{ padding: 24, maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
+        <Outlet />
+      </Content>
+      <Footer style={{ textAlign: 'center', fontSize: 13 }}>
+        <Link to="/privacy" style={{ color: 'var(--ant-color-text-secondary)' }}>
+          개인정보처리방침
+        </Link>
+      </Footer>
     </Layout>
   )
 }
