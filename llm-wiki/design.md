@@ -75,3 +75,9 @@ Web은 AntD `ConfigProvider` + `darkAlgorithm`으로 기본 제공. Mobile은 Na
 **지수 페이지 카드 비일관성 수정**: `MetricStat`의 `borderTop` 색이 trend 없을 때 `--ant-color-border-secondary`(거의 투명)였던 걸 `--ant-color-border`(또렷한 중립색)로 바꿔, 색이 있는 카드 옆에서 "테두리가 아예 없다"처럼 보이던 문제를 없앴다.
 
 **범위 밖으로 남긴 것**: 종목/뉴스/설정/감사로그 페이지의 카드 eyebrow 라벨·헤더 밑줄 같은 세부 장식은 이번엔 손대지 않음 — 공통 토큰(폰트·다크모드·nav) 변경만으로 전 페이지에 자동 반영되는 부분까지만 하고, 페이지별 세부 조정은 다음 요청 때 범위를 좁혀 진행하기로.
+
+### 7.1 대시보드 레이아웃을 신문 1면형으로 (같은 날 후속, WEB-14)
+
+위 범위 조정을 끝낸 뒤 "전체적인 디자인 어떤지" 물어와 정직하게 답함 — 구조 문제(메뉴 중복)는 고쳤지만 여전히 "흰 박스를 세로로 쌓은 느낌"이라고. 과감한 구조 변경 옵션 4가지(뉴스레터형/커맨드센터형/신문1면형/벤토그리드형)를 FireWatch 실제 콘텐츠(AI 서술형 브리핑 + 핵심 수치 몇 개 + 종목 리스트 + 뉴스 링크 목록, 섹션 4개뿐) 기준으로 비교해 신문1면형을 추천 — 벤토그리드는 콘텐츠 블록이 4개뿐이라 억지스럽고 모바일에선 결국 1열로 접혀 효과가 화면 크기에 좌우된다는 근거로 기각. 사용자가 신문1면형으로 확정.
+
+`BriefingSummaryCard`를 `variant="borderless"` + 제목 24px/font-weight 800으로 키워 지면 맨 위 메인 기사(마스트헤드)처럼 — 테두리·배경 없이 큰 제목과 2px 밑줄(마스트헤드 룰)만으로 구분. 그 아래 `AI 추천 성과`·`관심 종목`·`오늘의 핫이슈`는 각각 `variant="borderless"` + `styles={{header,body:{paddingInline:0}}}`로 박스를 없애고 제목 밑줄만 있는 "지면 섹션"으로, `DashboardPage.tsx`에서 `display:grid; gridTemplateColumns: repeat(auto-fit, minmax(320px,1fr))`로 2단 배치(좁은 화면은 자동 1열). `RelatedNewsCard`는 대시보드(핫이슈)·뉴스 페이지(단독 콘텐츠) 둘 다에서 쓰여 `boxed` prop(기본 `true`)을 추가 — 뉴스 페이지는 그대로 박스 카드, 대시보드만 `boxed={false}`.
