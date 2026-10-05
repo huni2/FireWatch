@@ -74,3 +74,12 @@ export const AUDIT_STATUS_LABEL: Record<string, string> = {
 // 한국 증시 관례 — 상승 빨강/하락 파랑(브리핑 콘텐츠 색, 위 감사로그 색과 별개 팔레트)
 export const TREND_UP_COLOR = '#F5222D'
 export const TREND_DOWN_COLOR = '#1677FF'
+
+// 신문 1면형 섹션 카드(WEB-14, 2026-10-05) — Card를 박스가 아니라 제목 밑줄만 있는 지면 섹션처럼
+// 보이게 하는 공통 prop 묶음. 처음엔 대시보드 3곳에서만 썼다가 종목·설정·감사로그 페이지에도
+// 같은 스타일을 적용하면서(WEB-15) 반복되길래 여기로 모음.
+export const SECTION_CARD_PROPS = {
+  variant: 'borderless' as const,
+  style: { background: 'transparent' },
+  styles: { header: { paddingInline: 0 }, body: { paddingInline: 0 } },
+}

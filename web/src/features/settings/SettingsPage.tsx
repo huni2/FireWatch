@@ -8,7 +8,7 @@ import { useWebPushSubscription } from './hooks/useWebPushSubscription'
 import { ApiRequestError, updateSettings, type Settings } from '../../lib/api'
 import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 import { useLatestBriefing } from '../dashboard/hooks/useLatestBriefing'
-import { BRAND_GREEN } from '../../lib/theme'
+import { BRAND_GREEN, SECTION_CARD_PROPS } from '../../lib/theme'
 
 // AntD 정적 message는 ConfigProvider 테마를 못 받는 v5 known limitation이 있어, App.useApp()으로
 // 받은 인스턴스에만 브랜드 그린 성공 아이콘을 지정한다(에러는 AntD 기본 색 그대로 — 감사로그 고정 4색과
@@ -63,7 +63,7 @@ export function SettingsPage() {
           설정
         </Typography.Title>
         <SlowLoadingHint loading={loading} isSlow={isSlow} />
-        <Card className="hoverable-card">
+        <Card {...SECTION_CARD_PROPS} title="알림 설정">
           <Skeleton active />
         </Card>
       </Space>
@@ -75,7 +75,7 @@ export function SettingsPage() {
       <Typography.Title level={4} style={{ margin: 0 }}>
         설정
       </Typography.Title>
-      <Card className="hoverable-card">
+      <Card {...SECTION_CARD_PROPS} title="알림 설정">
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
           {error && <Alert type="error" message="설정을 불러오지 못했습니다" description={error.message} showIcon />}
 
@@ -172,7 +172,7 @@ function WebPushCard({ settings, onSubscribed }: { settings: Settings; onSubscri
   }
 
   return (
-    <Card className="hoverable-card" title="브라우저 알림">
+    <Card {...SECTION_CARD_PROPS} title="브라우저 알림">
       <Space direction="vertical" size={12} style={{ width: '100%' }}>
         <Typography.Text type="secondary">
           앱 설치 없이 이 브라우저로 오늘의 브리핑 알림을 받습니다.

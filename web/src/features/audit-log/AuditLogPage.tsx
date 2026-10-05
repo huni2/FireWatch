@@ -6,6 +6,7 @@ import { AuditStatusTag } from './components/AuditStatusTag'
 import { useAuditLogs } from './hooks/useAuditLogs'
 import type { AuditLogEntry } from '../../lib/api'
 import { SlowLoadingHint } from '../../components/SlowLoadingHint'
+import { SECTION_CARD_PROPS } from '../../lib/theme'
 
 const { RangePicker } = DatePicker
 
@@ -91,7 +92,7 @@ export function AuditLogPage() {
         감사로그
       </Typography.Title>
       <SlowLoadingHint loading={loading} isSlow={isSlow} />
-      <Card className="hoverable-card">
+      <Card {...SECTION_CARD_PROPS}>
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
           <Space wrap>
             <Select

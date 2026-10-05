@@ -8,6 +8,7 @@ import { StockSearchInput } from './components/StockSearchInput'
 import { useSettings } from '../settings/hooks/useSettings'
 import { ApiRequestError, updateSettings } from '../../lib/api'
 import { SlowLoadingHint } from '../../components/SlowLoadingHint'
+import { SECTION_CARD_PROPS } from '../../lib/theme'
 
 // 티커 형식: 영문/숫자, 선택적으로 .KS/.KQ 같은 거래소 접미사(예: 005930.KS, AAPL, BRK.B).
 // 검색 없이 직접 입력할 때 "반도체" 같은 일반 단어가 그대로 들어가던 문제(2026-08-21 실측 발견)를 막는다.
@@ -89,7 +90,7 @@ export function StocksPage() {
           종목
         </Typography.Title>
         <SlowLoadingHint loading={loading} isSlow={isSlow} />
-        <Card className="hoverable-card" title="관심 종목">
+        <Card {...SECTION_CARD_PROPS} title="관심 종목">
           <Skeleton active />
         </Card>
       </Space>
@@ -102,7 +103,7 @@ export function StocksPage() {
         종목
       </Typography.Title>
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-        <Card className="hoverable-card" title="관심 종목">
+        <Card {...SECTION_CARD_PROPS} title="관심 종목">
           {error && <Alert type="error" message="관심 종목 정보를 불러오지 못했습니다" description={error.message} showIcon />}
 
           <Segmented
@@ -148,7 +149,7 @@ export function StocksPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.1 }}
         >
-          <Card className="hoverable-card" title="차트">
+          <Card {...SECTION_CARD_PROPS} title="차트">
             <Segmented
               value={selected ?? undefined}
               onChange={(value) => setSelected(value as string)}

@@ -2,6 +2,7 @@ import { Card, Empty, Skeleton, Typography } from 'antd'
 import { ExportOutlined } from '@ant-design/icons'
 import { motion } from 'framer-motion'
 import type { NewsArticle } from '../../../lib/api'
+import { SECTION_CARD_PROPS } from '../../../lib/theme'
 
 interface RelatedNewsCardProps {
   news: NewsArticle[]
@@ -24,9 +25,7 @@ export function RelatedNewsCard({
   emptyDescription = '관련 뉴스가 없습니다',
   boxed = true,
 }: RelatedNewsCardProps) {
-  const cardProps = boxed
-    ? { className: 'hoverable-card' }
-    : { variant: 'borderless' as const, style: { background: 'transparent' }, styles: { header: { paddingInline: 0 }, body: { paddingInline: 0 } } }
+  const cardProps = boxed ? { className: 'hoverable-card' } : SECTION_CARD_PROPS
 
   if (loading) {
     return (

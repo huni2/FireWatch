@@ -1,6 +1,6 @@
 import { Card, Empty, Skeleton, Space, Typography } from 'antd'
 import type { RecommendedStockPerformance } from '../../../lib/api'
-import { TREND_DOWN_COLOR, TREND_UP_COLOR } from '../../../lib/theme'
+import { SECTION_CARD_PROPS, TREND_DOWN_COLOR, TREND_UP_COLOR } from '../../../lib/theme'
 
 const { Text } = Typography
 
@@ -24,11 +24,9 @@ function formatReturn(returnPercent: number | null): { text: string; color?: str
 // 그날 추천 시점 가격으로 가상매수했다고 가정했을 때 지금 수익률이 얼마인지 보여준다.
 // 2026-10-05 재설계 — 박스 카드가 아니라 지면의 한 섹션처럼(변수 없이 제목 밑줄로만 구분).
 export function RecommendedStockPerformanceCard({ data, loading }: RecommendedStockPerformanceCardProps) {
-  const sectionStyles = { header: { paddingInline: 0 }, body: { paddingInline: 0 } }
-
   if (loading) {
     return (
-      <Card variant="borderless" style={{ background: 'transparent' }} styles={sectionStyles} title="AI 추천 성과">
+      <Card {...SECTION_CARD_PROPS} title="AI 추천 성과">
         <Skeleton active paragraph={{ rows: 2 }} />
       </Card>
     )
@@ -36,7 +34,7 @@ export function RecommendedStockPerformanceCard({ data, loading }: RecommendedSt
 
   if (!data || data.length === 0) {
     return (
-      <Card variant="borderless" style={{ background: 'transparent' }} styles={sectionStyles} title="AI 추천 성과">
+      <Card {...SECTION_CARD_PROPS} title="AI 추천 성과">
         <Empty description="아직 쌓인 추천 기록이 없어요 — 내일부터 하나씩 쌓입니다" />
       </Card>
     )
@@ -44,9 +42,7 @@ export function RecommendedStockPerformanceCard({ data, loading }: RecommendedSt
 
   return (
     <Card
-      variant="borderless"
-      style={{ background: 'transparent' }}
-      styles={sectionStyles}
+      {...SECTION_CARD_PROPS}
       title="AI 추천 성과"
       extra={
         <Text type="secondary" style={{ fontSize: 12 }}>

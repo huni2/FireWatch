@@ -2,7 +2,7 @@ import { Alert, Card, Empty, Skeleton, Typography } from 'antd'
 import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { TREND_DOWN_COLOR, TREND_UP_COLOR } from '../../../lib/theme'
+import { SECTION_CARD_PROPS, TREND_DOWN_COLOR, TREND_UP_COLOR } from '../../../lib/theme'
 import { useWatchlistSummary } from '../hooks/useWatchlistSummary'
 
 // 2026-08-21 사용자 요청 — "대시보드는 한눈에 요약되는 게 맞지 않냐" — 종목 화면을 매번 들어가지 않아도
@@ -10,11 +10,10 @@ import { useWatchlistSummary } from '../hooks/useWatchlistSummary'
 // 2026-10-05 재설계 — 박스 카드가 아니라 지면의 한 섹션처럼(변수 없이 제목 밑줄로만 구분).
 export function WatchlistSummaryCard() {
   const { data, loading, error } = useWatchlistSummary()
-  const sectionStyles = { header: { paddingInline: 0 }, body: { paddingInline: 0 } }
 
   if (loading) {
     return (
-      <Card variant="borderless" style={{ background: 'transparent' }} styles={sectionStyles} title="관심 종목">
+      <Card {...SECTION_CARD_PROPS} title="관심 종목">
         <Skeleton active paragraph={{ rows: 2 }} />
       </Card>
     )
@@ -22,7 +21,7 @@ export function WatchlistSummaryCard() {
 
   if (error) {
     return (
-      <Card variant="borderless" style={{ background: 'transparent' }} styles={sectionStyles} title="관심 종목">
+      <Card {...SECTION_CARD_PROPS} title="관심 종목">
         <Alert type="error" message="관심 종목 정보를 불러오지 못했습니다" description={error.message} showIcon />
       </Card>
     )
@@ -30,7 +29,7 @@ export function WatchlistSummaryCard() {
 
   if (!data || data.length === 0) {
     return (
-      <Card variant="borderless" style={{ background: 'transparent' }} styles={sectionStyles} title="관심 종목">
+      <Card {...SECTION_CARD_PROPS} title="관심 종목">
         <Empty description={<Link to="/stocks">종목 화면에서 관심 종목을 등록해보세요</Link>} />
       </Card>
     )
@@ -38,7 +37,7 @@ export function WatchlistSummaryCard() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.05 }}>
-      <Card variant="borderless" style={{ background: 'transparent' }} styles={sectionStyles} title="관심 종목">
+      <Card {...SECTION_CARD_PROPS} title="관심 종목">
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           {data.map((item) => {
             const diff = item.latest != null && item.previous != null ? item.latest - item.previous : null
