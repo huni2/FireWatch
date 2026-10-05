@@ -59,10 +59,11 @@
 **왜** — WEB-4와 동일 기능의 모바일 대응. `@react-native-community/datetimepicker`로 수신 시간, 웹의 `KeywordInput`과 동일 동작(추가/삭제, 최대 20개)의 RN 버전으로 관심 키워드 — 관심 종목은 이 화면에서 안 건드리고 그대로 넘김(web과 동일 원칙). 구현 중 이 SDK의 React Compiler 린트(`react-hooks/set-state-in-effect`)가 "서버 값을 로컬 편집 상태로 동기화"하는 정당한 effect 패턴(web에 이미 문서화된 것과 동일)을 에러로 잡아, `eslint-disable-next-line`으로 명시 처리.
 **완료 기준** — WEB-4와 동일 API로 왕복, 값이 양쪽에서 일치. EAS 연결은 완료됨(APP-2 참고) — 남은 건 실기기 검증뿐(세션이 대신 못 함). **이걸로 Phase 2(APP-1~4) 코드는 전부 완료 — 남은 건 실기기 검증 하나뿐.**
 
-### APP-6. 설정 화면에 "Google 계정 연동"(선택) 버튼 추가 (착수 가능 — BE-12 선행조건 충족됨)
-**무엇** — 공개 배포 전환(ADR 0012)으로 백엔드에 `POST /api/auth/google/link`가 생겼다 — 설정 화면에 선택적 연동 버튼을 추가해 기기 간 설정 동기화를 제공. **BE-12(Google OAuth 클라이언트 ID 발급)는 2026-10-04 완료됨 — 이제 바로 착수 가능. APP-5 의존(X-Device-Id, 완료됨).**
+### APP-6. 설정 화면에 "Google 계정 연동"(선택) 버튼 추가 (코드 완료, 사용자의 dev build·실기기 검증 대기)
+**무엇** — 공개 배포 전환(ADR 0012)으로 백엔드에 `POST /api/auth/google/link`가 생겼다 — 설정 화면에 선택적 연동 버튼을 추가해 기기 간 설정 동기화를 제공. **BE-12(Google OAuth 클라이언트 ID 발급)는 2026-10-04 완료됨. APP-5 의존(X-Device-Id, 완료됨).**
 **왜** — 사용자가 "즐겨찾기한 주식을 유지하려면 계정이 있어야 하지 않냐"고 요청한 배경 — 로그인 없이도 앱은 계속 쓸 수 있어야 하므로(기본은 익명 기기별 저장) 이건 "선택" 기능이다.
-**완료 기준** — 설정 화면에서 Google 로그인 → 서버가 반환한 설정(연동 전 이 기기의 관심종목 등이 유지됨)으로 화면이 갱신됨. 네이티브 Google Sign-In SDK(`@react-native-google-signin/google-signin` 등, Expo config plugin 필요) 도입 검토부터 시작 — Expo Go로는 커스텀 네이티브 모듈 제약이 있을 수 있어 dev build 필요 여부 먼저 확인.
+**완료 기준** — 설정 화면에서 Google 로그인 → 서버가 반환한 설정(연동 전 이 기기의 관심종목 등이 유지됨)으로 화면이 갱신됨.
+**진행 상황(2026-10-05)** — 코드 구현 완료. `expo-auth-session`의 Android 네이티브 클라이언트 플로우(`Google.useIdTokenAuthRequest`)로 ID 토큰을 받아 `linkGoogleAccount()`로 서버 왕복, 성공 시 로컬 설정 상태를 즉시 갱신. 조사 중 Expo의 호스팅 리다이렉트 프록시(`auth.expo.io`)가 폐지된 걸 확인 — 네이티브 SDK든 expo-auth-session이든 **Expo Go로는 더 이상 동작하지 않고 커스텀 dev client 빌드가 필수**라, `eas.json`에 `development` 프로필 추가 + `expo-dev-client` 설치 + OAuth 리다이렉트용 scheme(`com.firewatch.mobile`) 등록까지 끝냄. **남은 건 사용자 쪽 뿐** — ① `.env`에 `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` 값 채우기(Google Cloud Console에서 발급한 값, 비밀 아님), ② `eas build --profile development --platform android`로 dev client APK 빌드·설치, ③ 실기기에서 로그인 왕복 확인.
 
 ## 종료 기록
 
