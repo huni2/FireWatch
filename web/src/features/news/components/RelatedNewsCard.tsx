@@ -1,5 +1,5 @@
 import { Card, Empty, Skeleton, Typography } from 'antd'
-import { LinkOutlined } from '@ant-design/icons'
+import { ExportOutlined } from '@ant-design/icons'
 import { motion } from 'framer-motion'
 import type { NewsArticle } from '../../../lib/api'
 
@@ -40,13 +40,15 @@ export function RelatedNewsCard({ news, loading, title = '관련 뉴스', emptyD
                 style={{ display: 'block', color: 'inherit' }}
               >
                 <Typography.Text strong style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <LinkOutlined style={{ fontSize: 13, color: 'var(--ant-color-text-tertiary)' }} />
                   {article.title}
+                  {/* 새 탭으로 열린다는 걸 "링크다"보다 명확하게 — LinkOutlined는 그냥 사슬 아이콘이라
+                      새 탭 안내로 안 읽힌다는 지적(2026-10-05) */}
+                  <ExportOutlined style={{ fontSize: 12, color: 'var(--ant-color-text-tertiary)' }} />
                 </Typography.Text>
                 {article.description && (
                   <Typography.Paragraph
                     type="secondary"
-                    style={{ margin: '4px 0 0 19px', fontSize: 13 }}
+                    style={{ margin: '4px 0 0', fontSize: 13 }}
                     ellipsis={{ rows: 2 }}
                   >
                     {article.description}
