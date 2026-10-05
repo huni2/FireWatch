@@ -56,18 +56,45 @@ export function DashboardPage() {
 
       <BriefingSummaryCard briefing={latest.data} loading={latest.loading} />
 
-      <RecommendedStockPerformanceCard data={recommendedPerformance.data} loading={recommendedPerformance.loading} />
-
-      {interestKeywords.length > 0 && (
-        <RelatedNewsCard
-          news={hotIssues}
-          loading={latest.loading || settings.loading}
-          title="오늘의 핫이슈"
-          emptyDescription="오늘은 관심 키워드와 일치하는 뉴스가 없어요"
-        />
-      )}
-
-      <WatchlistSummaryCard />
+      {/* 신문 1면형 재설계(2026-10-05, 2026-10-04 리뷰 "박스가 세로로 나열된 느낌" 지적 후속) —
+          메인 기사(브리핑) 아래로 나머지 섹션이 지면처럼 2단으로 흐른다. 핫이슈 섹션은 관심
+          키워드가 없으면 아예 없으므로, 이땐 성과·관심종목을 나란히 둬 그리드가 비지 않게 한다. */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: 32,
+          paddingTop: 24,
+          borderTop: '1px solid var(--ant-color-border-secondary)',
+        }}
+      >
+        {interestKeywords.length > 0 ? (
+          <>
+            <Space direction="vertical" size={32} style={{ width: '100%' }}>
+              <RecommendedStockPerformanceCard
+                data={recommendedPerformance.data}
+                loading={recommendedPerformance.loading}
+              />
+              <WatchlistSummaryCard />
+            </Space>
+            <RelatedNewsCard
+              news={hotIssues}
+              loading={latest.loading || settings.loading}
+              title="오늘의 핫이슈"
+              emptyDescription="오늘은 관심 키워드와 일치하는 뉴스가 없어요"
+              boxed={false}
+            />
+          </>
+        ) : (
+          <>
+            <RecommendedStockPerformanceCard
+              data={recommendedPerformance.data}
+              loading={recommendedPerformance.loading}
+            />
+            <WatchlistSummaryCard />
+          </>
+        )}
+      </div>
     </Space>
   )
 }
