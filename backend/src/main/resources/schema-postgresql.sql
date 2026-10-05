@@ -104,6 +104,31 @@ CREATE TABLE IF NOT EXISTS recommended_stock_snapshots (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 가상투자 게임(2026-10-05) — 실제 Briefing 날짜를 셔플한 덱을 턴 순서로 쓴다. 보유 수량·현금은
+-- 컬럼으로 안 두고 game_transactions를 재생해서 매번 계산한다(GameService 참고).
+CREATE TABLE IF NOT EXISTS game_sessions (
+  id BIGSERIAL PRIMARY KEY,
+  device_id VARCHAR(100) NOT NULL,
+  status VARCHAR(20) NOT NULL,
+  turn_dates VARCHAR(2000) NOT NULL,
+  current_turn_index INT NOT NULL DEFAULT 0,
+  starting_cash DECIMAL(16,2) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  ended_at TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS game_transactions (
+  id BIGSERIAL PRIMARY KEY,
+  session_id BIGINT NOT NULL,
+  turn_index INT NOT NULL,
+  instrument_type VARCHAR(20) NOT NULL,
+  symbol VARCHAR(20),
+  action VARCHAR(10) NOT NULL,
+  quantity DECIMAL(16,4) NOT NULL,
+  price DECIMAL(16,4) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Supabase Security Advisor(RLS Disabled in Public) 대응 — 백엔드는 BYPASSRLS 권한을 가진
 -- postgres 계정(Session Pooler)으로 접속해 영향 없음. PostgREST(anon/authenticated) 경로만 차단.
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
@@ -113,3 +138,5 @@ ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE device_links ENABLE ROW LEVEL SECURITY;
 ALTER TABLE recommended_stock_snapshots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE game_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE game_transactions ENABLE ROW LEVEL SECURITY;
