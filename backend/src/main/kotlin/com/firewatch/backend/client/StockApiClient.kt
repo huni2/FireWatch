@@ -11,7 +11,14 @@ import java.time.Duration
 import java.time.Instant
 
 data class StockPricePoint(val timestamp: String, val close: BigDecimal)
-data class StockPriceHistory(val symbol: String, val points: List<StockPricePoint>)
+
+data class StockPriceHistory(val symbol: String, val points: List<StockPricePoint>) {
+    // AuditLogAspect가 result.toString()을 그대로 감사로그 응답요약에 남기는데, 기본 toString은
+    // points(최대 수백 개 캔들)를 전부 펼쳐 써서 "요약"이 아니라 긴 원시 덤프가 됨(2026-10-05 지적).
+    override fun toString(): String =
+        "$symbol 시세 ${points.size}개 포인트" + (points.lastOrNull()?.let { " · 최근 ${it.close}(${it.timestamp})" } ?: "")
+}
+
 data class StockSearchResult(val symbol: String, val name: String, val exchange: String?)
 
 // 2026-08-21 사용자 요청 — "5년/6개월/3개월/1달/일주일/하루 이렇게 시간적으로 볼 수 있는 차트가 필요".

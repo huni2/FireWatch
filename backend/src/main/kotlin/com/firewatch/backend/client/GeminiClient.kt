@@ -13,7 +13,17 @@ data class GeminiBriefingResult(
     // 2026-09-01 — 관심 키워드 추천(BE-11). 기본값 필수: 기존 테스트가 named-arg로 이 필드 없이
     // 생성 중이라 기본값이 없으면 전부 깨진다.
     val trendingKeywords: List<String> = emptyList(),
-)
+) {
+    // fetchTodaysBriefing()이 이 값을 그대로 반환해, AuditLogAspect의 감사로그 응답요약에
+    // "GeminiBriefingResult(marketSummary=..., recommendedStocks=[...])" 같은 필드명 래퍼가 그대로
+    // 남던 문제(2026-10-05 지적) — marketSummary 본문은 그대로 보존하고(디버깅에 제일 유용한 값이라
+    // 잘라내지 않음) 필드명 노이즈만 걷어낸다.
+    override fun toString(): String = buildString {
+        append(marketSummary)
+        if (recommendedStocks.isNotEmpty()) append(" · 추천종목: ${recommendedStocks.joinToString(", ")}")
+        if (trendingKeywords.isNotEmpty()) append(" · 트렌드키워드: ${trendingKeywords.joinToString(", ")}")
+    }
+}
 
 /**
  * Design Ref: docs/02-design/features/firewatch.design.md §2.2 — Gemini 호출 (FR-01, FR-02).
