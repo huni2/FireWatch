@@ -10,11 +10,12 @@ import {
   Skeleton,
   Space,
   Statistic,
+  Switch,
   Tag,
   Typography,
 } from 'antd'
-import type { Briefing, GameInstrumentType, GameTradeAction, GameTurn } from '../../lib/api'
-import { ApiRequestError, nextGameTurn, startGame, tradeGame } from '../../lib/api'
+import type { Briefing, GameDifficulty, GameInstrumentType, GameTradeAction, GameTurn } from '../../lib/api'
+import { ApiRequestError, fetchCurrentTurn, nextGameTurn, startGame, tradeGame } from '../../lib/api'
 import { MetricStat } from '../indices/components/MetricStat'
 import { RelatedNewsCard } from '../news/components/RelatedNewsCard'
 import { StockSearchInput } from '../stocks/components/StockSearchInput'
@@ -31,6 +32,12 @@ const MACRO_INSTRUMENTS: { type: GameInstrumentType; label: string; precision?: 
   { type: 'SP500', label: 'S&P500' },
   { type: 'NASDAQ', label: '나스닥' },
   { type: 'DOW', label: '다우존스' },
+]
+
+const DIFFICULTY_OPTIONS: { label: string; value: GameDifficulty }[] = [
+  { label: '쉬움 · 2,000만원', value: 'EASY' },
+  { label: '보통 · 1,000만원', value: 'NORMAL' },
+  { label: '어려움 · 500만원', value: 'HARD' },
 ]
 
 function macroPrice(briefing: Briefing, type: GameInstrumentType): number | null {
@@ -62,13 +69,18 @@ function instrumentLabel(type: GameInstrumentType, symbol: string | null): strin
 }
 
 // Design Ref: 가상투자 게임(2026-10-05, BE-16/WEB-16) — 실제로 쌓인 Briefing 날짜를 셔플한 덱을
-// 턴 순서로 쓰는 턴제 게임. /api/game/start는 멱등이라(이미 활성 세션 있으면 그대로 반환) 진입 시
-// 항상 호출해 "새로 시작" / "이어하기"를 구분하지 않는다.
+// 턴 순서로 쓰는 턴제 게임. 진입 시 먼저 GET /current로 이어할 게임이 있는지 확인하고, 없으면(404)
+// 난이도·공매도 설정 화면을 보여준 뒤 그 값으로 POST /start를 호출한다 — 설정은 세션 시작 시점에만
+// 고를 수 있고 중간엔 못 바꾼다(2026-10-05 사용자 요청).
 export function GamePage() {
   const { message } = App.useApp()
   const [turn, setTurn] = useState<GameTurn | null>(null)
+  const [needsSetup, setNeedsSetup] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
+  const [difficulty, setDifficulty] = useState<GameDifficulty>('NORMAL')
+  const [allowShortSelling, setAllowShortSelling] = useState(false)
+  const [starting, setStarting] = useState(false)
   const [tradeInstrument, setTradeInstrument] = useState<GameInstrumentType>('GOLD')
   const [tradeSymbol, setTradeSymbol] = useState<string | null>(null)
   const [tradeAction, setTradeAction] = useState<GameTradeAction>('BUY')
@@ -78,12 +90,17 @@ export function GamePage() {
 
   useEffect(() => {
     let cancelled = false
-    startGame()
+    fetchCurrentTurn()
       .then((result) => {
         if (!cancelled) setTurn(result)
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err : new Error('게임을 불러오지 못했습니다'))
+        if (cancelled) return
+        if (err instanceof ApiRequestError && err.status === 404) {
+          setNeedsSetup(true)
+        } else {
+          setError(err instanceof Error ? err : new Error('게임을 불러오지 못했습니다'))
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -92,6 +109,19 @@ export function GamePage() {
       cancelled = true
     }
   }, [])
+
+  const handleStartGame = async () => {
+    setStarting(true)
+    try {
+      const result = await startGame({ difficulty, allowShortSelling })
+      setTurn(result)
+      setNeedsSetup(false)
+    } catch (err) {
+      message.error(err instanceof ApiRequestError ? err.apiError.message : '게임을 시작하지 못했습니다.')
+    } finally {
+      setStarting(false)
+    }
+  }
 
   const handleTrade = async () => {
     if (!tradeQuantity || tradeQuantity <= 0) {
@@ -158,6 +188,33 @@ export function GamePage() {
     )
   }
 
+  if (needsSetup) {
+    return (
+      <Space direction="vertical" size={16} style={{ width: '100%' }}>
+        <Title level={4} style={{ margin: 0 }}>
+          가상투자 게임
+        </Title>
+        <Card {...SECTION_CARD_PROPS} title="게임 설정">
+          <Space direction="vertical" size={20} style={{ width: '100%' }}>
+            <div>
+              <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+                난이도 (시작 자금 — 게임 시작 후엔 바꿀 수 없어요)
+              </Text>
+              <Segmented value={difficulty} onChange={(v) => setDifficulty(v as GameDifficulty)} options={DIFFICULTY_OPTIONS} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Switch checked={allowShortSelling} onChange={setAllowShortSelling} />
+              <Text>공매도 허용 — 보유하지 않은 자산도 매도해 하락에 베팅할 수 있어요</Text>
+            </div>
+            <Button type="primary" size="large" onClick={handleStartGame} loading={starting} block>
+              게임 시작
+            </Button>
+          </Space>
+        </Card>
+      </Space>
+    )
+  }
+
   if (!turn) return null
 
   const returnColor = turn.returnPercent > 0 ? TREND_UP_COLOR : turn.returnPercent < 0 ? TREND_DOWN_COLOR : undefined
@@ -173,7 +230,12 @@ export function GamePage() {
         {...SECTION_CARD_PROPS}
         styles={{ title: { fontSize: 22, fontWeight: 800 } }}
         title={`턴 ${turn.turnIndex + 1}/${turn.totalTurns} · ${turn.turnDate}`}
-        extra={turn.status === 'ENDED' ? <Tag color="processing">게임 종료</Tag> : null}
+        extra={
+          <Space size={6}>
+            {turn.allowShortSelling && <Tag>공매도 허용</Tag>}
+            {turn.status === 'ENDED' && <Tag color="processing">게임 종료</Tag>}
+          </Space>
+        }
       >
         <Space size={32} wrap>
           <Statistic title="포트폴리오 가치" value={turn.portfolioValue} precision={0} suffix="원" />
@@ -198,6 +260,7 @@ export function GamePage() {
               {turn.returnPercent.toFixed(2)}%
             </Text>
             <Text type="secondary">쌓인 브리핑을 전부 소진했습니다 — 수고하셨습니다!</Text>
+            <Button onClick={() => setNeedsSetup(true)}>새 게임 시작</Button>
           </Space>
         </Card>
       ) : (
@@ -295,10 +358,12 @@ export function GamePage() {
                       <Space size={8}>
                         <Text strong>{instrumentLabel(holding.instrumentType, holding.symbol)}</Text>
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                          {holding.quantity}개
+                          {holding.quantity}개{holding.quantity < 0 && ' · 공매도'}
                         </Text>
                       </Space>
-                      <Text>{holding.value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</Text>
+                      <Text style={{ color: holding.value < 0 ? TREND_DOWN_COLOR : undefined }}>
+                        {holding.value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
+                      </Text>
                     </div>
                   ))}
                 </Space>

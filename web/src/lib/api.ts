@@ -206,6 +206,9 @@ export function fetchRecommendedStockPerformance(): Promise<RecommendedStockPerf
 export type GameSessionStatus = 'ACTIVE' | 'ENDED'
 export type GameInstrumentType = 'GOLD' | 'SILVER' | 'USD' | 'KOSPI' | 'KOSDAQ' | 'SP500' | 'NASDAQ' | 'DOW' | 'STOCK'
 export type GameTradeAction = 'BUY' | 'SELL'
+// 난이도 = 시작 자금. 금액 자체는 서버가 정한다(GameService.startingCashFor) — 프론트는 난이도
+// 이름만 고른다.
+export type GameDifficulty = 'EASY' | 'NORMAL' | 'HARD'
 
 export interface GameHolding {
   instrumentType: GameInstrumentType
@@ -226,11 +229,18 @@ export interface GameTurn {
   cash: number
   portfolioValue: number
   startingCash: number
+  allowShortSelling: boolean
   returnPercent: number
 }
 
-export function startGame(): Promise<GameTurn> {
-  return request<GameTurn>('/api/game/start', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() } })
+// 이미 활성 게임이 있으면 difficulty/allowShortSelling은 무시되고 그 게임이 그대로 이어진다
+// (GameService.startGame 참고) — 인자 없이 불러도 "이어하기" 용도로 그대로 쓸 수 있다.
+export function startGame(input?: { difficulty: GameDifficulty; allowShortSelling: boolean }): Promise<GameTurn> {
+  return request<GameTurn>('/api/game/start', {
+    method: 'POST',
+    headers: { 'X-Device-Id': getDeviceId() },
+    body: input ? JSON.stringify(input) : undefined,
+  })
 }
 
 export function fetchCurrentTurn(): Promise<GameTurn> {
