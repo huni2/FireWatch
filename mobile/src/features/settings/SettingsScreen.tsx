@@ -5,8 +5,9 @@ import { useEffect, useState } from 'react'
 import { Platform, Pressable, ScrollView, Text, View } from 'react-native'
 import Toast from 'react-native-toast-message'
 
-import { ApiRequestError, updateSettings } from '@/lib/api'
+import { ApiRequestError, updateSettings, type Settings } from '@/lib/api'
 
+import { GoogleLinkButton } from './components/GoogleLinkButton'
 import { KeywordInput } from './components/KeywordInput'
 import { useSettings } from './hooks/useSettings'
 
@@ -35,6 +36,14 @@ export function SettingsScreen() {
       setWatchedStocks(settings.watchedStocks)
     }
   }, [settings])
+
+  // Google 연동(APP-6) 성공 시 서버가 돌려준 설정(연동 전 이 기기의 관심종목 등이 유지됨)으로
+  // 편집 중인 화면을 즉시 갱신한다 — 완료 기준이 바로 이 반영이다.
+  function handleLinked(settings: Settings) {
+    setPushTime(settings.pushTime)
+    setKeywords(settings.interestKeywords)
+    setWatchedStocks(settings.watchedStocks)
+  }
 
   function handleTimeChange(event: DateTimePickerEvent, date?: Date) {
     if (Platform.OS === 'android') setShowPicker(false)
@@ -105,6 +114,14 @@ export function SettingsScreen() {
       </Pressable>
 
       <Text className="text-xs text-neutral-400">관심 종목(주식)은 홈의 {'"종목"'} 탭에서 관리합니다.</Text>
+
+      <View className="gap-2">
+        <Text className="text-sm font-semibold text-neutral-500">계정 (선택)</Text>
+        <GoogleLinkButton onLinked={handleLinked} />
+        <Text className="text-xs text-neutral-400">
+          연동하면 여러 기기에서 같은 설정을 쓸 수 있습니다. 연동하지 않아도 이 기기에서 계속 쓸 수 있습니다.
+        </Text>
+      </View>
     </ScrollView>
   )
 }

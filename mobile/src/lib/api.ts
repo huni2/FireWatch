@@ -115,6 +115,17 @@ export async function fetchSettings(): Promise<Settings> {
   return request<Settings>('/api/settings', { headers: { 'X-Device-Id': deviceId } })
 }
 
+// APP-6 — Google 로그인으로 받은 ID 토큰을 서버에 넘겨 이 기기를 계정에 연동(ADR 0012). 세션 토큰은
+// 발급되지 않으며, 이후에도 계속 X-Device-Id로 식별한다.
+export async function linkGoogleAccount(idToken: string): Promise<Settings> {
+  const deviceId = await getDeviceId()
+  return request<Settings>('/api/auth/google/link', {
+    method: 'POST',
+    headers: { 'X-Device-Id': deviceId },
+    body: JSON.stringify({ idToken }),
+  })
+}
+
 // fcmToken만 새로 등록하고 기존 pushTime/keywords/watchedStocks는 그대로 유지 — 호출부가
 // fetchSettings()로 먼저 현재 값을 읽어 함께 넘겨야 한다(백엔드는 값을 그대로 덮어씀).
 export async function updateSettings(input: {
