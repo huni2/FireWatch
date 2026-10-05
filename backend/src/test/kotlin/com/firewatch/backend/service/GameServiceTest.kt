@@ -5,6 +5,7 @@ import com.firewatch.backend.client.StockPricePoint
 import com.firewatch.backend.client.StockRange
 import com.firewatch.backend.entity.Briefing
 import com.firewatch.backend.entity.DataSourceStatus
+import com.firewatch.backend.entity.GameDifficulty
 import com.firewatch.backend.entity.GameInstrumentType
 import com.firewatch.backend.entity.GameSession
 import com.firewatch.backend.entity.GameSessionStatus
@@ -94,12 +95,13 @@ class GameServiceTest {
 
     // GameSession.turnDates()가 셔플된 문자열을 파싱하는 구조라, 테스트에서는 순서를 day1→day2로
     // 고정하고 싶을 때 세션을 직접 만들어 저장소에 미리 심어둔다.
-    private fun seedActiveSession(): GameSession {
+    private fun seedActiveSession(allowShortSelling: Boolean = false): GameSession {
         val session = GameSession(
             id = 1L,
             deviceId = "device-a",
             turnDatesRaw = "$day1,$day2",
             startingCash = BigDecimal("10000000"),
+            allowShortSelling = allowShortSelling,
         )
         every { gameSessionRepository.findByDeviceIdAndStatus("device-a", GameSessionStatus.ACTIVE) } returns session
         every { gameSessionRepository.save(any()) } answers { firstArg() }
@@ -110,7 +112,7 @@ class GameServiceTest {
     fun `게임을 시작하면 쌓인 브리핑 날짜로 덱을 만들고 첫 턴을 돌려준다`() {
         stubRepositories(turnDates = "")
 
-        val turn = service.startGame("device-a")
+        val turn = service.startGame("device-a", GameDifficulty.NORMAL, false)
 
         assertEquals(2, turn.totalTurns)
         assertEquals(0, turn.turnIndex)
@@ -119,13 +121,33 @@ class GameServiceTest {
     }
 
     @Test
-    fun `이미 활성 세션이 있으면 그대로 돌려준다(멱등)`() {
+    fun `이미 활성 세션이 있으면 난이도·공매도 설정을 무시하고 그대로 돌려준다(멱등)`() {
         stubRepositories(turnDates = "")
-        service.startGame("device-a")
+        service.startGame("device-a", GameDifficulty.NORMAL, false)
 
-        val second = service.startGame("device-a")
+        val second = service.startGame("device-a", GameDifficulty.HARD, true)
 
         assertEquals(2, second.totalTurns)
+        assertEquals(BigDecimal("10000000.00"), second.portfolioValue) // HARD(500만)로 안 바뀜
+    }
+
+    @Test
+    fun `난이도에 따라 시작 자금이 달라진다`() {
+        stubRepositories(turnDates = "")
+
+        val easy = service.startGame("device-a", GameDifficulty.EASY, false)
+        assertEquals(BigDecimal("20000000"), easy.startingCash)
+    }
+
+    @Test
+    fun `공매도를 허용한 세션은 보유 수량보다 많이 팔 수 있고 포지션이 음수가 된다`() {
+        stubRepositories(turnDates = "")
+        seedActiveSession(allowShortSelling = true)
+
+        val turn = service.trade("device-a", GameInstrumentType.GOLD, null, GameTradeAction.SELL, BigDecimal("3"))
+
+        assertEquals(BigDecimal("-3"), turn.holdings.single().quantity)
+        assertEquals(BigDecimal("10006000"), turn.cash) // 10,000,000 + 2000*3(공매도로 받은 현금)
     }
 
     @Test

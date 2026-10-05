@@ -39,6 +39,11 @@ class GameSession(
     @Column(name = "starting_cash", nullable = false)
     var startingCash: BigDecimal,
 
+    // 2026-10-05 사용자 요청 — 시작 시 선택, 게임 중간엔 못 바꿈(trade()가 이 값을 그대로 읽어 매도
+    // 시 보유 수량 초과를 허용할지 판단).
+    @Column(name = "allow_short_selling", nullable = false)
+    var allowShortSelling: Boolean = false,
+
     @Column(name = "created_at")
     var createdAt: Instant = Instant.now(),
 

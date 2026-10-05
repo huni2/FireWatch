@@ -1,5 +1,6 @@
 package com.firewatch.backend.web.dto
 
+import com.firewatch.backend.entity.GameDifficulty
 import com.firewatch.backend.entity.GameInstrumentType
 import com.firewatch.backend.entity.GameSessionStatus
 import com.firewatch.backend.entity.GameTradeAction
@@ -9,6 +10,13 @@ import jakarta.validation.constraints.DecimalMin
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
+
+// Design Ref: 가상투자 게임(2026-10-05) — POST /api/game/start 요청. 이미 활성 세션이 있으면
+// 둘 다 무시되고(GameService.startGame 참고) 기존 세션을 그대로 돌려준다.
+data class GameStartRequest(
+    val difficulty: GameDifficulty = GameDifficulty.NORMAL,
+    val allowShortSelling: Boolean = false,
+)
 
 // Design Ref: 가상투자 게임(2026-10-05) — POST /api/game/trade 요청.
 data class GameTradeRequest(
@@ -48,6 +56,7 @@ data class GameTurnResponse(
     val cash: BigDecimal,
     val portfolioValue: BigDecimal,
     val startingCash: BigDecimal,
+    val allowShortSelling: Boolean,
     val returnPercent: BigDecimal,
 )
 
@@ -62,6 +71,7 @@ fun GameTurnSnapshot.toResponse() = GameTurnResponse(
     cash = cash,
     portfolioValue = portfolioValue,
     startingCash = startingCash,
+    allowShortSelling = allowShortSelling,
     returnPercent = if (startingCash > BigDecimal.ZERO) {
         portfolioValue.subtract(startingCash).divide(startingCash, 4, RoundingMode.HALF_UP).multiply(BigDecimal(100))
     } else {

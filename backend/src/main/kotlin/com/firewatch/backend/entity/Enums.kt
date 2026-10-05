@@ -52,3 +52,11 @@ enum class GameTradeAction {
     BUY,
     SELL,
 }
+
+// 난이도 = 시작 자금(2026-10-05, 사용자 요청) — 금액 자체는 GameService가 매핑("난이도는
+// 서버가 정한 의미 있는 단계만 받는다, 클라이언트가 임의 금액을 못 넣게").
+enum class GameDifficulty {
+    EASY,
+    NORMAL,
+    HARD,
+}

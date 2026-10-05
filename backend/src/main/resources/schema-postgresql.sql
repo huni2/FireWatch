@@ -113,9 +113,12 @@ CREATE TABLE IF NOT EXISTS game_sessions (
   turn_dates VARCHAR(2000) NOT NULL,
   current_turn_index INT NOT NULL DEFAULT 0,
   starting_cash DECIMAL(16,2) NOT NULL,
+  allow_short_selling BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   ended_at TIMESTAMP
 );
+-- 난이도(시작 자금)·공매도 설정 추가(2026-10-05) — 이미 배포된 테이블에도 안전하게 적용.
+ALTER TABLE game_sessions ADD COLUMN IF NOT EXISTS allow_short_selling BOOLEAN NOT NULL DEFAULT FALSE;
 
 CREATE TABLE IF NOT EXISTS game_transactions (
   id BIGSERIAL PRIMARY KEY,
