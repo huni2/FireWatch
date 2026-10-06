@@ -10,6 +10,8 @@
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
 ## 2026-10-06
+- **[WEB] 푸터에 이용안내 링크 추가**: "하단 푸터에 다른 사이트처럼 개인정보처리방침말고 다른것도 넣어줬으면 하는데? 이용안내같은거..." 요청 — 이미 WEB-12로 "가이드"·"사용방법" 탭을 합친 `/guide`(도움말 화면)가 있어 새 페이지 없이 푸터에 "이용안내" 링크 하나만 추가. `localhost:4173`(vite preview)로 먼저 렌더·라우팅 확인 후 Cloudflare Pages 배포, 프로덕션에서도 재확인. `npm run build`·`npm run lint` 통과(기존 무관 경고 2건만).
+  `web/src/components/AppShell.tsx` 변경.
 - **[PROJ] 가상투자 게임 난이도·공매도 기능 프로덕션 검증 + 작업 기록 정리**: 전날 자정 직전(23:50) 커밋된 WEB-16/BE-16 후속(난이도·공매도 설정) 코드가 Render에 배포 완료되기를 기다렸다가 검증 — 배포 대시보드에서 "In progress" 확인 후 완료까지 폴링(Monitor로 `/api/game/start`를 주기적으로 호출해 `allowShortSelling` 필드가 응답에 나타나는 시점 포착), `{"difficulty":"HARD","allowShortSelling":true}`로 `startingCash`/`cash` 5,000,000·`allowShortSelling:true` 확인. 프론트는 Cloudflare Pages 프리뷰 해시 URL(`9b8f27a4.firewatch-eqp.pages.dev`)에서 CORS 403(허용 목록에 프리뷰 해시 도메인이 없음 — 실제 버그 아님)을 겪어 정식 도메인(`firewatch-eqp.pages.dev`)으로 전환 후 재확인. 이 웹은 소유자 전용이라 `localStorage` 초기화가 `legacy-owner-device`로 재시드돼(기존 활성 세션 보유) 빈 설정 화면이 안 보이는 걸 발견 — 임시 device-id를 직접 주입해 "게임 설정" 화면(난이도 라디오·공매도 스위치)부터 어려움+공매도 선택 → 게임 시작(5,000,000원) → 금 1개 공매도(`-1개 · 공매도`, 현금 5,004,466원 증가)까지 전체 흐름을 브라우저로 확인. 검증 결과를 `llm-wiki/log.md`(2026-10-05 섹션에 두 항목 추가)·`Next-Tasks.md`(WEB-16/BE-16 종료 기록에 후속 내용 보강)에 반영 후 커밋 — 코드 변경 없음, 검증·문서화만.
 
 ## 2026-10-05
