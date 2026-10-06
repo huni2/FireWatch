@@ -62,11 +62,21 @@ export function PrivacyPage() {
           </section>
 
           <section>
-            <Title level={5}>4. 보유 및 이용 기간</Title>
+            <Title level={5}>4. 보유 및 이용 기간, 계정·데이터 삭제</Title>
             <Paragraph style={{ margin: 0 }}>
-              이용자가 앱을 삭제하거나 계정 연동을 해제해도 서버에 저장된 데이터는 자동으로 삭제되지 않습니다. 삭제를 원하시면
-              아래 문의처로 요청해주세요 — 확인 후 지체 없이 삭제합니다.
+              이용자가 앱을 삭제해도 서버에 저장된 데이터는 자동으로 삭제되지 않습니다. 삭제는 아래 두 가지 방법으로
+              요청할 수 있습니다.
             </Paragraph>
+            <ul style={{ marginBottom: 0 }}>
+              <li>
+                <Text strong>앱에서 직접 삭제</Text> — Google 계정을 연동한 경우, 모바일 앱의 설정 화면에서 &quot;계정
+                삭제&quot;를 누르면 연동된 계정과 공유 설정이 서버에서 즉시 삭제됩니다.
+              </li>
+              <li>
+                <Text strong>이메일로 요청</Text> — 앱을 삭제했거나 계정을 연동하지 않은 경우에도 아래 문의처로
+                요청하시면 확인 후 지체 없이 삭제합니다.
+              </li>
+            </ul>
           </section>
 
           <section>
