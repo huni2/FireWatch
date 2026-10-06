@@ -74,6 +74,7 @@ export function DashboardPage() {
               <RecommendedStockPerformanceCard
                 data={recommendedPerformance.data}
                 loading={recommendedPerformance.loading}
+                cachedData={recommendedPerformance.cachedData}
               />
               <WatchlistSummaryCard />
             </Space>
@@ -90,6 +91,7 @@ export function DashboardPage() {
             <RecommendedStockPerformanceCard
               data={recommendedPerformance.data}
               loading={recommendedPerformance.loading}
+              cachedData={recommendedPerformance.cachedData}
             />
             <WatchlistSummaryCard />
           </>

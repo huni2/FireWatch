@@ -9,6 +9,8 @@ const MAX_ROWS = 10
 interface RecommendedStockPerformanceCardProps {
   data: RecommendedStockPerformance[] | null
   loading: boolean
+  // Render 콜드스타트로 로딩이 길어질 때 빈 스켈레톤 대신 보여줄 "마지막으로 성공했을 때의 결과".
+  cachedData?: RecommendedStockPerformance[] | null
 }
 
 function formatReturn(returnPercent: number | null): { text: string; color?: string } {
@@ -20,10 +22,55 @@ function formatReturn(returnPercent: number | null): { text: string; color?: str
   }
 }
 
+function PerformanceRows({ data }: { data: RecommendedStockPerformance[] }) {
+  return (
+    <Space direction="vertical" size={10} style={{ width: '100%' }}>
+      {data.slice(0, MAX_ROWS).map((item, index) => {
+        const { text, color } = formatReturn(item.returnPercent)
+        return (
+          <div
+            key={`${item.briefingDate}-${item.stockName}-${index}`}
+            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}
+          >
+            <Space size={8}>
+              <Text strong>{item.stockName}</Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {item.briefingDate} 추천
+              </Text>
+            </Space>
+            <Text strong style={{ color }}>
+              {text}
+            </Text>
+          </div>
+        )
+      })}
+    </Space>
+  )
+}
+
 // Design Ref: BE-13/WEB-10(2026-10-04 앱 리뷰) — "AI 추천을 왜 믿어야 하나"에 답을 주는 카드.
 // 그날 추천 시점 가격으로 가상매수했다고 가정했을 때 지금 수익률이 얼마인지 보여준다.
 // 2026-10-05 재설계 — 박스 카드가 아니라 지면의 한 섹션처럼(변수 없이 제목 밑줄로만 구분).
-export function RecommendedStockPerformanceCard({ data, loading }: RecommendedStockPerformanceCardProps) {
+export function RecommendedStockPerformanceCard({ data, loading, cachedData }: RecommendedStockPerformanceCardProps) {
+  // 서버를 깨우는 중(2026-10-06) — 빈 스켈레톤 대신 마지막으로 확인된 추천 성과를 보여준다.
+  if (loading && cachedData && cachedData.length > 0) {
+    return (
+      <Card
+        {...SECTION_CARD_PROPS}
+        title="AI 추천 성과"
+        extra={
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            서버를 깨우는 중 — 최근 확인된 데이터예요
+          </Text>
+        }
+      >
+        <div style={{ opacity: 0.6 }}>
+          <PerformanceRows data={cachedData} />
+        </div>
+      </Card>
+    )
+  }
+
   if (loading) {
     return (
       <Card {...SECTION_CARD_PROPS} title="AI 추천 성과">
@@ -50,27 +97,7 @@ export function RecommendedStockPerformanceCard({ data, loading }: RecommendedSt
         </Text>
       }
     >
-      <Space direction="vertical" size={10} style={{ width: '100%' }}>
-        {data.slice(0, MAX_ROWS).map((item, index) => {
-          const { text, color } = formatReturn(item.returnPercent)
-          return (
-            <div
-              key={`${item.briefingDate}-${item.stockName}-${index}`}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}
-            >
-              <Space size={8}>
-                <Text strong>{item.stockName}</Text>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  {item.briefingDate} 추천
-                </Text>
-              </Space>
-              <Text strong style={{ color }}>
-                {text}
-              </Text>
-            </div>
-          )
-        })}
-      </Space>
+      <PerformanceRows data={data} />
     </Card>
   )
 }
