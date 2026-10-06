@@ -51,4 +51,8 @@ class GameController(private val gameService: GameService) {
     @PostMapping("/next-turn")
     suspend fun nextTurn(@RequestHeader("X-Device-Id", required = false) deviceId: String?): GameTurnResponse =
         withContext(Dispatchers.IO) { gameService.nextTurn(deviceId.requireDeviceId()).toResponse() }
+
+    @PostMapping("/end")
+    suspend fun end(@RequestHeader("X-Device-Id", required = false) deviceId: String?): GameTurnResponse =
+        withContext(Dispatchers.IO) { gameService.endGame(deviceId.requireDeviceId()).toResponse() }
 }

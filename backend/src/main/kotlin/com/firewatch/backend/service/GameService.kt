@@ -155,6 +155,17 @@ class GameService(
         return buildTurnSnapshot(session)
     }
 
+    // 2026-10-06 사용자 요청 — 덱(최대 43턴)을 끝까지 안 돌아도 중간에 그만둘 수 있어야 함.
+    // nextTurn()의 "덱 소진" 분기와 동일하게 상태만 ENDED로 바꾸고, 지금 턴 인덱스는 그대로 둔다
+    // (마지막으로 보던 턴 기준 최종 결과를 보여주기 위함).
+    fun endGame(deviceId: String): GameTurnSnapshot {
+        val session = activeSessionOrThrow(deviceId)
+        session.status = GameSessionStatus.ENDED
+        session.endedAt = Instant.now()
+        gameSessionRepository.save(session)
+        return buildTurnSnapshot(session)
+    }
+
     fun nextTurn(deviceId: String): GameTurnSnapshot {
         val session = activeSessionOrThrow(deviceId)
         val totalTurns = session.turnDates().size

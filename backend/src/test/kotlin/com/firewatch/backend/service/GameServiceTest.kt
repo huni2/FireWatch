@@ -210,6 +210,19 @@ class GameServiceTest {
     }
 
     @Test
+    fun `덱을 다 안 돌아도 그만두기를 누르면 그 턴 기준으로 게임이 종료된다`() {
+        stubRepositories(turnDates = "")
+        seedActiveSession()
+        service.trade("device-a", GameInstrumentType.GOLD, null, GameTradeAction.BUY, BigDecimal("5"))
+
+        val ended = service.endGame("device-a")
+
+        assertEquals(GameSessionStatus.ENDED, ended.status)
+        assertEquals(0, ended.turnIndex) // 다음 턴으로 넘기지 않고 지금 턴 그대로 종료
+        assertEquals(1, ended.holdings.size) // 매수했던 보유분이 결과에 그대로 반영
+    }
+
+    @Test
     fun `진행 중인 게임이 없으면 거래 시 NotFoundException`() {
         every { gameSessionRepository.findByDeviceIdAndStatus("device-a", GameSessionStatus.ACTIVE) } returns null
 
