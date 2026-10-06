@@ -1,4 +1,6 @@
 import { ScreenIntro } from '@/components/ScreenIntro'
+import { StockSearchInput } from '../stocks/components/StockSearchInput'
+import { companies, sectors } from '../../../../shared/discovery'
 import { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from 'react-native'
 import Toast from 'react-native-toast-message'
@@ -54,7 +56,11 @@ export function PortfolioScreen() {
       </View>
       <Text className="text-lg font-semibold">보유 자산 직접 등록</Text>
       {draft.holdings.map((h, i) => <View key={i} className="gap-3 rounded-xl border border-line bg-surface p-4">
-        <Field label="티커 (005930.KS / AAPL)" value={h.symbol} onChange={symbol => holdingChange(i, { symbol: symbol.trim().toUpperCase() })} />
+        <Text>회사·상품 이름으로 찾기</Text><StockSearchInput onSelect={(symbol, name) => {
+          const company = companies.find(item => item.symbol === symbol)
+          const korean = /\.(KS|KQ)$/.test(symbol)
+          holdingChange(i, { symbol, name: name || company?.name || '', currency: korean ? 'KRW' : 'USD', region: korean ? 'KR' : 'US', sector: sectors.find(item => item.id === company?.sectorId)?.name || '', underlyingIndex: '' })
+        }} />{h.symbol && <Text className="text-muted">선택한 자산. {h.name || '자산 이름을 입력해주세요.'}</Text>}
         <Field label="자산 이름" value={h.name} onChange={name => holdingChange(i, { name })} />
         <Field label="수량" numeric value={String(h.quantity)} onChange={v => holdingChange(i, { quantity: Number(v) })} />
         <Field label="평균 매입가" numeric value={String(h.averageCost)} onChange={v => holdingChange(i, { averageCost: Number(v) })} />

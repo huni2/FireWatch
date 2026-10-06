@@ -5,6 +5,8 @@ import { useApi } from '../../lib/useApi'
 import { fetchPortfolio, savePortfolio } from '../../lib/investingApi'
 import { accountLabels, assetLabels, emptyHolding, riskLabels, toDraft } from '../../../../shared/investing'
 import type { Holding, PortfolioDraft } from '../../../../shared/investing'
+import { StockSearchInput } from '../stocks/components/StockSearchInput'
+import { companies, sectors } from '../../../../shared/discovery'
 import { RelatedNewsCard } from '../news/components/RelatedNewsCard'
 const { Title, Text } = Typography
 
@@ -44,7 +46,11 @@ export function PortfolioPage() {
       {draft.holdings.length === 0 && <Empty description="첫 보유 자산을 추가하거나 현금을 입력해보세요." />}
       <Space direction="vertical" size={16} style={{ width: '100%' }}>{draft.holdings.map((h, i) => <Card key={i} size="small" title={`자산 ${i + 1}`} extra={<Button danger size="small" disabled={saving} onClick={() => change({ holdings: draft.holdings.filter((_, index) => index !== i) })}>삭제</Button>}>
         <div className="portfolio-fields">
-          <label>티커<Input placeholder="005930.KS / AAPL" value={h.symbol} onChange={e => holdingChange(i, { symbol: e.target.value.trim().toUpperCase() })} /></label>
+          <div>회사·상품 이름으로 찾기<StockSearchInput onSelect={(symbol, name) => {
+            const company = companies.find(item => item.symbol === symbol)
+            const korean = /\.(KS|KQ)$/.test(symbol)
+            holdingChange(i, { symbol, name: name || company?.name || '', currency: korean ? 'KRW' : 'USD', region: korean ? 'KR' : 'US', sector: sectors.find(item => item.id === company?.sectorId)?.name || '', underlyingIndex: '' })
+          }} />{h.symbol && <Text type="secondary">선택한 자산. {h.name || '자산 이름을 입력해주세요.'}</Text>}</div>
           <label>자산 이름<Input value={h.name} placeholder="회사명 또는 ETF 이름" onChange={e => holdingChange(i, { name: e.target.value })} /></label>
           <label>보유 수량<InputNumber min={0.0001} precision={4} value={h.quantity} onChange={v => holdingChange(i, { quantity: v ?? 0 })} style={{ width: '100%' }} /></label>
           <label>평균 매입가<InputNumber min={0.0001} precision={4} value={h.averageCost} onChange={v => holdingChange(i, { averageCost: v ?? 0 })} style={{ width: '100%' }} /></label>
