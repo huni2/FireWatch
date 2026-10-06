@@ -60,6 +60,12 @@
 **완료 기준** — 설정 화면에서 Google 로그인 → 서버가 반환한 설정(연동 전 이 기기의 관심종목 등이 유지됨)으로 화면이 갱신됨.
 **진행 상황(2026-10-05)** — 코드 구현 완료. `expo-auth-session`의 Android 네이티브 클라이언트 플로우(`Google.useIdTokenAuthRequest`)로 ID 토큰을 받아 `linkGoogleAccount()`로 서버 왕복, 성공 시 로컬 설정 상태를 즉시 갱신. 조사 중 Expo의 호스팅 리다이렉트 프록시(`auth.expo.io`)가 폐지된 걸 확인 — 네이티브 SDK든 expo-auth-session이든 **Expo Go로는 더 이상 동작하지 않고 커스텀 dev client 빌드가 필수**라, `eas.json`에 `development` 프로필 추가 + `expo-dev-client` 설치 + OAuth 리다이렉트용 scheme(`com.firewatch.mobile`) 등록까지 끝냄. **남은 건 사용자 쪽 뿐** — ① `.env`에 `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` 값 채우기(Google Cloud Console에서 발급한 값, 비밀 아님), ② `eas build --profile development --platform android`로 dev client APK 빌드·설치, ③ 실기기에서 로그인 왕복 확인.
 
+### APP-11. 개인정보 이용 동의 화면 추가 (코드 완료, 사용자의 실기기 검증 대기)
+**무엇** — 최초 실행 시 "개인정보 수집·이용 동의"를 체크해야만 앱을 쓸 수 있게 막는 `ConsentScreen` 추가. **ADR 0012(공개 배포 전환) 전제.**
+**왜** — WEB-16 작업 중 웹 푸터에 "이용안내" 링크를 추가하다가, 사용자가 "모바일 앱은 동의하면 이용할 수 있게 하면 어때? 개인정보이용 동의랑 개인정보 처리방침해서"로 제안. 웹에도 똑같이 적용할지 물었더니 "모바일이랑 웹이랑 다르게 해야할것같아서, 플레이스토어 출시 생각하고 하는거니깐"으로 확정 — 웹은 소유자 전용 사설 도구([[Decisions/0003-mvp-scope-and-user-model]])라 그대로 두고, **공개 배포되는 모바일에만** 적용.
+**완료 기준** — 최초 실행 시 동의 화면이 뜨고, 체크박스 동의 전에는 홈 화면에 진입할 수 없음. 한 번 동의하면 다음 실행부터는 다시 안 뜸.
+**진행 상황(2026-10-06)** — AsyncStorage에 동의 여부를 저장하는 `lib/consent.ts` + `features/consent/ConsentScreen.tsx`(개인정보처리방침 전문은 네이티브로 중복 작성하지 않고 웹의 `PrivacyPage`(`https://firewatch-eqp.pages.dev/privacy`)를 `Linking.openURL`로 그대로 가리킴, 체크박스+"동의하고 시작하기" 버튼) 신규. `_layout.tsx`를 동의 전/후로 분기해 `AppContent`(기존 Stack + `useNotificationRegistration`)를 동의 후에만 마운트 — 푸시 토큰 등록(서버로 기기 데이터 전송)도 동의 전엔 일어나지 않게 함(Hooks 규칙상 조건부 호출이 아니라 조건부 마운트로 처리). `tsc --noEmit`·`expo lint` 통과. Metro web 프리뷰로 화면을 시각 확인하려 했으나 Node 힙 메모리 부족(`JavaScript heap out of memory`)으로 반복 실패 — 이 세션 내내 겪은 Windows 메모리/좀비 프로세스 문제의 변종으로 판단, 다른 APP 과제들과 동일하게 실기기 검증은 생략하고 사용자 몫으로 남김.
+
 ## 종료 기록
 
 | # | 과제 | 결과 | 정본·근거 |
