@@ -6,22 +6,30 @@ import {
   Card,
   Empty,
   InputNumber,
+  Modal,
+  Popconfirm,
   Segmented,
   Skeleton,
   Space,
   Statistic,
   Switch,
   Tag,
+  Tooltip,
   Typography,
 } from 'antd'
+import { QuestionCircleOutlined } from '@ant-design/icons'
 import type { Briefing, GameDifficulty, GameInstrumentType, GameTradeAction, GameTurn } from '../../lib/api'
-import { ApiRequestError, fetchCurrentTurn, nextGameTurn, startGame, tradeGame } from '../../lib/api'
+import { ApiRequestError, endGame, fetchCurrentTurn, nextGameTurn, startGame, tradeGame } from '../../lib/api'
 import { MetricStat } from '../indices/components/MetricStat'
 import { RelatedNewsCard } from '../news/components/RelatedNewsCard'
 import { StockSearchInput } from '../stocks/components/StockSearchInput'
 import { SECTION_CARD_PROPS, TREND_DOWN_COLOR, TREND_UP_COLOR } from '../../lib/theme'
 
-const { Title, Text } = Typography
+const { Title, Text, Paragraph } = Typography
+
+// 뉴스가 많은 날엔 "그날의 뉴스" 카드만 길어져 옆 칸(거래 패널)과 높이가 안 맞는다는 지적(2026-10-06)
+// — 대시보드 핫이슈처럼 상위 몇 건만 보여준다.
+const MAX_GAME_NEWS = 5
 
 const MACRO_INSTRUMENTS: { type: GameInstrumentType; label: string; precision?: number }[] = [
   { type: 'GOLD', label: '금(USD/oz)' },
@@ -87,6 +95,8 @@ export function GamePage() {
   const [tradeQuantity, setTradeQuantity] = useState<number | null>(1)
   const [trading, setTrading] = useState(false)
   const [advancing, setAdvancing] = useState(false)
+  const [ending, setEnding] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -161,17 +171,85 @@ export function GamePage() {
     }
   }
 
+  const handleEndGame = async () => {
+    setEnding(true)
+    try {
+      const result = await endGame()
+      setTurn(result)
+    } catch (err) {
+      message.error(err instanceof ApiRequestError ? err.apiError.message : '게임을 종료하지 못했습니다.')
+    } finally {
+      setEnding(false)
+    }
+  }
+
   const handlePickFromAi = (symbol: string) => {
     setTradeInstrument('STOCK')
     setTradeSymbol(symbol)
   }
 
+  // 게임 제목 옆 "게임 방법" 버튼 — 4갈래 return(로딩/에러/설정/본문) 전부에서 재사용.
+  const pageHeader = (
+    <Space align="center" size={4}>
+      <Title level={4} style={{ margin: 0 }}>
+        가상투자 게임
+      </Title>
+      <Tooltip title="게임 방법 보기">
+        <Button type="text" size="small" icon={<QuestionCircleOutlined />} onClick={() => setHelpOpen(true)} />
+      </Tooltip>
+    </Space>
+  )
+
+  // 2026-10-06 사용자 지적 — "패턴따라 되는지도 모르겠고", "포트폴리오 가치랑 보유현금 이것도 잘모르겠음",
+  // "게임방법도 알려주는게 있어야 할듯" 세 가지를 한 번에 해소하는 설명 모달.
+  const helpModal = (
+    <Modal title="게임 방법" open={helpOpen} onCancel={() => setHelpOpen(false)} footer={null}>
+      <Space direction="vertical" size={16} style={{ width: '100%' }}>
+        <div>
+          <Text strong>어떻게 진행되나요?</Text>
+          <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 0 }}>
+            가상의 시작 자금으로 금·은·환율·지수·개별 종목을 매매해 수익률을 올리는 게임이에요. 매매를
+            마쳤으면 "다음 턴으로"를 눌러 하루를 넘기세요.
+          </Paragraph>
+        </div>
+        <div>
+          <Text strong>가격은 진짜인가요, 가짜인가요?</Text>
+          <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 0 }}>
+            매 턴은 FireWatch가 실제로 쌓아온 날짜(그날의 실제 뉴스·시세·AI 추천종목) 중 하나예요 —
+            가짜로 만든 패턴이 아니라 실제로 있었던 하루입니다. 다만 턴 순서는 달력 순서가 아니라
+            무작위로 섞여 있어서, 다음에 어떤 날이 나올지는 미리 알 수 없어요.
+          </Paragraph>
+        </div>
+        <div>
+          <Text strong>포트폴리오 가치 vs 보유 현금</Text>
+          <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 0 }}>
+            <Text strong>보유 현금</Text>은 지금 바로 매매에 쓸 수 있는 돈이고, <Text strong>포트폴리오 가치</Text>는
+            거기에 지금 보유 중인 자산의 평가금액까지 더한 총자산이에요(현금 + 보유자산 평가액).
+            수익률은 시작 자금 대비 포트폴리오 가치의 변화율입니다.
+          </Paragraph>
+        </div>
+        <div>
+          <Text strong>난이도·공매도</Text>
+          <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 0 }}>
+            난이도는 시작 자금을 정해요(쉬움 2,000만원 · 보통 1,000만원 · 어려움 500만원). 공매도를
+            켜두면 갖고 있지 않은 자산도 먼저 팔아 하락에 베팅할 수 있어요(보유 수량이 음수가 돼요).
+          </Paragraph>
+        </div>
+        <div>
+          <Text strong>게임을 중간에 끝내고 싶다면</Text>
+          <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 0 }}>
+            꼭 끝까지(최대 43턴) 안 하셔도 돼요 — 턴 헤더의 "그만하기" 버튼을 누르면 그 턴까지의
+            기록으로 바로 결과를 볼 수 있어요.
+          </Paragraph>
+        </div>
+      </Space>
+    </Modal>
+  )
+
   if (loading) {
     return (
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
-        <Title level={4} style={{ margin: 0 }}>
-          가상투자 게임
-        </Title>
+        {pageHeader}
         <Skeleton active paragraph={{ rows: 6 }} />
       </Space>
     )
@@ -180,9 +258,7 @@ export function GamePage() {
   if (error) {
     return (
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
-        <Title level={4} style={{ margin: 0 }}>
-          가상투자 게임
-        </Title>
+        {pageHeader}
         <Alert type="error" message="게임을 불러오지 못했습니다" description={error.message} showIcon />
       </Space>
     )
@@ -191,9 +267,8 @@ export function GamePage() {
   if (needsSetup) {
     return (
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
-        <Title level={4} style={{ margin: 0 }}>
-          가상투자 게임
-        </Title>
+        {pageHeader}
+        {helpModal}
         <Card {...SECTION_CARD_PROPS} title="게임 설정">
           <Space direction="vertical" size={20} style={{ width: '100%' }}>
             <div>
@@ -219,11 +294,12 @@ export function GamePage() {
 
   const returnColor = turn.returnPercent > 0 ? TREND_UP_COLOR : turn.returnPercent < 0 ? TREND_DOWN_COLOR : undefined
 
+  const deckExhausted = turn.turnIndex + 1 >= turn.totalTurns
+
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
-      <Title level={4} style={{ margin: 0 }}>
-        가상투자 게임
-      </Title>
+      {pageHeader}
+      {helpModal}
 
       {/* 턴 헤더 — 신문 1면형 마스트헤드 톤(WEB-14)과 동일하게 박스 없이 */}
       <Card
@@ -234,11 +310,36 @@ export function GamePage() {
           <Space size={6}>
             {turn.allowShortSelling && <Tag>공매도 허용</Tag>}
             {turn.status === 'ENDED' && <Tag color="processing">게임 종료</Tag>}
+            {turn.status !== 'ENDED' && (
+              <Popconfirm
+                title="게임을 그만두시겠어요?"
+                description="지금까지의 기록으로 바로 결과를 볼 수 있어요."
+                onConfirm={handleEndGame}
+                okText="그만하기"
+                cancelText="취소"
+              >
+                <Button size="small" danger loading={ending}>
+                  그만하기
+                </Button>
+              </Popconfirm>
+            )}
           </Space>
         }
       >
         <Space size={32} wrap>
-          <Statistic title="포트폴리오 가치" value={turn.portfolioValue} precision={0} suffix="원" />
+          <Statistic
+            title={
+              <Space size={4}>
+                포트폴리오 가치
+                <Tooltip title="보유 현금 + 보유 자산 평가액을 합한 총자산이에요.">
+                  <QuestionCircleOutlined style={{ fontSize: 12, color: 'var(--ant-color-text-tertiary)' }} />
+                </Tooltip>
+              </Space>
+            }
+            value={turn.portfolioValue}
+            precision={0}
+            suffix="원"
+          />
           <Statistic
             title="수익률"
             value={turn.returnPercent}
@@ -246,7 +347,19 @@ export function GamePage() {
             suffix="%"
             valueStyle={{ color: returnColor }}
           />
-          <Statistic title="보유 현금" value={turn.cash} precision={0} suffix="원" />
+          <Statistic
+            title={
+              <Space size={4}>
+                보유 현금
+                <Tooltip title="지금 바로 매매에 쓸 수 있는 돈이에요(포트폴리오 가치에는 보유 자산 평가액도 포함돼요).">
+                  <QuestionCircleOutlined style={{ fontSize: 12, color: 'var(--ant-color-text-tertiary)' }} />
+                </Tooltip>
+              </Space>
+            }
+            value={turn.cash}
+            precision={0}
+            suffix="원"
+          />
         </Space>
       </Card>
 
@@ -259,7 +372,11 @@ export function GamePage() {
               {turn.returnPercent > 0 ? '+' : ''}
               {turn.returnPercent.toFixed(2)}%
             </Text>
-            <Text type="secondary">쌓인 브리핑을 전부 소진했습니다 — 수고하셨습니다!</Text>
+            <Text type="secondary">
+              {deckExhausted
+                ? '쌓인 브리핑을 전부 소진했습니다 — 수고하셨습니다!'
+                : '게임을 중간에 종료했습니다 — 수고하셨습니다!'}
+            </Text>
             <Button onClick={() => setNeedsSetup(true)}>새 게임 시작</Button>
           </Space>
         </Card>
@@ -343,7 +460,12 @@ export function GamePage() {
           </Space>
 
           <Space direction="vertical" size={32} style={{ width: '100%' }}>
-            <RelatedNewsCard news={turn.briefing.news} loading={false} title="그날의 뉴스" boxed={false} />
+            <RelatedNewsCard
+              news={turn.briefing.news.slice(0, MAX_GAME_NEWS)}
+              loading={false}
+              title="그날의 뉴스"
+              boxed={false}
+            />
 
             <Card {...SECTION_CARD_PROPS} title="보유 자산">
               {turn.holdings.length === 0 ? (

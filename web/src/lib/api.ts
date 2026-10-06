@@ -263,3 +263,7 @@ export function tradeGame(input: {
 export function nextGameTurn(): Promise<GameTurn> {
   return request<GameTurn>('/api/game/next-turn', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() } })
 }
+
+export function endGame(): Promise<GameTurn> {
+  return request<GameTurn>('/api/game/end', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() } })
+}
