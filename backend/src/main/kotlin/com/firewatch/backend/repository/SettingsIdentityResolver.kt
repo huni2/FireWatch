@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component
 class SettingsIdentityResolver(
     private val userSettingsRepository: UserSettingsRepository,
     private val deviceLinkRepository: DeviceLinkRepository,
+    private val appUserRepository: AppUserRepository,
 ) {
     fun resolveForDevice(deviceId: String): UserSettings {
         val link = deviceLinkRepository.findById(deviceId).orElse(null)
@@ -23,4 +24,8 @@ class SettingsIdentityResolver(
         return userSettingsRepository.findByDeviceId(deviceId)
             ?: userSettingsRepository.save(UserSettings(deviceId = deviceId))
     }
+
+    // GET/PUT /api/settings, POST /api/auth/google/link가 응답에 연동 이메일을 실어 보내기 위해 공유한다.
+    fun linkedEmailFor(settings: UserSettings): String? =
+        settings.userId?.let { appUserRepository.findById(it).orElse(null)?.email }
 }

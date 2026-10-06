@@ -9,6 +9,7 @@ import com.firewatch.backend.entity.UserSettings
 import com.firewatch.backend.repository.AppUserRepository
 import com.firewatch.backend.repository.DeviceLinkRepository
 import com.firewatch.backend.repository.UserSettingsRepository
+import com.firewatch.backend.web.NotFoundException
 import com.firewatch.backend.web.UnauthorizedException
 import org.springframework.stereotype.Service
 
@@ -49,5 +50,18 @@ class AuthService(
 
         deviceLinkRepository.save(DeviceLink(deviceId = deviceId, userId = userId))
         return saved
+    }
+
+    // Play 스토어 계정 삭제 요건(2026-10-06) — 연동 해제가 아니라 완전 삭제. 이 계정에 연동된
+    // 기기가 여럿이어도(동기화 목적으로 여러 기기가 같은 userId를 공유) 전부 한 번에 끊어내고,
+    // 공유 설정 행·계정 자체까지 지운다. 기기별 익명 데이터(game_sessions 등)는 deviceId로만
+    // 연결돼 있어 계정과 무관하게 남는다 — 의도된 동작(가입 없이도 쓸 수 있던 로컬 데이터라 PII 아님).
+    fun deleteAccount(deviceId: String) {
+        val link = deviceLinkRepository.findById(deviceId).orElse(null)
+            ?: throw NotFoundException("연동된 계정이 없습니다.")
+        val userId = link.userId
+        deviceLinkRepository.deleteByUserId(userId)
+        userSettingsRepository.findByUserId(userId)?.let { userSettingsRepository.delete(it) }
+        appUserRepository.deleteById(userId)
     }
 }

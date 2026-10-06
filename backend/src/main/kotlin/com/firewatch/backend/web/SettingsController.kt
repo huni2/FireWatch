@@ -30,7 +30,8 @@ class SettingsController(
     @GetMapping
     suspend fun get(@RequestHeader("X-Device-Id", required = false) deviceId: String?): SettingsResponse =
         withContext(Dispatchers.IO) {
-            identityResolver.resolveForDevice(deviceId.requireDeviceId()).toResponse()
+            val settings = identityResolver.resolveForDevice(deviceId.requireDeviceId())
+            settings.toResponse(identityResolver.linkedEmailFor(settings))
         }
 
     @PutMapping
@@ -52,6 +53,7 @@ class SettingsController(
             webPushSubscription = request.webPushSubscription,
             clientIp = clientIp,
         )
-        settingsService.update(command).toResponse()
+        val settings = settingsService.update(command)
+        settings.toResponse(identityResolver.linkedEmailFor(settings))
     }
 }

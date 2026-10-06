@@ -35,12 +35,18 @@ data class SettingsResponse(
     val watchedStocks: List<String>,
     val webPushSubscribed: Boolean,
     val updatedAt: Instant,
+    // Google 계정에 연동된 행이면 그 이메일, 아니면 null — 2026-10-06 추가. 이전엔 연동 여부를
+    // 클라이언트가 전혀 알 수 없어(모바일 GoogleLinkButton이 로컬 state로만 추적) 앱을 재실행하면
+    // 매번 "연동 안 됨"으로 보였다 — 이 필드로 서버 상태를 그대로 반영하게 한다(Play 계정 삭제
+    // 요건 대응으로 "연동 해제/계정 삭제" UI를 만들려면 서버가 확인한 연동 상태가 먼저 필요했다).
+    val linkedEmail: String? = null,
 )
 
-fun UserSettings.toResponse() = SettingsResponse(
+fun UserSettings.toResponse(linkedEmail: String? = null) = SettingsResponse(
     pushTime = pushTime,
     interestKeywords = interestKeywords(),
     watchedStocks = watchedStocks(),
     webPushSubscribed = webPushSubscriptions().isNotEmpty(),
     updatedAt = updatedAt,
+    linkedEmail = linkedEmail,
 )

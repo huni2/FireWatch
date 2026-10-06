@@ -8,12 +8,14 @@ import com.firewatch.backend.entity.UserSettings
 import com.firewatch.backend.repository.AppUserRepository
 import com.firewatch.backend.repository.DeviceLinkRepository
 import com.firewatch.backend.repository.UserSettingsRepository
+import com.firewatch.backend.web.NotFoundException
 import com.firewatch.backend.web.UnauthorizedException
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Test
+import java.util.Optional
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
@@ -77,5 +79,25 @@ class AuthServiceTest {
         verify(exactly = 0) { userSettingsRepository.findByDeviceId(any()) }
         assertEquals("device-2", savedLink.captured.deviceId)
         assertEquals(42L, savedLink.captured.userId)
+    }
+
+    @Test
+    fun `계정을 삭제하면 연동된 기기 전부·공유 설정·계정 자체가 지워진다`() {
+        every { deviceLinkRepository.findById("device-1") } returns Optional.of(DeviceLink(deviceId = "device-1", userId = 42L))
+        val sharedSettings = UserSettings(userId = 42L)
+        every { userSettingsRepository.findByUserId(42L) } returns sharedSettings
+
+        authService.deleteAccount("device-1")
+
+        verify { deviceLinkRepository.deleteByUserId(42L) }
+        verify { userSettingsRepository.delete(sharedSettings) }
+        verify { appUserRepository.deleteById(42L) }
+    }
+
+    @Test
+    fun `연동된 계정이 없으면 삭제 시 NotFoundException`() {
+        every { deviceLinkRepository.findById("device-1") } returns Optional.empty()
+
+        assertFailsWith<NotFoundException> { authService.deleteAccount("device-1") }
     }
 }
