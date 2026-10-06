@@ -38,4 +38,8 @@ class TestFixtureService(
         nested.doSomething()
         return "outer-ok"
     }
+
+    /** SchedulerJob.triggerManually(apiKey)·AuthService.linkGoogleAccount(deviceId, idToken)처럼
+     * 비밀값을 받는 실제 service 메서드를 재현 — 파라미터 이름 기반 마스킹 테스트용. */
+    fun callWithSecret(apiKey: String, deviceId: String): String = "secret-ok"
 }

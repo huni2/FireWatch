@@ -79,4 +79,13 @@ class AuditLogAspectTest @Autowired constructor(
         assertEquals(AuditStatus.SUCCESS, nested.status)
         assertEquals("nested-ok", nested.responseSummary)
     }
+
+    @Test
+    fun `apiKey처럼 비밀값으로 보이는 파라미터는 감사로그에 마스킹돼 남는다`() {
+        fixture.callWithSecret(apiKey = "super-secret-value", deviceId = "device-abc")
+        val last = lastLogFor("TestFixtureService.callWithSecret")
+        assertTrue(last.requestPayload?.contains("super-secret-value") == false)
+        assertTrue(last.requestPayload?.contains("[REDACTED]") == true)
+        assertTrue(last.requestPayload?.contains("device-abc") == true)
+    }
 }

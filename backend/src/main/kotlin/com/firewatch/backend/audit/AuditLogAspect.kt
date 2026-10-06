@@ -7,6 +7,7 @@ import com.firewatch.backend.repository.AuditLogRepository
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
+import org.aspectj.lang.reflect.MethodSignature
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -36,7 +37,7 @@ class AuditLogAspect(
         val target = joinPoint.target
         val declaredEventType = (target as? AuditedComponent)?.auditEventType
         val actionName = "${target.javaClass.simpleName}.${joinPoint.signature.name}"
-        val requestPayload = summarizeArgs(joinPoint.args)
+        val requestPayload = summarizeArgs(joinPoint)
         val clientIp = joinPoint.args.filterIsInstance<HasClientIp>().firstOrNull()?.clientIp
         val startedAt = System.currentTimeMillis()
         val isRootCall = AuditContext.enterCall()
@@ -110,8 +111,17 @@ class AuditLogAspect(
         }
     }
 
-    private fun summarizeArgs(args: Array<Any?>): String =
-        args.joinToString(prefix = "[", postfix = "]") { it?.toString() ?: "null" }.take(MAX_TEXT_LENGTH)
+    // 2026-10-06 보안 리뷰 — apiKey/idToken처럼 비밀값을 받는 service 메서드(예: SchedulerJob.triggerManually,
+    // AuthService.linkGoogleAccount)가 호출되면 이 값이 그대로 감사로그에 평문 저장되고 있었다. 파라미터
+    // 이름으로 비밀값을 감지해 마스킹 — 옵트아웃 자동 감사 철학과 동일하게, 새 서비스 메서드가 비밀값을
+    // 받더라도 파라미터 이름만 지키면 자동으로 가려진다(호출부가 따로 신경 쓸 필요 없음).
+    private fun summarizeArgs(joinPoint: ProceedingJoinPoint): String {
+        val parameterNames = (joinPoint.signature as? MethodSignature)?.parameterNames
+        return joinPoint.args.mapIndexed { index, arg ->
+            val paramName = parameterNames?.getOrNull(index)?.lowercase().orEmpty()
+            if (SENSITIVE_PARAM_NAME_FRAGMENTS.any { paramName.contains(it) }) "[REDACTED]" else arg?.toString() ?: "null"
+        }.joinToString(prefix = "[", postfix = "]").take(MAX_TEXT_LENGTH)
+    }
 
     private fun summarizeResult(result: Any?): String = when (result) {
         null, Unit -> "OK"
@@ -120,5 +130,7 @@ class AuditLogAspect(
 
     companion object {
         private const val MAX_TEXT_LENGTH = 1000
+        private val SENSITIVE_PARAM_NAME_FRAGMENTS =
+            listOf("apikey", "idtoken", "password", "token", "secret")
     }
 }
