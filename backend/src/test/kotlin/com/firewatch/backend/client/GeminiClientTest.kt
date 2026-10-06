@@ -11,6 +11,25 @@ import kotlin.test.assertTrue
 class GeminiClientTest {
 
     @Test
+    fun `종목별 근거는 추천 목록과 제공된 기사만 연결하며 과거 형식에는 이유를 만들지 않는다`() {
+        fun response(text: String) = mapOf("candidates" to listOf(mapOf("content" to mapOf("parts" to listOf(mapOf("text" to text))))))
+        val text = """시장 요약.
+            |추천종목: 삼성전자(005930.KS)
+            |핵심키워드: 반도체
+            |종목근거: [{"stockName":"삼성전자","reason":"제공된 반도체 수요 기사에 따른 관찰 후보","risk":"실적 반영 확인","sourceNewsLinks":["https://example.com/provided","https://unprovided.example/fiction"]},{"stockName":"테슬라","reason":"추천에 없음","risk":"위험","sourceNewsLinks":[]}]
+        """.trimMargin()
+        val result = GeminiClient.parseResponse(response(text), setOf("https://example.com/provided"))
+        assertEquals(1, result.recommendationDetails.size)
+        assertEquals(listOf("https://example.com/provided"), result.recommendationDetails.single().sourceNewsLinks)
+        assertEquals("시장 요약.", result.marketSummary)
+        val old = GeminiClient.parseResponse(response("예전 요약.\n추천종목: 삼성전자(005930.KS)"))
+        assertEquals(emptyList(), old.recommendationDetails)
+        assertEquals(listOf("삼성전자"), old.recommendedStocks)
+        val broken = GeminiClient.parseResponse(response("요약.\n추천종목: 삼성전자\n종목근거: [invalid]"))
+        assertEquals(emptyList(), broken.recommendationDetails)
+    }
+
+    @Test
     fun `정상 응답에서 텍스트를 추출한다`() {
         val response = mapOf(
             "candidates" to listOf(

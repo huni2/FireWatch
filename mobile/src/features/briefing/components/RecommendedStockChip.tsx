@@ -20,8 +20,6 @@ export function RecommendedStockChip({ symbol }: { symbol: string }) {
         return
       }
       await updateSettings({
-        pushTime: settings.pushTime,
-        interestKeywords: settings.interestKeywords,
         watchedStocks: [...settings.watchedStocks, ticker],
       })
       Toast.show({ type: 'success', text1: '관심종목에 추가했습니다.' })
@@ -31,7 +29,7 @@ export function RecommendedStockChip({ symbol }: { symbol: string }) {
   }
 
   return (
-    <Pressable onPress={handlePress} className="rounded-full bg-brand/10 px-3 py-1.5">
+    <Pressable accessibilityRole="button" accessibilityLabel={`${symbol} 관심종목에 추가`} onPress={handlePress} className="min-h-11 justify-center rounded-xl bg-brand/10 px-4 py-3">
       <Text className="text-sm font-semibold text-brand">{symbol}</Text>
     </Pressable>
   )

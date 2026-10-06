@@ -46,6 +46,15 @@ class PushServiceTest {
         UserSettings(pushTime = "08:00", fcmTokensRaw = fcmTokensRaw, webPushSubscriptionsRaw = webPushSubscriptionsRaw)
 
     @Test
+    fun `모든 발송이 실패하면 오늘 발송으로 기록하지 않는다`() {
+        val row = dueRow(fcmTokensRaw = "token-a")
+        every { userSettingsRepository.findAll() } returns listOf(row)
+        every { fcmSender.sendMulticast(any(), any(), any()) } returns FcmSendResult(0, emptyList())
+        pushService.notifyDueUsers(briefing, now, windowMinutes, today)
+        assertEquals(null, row.lastNotifiedDate)
+    }
+
+    @Test
     fun `due한 행이 없으면 아무것도 발송하지 않는다`() {
         every { userSettingsRepository.findAll() } returns listOf(UserSettings(pushTime = "20:00"))
 

@@ -43,24 +43,25 @@ class FinancialDataService(
 ) : AuditedComponent {
     override val auditEventType = AuditEventType.FINANCIAL_API
 
-    // 환율/금은 중 하나라도 실패하면 예외를 그대로 던진다(부분 성공 데이터는 버림 — 단순화, TODO: 필요해지면 부분 응답 지원).
+    // Independent providers: one outage must not discard other successful observations.
     fun fetchLatestSnapshot(): FinancialSnapshot {
-        val rates = financialApiClient.fetchExchangeRates()
-        val metals = financialApiClient.fetchPreciousMetalPrices()
-        val indices = financialApiClient.fetchMarketIndices()
+        val rates = runCatching { financialApiClient.fetchExchangeRates() }.getOrNull()
+        val metals = runCatching { financialApiClient.fetchPreciousMetalPrices() }.getOrNull()
+        val indices = runCatching { financialApiClient.fetchMarketIndices() }.getOrNull()
+        check(rates != null || metals != null || indices != null) { "금융 자료 제공처가 모두 실패했습니다." }
         return FinancialSnapshot(
-            goldPrice = metals.goldPriceUsd,
-            silverPrice = metals.silverPriceUsd,
-            usdKrw = rates.usdKrw,
-            jpy100Krw = rates.jpy100Krw,
-            cnyKrw = rates.cnyKrw,
-            kospi = indices.kospi,
-            kosdaq = indices.kosdaq,
-            sp500 = indices.sp500,
-            nasdaq = indices.nasdaq,
-            dow = indices.dow,
-            usBondYield10y = indices.usBondYield10y,
-            krBondYield10y = indices.krBondYield10y,
+            goldPrice = metals?.goldPriceUsd,
+            silverPrice = metals?.silverPriceUsd,
+            usdKrw = rates?.usdKrw,
+            jpy100Krw = rates?.jpy100Krw,
+            cnyKrw = rates?.cnyKrw,
+            kospi = indices?.kospi,
+            kosdaq = indices?.kosdaq,
+            sp500 = indices?.sp500,
+            nasdaq = indices?.nasdaq,
+            dow = indices?.dow,
+            usBondYield10y = indices?.usBondYield10y,
+            krBondYield10y = indices?.krBondYield10y,
         )
     }
 }

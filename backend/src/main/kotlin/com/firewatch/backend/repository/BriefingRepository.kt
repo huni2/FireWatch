@@ -8,4 +8,5 @@ interface BriefingRepository : JpaRepository<Briefing, Long> {
     fun findByBriefingDate(briefingDate: LocalDate): Briefing?
     fun findByBriefingDateBetweenOrderByBriefingDateDesc(from: LocalDate, to: LocalDate): List<Briefing>
     fun findTopByOrderByBriefingDateDesc(): Briefing?
+    fun findTopByBriefingDateLessThanEqualOrderByBriefingDateDesc(briefingDate: LocalDate): Briefing?
 }

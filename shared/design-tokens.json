@@ -1,0 +1,8 @@
+{
+  "accent": "#FF8A3D",
+  "dark": { "canvas": "#0C1017", "surface": "#151B25", "elevated": "#1C2431", "text": "#F2F4F8", "muted": "#A7B1C2", "border": "#303A49" },
+  "light": { "canvas": "#F4F5F7", "surface": "#FFFFFF", "elevated": "#FFFFFF", "text": "#17202E", "muted": "#596579", "border": "#DDE2EA", "accent": "#B94D0B" },
+  "radius": 16,
+  "spacing": { "screen": 20, "card": 20, "stack": 16 },
+  "typography": { "title": 28, "section": 20, "body": 14, "caption": 12, "eyebrow": 10 }
+}

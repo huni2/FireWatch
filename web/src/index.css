@@ -20,6 +20,21 @@ body {
   min-height: 100vh;
 }
 
+.site-header.ant-layout-header { position: sticky; top: 0; z-index: 10; height: auto; padding: 0 24px; line-height: normal; border-bottom: 1px solid var(--ant-color-border); }
+.site-brand-row { display: flex; align-items: center; min-height: 62px; gap: 8px; }
+.site-navigation { display: flex; overflow-x: auto; scrollbar-width: thin; }
+.page-intro { padding: 32px; border: 1px solid var(--ant-color-border); border-radius: 22px; background: linear-gradient(115deg,color-mix(in srgb,var(--ant-color-primary) 10%,var(--ant-color-bg-container)),var(--ant-color-bg-container)); }
+.page-intro h2 { margin-top: 14px; letter-spacing: -.04em; }
+.ant-statistic-content { font-variant-numeric: tabular-nums; }
+button:focus-visible,a:focus-visible { outline: 2px solid var(--ant-color-primary); outline-offset: 4px; }
+@media(max-width:600px) { .site-header.ant-layout-header { padding: 0 16px; }.site-brand-row { gap: 0; }.site-brand-row a { padding-inline: 7px !important; font-size: 12px !important; }.page-intro { padding: 24px; } }
+
+.app-content { padding: 24px; }
+.portfolio-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 16px; }
+.portfolio-fields label { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+@media (max-width: 600px) { .app-content { padding: 16px; } }
+@media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
 /* 감사로그 FAILURE 행 강조 — llm-wiki/design.md §1 FAILURE 색(#EF4444) 기반, 배경만 옅게 */
 .audit-row-failure > td {
   background-color: rgba(239, 68, 68, 0.08) !important;

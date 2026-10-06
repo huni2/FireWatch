@@ -57,6 +57,7 @@ export function RelatedNewsCard({
                       새 탭 안내로 안 읽힌다는 지적(2026-10-05) */}
                   <ExportOutlined style={{ fontSize: 12, color: 'var(--ant-color-text-tertiary)' }} />
                 </Typography.Text>
+                {article.pubDate && <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12, marginTop: 6 }}>{new Date(article.pubDate).toLocaleString('ko-KR')}</Typography.Text>}
                 {article.description && (
                   <Typography.Paragraph
                     type="secondary"

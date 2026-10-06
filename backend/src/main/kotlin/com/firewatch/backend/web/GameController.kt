@@ -45,12 +45,20 @@ class GameController(private val gameService: GameService) {
             symbol = request.symbol,
             action = request.action,
             quantity = request.quantity,
+            requestId = request.requestId,
+            expectedTurnIndex = request.expectedTurnIndex,
+            expectedPrice = request.expectedPrice,
         ).toResponse()
     }
 
+    @PostMapping("/preview")
+    suspend fun preview(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @Valid @RequestBody request: GameTradeRequest): com.firewatch.backend.service.GameOrderPreview = withContext(Dispatchers.IO) {
+        gameService.preview(deviceId.requireDeviceId(), request.instrumentType, request.symbol, request.action, request.quantity, request.expectedTurnIndex)
+    }
+
     @PostMapping("/next-turn")
-    suspend fun nextTurn(@RequestHeader("X-Device-Id", required = false) deviceId: String?): GameTurnResponse =
-        withContext(Dispatchers.IO) { gameService.nextTurn(deviceId.requireDeviceId()).toResponse() }
+    suspend fun nextTurn(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @RequestBody(required = false) body: Map<String, Int>?): GameTurnResponse =
+        withContext(Dispatchers.IO) { gameService.nextTurn(deviceId.requireDeviceId(), body?.get("expectedTurnIndex")).toResponse() }
 
     @PostMapping("/end")
     suspend fun end(@RequestHeader("X-Device-Id", required = false) deviceId: String?): GameTurnResponse =

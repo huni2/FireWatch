@@ -5,8 +5,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // web/src/lib/theme.ts BRAND_GREEN과 동일 — 웹·모바일 브랜드 컬러 일치
-        brand: '#00754A',
+        brand: require('../shared/design-tokens.json').light.accent,
+        canvas: require('../shared/design-tokens.json').light.canvas,
+        surface: require('../shared/design-tokens.json').light.surface,
+        ink: require('../shared/design-tokens.json').light.text,
+        muted: require('../shared/design-tokens.json').light.muted,
+        line: require('../shared/design-tokens.json').light.border,
       },
     },
   },

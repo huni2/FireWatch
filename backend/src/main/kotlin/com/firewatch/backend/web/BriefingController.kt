@@ -29,8 +29,11 @@ class BriefingController(
         // SchedulerJob과 같은 버그(KST 08:00~09:00 사이엔 UTC 날짜가 하루 밀려 있음)가 여기도
         // 있었다(2026-08-21 실측 발견, SchedulerJob 수정 때 같이 잡음).
         val today = LocalDate.now(ZoneId.of(schedulerTimezone))
+        // Midnight/new collection failure must not hide all retained market data.
+        // Push delivery still queries today's briefing explicitly in SchedulerController.
         val briefing = briefingRepository.findByBriefingDate(today)
-            ?: throw NotFoundException("오늘자 브리핑이 아직 생성되지 않았습니다.")
+            ?: briefingRepository.findTopByBriefingDateLessThanEqualOrderByBriefingDateDesc(today)
+            ?: throw NotFoundException("저장된 브리핑이 아직 없습니다.")
         briefing.toResponse(newsArticleRepository.findByBriefingId(briefing.id!!))
     }
 

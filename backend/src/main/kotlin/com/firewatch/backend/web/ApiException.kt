@@ -12,6 +12,8 @@ open class ApiException(
 
 class NotFoundException(message: String) : ApiException("NOT_FOUND", message, HttpStatus.NOT_FOUND)
 
+class ConflictException(message: String) : ApiException("CONFLICT", message, HttpStatus.CONFLICT)
+
 class UnauthorizedException(message: String = "API 키가 올바르지 않습니다.") :
     ApiException("UNAUTHORIZED", message, HttpStatus.UNAUTHORIZED)
 

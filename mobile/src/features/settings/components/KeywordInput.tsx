@@ -11,6 +11,7 @@ interface KeywordInputProps {
   validate?: (value: string) => string | null
   /** false면 입력창을 숨기고 태그 목록만 — 종목 화면(APP-8)이 검색/직접입력 탭을 전환할 때 사용. */
   showInput?: boolean
+  labelForValue?: (value: string) => string
 }
 
 export function KeywordInput({
@@ -20,6 +21,7 @@ export function KeywordInput({
   placeholder = '키워드 입력 후 완료',
   validate,
   showInput = true,
+  labelForValue,
 }: KeywordInputProps) {
   const [draft, setDraft] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -49,9 +51,9 @@ export function KeywordInput({
             key={keyword}
             className="flex-row items-center gap-1 rounded-full bg-neutral-100 py-1 pl-3 pr-2"
           >
-            <Text className="text-sm text-neutral-700">{keyword}</Text>
+            <Text className="text-sm text-muted">{labelForValue?.(keyword) ?? keyword}</Text>
             <Pressable onPress={() => onChange(value.filter((k) => k !== keyword))} hitSlop={8}>
-              <Text className="text-sm text-neutral-400">✕</Text>
+              <Text className="text-sm text-muted">✕</Text>
             </Pressable>
           </View>
         ))}
@@ -70,7 +72,7 @@ export function KeywordInput({
             placeholder={value.length >= maxCount ? `최대 ${maxCount}개까지 등록 가능` : placeholder}
             maxLength={30}
             returnKeyType="done"
-            className="rounded-lg border border-neutral-300 px-3 py-2 text-base"
+            className="rounded-lg border border-line bg-surface px-3 py-2 text-base"
           />
           {error && <Text className="text-xs text-red-500">{error}</Text>}
         </>

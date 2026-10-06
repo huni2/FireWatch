@@ -47,4 +47,6 @@ class GameTransaction(
 
     @Column(name = "created_at")
     var createdAt: Instant = Instant.now(),
+    @Column(name = "request_id", length = 64)
+    var requestId: String? = null,
 )

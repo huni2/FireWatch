@@ -12,9 +12,8 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 
-// Design Ref: 가상투자 게임(2026-10-05) — 실제로 쌓인 Briefing 날짜들을 셔플해 턴 순서로 삼는다(한
-// 세션의 턴 하나 = 실제 있었던 어느 날의 뉴스·지표·AI추천종목 세트). 기기당 활성 세션 1개만 허용 —
-// Settings와 동일하게 X-Device-Id로만 식별, 별도 로그인 없음.
+// 2026-10-07: simulationSeed가 있는 새 세션은 완전 가상 게임. null은 과거 자료를 쓴 기존 기록.
+// 기기당 활성 세션 1개이며 새 가상 게임 전환 때 기존 세션/거래를 삭제하지 않는다.
 @Entity
 @Table(name = "game_sessions")
 class GameSession(
@@ -49,6 +48,8 @@ class GameSession(
 
     @Column(name = "ended_at")
     var endedAt: Instant? = null,
+    @Column(name = "simulation_seed")
+    var simulationSeed: Long? = null,
 )
 
 fun GameSession.turnDates(): List<LocalDate> = turnDatesRaw.split(",").map { LocalDate.parse(it.trim()) }

@@ -5,7 +5,7 @@ import { router } from 'expo-router'
 import { useEffect } from 'react'
 import { Platform } from 'react-native'
 
-import { fetchSettings, updateSettings } from '@/lib/api'
+import { updateSettings } from '@/lib/api'
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -36,11 +36,7 @@ async function registerPushToken() {
   }
 
   const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync({ projectId })
-  const settings = await fetchSettings()
   await updateSettings({
-    pushTime: settings.pushTime,
-    interestKeywords: settings.interestKeywords,
-    watchedStocks: settings.watchedStocks,
     fcmToken: expoPushToken,
   })
 }

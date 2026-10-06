@@ -5,6 +5,8 @@ import com.firewatch.backend.entity.DataSourceStatus
 import com.firewatch.backend.entity.NewsArticle
 import com.firewatch.backend.entity.recommendedStocks
 import com.firewatch.backend.entity.trendingKeywords
+import com.firewatch.backend.entity.recommendationDetails
+import com.firewatch.backend.entity.StockRecommendationDetail
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -46,6 +48,7 @@ data class BriefingResponse(
     val dataSourceStatus: DataSourceStatus,
     val createdAt: Instant,
     val news: List<NewsArticleResponse>,
+    val recommendationDetails: List<StockRecommendationDetail> = emptyList(),
 )
 
 fun Briefing.toResponse(news: List<NewsArticle> = emptyList()) = BriefingResponse(
@@ -69,4 +72,5 @@ fun Briefing.toResponse(news: List<NewsArticle> = emptyList()) = BriefingRespons
     dataSourceStatus = dataSourceStatus,
     createdAt = createdAt,
     news = news.map { it.toResponse() },
+    recommendationDetails = recommendationDetails(),
 )

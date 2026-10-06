@@ -76,7 +76,7 @@ class AuthServiceTest {
         val result = authService.linkGoogleAccount("device-2", "token")
 
         assertEquals("AAPL", result.watchedStocksRaw)
-        verify(exactly = 0) { userSettingsRepository.findByDeviceId(any()) }
+        verify(exactly = 1) { userSettingsRepository.findByDeviceId("device-2") }
         assertEquals("device-2", savedLink.captured.deviceId)
         assertEquals(42L, savedLink.captured.userId)
     }

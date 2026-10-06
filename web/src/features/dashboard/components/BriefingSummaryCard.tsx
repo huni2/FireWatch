@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { searchStocks, type Briefing } from '../../../lib/api'
 import { renderMarkdownLite } from '../../../lib/markdownLite'
+import { qualifiedRecommendations } from '../../../../../shared/discovery'
 
 interface BriefingSummaryCardProps {
   briefing: Briefing | null
@@ -56,7 +57,7 @@ export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardPr
           header: { borderBottomWidth: 2 },
           title: { fontSize: 24, fontWeight: 800, letterSpacing: -0.4 },
         }}
-        title={`오늘의 증시 요약 · ${briefing.briefingDate}`}
+        title={`증시 요약 · 자료 기준 ${briefing.briefingDate}`}
         extra={
           briefing.dataSourceStatus === 'FALLBACK' ? (
             <Tag color="processing">대체 데이터(FALLBACK)</Tag>
@@ -80,9 +81,9 @@ export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardPr
         <Typography.Link onClick={() => setExpanded((v) => !v)} style={{ display: 'block', marginBlock: 8 }}>
           {expanded ? '접기' : '더보기'}
         </Typography.Link>
-        {briefing.recommendedStocks.length > 0 && (
+        {qualifiedRecommendations(briefing).length > 0 && (
           <Space wrap size={6} style={{ marginTop: 8 }}>
-            {briefing.recommendedStocks.map((stock) => (
+            {qualifiedRecommendations(briefing).map(({ stockName: stock }) => (
               <Tag
                 key={stock}
                 color="blue"

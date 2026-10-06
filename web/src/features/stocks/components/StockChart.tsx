@@ -1,18 +1,23 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Alert, Empty, Segmented, Skeleton, Typography } from 'antd'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { StockChartRange } from '../../../lib/api'
 import { useStockHistory } from '../hooks/useStockHistory'
 import { BRAND_GREEN } from '../../../lib/theme'
+import { stockLabel } from '../../../../../shared/stock-labels'
+import { formatStockPrice } from '../../../../../shared/stock-price'
+import { CompanyNews } from './CompanyNews'
 
 const CHART_COLOR = BRAND_GREEN
 
 interface StockChartProps {
   symbol: string
+  name?: string
+  onNameFound?: (symbol: string, name: string) => void
 }
 
 const RANGE_OPTIONS: { label: string; value: StockChartRange }[] = [
-  { label: '하루(실시간)', value: '1d' },
+  { label: '하루', value: '1d' },
   { label: '일주일', value: '1wk' },
   { label: '1개월', value: '1mo' },
   { label: '3개월', value: '3mo' },
@@ -36,9 +41,18 @@ function formatLabel(timestamp: string, range: StockChartRange): string {
 
 // Design Ref: llm-wiki/design.md §4 벤치마크 톤 — RateChart와 동일한 Area+그라디언트 스타일 재사용.
 // 2026-08-21 사용자 요청 — "5년/6개월/3개월/1달/일주일/하루 이렇게 시간적으로 볼 수 있는 차트".
-export function StockChart({ symbol }: StockChartProps) {
+export function StockChart({ symbol, name = stockLabel(symbol), onNameFound }: StockChartProps) {
   const [range, setRange] = useState<StockChartRange>('6mo')
   const { data, loading, error } = useStockHistory(symbol, range)
+  const currentData = data?.symbol === symbol ? data : null
+  const companyName = name === '회사명 확인 필요' ? currentData?.companyName ?? name : name
+  const latest = currentData?.points.at(-1)
+  const price = currentData?.quotePrice ?? latest?.close
+  const priceAt = currentData?.quotePrice != null ? currentData.quoteAt : latest?.timestamp
+  const currency = currentData?.currency ?? (/\.K[QS]$/.test(symbol) ? 'KRW' : null)
+  useEffect(() => {
+    if (name === '회사명 확인 필요' && currentData?.companyName) onNameFound?.(symbol, currentData.companyName)
+  }, [name, currentData?.companyName, symbol, onNameFound])
 
   const chartData = useMemo(
     () => (data?.points ?? []).map((point) => ({ label: formatLabel(point.timestamp, range), value: point.close })),
@@ -47,6 +61,11 @@ export function StockChart({ symbol }: StockChartProps) {
 
   return (
     <div>
+      <Typography.Title level={3} style={{ marginTop: 0 }}>{companyName}</Typography.Title>
+      {price != null && !error && <div style={{ marginBottom: 20 }}>
+        <Typography.Text style={{ fontSize: 28, fontWeight: 700 }}>{formatStockPrice(price, currency)}</Typography.Text>
+        <Typography.Text type="secondary" style={{ display: 'block' }}>{currentData?.quotePrice != null ? '최근 제공 시세' : '마지막 기록 가격'}{priceAt ? ` · ${new Date(priceAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} (한국 시간)` : ''}</Typography.Text>
+      </div>}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
         <Segmented size="small" value={range} onChange={(value) => setRange(value as StockChartRange)} options={RANGE_OPTIONS} />
         {range === '1d' && (
@@ -58,7 +77,7 @@ export function StockChart({ symbol }: StockChartProps) {
 
       {loading && <Skeleton active paragraph={{ rows: 4 }} />}
       {!loading && error && (
-        <Alert type="error" message={`${symbol} 시세를 불러오지 못했습니다`} description={error.message} showIcon />
+        <Alert type="error" message={`${companyName} 시세를 불러오지 못했습니다`} description="잠시 후 다시 확인해주세요." showIcon />
       )}
       {!loading && !error && chartData.length === 0 && <Empty description="표시할 데이터가 없습니다" />}
       {!loading && !error && chartData.length > 0 && (
@@ -86,6 +105,7 @@ export function StockChart({ symbol }: StockChartProps) {
           </AreaChart>
         </ResponsiveContainer>
       )}
+      {companyName !== '회사명 확인 필요' && <div style={{ marginTop: 24 }}><CompanyNews key={companyName} name={companyName} /></div>}
     </div>
   )
 }

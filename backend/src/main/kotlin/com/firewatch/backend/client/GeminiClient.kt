@@ -6,6 +6,8 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import java.math.BigDecimal
 import java.time.Duration
+import com.firewatch.backend.entity.StockRecommendationDetail
+import tools.jackson.databind.json.JsonMapper
 
 data class GeminiBriefingResult(
     val marketSummary: String,
@@ -17,6 +19,7 @@ data class GeminiBriefingResult(
     // "현재가 조회 실패"가 잦았다(RecommendedStockPerformanceService). Gemini가 프롬프트에서 함께 준
     // 티커를 이름→심볼 맵으로 들고 있다가 RecommendedStockSnapshotService가 우선 시도하게 한다.
     val recommendedStockSymbols: Map<String, String> = emptyMap(),
+    val recommendationDetails: List<StockRecommendationDetail> = emptyList(),
 ) {
     // fetchTodaysBriefing()이 이 값을 그대로 반환해, AuditLogAspect의 감사로그 응답요약에
     // "GeminiBriefingResult(marketSummary=..., recommendedStocks=[...])" 같은 필드명 래퍼가 그대로
@@ -88,13 +91,14 @@ class GeminiClient(
             .block()
             ?: error("Gemini 응답 본문이 비어 있음")
 
-        return parseResponse(response)
+        return parseResponse(response, newsArticles.map { it.link }.toSet())
     }
 
     companion object {
         private const val TIMEOUT_SECONDS = 60L
         private val STOCK_LINE_REGEX = Regex("""^추천\s*종목\s*[:：]\s*(.+)$""", RegexOption.MULTILINE)
         private val KEYWORD_LINE_REGEX = Regex("""^핵심\s*키워드\s*[:：]\s*(.+)$""", RegexOption.MULTILINE)
+        private val DETAIL_LINE_REGEX = Regex("""^종목근거\s*[:：]\s*(\[.*\])\s*$""", RegexOption.MULTILINE)
         // "삼성전자(005930.KS)"에서 이름·티커를 분리. 괄호가 없으면(모델이 티커를 못 줬으면) 전체를
         // 이름으로 보고 심볼은 비워둔다 — 기존 "추천종목: 삼성전자" 형식과도 호환.
         private val STOCK_ENTRY_REGEX = Regex("""^(.+?)\((.+?)\)$""")
@@ -117,7 +121,7 @@ class GeminiClient(
             val newsSection = if (newsArticles.isEmpty()) {
                 "(오늘은 참고할 뉴스 데이터가 없습니다)"
             } else {
-                newsArticles.joinToString("\n") { "- ${it.title}: ${it.description}" }
+                newsArticles.joinToString("\n") { "- ${it.title}: ${it.description} (원문: ${it.link})" }
             }
             return """
                 당신은 한국 개인 투자자를 위한 아침 증시 브리핑 작성자입니다. 아래 오늘의 데이터를 참고해
@@ -146,7 +150,7 @@ class GeminiClient(
                 1. 위 시세 데이터를 참고해 오늘 국내외 증시에 참고할 만한 코멘트를 3분 안에 읽을 분량으로 정리해줘.
                 2. 위 뉴스와 시세 흐름을 참고해 관심 가질 만한 테마주나 섹터를 2~3개 추천하고 간단한 이유를 붙여줘
                    — 실시간 시세 조회 없이 일반적인 상관관계 수준의 참고용 추천이라는 점을 자연스럽게 녹여줘.
-                3. 마지막 두 줄에는 아래 두 형식을 각각 정확히 지켜서 딱 한 줄씩 추가해줘(다른 설명 없이) —
+                3. 본문 뒤에는 아래 두 형식을 각각 정확히 지켜서 한 줄씩 추가해줘(다른 설명 없이) —
                    첫 줄은 위에서 언급한 구체적인 종목명 뒤에 괄호로 정확한 티커를 붙여 쉼표로 구분해줘
                    (국내는 코스피 .KS·코스닥 .KQ 접미사를 붙인 종목코드, 해외는 영문 티커 그대로).
                    실제로 거래소에 상장돼 매매 가능한 종목만 추천하고, 티커를 확신할 수 없으면 그 종목은
@@ -154,11 +158,16 @@ class GeminiClient(
                    쉼표로 구분:
                    추천종목: 삼성전자(005930.KS), SK하이닉스(000660.KS)
                    핵심키워드: 반도체, 금리인하, 환율
+                4. 각 추천 종목에 대해 제공된 자료로 설명 가능한 이유와 별도로 확인할 위험을 작성하고,
+                   마지막에 '종목근거: ' 뒤에 JSON 배열을 한 줄로 추가해줘. stockName은 추천종목 이름과 정확히 같아야 해.
+                   reason은 주어진 뉴스/시장 흐름에 대한 해석, risk는 확인해야 할 위험이다. 수익률/목표가를 지어내지 마.
+                   sourceNewsLinks는 위에서 제공된 뉴스 원문 URL만 사용하고 직접 근거 뉴스가 없으면 빈 배열로 둬.
+                   예: 종목근거: [{"stockName":"삼성전자","reason":"제공된 반도체 수요 뉴스에 대한 관찰 후보","risk":"수요 전망이 실적에 반영되는지 확인","sourceNewsLinks":[]}]
             """.trimIndent()
         }
 
         @Suppress("UNCHECKED_CAST")
-        internal fun parseResponse(response: Map<String, Any?>): GeminiBriefingResult {
+        internal fun parseResponse(response: Map<String, Any?>, allowedNewsLinks: Set<String> = emptySet()): GeminiBriefingResult {
             val candidates = response["candidates"] as? List<Map<String, Any?>>
                 ?: error("Gemini 응답에 candidates 없음: $response")
             val firstCandidate = candidates.firstOrNull() ?: error("Gemini candidates가 비어 있음")
@@ -192,6 +201,14 @@ class GeminiClient(
                 ?.filter { it.isNotEmpty() }
                 ?: emptyList()
             var marketSummary = text
+            val detailLine = DETAIL_LINE_REGEX.find(text)
+            val details = runCatching {
+                val json = detailLine?.groupValues?.get(1)?.takeIf { it.length <= 16000 } ?: return@runCatching emptyList()
+                JsonMapper.builder().build().readValue(json, Array<StockRecommendationDetail>::class.java).toList()
+                    .filter { it.stockName in recommendedStocks && it.reason.isNotBlank() && it.risk.isNotBlank() }
+                    .distinctBy { it.stockName }.take(10).map { it.copy(reason = it.reason.take(1000), risk = it.risk.take(500), sourceNewsLinks = it.sourceNewsLinks.filter { link -> link in allowedNewsLinks }.distinct().take(5)) }
+            }.getOrDefault(emptyList())
+            if (detailLine != null) marketSummary = marketSummary.replace(detailLine.value, "")
             if (stockLine != null) marketSummary = marketSummary.replace(stockLine.value, "")
             if (keywordLine != null) marketSummary = marketSummary.replace(keywordLine.value, "")
             marketSummary = marketSummary.trim()
@@ -201,6 +218,7 @@ class GeminiClient(
                 recommendedStocks = recommendedStocks,
                 trendingKeywords = trendingKeywords,
                 recommendedStockSymbols = recommendedStockSymbols,
+                recommendationDetails = details,
             )
         }
     }

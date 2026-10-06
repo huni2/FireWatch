@@ -23,6 +23,7 @@ web/dist/
 mobile/node_modules/
 mobile/.expo/
 mobile/dist/
+mobile/dist-review/
 
 # IDE
 .idea/

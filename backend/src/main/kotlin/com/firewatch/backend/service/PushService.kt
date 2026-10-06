@@ -48,6 +48,12 @@ class PushService(
 
     private val log = LoggerFactory.getLogger(PushService::class.java)
 
+    fun notifyOperator(settings: UserSettings, body: String): PushSendResult {
+        val result = sendToOne(settings, "FireWatch 수집 장애", body.take(NOTIFICATION_BODY_MAX_LENGTH))
+        userSettingsRepository.save(settings)
+        return result
+    }
+
     fun notifyDueUsers(briefing: Briefing, now: LocalTime, pollWindowMinutes: Long, today: LocalDate): PushSendResult {
         val dueRows = userSettingsRepository.findAll()
             .filter { SchedulerController.isRowDue(it, now, pollWindowMinutes, today) }
@@ -69,7 +75,9 @@ class PushService(
             totalSuccess += result.successCount
             totalWebSubscribers += result.webPushSubscriberCount
             totalWebSuccess += result.webPushSuccessCount
-            settings.lastNotifiedDate = today
+            if (result.successCount + result.webPushSuccessCount > 0 || result.tokenCount + result.webPushSubscriberCount == 0) {
+                settings.lastNotifiedDate = today
+            }
         }
         userSettingsRepository.saveAll(dueRows)
         log.info("${dueRows.size}개 행에 발송 시도 — 토큰 $totalSuccess/$totalTokens 성공")

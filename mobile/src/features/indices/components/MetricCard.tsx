@@ -16,11 +16,12 @@ export function MetricCard({ title, value, precision = 2 }: MetricCardProps) {
         )
 
   return (
-    <View className="min-w-[30%] flex-1 gap-1 rounded-xl border border-neutral-200 p-3">
-      <Text className="text-xs font-medium text-neutral-500">{title}</Text>
-      <Text className={`text-lg font-bold ${value == null ? 'text-neutral-300' : 'text-neutral-900'}`}>
+    <View className="min-w-[45%] flex-1 gap-3 rounded-2xl border border-line bg-surface p-4">
+      <Text className="text-xs font-medium text-muted">{title}</Text>
+      <Text style={{ fontVariant: ['tabular-nums'] }} className={`text-xl font-bold ${value == null ? 'text-muted' : 'text-ink'}`}>
         {formatted}
       </Text>
+      {value == null && <Text className="text-xs text-muted">자료 미수집</Text>}
     </View>
   )
 }

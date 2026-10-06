@@ -27,6 +27,13 @@ class SchedulerJobTest {
     private val recommendedStockSnapshotService = mockk<RecommendedStockSnapshotService>(relaxed = true)
     private val briefingRepository = mockk<BriefingRepository>(relaxed = true)
     private val newsArticleRepository = mockk<com.firewatch.backend.repository.NewsArticleRepository>(relaxed = true)
+    private val collectionJobs = mockk<CollectionJobRunner>() {
+        every { run<Any>(any(), any(), any(), any(), any()) } answers {
+            val result = arg<() -> Any>(3).invoke()
+            arg<(Any) -> CollectionWrite>(4).invoke(result)
+            CollectionOutcome.SUCCESS
+        }
+    }
     private val schedulerJob = SchedulerJob(
         geminiBriefingService,
         financialDataService,
@@ -36,6 +43,8 @@ class SchedulerJobTest {
         newsArticleRepository,
         expectedApiKey = "secret-key",
         schedulerTimezone = "Asia/Seoul",
+        collectionJobs = collectionJobs,
+        operationsPush = mockk(relaxed = true),
     )
 
     private val today = LocalDate.now(ZoneId.of("Asia/Seoul"))

@@ -13,6 +13,7 @@ RUN ./gradlew bootJar --no-daemon -x test
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /app/build/libs/*-SNAPSHOT.jar app.jar
+ENV SPRING_PROFILES_ACTIVE=prod
 
 # Render는 PORT 환경변수로 리스닝 포트를 지정한다 — application.yml의 server.port가 이를 읽는다.
 EXPOSE 8080

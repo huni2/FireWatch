@@ -131,6 +131,6 @@ class AuditLogAspect(
     companion object {
         private const val MAX_TEXT_LENGTH = 1000
         private val SENSITIVE_PARAM_NAME_FRAGMENTS =
-            listOf("apikey", "idtoken", "password", "token", "secret")
+            listOf("apikey", "idtoken", "password", "token", "secret", "deviceid")
     }
 }

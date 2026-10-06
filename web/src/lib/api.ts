@@ -13,6 +13,7 @@ export interface NewsArticle {
 }
 
 export interface Briefing {
+  recommendationDetails?: import('../../../shared/discovery').RecommendationDetail[]
   id: number
   briefingDate: string
   marketSummary: string
@@ -83,6 +84,10 @@ export interface StockPricePoint {
 export interface StockHistory {
   symbol: string
   points: StockPricePoint[]
+  companyName?: string | null
+  currency?: string | null
+  quotePrice?: number | null
+  quoteAt?: string | null
 }
 
 export type StockChartRange = '1d' | '1wk' | '1mo' | '3mo' | '6mo' | '5y'
@@ -120,11 +125,14 @@ export class ApiRequestError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+export async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 45000)
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
-  })
+    signal: init?.signal ?? controller.signal,
+  }).finally(() => clearTimeout(timer))
 
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as { error?: ApiErrorBody } | null
@@ -178,9 +186,9 @@ export function fetchSettings(): Promise<Settings> {
 }
 
 export function updateSettings(input: {
-  pushTime: string
-  interestKeywords: string[]
-  watchedStocks: string[]
+  pushTime?: string
+  interestKeywords?: string[]
+  watchedStocks?: string[]
   webPushSubscription?: WebPushSubscriptionPayload
 }): Promise<Settings> {
   return request<Settings>('/api/settings', {
@@ -215,10 +223,17 @@ export interface GameHolding {
   symbol: string | null
   quantity: number
   currentPrice: number | null
-  value: number
+  value: number | null
 }
 
 export interface GameTurn {
+  gamePicks?: import('../../../shared/game-turn').GamePick[]
+  priceDrivers?: import('../../../shared/game-turn').GamePriceDriver[]
+  assetHistories?: import('../../../shared/game-turn').GameAssetHistory[]
+  marketEvents: import('../../../shared/game-turn').GameMarketEvent[]
+  turnContributions: import('../../../shared/game-turn').GameTurnContribution[]
+  simulation: boolean
+  stockPrices: Record<string, number>
   sessionId: number
   status: GameSessionStatus
   turnIndex: number
@@ -227,10 +242,14 @@ export interface GameTurn {
   briefing: Briefing
   holdings: GameHolding[]
   cash: number
-  portfolioValue: number
+  portfolioValue: number | null
   startingCash: number
   allowShortSelling: boolean
-  returnPercent: number
+  returnPercent: number | null
+  benchmarkReturnPercent: number | null
+  review: string[]
+  turnChange: number | null
+  transactions: { id: number; turnIndex: number; instrumentType: GameInstrumentType; symbol: string | null; action: GameTradeAction; quantity: number; price: number; total: number }[]
 }
 
 // 이미 활성 게임이 있으면 difficulty/allowShortSelling은 무시되고 그 게임이 그대로 이어진다
@@ -252,16 +271,27 @@ export function tradeGame(input: {
   symbol?: string
   action: GameTradeAction
   quantity: number
+  expectedTurnIndex?: number
+  expectedPrice?: number
+  requestId?: string
 }): Promise<GameTurn> {
   return request<GameTurn>('/api/game/trade', {
     method: 'POST',
     headers: { 'X-Device-Id': getDeviceId() },
-    body: JSON.stringify(input),
+    body: JSON.stringify({ ...input, requestId: input.requestId ?? crypto.randomUUID() }),
   })
 }
 
-export function nextGameTurn(): Promise<GameTurn> {
-  return request<GameTurn>('/api/game/next-turn', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() } })
+export interface GameOrderPreview {
+  turnIndex: number; instrumentType: GameInstrumentType; symbol: string | null; action: GameTradeAction; quantity: number
+  unitPrice: number; total: number; cashAfter: number; quantityAfter: number; allowed: boolean; reason: string | null
+}
+export function previewGame(input: { instrumentType: GameInstrumentType; symbol?: string; action: GameTradeAction; quantity: number; expectedTurnIndex: number }): Promise<GameOrderPreview> {
+  return request<GameOrderPreview>('/api/game/preview', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() }, body: JSON.stringify(input) })
+}
+
+export function nextGameTurn(expectedTurnIndex?: number): Promise<GameTurn> {
+  return request<GameTurn>('/api/game/next-turn', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() }, body: JSON.stringify({ expectedTurnIndex }) })
 }
 
 export function endGame(): Promise<GameTurn> {

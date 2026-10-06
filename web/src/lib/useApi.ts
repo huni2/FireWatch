@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { ApiRequestError } from './api'
 
 interface UseApiResult<T> {
   data: T | null
@@ -31,6 +32,7 @@ export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): UseA
 
   useEffect(() => {
     let cancelled = false
+    let retryTimer: ReturnType<typeof setTimeout> | undefined
     setLoading(true)
     setError(null)
     setIsSlow(false)
@@ -48,9 +50,10 @@ export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): UseA
         })
         .catch((err: unknown) => {
           if (cancelled) return
-          const delay = RETRY_DELAYS_MS[retryIndex]
+          const retryable = !(err instanceof ApiRequestError) || err.status >= 500 || err.status === 429
+          const delay = retryable ? RETRY_DELAYS_MS[retryIndex] : undefined
           if (delay != null) {
-            setTimeout(() => {
+            retryTimer = setTimeout(() => {
               if (!cancelled) attempt(retryIndex + 1)
             }, delay)
             return
@@ -64,6 +67,7 @@ export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): UseA
     return () => {
       cancelled = true
       clearTimeout(slowTimer)
+      clearTimeout(retryTimer)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps, reloadKey])

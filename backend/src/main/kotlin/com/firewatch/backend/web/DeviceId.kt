@@ -6,5 +6,9 @@ fun String?.requireDeviceId(): String {
     if (isNullOrBlank()) {
         throw ValidationException("X-Device-Id 헤더가 필요합니다.", mapOf("deviceId" to "누락됨"))
     }
+    if (this == "legacy-owner-device") throw UnauthorizedException("기존 공개 기기 ID는 사용할 수 없습니다. 기기 등록을 다시 진행해주세요.")
+    if (length > 64 || !Regex("^[A-Za-z0-9-]+$").matches(this)) {
+        throw ValidationException("기기 ID 형식이 올바르지 않습니다.", mapOf("deviceId" to "유효하지 않음"))
+    }
     return this
 }

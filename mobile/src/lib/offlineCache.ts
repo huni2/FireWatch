@@ -17,5 +17,8 @@ export async function saveCachedBriefing(briefing: Briefing): Promise<void> {
 export async function loadCachedBriefing(): Promise<CachedBriefing | null> {
   const raw = await AsyncStorage.getItem(CACHE_KEY)
   if (!raw) return null
-  return JSON.parse(raw) as CachedBriefing
+  try {
+    const value = JSON.parse(raw) as CachedBriefing
+    return typeof value.briefingDate === 'string' && typeof value.marketSummary === 'string' && Array.isArray(value.recommendedStocks) ? value : null
+  } catch { return null }
 }

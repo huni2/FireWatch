@@ -4,12 +4,15 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { SECTION_CARD_PROPS, TREND_DOWN_COLOR, TREND_UP_COLOR } from '../../../lib/theme'
 import { useWatchlistSummary } from '../hooks/useWatchlistSummary'
+import { useStockNames } from '../../stocks/hooks/useStockNames'
+import { stockLabel } from '../../../../../shared/stock-labels'
 
 // 2026-08-21 사용자 요청 — "대시보드는 한눈에 요약되는 게 맞지 않냐" — 종목 화면을 매번 들어가지 않아도
 // 관심 종목의 최근 등락을 대시보드에서 바로 보고, 클릭하면 해당 종목 차트로 이동한다.
 // 2026-10-05 재설계 — 박스 카드가 아니라 지면의 한 섹션처럼(변수 없이 제목 밑줄로만 구분).
 export function WatchlistSummaryCard() {
   const { data, loading, error } = useWatchlistSummary()
+  const { names } = useStockNames()
 
   if (loading) {
     return (
@@ -60,7 +63,7 @@ export function WatchlistSummaryCard() {
                 }}
               >
                 <Typography.Text strong style={{ display: 'block', fontSize: 13 }}>
-                  {item.symbol}
+                  {stockLabel(item.symbol, names)}
                 </Typography.Text>
                 {item.latest == null ? (
                   <Typography.Text type="secondary">—</Typography.Text>

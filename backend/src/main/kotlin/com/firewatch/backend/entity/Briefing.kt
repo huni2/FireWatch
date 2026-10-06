@@ -77,6 +77,9 @@ class Briefing(
 
     @Column(name = "created_at")
     var createdAt: Instant = Instant.now(),
+
+    @Column(name = "recommendation_details")
+    var recommendationDetailsRaw: String? = null,
 )
 
 // Hibernate 엔티티 내부에 계산 프로퍼티를 두면 매핑 대상으로 오인될 수 있어 확장 함수로 분리

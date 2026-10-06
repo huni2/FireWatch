@@ -1,15 +1,13 @@
 import { theme as antdTheme, type ThemeConfig } from 'antd'
+import tokens from '../../../shared/design-tokens.json'
 
-// Design Ref: llm-wiki/design.md §6 — 2026-10-05 재설계(메뉴 중복 제거·ECOS 참고 리스킨). 크림
-// 캔버스는 AI 생성 디자인에 흔한 클리셰 배색이라 빼고 채도를 낮춘 세이지그레이로, 서체는 Noto Sans
-// KR로 교체. 다크모드는 카드와 배경이 거의 구분 안 되던 문제(그림자만으로 구분해 어두운 바탕에서
-// 그림자 자체가 안 보임)를 실측 발견해 카드 표면색·테두리를 배경과 분명히 분리했다.
+// 2026-10-07: 기본 라이트·선택 다크와 오렌지, 웹·모바일 공유 토큰을 사용한다.
 const FONT_FAMILY = "'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
 
-// Design.md §2 Green Accent — 버튼/링크/차트선/포커스링 등 colorPrimary가 파생시키는 모든 곳의 브랜드 시그널.
-export const BRAND_GREEN = '#00754A'
-// 다크 배경에서 #00754A는 채도가 낮아 보여 밝힌 값 — 라이트는 그대로, 다크 전용.
-const BRAND_GREEN_DARK = '#35C080'
+// 기존 import 이름을 유지하되 값은 오렌지 브랜드 토큰이다.
+export const BRAND_GREEN = tokens.light.accent
+// 밝은 배경에서는 대비를 위해 더 짙은 오렌지를 사용한다.
+const BRAND_GREEN_DARK = tokens.accent
 
 const CARD_SHADOW_LIGHT = '0 0 0.5px rgba(0, 0, 0, 0.14), 0 1px 1px rgba(0, 0, 0, 0.24)'
 const CARD_SHADOW_DARK = '0 0 0.5px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.5)'
@@ -19,20 +17,23 @@ const sharedTokens = {
   colorPrimary: BRAND_GREEN,
   borderRadius: 12,
   borderRadiusLG: 16,
+  fontSize: tokens.typography.body,
+  fontSizeHeading1: tokens.typography.title,
+  fontSizeHeading3: tokens.typography.section,
 }
 
 export const lightThemeConfig: ThemeConfig = {
   algorithm: antdTheme.defaultAlgorithm,
   token: {
     ...sharedTokens,
-    colorBgLayout: '#EEF1ED', // 채도 낮춘 세이지그레이 페이지 캔버스(크림 클리셰 대체)
+    colorBgLayout: tokens.light.canvas,
     colorBgContainer: '#FFFFFF',
     boxShadow: CARD_SHADOW_LIGHT,
   },
   components: {
-    Layout: { headerBg: '#FFFFFF', bodyBg: '#EEF1ED' },
+    Layout: { headerBg: '#FFFFFF', bodyBg: tokens.light.canvas },
     Card: { boxShadowTertiary: CARD_SHADOW_LIGHT },
-    Button: { borderRadius: 999 }, // Design.md "모든 버튼 50px 풀필" — 실제 높이보다 큰 값으로 항상 완전한 필 보장
+    Button: { borderRadius: 10 },
   },
 }
 
@@ -43,16 +44,18 @@ export const darkThemeConfig: ThemeConfig = {
     colorPrimary: BRAND_GREEN_DARK,
     // 카드 표면을 배경보다 뚜렷이 밝게 + 테두리를 명시적으로 줘서 그림자에만 기대지 않게 함
     // (실측: 그림자 기반 구분은 어두운 바탕 위에서 그림자 자체가 거의 안 보여 카드 경계가 사라짐).
-    colorBgLayout: '#0E1512',
-    colorBgContainer: '#17221C',
-    colorBgElevated: '#1C2821',
-    colorBorderSecondary: 'rgba(255, 255, 255, 0.09)',
+    colorBgLayout: tokens.dark.canvas,
+    colorBgContainer: tokens.dark.surface,
+    colorBgElevated: tokens.dark.elevated,
+    colorText: tokens.dark.text,
+    colorTextSecondary: tokens.dark.muted,
+    colorBorderSecondary: tokens.dark.border,
     boxShadow: CARD_SHADOW_DARK,
   },
   components: {
-    Layout: { headerBg: '#0E1512', bodyBg: '#0E1512' },
+    Layout: { headerBg: tokens.dark.surface, bodyBg: tokens.dark.canvas },
     Card: { boxShadowTertiary: CARD_SHADOW_DARK },
-    Button: { borderRadius: 999 },
+    Button: { borderRadius: 10, primaryColor: '#18110D' },
   },
 }
 
@@ -81,6 +84,6 @@ export const TREND_DOWN_COLOR = '#1677FF'
 // paddingInline:0으로 완전히 눕혔더니 "카드 여백이 아예 없다"는 지적(2026-10-05)을 받아
 // AntD 기본 패딩은 유지하고 테두리·배경·그림자만 없앤다(= 박스만 빠지고 여백은 그대로).
 export const SECTION_CARD_PROPS = {
-  variant: 'borderless' as const,
-  style: { background: 'transparent' },
+  variant: 'outlined' as const,
+  style: { borderRadius: tokens.radius },
 }

@@ -27,6 +27,7 @@ export interface NewsArticle {
 // 홈 화면·바텀시트·지수 화면(APP-9)·뉴스 화면(APP-10)이 쓰는 필드 — web/src/lib/api.ts의
 // Briefing과 동일 응답을 모바일이 실제로 쓰는 범위까지만 선언.
 export interface Briefing {
+  recommendationDetails?: import('../../../shared/discovery').RecommendationDetail[]
   briefingDate: string
   marketSummary: string
   recommendedStocks: string[]
@@ -60,6 +61,10 @@ export interface StockPricePoint {
 export interface StockHistory {
   symbol: string
   points: StockPricePoint[]
+  companyName?: string | null
+  currency?: string | null
+  quotePrice?: number | null
+  quoteAt?: string | null
 }
 
 export type StockChartRange = '1d' | '1wk' | '1mo' | '3mo' | '6mo' | '5y'
@@ -82,11 +87,14 @@ export class ApiRequestError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+export async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 45000)
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
-  })
+    signal: init?.signal ?? controller.signal,
+  }).finally(() => clearTimeout(timer))
 
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as { error?: ApiErrorBody } | null
@@ -143,9 +151,9 @@ export async function deleteAccount(): Promise<void> {
 // fcmToken만 새로 등록하고 기존 pushTime/keywords/watchedStocks는 그대로 유지 — 호출부가
 // fetchSettings()로 먼저 현재 값을 읽어 함께 넘겨야 한다(백엔드는 값을 그대로 덮어씀).
 export async function updateSettings(input: {
-  pushTime: string
-  interestKeywords: string[]
-  watchedStocks: string[]
+  pushTime?: string
+  interestKeywords?: string[]
+  watchedStocks?: string[]
   fcmToken?: string
 }): Promise<Settings> {
   const deviceId = await getDeviceId()

@@ -12,7 +12,11 @@ import java.time.Instant
 
 data class StockPricePoint(val timestamp: String, val close: BigDecimal)
 
-data class StockPriceHistory(val symbol: String, val points: List<StockPricePoint>) {
+data class StockPriceHistory(
+    val symbol: String, val points: List<StockPricePoint>,
+    val companyName: String? = null, val currency: String? = null,
+    val quotePrice: BigDecimal? = null, val quoteAt: String? = null,
+) {
     // AuditLogAspect가 result.toString()을 그대로 감사로그 응답요약에 남기는데, 기본 toString은
     // points(최대 수백 개 캔들)를 전부 펼쳐 써서 "요약"이 아니라 긴 원시 덤프가 됨(2026-10-05 지적).
     override fun toString(): String =
@@ -143,7 +147,14 @@ class StockApiClient(
                 StockPricePoint(timestamp = instant.toString(), close = BigDecimal(close.toString()))
             }
             check(points.isNotEmpty()) { "Yahoo 응답에 유효한 시세 포인트가 없음($symbol)" }
-            return StockPriceHistory(symbol = symbol, points = points)
+            val meta = result["meta"] as? Map<String, Any?>
+            return StockPriceHistory(
+                symbol = symbol, points = points,
+                companyName = (meta?.get("longName") ?: meta?.get("shortName")) as? String,
+                currency = meta?.get("currency") as? String,
+                quotePrice = (meta?.get("regularMarketPrice") as? Number)?.let { BigDecimal(it.toString()) },
+                quoteAt = (meta?.get("regularMarketTime") as? Number)?.let { Instant.ofEpochSecond(it.toLong()).toString() },
+            )
         }
 
         @Suppress("UNCHECKED_CAST")

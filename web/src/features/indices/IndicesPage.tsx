@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Col, Row, Space, Typography } from 'antd'
+import { Alert, Col, Row, Space, Typography } from 'antd'
 import { MetricStat } from './components/MetricStat'
 import { RateChart } from './components/RateChart'
 import { useBriefingHistory } from './hooks/useBriefingHistory'
@@ -23,6 +23,8 @@ export function IndicesPage() {
       </Typography.Title>
 
       <SlowLoadingHint loading={latest.loading || history.loading} isSlow={latest.isSlow || history.isSlow} />
+      {latest.data && <Alert type="info" showIcon message={`자료 기준 ${latest.data.briefingDate} · 최신 저장 지표`} description="새 자료가 준비될 때까지 마지막 저장 자료를 표시합니다. 실시간 시세가 아닙니다." />}
+      {latest.error && <Alert type="error" showIcon message="지수 조회 실패" description="저장 자료를 조회하지 못했습니다. 데이터가 삭제되었다는 뜻은 아닙니다." />}
 
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} md={8} lg={4}>

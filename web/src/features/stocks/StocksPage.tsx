@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Alert, App, Card, Empty, Segmented, Skeleton, Space, Typography } from 'antd'
 import { motion } from 'framer-motion'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { KeywordInput } from '../settings/components/KeywordInput'
 import { StockChart } from './components/StockChart'
 import { StockSearchInput } from './components/StockSearchInput'
@@ -9,40 +9,35 @@ import { useSettings } from '../settings/hooks/useSettings'
 import { ApiRequestError, updateSettings } from '../../lib/api'
 import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 import { SECTION_CARD_PROPS } from '../../lib/theme'
+import { stockLabel } from '../../../../shared/stock-labels'
+import { useStockNames } from './hooks/useStockNames'
 
-// 티커 형식: 영문/숫자, 선택적으로 .KS/.KQ 같은 거래소 접미사(예: 005930.KS, AAPL, BRK.B).
-// 검색 없이 직접 입력할 때 "반도체" 같은 일반 단어가 그대로 들어가던 문제(2026-08-21 실측 발견)를 막는다.
+// Navigation parameters use internal identifiers; the visible UI uses company names.
 const TICKER_PATTERN = /^[A-Za-z0-9]+(\.[A-Za-z0-9]+)?$/
-
-function validateTicker(value: string): string | null {
-  return TICKER_PATTERN.test(value) ? null : '티커 형식이 아닙니다 — 예: 005930.KS, AAPL'
-}
 
 // 2026-08-21 사용자 요청 "원하는 종목과 특정 주식에 대한 차트도 보고싶은데" — 관심 종목 등록 + 차트를 별도 화면으로.
 // 대시보드의 관심 종목 미니 요약에서 ?symbol=로 넘어오면 그 종목을 바로 선택해 보여준다.
-type AddMode = 'search' | 'ticker'
-
 export function StocksPage() {
   const { message } = App.useApp()
   const { data, loading, error, isSlow, reload } = useSettings()
   const [searchParams] = useSearchParams()
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
   const [selected, setSelected] = useState<string | null>(null)
-  // 검색창·직접입력창이 둘 다 항상 떠있던 걸 탭으로 분리(2026-10-04 앱 리뷰, WEB-11) — 기본은 검색.
-  const [addMode, setAddMode] = useState<AddMode>('search')
+  const { names, rememberName } = useStockNames()
+  const labelForValue = (symbol: string) => stockLabel(symbol, names)
 
   useEffect(() => {
     if (data) {
       setWatchedStocks(data.watchedStocks)
       const fromQuery = searchParams.get('symbol')
       setSelected((current) => {
+        if (fromQuery && TICKER_PATTERN.test(fromQuery)) return fromQuery
         if (current) return current
-        if (fromQuery && data.watchedStocks.includes(fromQuery)) return fromQuery
         return data.watchedStocks[0] ?? null
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data])
+  }, [data, searchParams])
 
   const handleChange = async (next: string[]) => {
     const previous = watchedStocks
@@ -53,7 +48,7 @@ export function StocksPage() {
     }
     if (!data) return
     try {
-      await updateSettings({ pushTime: data.pushTime, interestKeywords: data.interestKeywords, watchedStocks: next })
+      await updateSettings({ watchedStocks: next })
       reload()
     } catch (err) {
       // 낙관적으로 먼저 반영한 태그를 저장 실패 시 되돌린다 — 전엔 실패해도 아무 알림 없이 조용히
@@ -64,7 +59,8 @@ export function StocksPage() {
     }
   }
 
-  const handleAddFromSearch = (symbol: string) => {
+  const handleAddFromSearch = (symbol: string, name?: string) => {
+    rememberName(symbol, name)
     if (watchedStocks.includes(symbol)) {
       setSelected(symbol)
       return
@@ -106,42 +102,15 @@ export function StocksPage() {
         <Card {...SECTION_CARD_PROPS} title="관심 종목">
           {error && <Alert type="error" message="관심 종목 정보를 불러오지 못했습니다" description={error.message} showIcon />}
 
-          <Segmented
-            value={addMode}
-            onChange={(value) => setAddMode(value as AddMode)}
-            options={[
-              { label: '이름으로 찾기', value: 'search' },
-              { label: '티커 직접 입력', value: 'ticker' },
-            ]}
-            style={{ marginTop: 12, marginBottom: 8 }}
-          />
-
-          {addMode === 'search' ? (
-            <>
-              <StockSearchInput onSelect={handleAddFromSearch} />
+              <StockSearchInput onSelect={handleAddFromSearch} initialQuery={searchParams.get('q') ?? ''} />
               <Typography.Text type="secondary" style={{ display: 'block', margin: '8px 0' }}>
                 국내 대형주는 한글명(예: 삼성전자)으로 찾을 수 있고, 그 외는 영문 사명(예: Tesla)으로 검색하세요.
               </Typography.Text>
-              <KeywordInput value={watchedStocks} onChange={handleChange} showInput={false} />
-            </>
-          ) : (
-            <>
-              <KeywordInput
-                value={watchedStocks}
-                onChange={handleChange}
-                placeholder="정확한 티커를 알면 직접 입력 후 Enter"
-                validate={validateTicker}
-              />
-              <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-                국내 종목은 코스피 <code>005930.KS</code>, 코스닥은 <code>.KQ</code>, 해외는 <code>AAPL</code>처럼
-                티커 그대로 입력하세요. 티커가 낯설다면 <Link to="/guide">가이드</Link>에서 예시를 볼 수 있어요.
-              </Typography.Text>
-            </>
-          )}
+              <KeywordInput value={watchedStocks} onChange={handleChange} showInput={false} labelForValue={labelForValue} />
         </Card>
       </motion.div>
 
-      {watchedStocks.length === 0 ? (
+      {watchedStocks.length === 0 && !selected ? (
         <Empty description="관심 종목을 추가하면 차트가 표시됩니다" />
       ) : (
         <motion.div
@@ -153,10 +122,10 @@ export function StocksPage() {
             <Segmented
               value={selected ?? undefined}
               onChange={(value) => setSelected(value as string)}
-              options={watchedStocks}
-              style={{ marginBottom: 16 }}
+              options={[...new Set([...watchedStocks, ...(selected ? [selected] : [])])].map(symbol => ({ value: symbol, label: labelForValue(symbol) }))}
+              style={{ marginBottom: 16, maxWidth: '100%', overflowX: 'auto' }}
             />
-            {selected && <StockChart symbol={selected} />}
+            {selected && <StockChart key={selected} symbol={selected} name={labelForValue(selected)} onNameFound={rememberName} />}
           </Card>
         </motion.div>
       )}

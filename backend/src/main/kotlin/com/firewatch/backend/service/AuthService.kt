@@ -12,6 +12,9 @@ import com.firewatch.backend.repository.UserSettingsRepository
 import com.firewatch.backend.web.NotFoundException
 import com.firewatch.backend.web.UnauthorizedException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import com.firewatch.backend.repository.PortfolioRepository
+import com.firewatch.backend.repository.PortfolioRevisionRepository
 
 /**
  * Design Ref: 공개 배포 전환(2026-09) — 기기별 익명 저장이 기본이고, 이 서비스는 사용자가 설정
@@ -29,9 +32,12 @@ class AuthService(
     private val appUserRepository: AppUserRepository,
     private val deviceLinkRepository: DeviceLinkRepository,
     private val userSettingsRepository: UserSettingsRepository,
+    private val portfolios: PortfolioRepository? = null,
+    private val revisions: PortfolioRevisionRepository? = null,
 ) : AuditedComponent {
     override val auditEventType = AuditEventType.AUTH
 
+    @Transactional
     fun linkGoogleAccount(deviceId: String, idToken: String): UserSettings {
         val identity = googleIdentityVerifier.verify(idToken)
             ?: throw UnauthorizedException("Google 로그인 확인에 실패했습니다.")
@@ -39,9 +45,14 @@ class AuthService(
         val appUser = appUserRepository.findByGoogleSub(identity.googleSub)
             ?: appUserRepository.save(AppUser(googleSub = identity.googleSub, email = identity.email))
         val userId = appUser.id ?: error("저장된 AppUser에 id가 없음")
+        val anonymous = userSettingsRepository.findByDeviceId(deviceId)
+        val existingAccount = userSettingsRepository.findByUserId(userId)
+        if (anonymous != null && existingAccount != null && anonymous.id != existingAccount.id && portfolios?.existsById(anonymous.id) == true) {
+            throw com.firewatch.backend.web.ConflictException("이 기기와 계정의 포트폴리오를 먼저 확인해주세요. 기기 데이터를 덮어쓰지 않도록 연동을 중단했습니다.")
+        }
 
-        val settings = userSettingsRepository.findByUserId(userId)
-            ?: userSettingsRepository.findByDeviceId(deviceId)?.also {
+        val settings = existingAccount
+            ?: anonymous?.also {
                 it.deviceId = null
                 it.userId = userId
             }
@@ -56,12 +67,17 @@ class AuthService(
     // 기기가 여럿이어도(동기화 목적으로 여러 기기가 같은 userId를 공유) 전부 한 번에 끊어내고,
     // 공유 설정 행·계정 자체까지 지운다. 기기별 익명 데이터(game_sessions 등)는 deviceId로만
     // 연결돼 있어 계정과 무관하게 남는다 — 의도된 동작(가입 없이도 쓸 수 있던 로컬 데이터라 PII 아님).
+    @Transactional
     fun deleteAccount(deviceId: String) {
         val link = deviceLinkRepository.findById(deviceId).orElse(null)
             ?: throw NotFoundException("연동된 계정이 없습니다.")
         val userId = link.userId
         deviceLinkRepository.deleteByUserId(userId)
-        userSettingsRepository.findByUserId(userId)?.let { userSettingsRepository.delete(it) }
+        userSettingsRepository.findByUserId(userId)?.let {
+            revisions?.deleteByOwnerId(it.id)
+            portfolios?.deleteById(it.id)
+            userSettingsRepository.delete(it)
+        }
         appUserRepository.deleteById(userId)
     }
 }

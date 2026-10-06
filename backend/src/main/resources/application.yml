@@ -22,6 +22,7 @@ spring:
     init:
       mode: always
       platform: h2
+      schema-locations: classpath:schema-${spring.sql.init.platform}.sql,classpath:portfolio-${spring.sql.init.platform}.sql
   h2:
     console:
       enabled: true

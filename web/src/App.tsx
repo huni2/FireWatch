@@ -1,10 +1,11 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { App as AntApp, ConfigProvider, Skeleton } from 'antd'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { DashboardPage } from './features/dashboard/DashboardPage'
 import { NotFoundPage } from './features/not-found/NotFoundPage'
 import { darkThemeConfig, lightThemeConfig } from './lib/theme'
+import designTokens from '../../shared/design-tokens.json'
 
 // 첫 화면(대시보드)만 즉시 로드하고 나머지 페이지는 방문 시점에 필요한 JS만 내려받는다
 // — 번들 하나(1.6MB)에 다 뭉쳐 있어 초기 로딩이 느리다는 지적(2026-08-21)에 따른 라우트별 코드 스플리팅.
@@ -16,10 +17,19 @@ const NewsPage = lazy(() => import('./features/news/NewsPage').then((m) => ({ de
 const GamePage = lazy(() => import('./features/game/GamePage').then((m) => ({ default: m.GamePage })))
 const HelpPage = lazy(() => import('./features/help/HelpPage').then((m) => ({ default: m.HelpPage })))
 const PrivacyPage = lazy(() => import('./features/privacy/PrivacyPage').then((m) => ({ default: m.PrivacyPage })))
+const PortfolioPage = lazy(() => import('./features/portfolio/PortfolioPage').then(m => ({ default: m.PortfolioPage })))
+const CandidatesPage = lazy(() => import('./features/candidates/CandidatesPage').then(m => ({ default: m.CandidatesPage })))
 
-// OpenQuestions.md — 다크 모드 기본값 미정이라 라이트를 기본으로, 토글로 전환 가능하게 구현.
+// 2026-10-07: 기본은 라이트, 사용자가 저장한 다크 선택은 유지한다.
 export default function App() {
-  const [darkMode, setDarkMode] = useState(false)
+  const [darkMode, setDarkMode] = useState(() => { try { return localStorage.getItem('firewatch-theme') === 'dark' } catch { return false } })
+  useEffect(() => {
+    document.documentElement.dataset.theme = darkMode ? 'dark' : 'light'
+    const palette = darkMode ? designTokens.dark : designTokens.light
+    const cssColors = { primary: darkMode ? designTokens.accent : designTokens.light.accent, 'bg-layout': palette.canvas, 'bg-container': palette.surface, 'bg-elevated': palette.elevated, text: palette.text, 'text-secondary': palette.muted, border: palette.border, 'border-secondary': palette.border, 'fill-tertiary': darkMode ? '#ffffff0d' : '#00000008' }
+    for (const [key, color] of Object.entries(cssColors)) document.documentElement.style.setProperty(`--ant-color-${key}`, color)
+    try { localStorage.setItem('firewatch-theme', darkMode ? 'dark' : 'light') } catch { /* Theme works without storage. */ }
+  }, [darkMode])
 
   return (
     <ConfigProvider theme={darkMode ? darkThemeConfig : lightThemeConfig}>
@@ -27,7 +37,10 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route element={<AppShell darkMode={darkMode} onToggleDarkMode={setDarkMode} />}>
-              <Route index element={<DashboardPage />} />
+              <Route index element={<Suspense fallback={<Skeleton active />}><PortfolioPage /></Suspense>} />
+              <Route path="briefing" element={<DashboardPage />} />
+              <Route path="candidates" element={<Suspense fallback={<Skeleton active />}><CandidatesPage /></Suspense>} />
+              <Route path="short-term" element={<Suspense fallback={<Skeleton active />}><CandidatesPage shortTerm /></Suspense>} />
               <Route
                 path="indices"
                 element={

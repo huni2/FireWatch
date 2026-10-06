@@ -86,6 +86,6 @@ class AuditLogAspectTest @Autowired constructor(
         val last = lastLogFor("TestFixtureService.callWithSecret")
         assertTrue(last.requestPayload?.contains("super-secret-value") == false)
         assertTrue(last.requestPayload?.contains("[REDACTED]") == true)
-        assertTrue(last.requestPayload?.contains("device-abc") == true)
+        assertTrue(last.requestPayload?.contains("device-abc") == false)
     }
 }

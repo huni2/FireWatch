@@ -11,6 +11,8 @@ import com.firewatch.backend.entity.GameSession
 import com.firewatch.backend.entity.GameSessionStatus
 import com.firewatch.backend.entity.GameTradeAction
 import com.firewatch.backend.entity.GameTransaction
+import com.firewatch.backend.entity.GamePriceSnapshot
+import com.firewatch.backend.repository.GamePriceSnapshotRepository
 import com.firewatch.backend.entity.NewsArticle
 import com.firewatch.backend.repository.BriefingRepository
 import com.firewatch.backend.repository.GameSessionRepository
@@ -19,11 +21,14 @@ import com.firewatch.backend.repository.NewsArticleRepository
 import com.firewatch.backend.web.NotFoundException
 import com.firewatch.backend.web.ValidationException
 import io.mockk.every
+import io.mockk.clearMocks
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.verify
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.Optional
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
@@ -32,6 +37,61 @@ import kotlin.test.assertTrue
 // 실제 Briefing 2건(day1=10/1, day2=10/2)만으로 "턴 덱 셔플 후 매수→다음턴→가격변동 반영→
 // 보유 초과 매도 거부→덱 소진 시 종료"까지 한 번에 검증한다.
 class GameServiceTest {
+    private fun virtualSession(seed: Long, short: Boolean = false): GameSession {
+        stubRepositories("")
+        val session = GameSession(id = 1L, deviceId = "device-a", turnDatesRaw = GameSimulation.dates(seed).joinToString(","), startingCash = BigDecimal("10000000"), allowShortSelling = short, simulationSeed = seed)
+        every { gameSessionRepository.findByDeviceIdAndStatus("device-a", GameSessionStatus.ACTIVE) } returns session
+        every { gameSessionRepository.save(any()) } answers { firstArg() }
+        return session
+    }
+
+    @Test
+    fun `거래정지는 평가 가격을 유지하고 주문을 막으며 다음 턴 재개된다`() {
+        val seed = (0L..1000L).first { GameSimulation.events(it, 1).any { e -> e.code == "TRADING_HALT" } && GameSimulation.events(it, 2).isEmpty() }
+        virtualSession(seed)
+        val symbol = GameSimulation.events(seed, 1).single().blockedAssets.single().substringAfter(":")
+        val bought = service.trade("device-a", GameInstrumentType.STOCK, symbol, GameTradeAction.BUY, BigDecimal.TEN)
+        val halted = service.nextTurn("device-a", 0)
+        assertEquals(bought.holdings.single().currentPrice, halted.holdings.single().currentPrice)
+        assertEquals(0, halted.turnContributions.single().profit!!.compareTo(BigDecimal.ZERO))
+        assertTrue(halted.holdings.single().value!! > BigDecimal.ZERO)
+        assertTrue(!service.preview("device-a", GameInstrumentType.STOCK, symbol, GameTradeAction.SELL, BigDecimal.ONE, 1).allowed)
+        assertFailsWith<ValidationException> { service.trade("device-a", GameInstrumentType.STOCK, symbol, GameTradeAction.SELL, BigDecimal.ONE) }
+        val resumed = service.nextTurn("device-a", 1)
+        assertTrue(resumed.marketEvents.isEmpty())
+        assertTrue(service.preview("device-a", GameInstrumentType.STOCK, symbol, GameTradeAction.SELL, BigDecimal.ONE, 2).allowed)
+        assertEquals(resumed.stockPrices, service.getCurrentTurn("device-a").stockPrices)
+    }
+
+    @Test
+    fun `사이드카는 지수 주문만 막고 현물과 다음 턴 진행을 허용한다`() {
+        val seed = (0L..1000L).first { GameSimulation.events(it, 1).any { e -> e.code == "SIDECAR" } && GameSimulation.events(it, 2).isEmpty() }
+        virtualSession(seed)
+        service.trade("device-a", GameInstrumentType.KOSPI, null, GameTradeAction.BUY, BigDecimal.ONE)
+        val paused = service.nextTurn("device-a", 0)
+        assertEquals("SIDECAR", paused.marketEvents.single().code)
+        assertFailsWith<ValidationException> { service.trade("device-a", GameInstrumentType.KOSPI, null, GameTradeAction.BUY, BigDecimal.ONE) }
+        service.trade("device-a", GameInstrumentType.STOCK, "AURA", GameTradeAction.BUY, BigDecimal.ONE)
+        service.trade("device-a", GameInstrumentType.GOLD, null, GameTradeAction.BUY, BigDecimal.ONE)
+        service.nextTurn("device-a", 1)
+        assertTrue(service.preview("device-a", GameInstrumentType.KOSPI, null, GameTradeAction.BUY, BigDecimal.ONE, 2).allowed)
+    }
+
+    @Test
+    fun `손익 기여는 공매도와 이번 턴 전량 매도 후에도 직전 수량으로 계산한다`() {
+        val seed = (0L..1000L).first { GameSimulation.events(it, 1).isEmpty() }
+        virtualSession(seed, true)
+        service.trade("device-a", GameInstrumentType.STOCK, "AURA", GameTradeAction.BUY, BigDecimal("1.0000"))
+        service.trade("device-a", GameInstrumentType.GOLD, null, GameTradeAction.SELL, BigDecimal.TEN)
+        val next = service.nextTurn("device-a", 0)
+        val sold = service.trade("device-a", GameInstrumentType.STOCK, "AURA", GameTradeAction.SELL, BigDecimal.ONE)
+        assertTrue(sold.holdings.none { it.symbol == "AURA" })
+        assertEquals(next.turnContributions, sold.turnContributions)
+        val profit = sold.turnContributions.fold(BigDecimal.ZERO) { sum, c -> sum + c.profit!! }
+        assertEquals(0, profit.compareTo(sold.turnChange))
+        val short = sold.turnContributions.first { it.instrumentType == GameInstrumentType.GOLD }
+        assertEquals(0, short.profit!!.compareTo((short.currentPrice!! - short.previousPrice!!) * BigDecimal("-10")))
+    }
 
     private val day1 = LocalDate.of(2026, 10, 1)
     private val day2 = LocalDate.of(2026, 10, 2)
@@ -91,6 +151,10 @@ class GameServiceTest {
             val turnIndex = secondArg<Int>()
             transactions.filter { it.turnIndex <= turnIndex }
         }
+        every { gameTransactionRepository.findBySessionIdAndRequestId(any(), any()) } answers {
+            val requestId = secondArg<String>()
+            transactions.find { it.requestId == requestId }
+        }
     }
 
     // GameSession.turnDates()가 셔플된 문자열을 파싱하는 구조라, 테스트에서는 순서를 day1→day2로
@@ -109,13 +173,15 @@ class GameServiceTest {
     }
 
     @Test
-    fun `게임을 시작하면 쌓인 브리핑 날짜로 덱을 만들고 첫 턴을 돌려준다`() {
+    fun `외부 자료 없이 가상 게임을 시작하고 첫 턴을 돌려준다`() {
         stubRepositories(turnDates = "")
 
         val turn = service.startGame("device-a", GameDifficulty.NORMAL, false)
 
-        assertEquals(2, turn.totalTurns)
+        assertEquals(24, turn.totalTurns)
         assertEquals(0, turn.turnIndex)
+        assertEquals(2030, turn.turnDate.year)
+        assertTrue(turn.simulation)
         assertEquals(GameSessionStatus.ACTIVE, turn.status)
         assertEquals(BigDecimal("10000000.00"), turn.portfolioValue)
     }
@@ -127,7 +193,7 @@ class GameServiceTest {
 
         val second = service.startGame("device-a", GameDifficulty.HARD, true)
 
-        assertEquals(2, second.totalTurns)
+        assertEquals(24, second.totalTurns)
         assertEquals(BigDecimal("10000000.00"), second.portfolioValue) // HARD(500만)로 안 바뀜
     }
 
@@ -248,5 +314,104 @@ class GameServiceTest {
 
         assertEquals(BigDecimal("9999890"), turn.cash) // 10,000,000 - 110
         assertTrue(turn.holdings.any { it.symbol == "AAPL" && it.currentPrice == BigDecimal("110") })
+    }
+
+    @Test
+    fun `미래 가격만 있는 종목은 거래할 수 없다`() {
+        stubRepositories("")
+        seedActiveSession()
+        every { stockService.fetchPriceHistory("AAPL", StockRange.SIX_MONTH) } returns StockPriceHistory(
+            symbol = "AAPL", points = listOf(StockPricePoint("2026-10-05T00:00:00Z", BigDecimal("999"))),
+        )
+        assertFailsWith<ValidationException> {
+            service.trade("device-a", GameInstrumentType.STOCK, "AAPL", GameTradeAction.BUY, BigDecimal.ONE)
+        }
+        assertTrue(transactions.isEmpty())
+    }
+
+    @Test
+    fun `거래 재전송은 한 번만 반영하고 이전 턴 요청은 거부한다`() {
+        stubRepositories("")
+        seedActiveSession()
+        repeat(2) {
+            service.trade("device-a", GameInstrumentType.GOLD, null, GameTradeAction.BUY, BigDecimal.ONE, "request-1", 0)
+        }
+        assertEquals(1, transactions.size)
+        service.nextTurn("device-a", 0)
+        assertFailsWith<com.firewatch.backend.web.ConflictException> { service.nextTurn("device-a", 0) }
+    }
+
+    @Test
+    fun `가격 누락은 영원이 아니라 미확정 평가로 반환하고 턴 이동을 막는다`() {
+        stubRepositories("")
+        val session = seedActiveSession()
+        service.trade("device-a", GameInstrumentType.GOLD, null, GameTradeAction.BUY, BigDecimal.ONE)
+        every { briefingRepository.findByBriefingDate(day2) } returns briefing(day2, 2L, BigDecimal.ZERO)
+        assertFailsWith<ValidationException> { service.nextTurn("device-a", 0) }
+        assertEquals(0, session.currentTurnIndex)
+        every { briefingRepository.findByBriefingDate(day1) } returns briefing(day1, 1L, BigDecimal.ZERO)
+        val view = service.getCurrentTurn("device-a")
+        assertEquals(null, view.holdings.single().value)
+        assertEquals(null, view.portfolioValue)
+        assertEquals(BigDecimal("9998000"), view.cash)
+    }
+
+    @Test
+    fun `주문 총액과 잔액 미리보기 및 가격 불일치를 검증한다`() {
+        stubRepositories("")
+        seedActiveSession()
+        val preview = service.preview("device-a", GameInstrumentType.GOLD, null, GameTradeAction.BUY, BigDecimal.TEN, 0)
+        assertEquals(BigDecimal("20000"), preview.total)
+        assertEquals(BigDecimal("9980000"), preview.cashAfter)
+        assertTrue(preview.allowed)
+        assertTrue(transactions.isEmpty())
+        assertFailsWith<com.firewatch.backend.web.ConflictException> {
+            service.trade("device-a", GameInstrumentType.GOLD, null, GameTradeAction.BUY, BigDecimal.TEN, null, 0, BigDecimal("1999"))
+        }
+        assertTrue(transactions.isEmpty())
+    }
+
+    @Test
+    fun `확정 가격을 저장해 외부 조회 실패 후에도 체결과 보유 평가를 유지한다`() {
+        stubRepositories("")
+        seedActiveSession()
+        val repository = mockk<GamePriceSnapshotRepository>()
+        val prices = mutableMapOf<String, GamePriceSnapshot>()
+        every { repository.findById(any()) } answers { Optional.ofNullable(prices[firstArg<String>()]) }
+        every { repository.save(any()) } answers { firstArg<GamePriceSnapshot>().also { prices[it.id] = it } }
+        val cached = GameService(briefingRepository, newsArticleRepository, gameSessionRepository, gameTransactionRepository, stockService, repository)
+        every { stockService.fetchPriceHistory("AAPL", StockRange.SIX_MONTH) } returns StockPriceHistory("AAPL", listOf(StockPricePoint("2026-10-01T00:00:00Z", BigDecimal("110"))))
+        val preview = cached.preview("device-a", GameInstrumentType.STOCK, "AAPL", GameTradeAction.BUY, BigDecimal.TEN, 0)
+        every { stockService.fetchPriceHistory("AAPL", StockRange.SIX_MONTH) } throws IllegalStateException("provider down")
+        val bought = cached.trade("device-a", GameInstrumentType.STOCK, "AAPL", GameTradeAction.BUY, BigDecimal.TEN, "cached-order", 0, preview.unitPrice)
+        assertEquals(BigDecimal("1100"), bought.holdings.single().value)
+        assertEquals(BigDecimal("10000000.00"), cached.getCurrentTurn("device-a").portfolioValue)
+        assertFailsWith<ValidationException> { cached.nextTurn("device-a", 0) }
+        assertEquals(0, cached.getCurrentTurn("device-a").turnIndex)
+        assertEquals(BigDecimal.TEN, cached.getCurrentTurn("device-a").holdings.single().quantity)
+        every { stockService.fetchPriceHistory("AAPL", StockRange.SIX_MONTH) } returns StockPriceHistory("AAPL", listOf(StockPricePoint("2026-10-02T00:00:00Z", BigDecimal("120"))))
+        val next = cached.nextTurn("device-a", 0)
+        assertEquals(BigDecimal("100"), next.turnChange)
+        assertEquals(BigDecimal("10000100.00"), next.portfolioValue)
+        assertEquals(1, transactions.size)
+    }
+
+    @Test
+    fun `가상 게임 거래와 다음 턴은 외부 시세와 브리핑 조회를 호출하지 않는다`() {
+        stubRepositories("")
+        val started = service.startGame("device-a", GameDifficulty.NORMAL, false)
+        val price = started.stockPrices.getValue("AURA")
+        val bought = service.trade("device-a", GameInstrumentType.STOCK, "AURA", GameTradeAction.BUY, BigDecimal.TEN, "virtual-order", 0, price)
+        assertEquals(BigDecimal("10000000.00"), bought.portfolioValue)
+        clearMocks(gameTransactionRepository, answers = false)
+        val next = service.nextTurn("device-a", 0)
+        verify(exactly = 1) { gameTransactionRepository.findBySessionIdAndTurnIndexLessThanEqual(any(), any()) }
+        assertEquals(BigDecimal.TEN, next.holdings.single().quantity)
+        assertTrue(next.portfolioValue!! > BigDecimal.ZERO)
+        assertTrue(next.news.all { it.link.isEmpty() && it.title.startsWith("[가상 뉴스]") })
+        assertEquals(next.stockPrices, service.getCurrentTurn("device-a").stockPrices)
+        assertTrue(next.briefing.recommendedStocksRaw!!.isNotBlank())
+        verify(exactly = 0) { stockService.fetchPriceHistory(any(), any()) }
+        verify(exactly = 0) { briefingRepository.findByBriefingDate(any()) }
     }
 }

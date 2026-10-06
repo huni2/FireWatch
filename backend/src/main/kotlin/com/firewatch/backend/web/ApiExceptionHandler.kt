@@ -14,6 +14,21 @@ data class ErrorResponse(val error: ErrorBody)
 @RestControllerAdvice
 class ApiExceptionHandler {
     private val log = LoggerFactory.getLogger(ApiExceptionHandler::class.java)
+    // Missing endpoints/static resources must not be disguised as a database/server failure.
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException::class)
+    fun handleHttpStatus(ex: org.springframework.web.server.ResponseStatusException): ResponseEntity<ErrorResponse> =
+        ResponseEntity.status(ex.statusCode).body(ErrorResponse(ErrorBody(
+            if (ex.statusCode.value() == 404) "NOT_FOUND" else "HTTP_ERROR",
+            if (ex.statusCode.value() == 404) "요청한 API 또는 페이지가 없습니다." else "요청을 처리할 수 없습니다.",
+        )))
+
+    @ExceptionHandler(org.springframework.dao.OptimisticLockingFailureException::class)
+    fun conflict(): ResponseEntity<ErrorResponse> = ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(ErrorResponse(ErrorBody("CONFLICT", "데이터가 다른 화면에서 변경되었습니다. 새로고침 후 다시 저장해주세요.")))
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException::class)
+    fun integrity(): ResponseEntity<ErrorResponse> = ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(ErrorResponse(ErrorBody("CONFLICT", "요청이 다른 변경과 충돌했습니다. 새로고침 후 확인해주세요.")))
 
     @ExceptionHandler(ApiException::class)
     fun handleApiException(ex: ApiException): ResponseEntity<ErrorResponse> =

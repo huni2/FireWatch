@@ -20,13 +20,15 @@ import java.time.Instant
 // 없어짐 — 예전 SETTINGS_API_KEY 노출 문제가 이 구조로 자연히 해소됨, ADR 0004는 폐기).
 data class SettingsUpdateCommand(
     val deviceId: String,
-    val pushTime: String,
-    val interestKeywords: List<String>,
-    val watchedStocks: List<String> = emptyList(),
+    val pushTime: String? = null,
+    val interestKeywords: List<String>? = null,
+    val watchedStocks: List<String>? = null,
     val fcmToken: String? = null,
     val webPushSubscription: WebPushSubscription? = null,
     override val clientIp: String?,
-) : HasClientIp
+) : HasClientIp {
+    override fun toString() = "설정 일부 변경"
+}
 
 @Service
 class SettingsService(
@@ -39,7 +41,7 @@ class SettingsService(
         // Kotlin의 `List<@Pattern String>` 타입-인자 애노테이션은 Jakarta Bean Validation이 실제로
         // 검증하지 않는다(2026-08-21 실측 확인 — 프로덕션에 유효하지 않은 값이 그대로 저장됨). 그래서
         // 컨테이너 요소 검증은 여기서 직접 한다.
-        val invalidTickers = command.watchedStocks.filterNot { TICKER_PATTERN.matches(it) }
+        val invalidTickers = command.watchedStocks.orEmpty().filterNot { TICKER_PATTERN.matches(it) }
         if (invalidTickers.isNotEmpty()) {
             throw ValidationException(
                 "입력값이 올바르지 않습니다.",
@@ -48,9 +50,12 @@ class SettingsService(
         }
 
         val settings = identityResolver.resolveForDevice(command.deviceId)
-        settings.pushTime = command.pushTime
-        settings.interestKeywordsRaw = command.interestKeywords.toCommaSeparated()
-        settings.watchedStocksRaw = command.watchedStocks.toCommaSeparated()
+        command.pushTime?.let { settings.pushTime = it }
+        command.interestKeywords?.let {
+            if (it.any { keyword -> keyword.isBlank() || keyword.length > 30 || keyword.contains(',') }) throw ValidationException("키워드는 1~30자이며 쉼표를 포함할 수 없습니다.", mapOf("interestKeywords" to "형식 확인"))
+            settings.interestKeywordsRaw = it.distinct().toCommaSeparated()
+        }
+        command.watchedStocks?.let { settings.watchedStocksRaw = it.distinct().toCommaSeparated() }
         if (!command.fcmToken.isNullOrBlank()) {
             val existingTokens = settings.fcmTokens()
             if (command.fcmToken !in existingTokens) {

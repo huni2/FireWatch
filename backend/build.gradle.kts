@@ -67,4 +67,6 @@ allOpen {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	systemProperty("firewatch.scheduler.cron", "-")
+	systemProperty("firewatch.market.collection-cron", "-")
 }

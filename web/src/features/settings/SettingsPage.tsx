@@ -7,6 +7,7 @@ import { useSettings } from './hooks/useSettings'
 import { useWebPushSubscription } from './hooks/useWebPushSubscription'
 import { ApiRequestError, updateSettings, type Settings } from '../../lib/api'
 import { SlowLoadingHint } from '../../components/SlowLoadingHint'
+import { OperatorPushSetup } from '../../components/OperatorPushSetup'
 import { useLatestBriefing } from '../dashboard/hooks/useLatestBriefing'
 import { BRAND_GREEN, SECTION_CARD_PROPS } from '../../lib/theme'
 
@@ -26,7 +27,6 @@ export function SettingsPage() {
   const latestBriefing = useLatestBriefing()
   const [pushTime, setPushTime] = useState<string>('08:00')
   const [keywords, setKeywords] = useState<string[]>([])
-  const [watchedStocks, setWatchedStocks] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
 
   // 서버(외부 시스템)에서 비동기로 도착한 값으로 편집 가능한 로컬 상태를 동기화 — 정당한 effect 용례.
@@ -34,7 +34,6 @@ export function SettingsPage() {
     if (data) {
       setPushTime(data.pushTime)
       setKeywords(data.interestKeywords)
-      setWatchedStocks(data.watchedStocks)
     }
   }, [data])
 
@@ -42,7 +41,7 @@ export function SettingsPage() {
     setSaving(true)
     try {
       // 관심 종목은 이 화면이 아니라 종목 화면에서 관리 — 여기서는 그대로 넘겨서 덮어쓰지 않는다.
-      await updateSettings({ pushTime, interestKeywords: keywords, watchedStocks })
+      await updateSettings({ pushTime, interestKeywords: keywords })
       message.success({ content: '설정을 저장했습니다.', icon: successIcon })
       reload()
     } catch (err) {
@@ -80,7 +79,7 @@ export function SettingsPage() {
           {error && <Alert type="error" message="설정을 불러오지 못했습니다" description={error.message} showIcon />}
 
           <Form layout="vertical">
-            <Form.Item label="푸시 수신 시간">
+            <Form.Item label="푸시 수신 시간 · 한국 시간(KST)" extra="발송 여부를 15분 간격으로 확인하므로 설정 시각보다 늦게 도착할 수 있습니다. 브리핑은 한국 시간 07시 이후 준비됩니다.">
               <TimePicker
                 value={dayjs(pushTime, 'HH:mm')}
                 format="HH:mm"
@@ -110,6 +109,7 @@ export function SettingsPage() {
       </Card>
 
       {data && <WebPushCard settings={data} onSubscribed={reload} />}
+      <OperatorPushSetup />
     </Space>
   )
 }
@@ -157,9 +157,6 @@ function WebPushCard({ settings, onSubscribed }: { settings: Settings; onSubscri
     try {
       const webPushSubscription = await subscribe()
       await updateSettings({
-        pushTime: settings.pushTime,
-        interestKeywords: settings.interestKeywords,
-        watchedStocks: settings.watchedStocks,
         webPushSubscription,
       })
       message.success({ content: '브라우저 알림을 켰습니다.', icon: successIcon })

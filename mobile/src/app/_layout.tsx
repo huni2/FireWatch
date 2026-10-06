@@ -1,3 +1,4 @@
+import tokens from '../../../shared/design-tokens.json'
 import '../global.css'
 
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
@@ -21,9 +22,11 @@ function AppContent() {
       <BottomSheetModalProvider>
         <Stack
           screenOptions={{
-            headerStyle: { backgroundColor: '#00754A' },
-            headerTintColor: '#ffffff',
-            headerTitleStyle: { fontWeight: '700' },
+            headerStyle: { backgroundColor: tokens.light.surface },
+            headerTintColor: tokens.light.text,
+            headerTitleStyle: { fontWeight: '800' },
+            contentStyle: { backgroundColor: tokens.light.canvas },
+            headerShadowVisible: false,
           }}
         >
           <Stack.Screen name="index" options={{ title: 'FireWatch' }} />

@@ -84,12 +84,12 @@ export function GoogleLinkButton({ linkedEmail, onLinked, onDeleted }: GoogleLin
     <Pressable
       onPress={() => promptAsync()}
       disabled={!request || linking}
-      className="flex-row items-center justify-center gap-2 rounded-full border border-neutral-300 py-3"
+      className="flex-row items-center justify-center gap-2 rounded-full border border-line bg-surface py-3"
     >
       {linking ? (
         <ActivityIndicator />
       ) : (
-        <Text className="text-base font-semibold text-neutral-700">Google 계정 연동</Text>
+        <Text className="text-base font-semibold text-muted">Google 계정 연동</Text>
       )}
     </Pressable>
   )

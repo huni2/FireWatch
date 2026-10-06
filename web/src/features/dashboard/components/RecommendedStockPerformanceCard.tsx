@@ -35,7 +35,7 @@ function PerformanceRows({ data }: { data: RecommendedStockPerformance[] }) {
             <Space size={8}>
               <Text strong>{item.stockName}</Text>
               <Text type="secondary" style={{ fontSize: 12 }}>
-                {item.briefingDate} 추천
+                {item.briefingDate} 기록
               </Text>
             </Space>
             <Text strong style={{ color }}>
@@ -57,7 +57,7 @@ export function RecommendedStockPerformanceCard({ data, loading, cachedData }: R
     return (
       <Card
         {...SECTION_CARD_PROPS}
-        title="AI 추천 성과"
+        title="선정 이력 · 가격 변화"
         extra={
           <Text type="secondary" style={{ fontSize: 12 }}>
             서버를 깨우는 중 — 최근 확인된 데이터예요
@@ -73,7 +73,7 @@ export function RecommendedStockPerformanceCard({ data, loading, cachedData }: R
 
   if (loading) {
     return (
-      <Card {...SECTION_CARD_PROPS} title="AI 추천 성과">
+      <Card {...SECTION_CARD_PROPS} title="선정 이력 · 가격 변화">
         <Skeleton active paragraph={{ rows: 2 }} />
       </Card>
     )
@@ -81,8 +81,8 @@ export function RecommendedStockPerformanceCard({ data, loading, cachedData }: R
 
   if (!data || data.length === 0) {
     return (
-      <Card {...SECTION_CARD_PROPS} title="AI 추천 성과">
-        <Empty description="아직 쌓인 추천 기록이 없어요 — 내일부터 하나씩 쌓입니다" />
+      <Card {...SECTION_CARD_PROPS} title="선정 이력 · 가격 변화">
+        <Empty description="아직 가격을 비교할 선정 기록이 없습니다." />
       </Card>
     )
   }
@@ -90,14 +90,15 @@ export function RecommendedStockPerformanceCard({ data, loading, cachedData }: R
   return (
     <Card
       {...SECTION_CARD_PROPS}
-      title="AI 추천 성과"
+      title="선정 이력 · 가격 변화"
       extra={
         <Text type="secondary" style={{ fontSize: 12 }}>
-          추천 시점 가격으로 가상매수했다면
+          기록 당시 가격 기준
         </Text>
       }
     >
       <PerformanceRows data={data} />
+      <Text type="secondary" style={{ display: 'block', marginTop: 12 }}>종목별 근거가 저장되지 않은 과거 이력도 포함합니다. 현재 투자 후보는 선정 이유·위험·근거 기사를 갖춘 기록에서 확인하세요.</Text>
     </Card>
   )
 }

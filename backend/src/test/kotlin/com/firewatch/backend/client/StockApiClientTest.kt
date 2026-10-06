@@ -14,6 +14,7 @@ class StockApiClientTest {
             "chart" to mapOf(
                 "result" to listOf(
                     mapOf(
+                        "meta" to mapOf("longName" to "Apple Inc.", "currency" to "USD", "regularMarketPrice" to 174.2, "regularMarketTime" to 1755820800L),
                         "timestamp" to listOf(1755734400L, 1755820800L), // 2025-08-21, 2025-08-22 (UTC)
                         "indicators" to mapOf(
                             "quote" to listOf(mapOf("close" to listOf(172.4, 173.1))),
@@ -26,6 +27,10 @@ class StockApiClientTest {
         val history = StockApiClient.parseHistory(response, "AAPL")
 
         assertEquals("AAPL", history.symbol)
+        assertEquals("Apple Inc.", history.companyName)
+        assertEquals("USD", history.currency)
+        assertEquals(BigDecimal("174.2"), history.quotePrice)
+        assertEquals("2025-08-22T00:00:00Z", history.quoteAt)
         assertEquals(2, history.points.size)
         assertEquals(BigDecimal("172.4"), history.points[0].close)
         assertEquals("2025-08-21T00:00:00Z", history.points[0].timestamp)

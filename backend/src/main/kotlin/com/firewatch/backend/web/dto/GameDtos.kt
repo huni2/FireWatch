@@ -6,6 +6,7 @@ import com.firewatch.backend.entity.GameSessionStatus
 import com.firewatch.backend.entity.GameTradeAction
 import com.firewatch.backend.service.GameHolding
 import com.firewatch.backend.service.GameTurnSnapshot
+import com.firewatch.backend.entity.GameTransaction
 import jakarta.validation.constraints.DecimalMin
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -25,6 +26,9 @@ data class GameTradeRequest(
     val action: GameTradeAction,
     @field:DecimalMin(value = "0.0001", message = "수량은 0보다 커야 합니다")
     val quantity: BigDecimal,
+    val requestId: String? = null,
+    val expectedTurnIndex: Int? = null,
+    val expectedPrice: BigDecimal? = null,
 )
 
 data class GameHoldingResponse(
@@ -32,7 +36,7 @@ data class GameHoldingResponse(
     val symbol: String?,
     val quantity: BigDecimal,
     val currentPrice: BigDecimal?,
-    val value: BigDecimal,
+    val value: BigDecimal?,
 )
 
 fun GameHolding.toResponse() = GameHoldingResponse(
@@ -43,8 +47,8 @@ fun GameHolding.toResponse() = GameHoldingResponse(
     value = value,
 )
 
-// briefing은 기존 BriefingResponse를 그대로 재사용 — 그 턴 날짜의 실제 뉴스·지표·AI추천종목이
-// 전부 이미 그 DTO에 들어있다.
+// 기존 BriefingResponse 계약을 재사용한다. 새 게임은 가상 자료,
+// simulation=false인 기존 세션은 보관된 과거 자료를 반환한다.
 data class GameTurnResponse(
     val sessionId: Long,
     val status: GameSessionStatus,
@@ -54,10 +58,21 @@ data class GameTurnResponse(
     val briefing: BriefingResponse,
     val holdings: List<GameHoldingResponse>,
     val cash: BigDecimal,
-    val portfolioValue: BigDecimal,
+    val portfolioValue: BigDecimal?,
     val startingCash: BigDecimal,
     val allowShortSelling: Boolean,
-    val returnPercent: BigDecimal,
+    val returnPercent: BigDecimal?,
+    val benchmarkReturnPercent: BigDecimal?,
+    val review: List<String>,
+    val transactions: List<GameTransactionResponse>,
+    val turnChange: BigDecimal?,
+    val simulation: Boolean,
+    val stockPrices: Map<String, BigDecimal>,
+    val marketEvents: List<com.firewatch.backend.service.GameMarketEvent>,
+    val turnContributions: List<com.firewatch.backend.service.GameTurnContribution>,
+    val assetHistories: List<com.firewatch.backend.service.GameAssetHistory> = emptyList(),
+    val gamePicks: List<com.firewatch.backend.service.GamePick> = emptyList(),
+    val priceDrivers: List<com.firewatch.backend.service.GamePriceDriver> = emptyList(),
 )
 
 fun GameTurnSnapshot.toResponse() = GameTurnResponse(
@@ -72,9 +87,22 @@ fun GameTurnSnapshot.toResponse() = GameTurnResponse(
     portfolioValue = portfolioValue,
     startingCash = startingCash,
     allowShortSelling = allowShortSelling,
-    returnPercent = if (startingCash > BigDecimal.ZERO) {
+    benchmarkReturnPercent = benchmarkReturnPercent,
+    review = review,
+    transactions = transactions.map { GameTransactionResponse(it.id!!, it.turnIndex, it.instrumentType, it.symbol, it.action, it.quantity, it.price, it.price.multiply(it.quantity)) },
+    turnChange = turnChange,
+    simulation = simulation,
+    stockPrices = stockPrices,
+    marketEvents = marketEvents,
+    turnContributions = turnContributions,
+    assetHistories = assetHistories,
+    gamePicks = gamePicks,
+    priceDrivers = priceDrivers,
+    returnPercent = if (portfolioValue != null && startingCash > BigDecimal.ZERO) {
         portfolioValue.subtract(startingCash).divide(startingCash, 4, RoundingMode.HALF_UP).multiply(BigDecimal(100))
     } else {
-        BigDecimal.ZERO
+        null
     },
 )
+
+data class GameTransactionResponse(val id: Long, val turnIndex: Int, val instrumentType: GameInstrumentType, val symbol: String?, val action: GameTradeAction, val quantity: BigDecimal, val price: BigDecimal, val total: BigDecimal)

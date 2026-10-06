@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { CollectionNotice } from './CollectionNotice'
 import { Layout, Switch } from 'antd'
 import {
   AuditOutlined,
@@ -30,11 +31,14 @@ interface NavItem {
 // WEB-12(2026-10-04) — "가이드"·"사용방법"이 각자 자리를 차지해 메뉴 8자리 중 2자리를 썼다는
 // 지적(2026-09-28)으로 "도움말" 하나로 통합(HelpPage 내부 탭으로 두 콘텐츠 모두 접근 가능).
 const CONTENT_ITEMS: NavItem[] = [
-  { key: '/', icon: <DashboardOutlined />, label: '대시보드' },
+  { key: '/', icon: <DashboardOutlined />, label: '내 포트폴리오' },
+  { key: '/candidates', icon: <FundOutlined />, label: '투자 후보' },
+  { key: '/briefing', icon: <ReadOutlined />, label: '브리핑' },
   { key: '/stocks', icon: <LineChartOutlined />, label: '종목' },
   { key: '/indices', icon: <FundOutlined />, label: '지수' },
   { key: '/news', icon: <ReadOutlined />, label: '뉴스' },
-  { key: '/game', icon: <TrophyOutlined />, label: '가상투자' },
+  { key: '/short-term', icon: <LineChartOutlined />, label: '단기 투자' },
+  { key: '/game', icon: <TrophyOutlined />, label: '가상투자 게임' },
   { key: '/guide', icon: <QuestionCircleOutlined />, label: '도움말' },
 ]
 
@@ -50,6 +54,7 @@ function TopNavLink({ item, active }: { item: NavItem; active: boolean }) {
   return (
     <Link
       to={item.key}
+      aria-current={active ? 'page' : undefined}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -77,48 +82,41 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Header
-        style={{
-          position: 'sticky',
-          insetBlockStart: 0,
-          zIndex: 10,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
-          paddingInline: 24,
-          overflowX: 'auto',
-          borderBottom: '1px solid var(--ant-color-border-secondary)',
-        }}
-      >
+      <Header className="site-header">
+        <div className="site-brand-row">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginInlineEnd: 16 }}>
           <img src="/favicon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
           <span style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.4, color: 'var(--ant-color-text)' }}>
             FireWatch
           </span>
         </div>
-        {CONTENT_ITEMS.map((item) => (
-          <TopNavLink key={item.key} item={item} active={location.pathname === item.key} />
-        ))}
         <div style={{ display: 'flex', marginInlineStart: 'auto', flexShrink: 0 }}>
           {ADMIN_ITEMS.map((item) => (
             <TopNavLink key={item.key} item={item} active={location.pathname === item.key} />
           ))}
         </div>
         <Switch
+          aria-label="다크 모드"
           checked={darkMode}
           onChange={onToggleDarkMode}
           checkedChildren={<MoonOutlined />}
           unCheckedChildren={<SunOutlined />}
           style={{ flexShrink: 0, marginInlineStart: 16 }}
         />
+        </div>
+        <nav className="site-navigation" aria-label="주요 메뉴">
+          {CONTENT_ITEMS.map((item) => <TopNavLink key={item.key} item={item} active={location.pathname === item.key} />)}
+        </nav>
       </Header>
-      <Content style={{ padding: 24, maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
+      <Content className="app-content" style={{ maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
+        <CollectionNotice />
         <Outlet />
       </Content>
       <Footer style={{ textAlign: 'center', fontSize: 13, display: 'flex', justifyContent: 'center', gap: 16 }}>
         <Link to="/guide" style={{ color: 'var(--ant-color-text-secondary)' }}>
           이용안내
         </Link>
+        <a href="/third-party-notices.txt" style={{ color: 'var(--ant-color-text-secondary)' }}>오픈소스 고지</a>
         <Link to="/privacy" style={{ color: 'var(--ant-color-text-secondary)' }}>
           개인정보처리방침
         </Link>

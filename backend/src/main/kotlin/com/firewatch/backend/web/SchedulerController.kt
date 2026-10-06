@@ -5,6 +5,7 @@ import com.firewatch.backend.repository.BriefingRepository
 import com.firewatch.backend.repository.UserSettingsRepository
 import com.firewatch.backend.service.PushService
 import com.firewatch.backend.service.SchedulerJob
+import com.firewatch.backend.service.MarketCollectionService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -38,6 +39,7 @@ class SchedulerController(
     @Value("\${firewatch.scheduler.timezone}") private val schedulerTimezone: String,
     @Value("\${firewatch.scheduler.poll-window-minutes}") private val pollWindowMinutes: Long,
     @Value("\${firewatch.scheduler.generate-after}") private val generateAfter: String,
+    private val marketCollection: MarketCollectionService,
 ) {
     private val triggerScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -67,6 +69,7 @@ class SchedulerController(
         val now = LocalTime.now(zone)
         val today = LocalDate.now(zone)
         val briefing = briefingRepository.findByBriefingDate(today)
+        triggerScope.launch { marketCollection.collectIfDue() }
 
         var triggered = false
         if (briefing == null) {

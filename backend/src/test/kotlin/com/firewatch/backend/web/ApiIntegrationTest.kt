@@ -38,6 +38,20 @@ class ApiIntegrationTest @Autowired constructor(
 ) {
     @LocalServerPort
     private var port: Int = 0
+    @Autowired private lateinit var settings: com.firewatch.backend.repository.UserSettingsRepository
+    @Autowired private lateinit var jdbc: org.springframework.jdbc.core.JdbcTemplate
+
+    @Test
+    fun `운영자 장애 푸시 수신자 등록은 관리 키와 기존 푸시 구독이 필요하다`() {
+        webTestClient.post().uri("/api/collection/operator").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isUnauthorized
+        webTestClient.post().uri("/api/collection/operator").header("X-API-Key", "test-key").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isEqualTo(409)
+        val operator = settings.findByDeviceId("operator-api-test")!!
+        operator.fcmTokensRaw = "operator-token"
+        settings.save(operator)
+        webTestClient.post().uri("/api/collection/operator").header("X-API-Key", "test-key").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isOk.expectBody().jsonPath("$.registered").isEqualTo(true)
+        kotlin.test.assertEquals(operator.id, jdbc.queryForObject("SELECT settings_id FROM collection_operator WHERE id=1", Long::class.java))
+        jdbc.update("DELETE FROM collection_operator")
+    }
 
     private val webTestClient: WebTestClient by lazy {
         WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
@@ -50,12 +64,47 @@ class ApiIntegrationTest @Autowired constructor(
     }
 
     @Test
-    fun `오늘자 브리핑이 없으면 latest는 404를 반환한다`() {
+    fun `저장된 브리핑이 없으면 latest는 404를 반환한다`() {
         webTestClient.get().uri("/api/briefings/latest")
             .exchange()
             .expectStatus().isNotFound
             .expectBody()
             .jsonPath("$.error.code").isEqualTo("NOT_FOUND")
+    }
+
+    @Test
+    fun `개별 추천 근거를 날짜별 저장 조회하며 과거 추천 원본은 삭제하거나 이유를 보충하지 않는다`() {
+        val today = LocalDate.now(java.time.ZoneId.of("Asia/Seoul"))
+        val old = briefingRepository.save(Briefing(briefingDate = today.minusDays(1), marketSummary = "과거 요약", recommendedStocksRaw = "삼성전자", dataSourceStatus = DataSourceStatus.NORMAL))
+        briefingRepository.save(Briefing(briefingDate = today, marketSummary = "현재 요약", recommendedStocksRaw = "삼성전자", dataSourceStatus = DataSourceStatus.NORMAL,
+            recommendationDetailsRaw = """[{"stockName":"삼성전자","reason":"제공된 반도체 기사 해석","risk":"실적 반영 확인","sourceNewsLinks":["https://example.com/news"]},{"stockName":"없는 종목","reason":"연결 안 됨","risk":"위험","sourceNewsLinks":[]}]"""))
+        webTestClient.get().uri("/api/briefings/latest").exchange().expectStatus().isOk.expectBody()
+            .jsonPath("$.recommendationDetails.length()").isEqualTo(1)
+            .jsonPath("$.recommendationDetails[0].reason").isEqualTo("제공된 반도체 기사 해석")
+        val persisted = briefingRepository.findById(old.id!!).get()
+        kotlin.test.assertEquals("삼성전자", persisted.recommendedStocksRaw)
+        kotlin.test.assertNull(persisted.recommendationDetailsRaw)
+        kotlin.test.assertEquals(2, briefingRepository.count())
+    }
+
+    @Test
+    fun `오늘 자료가 없어도 마지막 저장 자료와 지수를 유지하며 미래 자료는 제외한다`() {
+        val today = LocalDate.now(java.time.ZoneId.of("Asia/Seoul"))
+        briefingRepository.save(Briefing(briefingDate = today.minusDays(1), marketSummary = "저장된 요약", goldPrice = java.math.BigDecimal("2500"), recommendedStocksRaw = "삼성전자", dataSourceStatus = DataSourceStatus.NORMAL))
+        briefingRepository.save(Briefing(briefingDate = today.plusDays(1), marketSummary = "미래 자료", dataSourceStatus = DataSourceStatus.NORMAL))
+        repeat(2) {
+            webTestClient.get().uri("/api/briefings/latest").exchange().expectStatus().isOk.expectBody()
+                .jsonPath("$.briefingDate").isEqualTo(today.minusDays(1).toString())
+                .jsonPath("$.goldPrice").isEqualTo(2500)
+                .jsonPath("$.recommendedStocks[0]").isEqualTo("삼성전자")
+        }
+        kotlin.test.assertEquals(2, briefingRepository.count())
+    }
+
+    @Test
+    fun `없는 API는 데이터 오류인 500이 아니라 404를 반환한다`() {
+        webTestClient.get().uri("/api/missing-endpoint").exchange().expectStatus().isNotFound
+            .expectBody().jsonPath("$.error.code").isEqualTo("NOT_FOUND")
     }
 
     @Test

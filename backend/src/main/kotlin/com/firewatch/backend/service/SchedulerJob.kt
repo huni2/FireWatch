@@ -8,6 +8,7 @@ import com.firewatch.backend.entity.Briefing
 import com.firewatch.backend.entity.DataSourceStatus
 import com.firewatch.backend.entity.NewsArticle
 import com.firewatch.backend.entity.toCommaSeparated
+import com.firewatch.backend.entity.toRecommendationJson
 import com.firewatch.backend.repository.BriefingRepository
 import com.firewatch.backend.repository.NewsArticleRepository
 import com.firewatch.backend.web.UnauthorizedException
@@ -41,13 +42,15 @@ class SchedulerJob(
     private val newsArticleRepository: NewsArticleRepository,
     @Value("\${firewatch.settings.api-key}") private val expectedApiKey: String,
     @Value("\${firewatch.scheduler.timezone}") private val schedulerTimezone: String,
+    private val collectionJobs: CollectionJobRunner,
+    private val operationsPush: OperationsPushService,
 ) : AuditedComponent {
     override val auditEventType = AuditEventType.SCHEDULER
 
     private val log = LoggerFactory.getLogger(SchedulerJob::class.java)
 
     @Scheduled(cron = "\${firewatch.scheduler.cron}", zone = "\${firewatch.scheduler.timezone}")
-    fun runMorningBriefing() = executePipeline()
+    fun runMorningBriefing() { try { executePipeline() } finally { operationsPush.flush(java.time.Instant.now()) } }
 
     // Design Ref: §4.1 POST /api/scheduler/trigger — 디버그·QA용 수동 실행, 쓰기 API라 X-API-Key 요구(ADR 0004).
     // runMorningBriefing()을 this로 재호출하지 않고 별도 진입점으로 둔다 — Spring AOP는 같은 빈 안에서
@@ -57,18 +60,35 @@ class SchedulerJob(
         if (expectedApiKey.isBlank() || apiKey != expectedApiKey) {
             throw UnauthorizedException()
         }
-        executePipeline()
+        try { executePipeline() } finally { operationsPush.flush(java.time.Instant.now()) }
     }
 
     private fun executePipeline() {
+        val now = java.time.Instant.now()
+        val today = now.atZone(ZoneId.of(schedulerTimezone)).toLocalDate()
+        if (briefingRepository.findByBriefingDate(today) != null) return
+        var prepared: PreparedBriefing? = null
+        val outcome = collectionJobs.run("briefing:$today", now, fetch = { generateBriefing().also { prepared = it } }, persist = { result ->
+            val saved = briefingRepository.save(result.briefing)
+            val briefingId = saved.id ?: error("저장된 Briefing에 id가 없음")
+            newsArticleRepository.saveAll(result.news.map { article -> NewsArticle(briefingId = briefingId, title = article.title, link = article.link, description = article.description, pubDate = article.pubDate) })
+            CollectionWrite(1 + result.news.size)
+        })
+        // Recommendation price resolution calls external APIs, so it runs after commit.
+        val result = prepared?.gemini
+        if (outcome == CollectionOutcome.SUCCESS && !result?.recommendedStocks.isNullOrEmpty()) {
+            runCatching { recommendedStockSnapshotService.saveSnapshots(today, result.recommendedStocks, result.recommendedStockSymbols) }
+                .onFailure { log.warn("추천종목 스냅샷 저장 실패 — 브리핑 자체는 정상 저장됨", it) }
+        }
+    }
+
+    private data class PreparedBriefing(val briefing: Briefing, val news: List<com.firewatch.backend.client.NewsArticleResult>, val gemini: GeminiBriefingResult?)
+
+    private fun generateBriefing(): PreparedBriefing {
         // 컨테이너 기본 타임존(UTC로 추정)이 아니라 스케줄러와 같은 존을 명시적으로 써야 한다 —
         // KST 08:00은 UTC로 전날 23:00이라, 타임존 없이 LocalDate.now()를 쓰면 자동 실행 때마다
         // "오늘"이 하루 전 날짜로 계산돼 매번 스킵되는 버그가 있었다(2026-08-21 실측 발견).
         val today = LocalDate.now(ZoneId.of(schedulerTimezone))
-        if (briefingRepository.findByBriefingDate(today) != null) {
-            log.info("오늘($today)자 브리핑이 이미 존재해 스킵")
-            return
-        }
 
         val financialSnapshot = runCatching { financialDataService.fetchLatestSnapshot() }
             .onFailure { log.warn("금융 API 실패 — 해당 필드는 비운 채 진행", it) }
@@ -111,12 +131,12 @@ class SchedulerJob(
             "Gemini와 금융 API가 모두 실패해 브리핑을 생성할 수 없음"
         }
 
-        val briefing = briefingRepository.save(
-            Briefing(
+        val briefing = Briefing(
                 briefingDate = today,
                 marketSummary = geminiResult?.marketSummary
                     ?: "AI 브리핑 생성에 실패했습니다. 금/은/환율 정보만 제공됩니다.",
                 recommendedStocksRaw = geminiResult?.recommendedStocks?.toCommaSeparated(),
+                recommendationDetailsRaw = geminiResult?.recommendationDetails?.toRecommendationJson(),
                 trendingKeywordsRaw = geminiResult?.trendingKeywords?.toCommaSeparated(),
                 goldPrice = financialSnapshot?.goldPrice,
                 silverPrice = financialSnapshot?.silverPrice,
@@ -131,37 +151,8 @@ class SchedulerJob(
                 usBondYield10y = financialSnapshot?.usBondYield10y,
                 krBondYield10y = financialSnapshot?.krBondYield10y,
                 dataSourceStatus = if (geminiResult == null) DataSourceStatus.FALLBACK else DataSourceStatus.NORMAL,
-            ),
-        )
-        log.info("오늘($today)자 브리핑 저장 완료 (dataSourceStatus=${briefing.dataSourceStatus})")
-
-        val briefingId = briefing.id ?: error("저장된 Briefing에 id가 없음")
-        if (newsArticles.isNotEmpty()) {
-            newsArticleRepository.saveAll(
-                newsArticles.map { article ->
-                    NewsArticle(
-                        briefingId = briefingId,
-                        title = article.title,
-                        link = article.link,
-                        description = article.description,
-                        pubDate = article.pubDate,
-                    )
-                },
             )
-        }
-
-        // BE-13(2026-10-04) — "AI 추천을 왜 믿어야 하나"에 답을 주는 가상매매 트래킹용 스냅샷.
-        // 브리핑 저장 자체는 이미 끝났으니 실패해도 전체 파이프라인을 막지 않는다(다른 외부 API 호출과 동일 원칙).
-        val recommendedStocks = geminiResult?.recommendedStocks
-        if (!recommendedStocks.isNullOrEmpty()) {
-            runCatching {
-                recommendedStockSnapshotService.saveSnapshots(
-                    today,
-                    recommendedStocks,
-                    geminiResult.recommendedStockSymbols,
-                )
-            }.onFailure { log.warn("추천종목 스냅샷 저장 실패 — 브리핑 자체는 정상 저장됨", it) }
-        }
+        return PreparedBriefing(briefing, newsArticles, geminiResult)
         // 푸시 발송은 여기서 하지 않는다 — 공개 배포 전환(2026-09) 이후 사용자마다 pushTime이 달라서,
         // "생성"(여기, 하루 1회 전역)과 "발송"(사용자별 pushTime)을 분리했다. SchedulerController가
         // 매 폴링마다 PushService.notifyDueUsers()를 별도로 호출해 지금 시각이 자기 pushTime인

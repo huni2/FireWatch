@@ -10,6 +10,7 @@ interface KeywordInputProps {
   validate?: (value: string) => string | null
   /** false면 입력 필드를 숨기고 태그 목록만 보여준다 — 종목 화면(WEB-11)이 검색/직접입력 탭을 전환할 때 사용. */
   showInput?: boolean
+  labelForValue?: (value: string) => string
 }
 
 // Design Ref: §5.4 Settings 체크리스트 — 관심 키워드 추가(Enter)/삭제, 최대 20개. 종목 화면(관심 종목)에서도 재사용.
@@ -20,6 +21,7 @@ export function KeywordInput({
   placeholder = '키워드 입력 후 Enter',
   validate,
   showInput = true,
+  labelForValue,
 }: KeywordInputProps) {
   const [draft, setDraft] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -46,7 +48,7 @@ export function KeywordInput({
       <Space wrap>
         {value.map((keyword) => (
           <Tag key={keyword} closable onClose={() => onChange(value.filter((k) => k !== keyword))}>
-            {keyword}
+            {labelForValue?.(keyword) ?? keyword}
           </Tag>
         ))}
       </Space>
