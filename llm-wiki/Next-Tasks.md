@@ -16,6 +16,26 @@
 
 ## 열린 과제 — 백엔드(BE)
 
+### BE-17. legacy-owner-device 고정 문자열 로테이션 (사용자 결정 대기 — 세션이 임의로 손대지 않음)
+**무엇** — `web/src/lib/deviceId.ts`의 `LEGACY_OWNER_DEVICE_ID = 'legacy-owner-device'`가 오픈소스 클라이언트 번들에 그대로 박혀 있어, 사실상 "소유자 계정의 평문 비밀번호"처럼 노출돼 있다. 실측 확인 — `curl https://firewatch-backend-q3cv.onrender.com/api/settings -H "X-Device-Id: legacy-owner-device"`만 날리면 로그인 없이 실제 소유자의 관심 키워드·관심종목·웹푸시 구독 상태가 그대로 반환된다(읽기만 확인, 쓰기는 테스트 안 함).
+**왜** — 2026-10-06 사용자가 가져온 외부 코드 리뷰를 검증하던 중 실제로 재현 — 리뷰가 "새 방문자가 소유자 데이터에 접근"이라고 설명한 것과 달리, 실제 메커니즘은 "공개된 고정 문자열 자체가 자격증명"이라 더 심각함(신규 방문자뿐 아니라 그 문자열을 아는 누구나 매번 접근 가능). [[Decisions/0012-public-distribution-device-identity]]가 이 필드를 "기존 소유자 데이터 마이그레이션용 1회성 시드"로 설계했지만, 코드 경로 자체는 영구적으로 남아있다.
+**완료 기준** — ① DB의 `user_settings`(및 연관 테이블) 행의 `device_id`를 `legacy-owner-device`에서 새 무작위 값으로 변경, ② 소유자가 실제 쓰는 브라우저의 `localStorage.firewatch-device-id`를 그 새 값으로 갱신(세션이 자동화로 테스트한 브라우저 탭은 소유자의 실제 일상 브라우저가 아닐 수 있어, 소유자 본인 확인·조치가 필요), ③ `deviceId.ts`의 "localStorage 비어있으면 고정 문자열로 시드" 로직 자체를 제거(새 방문자는 항상 `generateId()` 무작위 ID를 받게). **세션이 프로덕션 데이터를 건드리는 위험한 작업이라 사용자 확인 없이 진행하지 않음 — 다음 세션에서 먼저 상의.**
+
+### BE-18. `/api/audit-logs` 인증 여부 결정
+**무엇** — 현재 `AuditLogController`엔 인증이 전혀 없어 누구나 전체 감사로그를 조회할 수 있다. 같은 날 평문 비밀값(API 키·ID 토큰) 저장 문제는 막았지만(아래 [[log]] 2026-10-06 참고), 엔드포인트 자체는 여전히 공개돼 있어 호출 패턴·타이밍 같은 운영 정보는 계속 노출된다.
+**왜** — `/api/scheduler/*`처럼 `X-API-Key`로 막을 수도 있지만, 그러면 현재 `AuditLogPage`(웹, 키 없이 호출 중)가 깨진다 — ADR 0012가 "클라이언트 번들에 공유 비밀 노출" 문제를 없애려고 설정 API에서 일부러 뺀 바로 그 패턴을 감사로그에 다시 들여오는 셈이라, 어떻게 인증할지(소유자가 매번 키 입력? 웹 전용 별도 비밀 경로?) 제품 결정이 먼저 필요함.
+**완료 기준** — 미정, 사용자와 방향 상의 후 착수.
+
+### BE-19. 푸시 발송 실패해도 `lastNotifiedDate`가 기록돼 당일 재시도가 막힘
+**무엇** — `PushService.notifyDueUsers`가 `sendToOne()` 결과(성공/실패)와 무관하게 모든 대상 행에 `settings.lastNotifiedDate = today`를 무조건 기록한다(`PushService.kt:72`). FCM/웹푸시가 그 순간 실패해도 "오늘 이미 보냈다"로 처리돼, 다음 폴링(15분 주기)에서 재시도되지 않는다.
+**왜** — 2026-10-06 외부 코드 리뷰로 발견, 코드로 재현 확인(실제 운영에서 발생했는지는 미확인 — 지금까지 발송 자체는 FALLBACK 없이 성공해온 것으로 보임).
+**완료 기준** — 실제 발송 성공 여부(`PushSendResult.successCount > 0`, 또는 채널별 성공)를 기준으로만 `lastNotifiedDate`를 갱신 — 전부 실패한 행은 다음 폴링에서 재시도 가능해야 함.
+
+### BE-20. 가상투자 게임, 개별 종목에 과거 가격이 없으면 미래 가격으로 대체되는 문제
+**무엇** — `GameService.resolveStockPriceAt()`이 턴 날짜 이전 가격이 하나도 없으면(`dated.filter { it.first <= date }`가 빈 결과) `dated.minByOrNull { it.first }` — 즉 조회된 전체 기간 중 가장 이른 가격으로 대체하는데, 이게 턴 날짜보다 미래일 수 있다(`GameService.kt:202-203`).
+**왜** — 2026-10-06 외부 코드 리뷰로 발견. 가상투자 게임의 "그 턴엔 그 시점에 실제로 있었던 가격만 쓴다"는 설계 원칙(BE-16)과 어긋남 — 상장 전·IPO 직후 종목처럼 턴 날짜 이전 데이터가 없는 edge case에서만 발생.
+**완료 기준** — 과거 가격이 전혀 없으면 미래 가격으로 조용히 대체하지 말고, 그 종목 거래를 거부(`ValidationException`)하거나 null로 처리해 거래가 아예 안 되게 한다.
+
 ### BE-12. Google OAuth 클라이언트 ID 발급 + GOOGLE_OAUTH_CLIENT_IDS 환경변수 설정 (계정 행동 끝, 실왕복 검증만 남음)
 **무엇** — Google Cloud Console에서 이 앱용 OAuth 2.0 클라이언트 ID(Android 앱)를 발급하고, Render 백엔드 환경변수 `GOOGLE_OAUTH_CLIENT_IDS`(쉼표 구분, `firewatch.google.oauth-client-ids`가 읽음)에 등록.
 **왜** — 공개 배포 전환(ADR 0012)으로 `GoogleIdTokenVerifierClient`가 ID 토큰의 audience를 검증하는데, 발급된 클라이언트 ID 없이는 실제 Google 로그인 왕복 자체가 불가능함.
@@ -35,9 +55,17 @@
 
 ## 열린 과제 — 웹(WEB)
 
-(현재 열린 과제 없음)
+### WEB-17. useApi가 404("아직 브리핑 없음")도 콜드스타트와 똑같이 89초간 재시도
+**무엇** — `web/src/lib/useApi.ts`가 모든 에러를 동일하게 취급해 `RETRY_DELAYS_MS`(누적 약 89초)만큼 재시도한 뒤에야 최종 에러를 보여준다. Render 무료 티어 콜드스타트(최대 90초+) 대응으로 의도적으로 설계됐지만(2026-08-23), "오늘 브리핑이 아직 생성 전"처럼 재시도해도 의미 없는 404까지 똑같이 오래 기다리게 한다.
+**왜** — 2026-10-06 외부 코드 리뷰로 발견, 코드로 재현 확인.
+**완료 기준** — HTTP 상태코드 기준으로 분기 — 404(아직 생성 전 등 재시도 무의미)는 즉시 에러로 보여주고, 5xx·네트워크 실패만 콜드스타트 재시도 대상으로 남긴다.
 
 ## 열린 과제 — 모바일(APP)
+
+### APP-12. 관심종목 저장 실패 시 롤백·에러 안내 없음
+**무엇** — `mobile/src/features/stocks/StocksScreen.tsx`의 `handleChange()`가 `setWatchedStocks(next)`로 먼저 화면을 낙관적으로 바꾼 뒤 `updateSettings()`를 try/catch 없이 호출한다. 저장이 실패해도 화면엔 이미 바뀐 값이 남고 에러 안내가 없다.
+**왜** — 2026-10-06 외부 코드 리뷰로 발견. 웹에는 이미 같은 버그가 있었고 고친 전례가 있다(2026-10-05, "종목 저장 실패 무음 버그 수정" — `StocksPage.handleChange`). 모바일엔 그 수정이 아직 안 들어감.
+**완료 기준** — 저장 실패 시 이전 `watchedStocks`로 롤백 + Toast 에러 안내(웹 `StocksPage`와 동일 패턴).
 
 ### APP-2. FCM 푸시 수신 핸들러 (코드 완료, 사용자의 EAS 연결 대기)
 **무엇** — Expo Notifications로 디바이스 토큰 등록·FCM 수신(FR-03). **BE-5 의존, 코드는 끝났고 완료 기준만 미충족.**
