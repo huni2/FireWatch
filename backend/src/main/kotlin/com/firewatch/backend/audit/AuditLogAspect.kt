@@ -61,7 +61,7 @@ class AuditLogAspect(
                 requestPayload = requestPayload,
                 // FALLBACK 사유가 없으면 실제 반환값을 요약한다(예: FCM 발송 건수) — 명세서 FR-07이 요구하는
                 // "발송 성공 수" 등을 개별 서비스가 감사로그를 직접 호출하지 않고도 얻게 하려는 의도.
-                responseSummary = fallbackReason ?: summarizeResult(result),
+                responseSummary = if (declaredEventType in setOf(AuditEventType.AUTH, AuditEventType.USER_SETTING, AuditEventType.PORTFOLIO, AuditEventType.GAME)) "개인 데이터 작업 완료" else fallbackReason ?: summarizeResult(result),
                 clientIp = clientIp,
             )
             return result

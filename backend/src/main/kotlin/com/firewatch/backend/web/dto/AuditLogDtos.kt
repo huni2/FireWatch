@@ -27,7 +27,9 @@ fun AuditLog.toResponse() = AuditLogResponse(
     actionName = actionName,
     status = status,
     executionTimeMs = executionTimeMs,
-    responseSummary = responseSummary,
+    // Historical rows may predate result redaction. The public endpoint must protect those too.
+    responseSummary = if (eventType in setOf(AuditEventType.AUTH, AuditEventType.USER_SETTING, AuditEventType.PORTFOLIO, AuditEventType.GAME))
+        "개인 데이터 관련 작업입니다. 상세 내용은 공개하지 않습니다." else responseSummary,
     createdAt = createdAt,
 )
 

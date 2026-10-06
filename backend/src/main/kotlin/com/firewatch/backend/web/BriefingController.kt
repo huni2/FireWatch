@@ -44,8 +44,10 @@ class BriefingController(
     ): List<BriefingResponse> = withContext(Dispatchers.IO) {
         val effectiveTo = to ?: LocalDate.now(ZoneId.of(schedulerTimezone))
         val effectiveFrom = from ?: effectiveTo.minusDays(DEFAULT_HISTORY_DAYS)
-        briefingRepository.findByBriefingDateBetweenOrderByBriefingDateDesc(effectiveFrom, effectiveTo)
-            .map { it.toResponse(newsArticleRepository.findByBriefingId(it.id!!)) }
+        val briefings = briefingRepository.findByBriefingDateBetweenOrderByBriefingDateDesc(effectiveFrom, effectiveTo)
+        val news = if (briefings.isEmpty()) emptyMap() else
+            newsArticleRepository.findByBriefingIdIn(briefings.map { it.id!! }).groupBy { it.briefingId }
+        briefings.map { it.toResponse(news[it.id].orEmpty()) }
     }
 
     companion object {

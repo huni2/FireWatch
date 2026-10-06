@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface NewsArticleRepository : JpaRepository<NewsArticle, Long> {
     fun findByBriefingId(briefingId: Long): List<NewsArticle>
+    fun findByBriefingIdIn(briefingIds: List<Long>): List<NewsArticle>
 }

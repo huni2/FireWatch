@@ -13,12 +13,38 @@ import java.time.LocalDate
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = ["spring.datasource.url=jdbc:h2:mem:portfolio-test;DB_CLOSE_DELAY=-1", "firewatch.scheduler.cron=-"])
 class PortfolioApiIntegrationTest {
+    @Autowired private lateinit var auditLogs: com.firewatch.backend.repository.AuditLogRepository
     @Autowired private lateinit var briefings: BriefingRepository
     @Autowired private lateinit var gameSessions: com.firewatch.backend.repository.GameSessionRepository
     @Autowired private lateinit var feed: com.firewatch.backend.repository.NewsFeedRepository
     @Autowired private lateinit var briefingNews: com.firewatch.backend.repository.NewsArticleRepository
     @LocalServerPort private var port: Int = 0
     private val client get() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
+
+    @Test
+    fun `공개 감사 로그는 이전에 저장한 개인 포트폴리오 내용도 노출하지 않는다`() {
+        auditLogs.save(com.firewatch.backend.entity.AuditLog(eventType = com.firewatch.backend.entity.AuditEventType.PORTFOLIO,
+            actionName = "privatePortfolio", status = com.firewatch.backend.entity.AuditStatus.SUCCESS,
+            responseSummary = "private-owner-secret: holdings=123456", requestPayload = "private-request"))
+        client.get().uri("/api/audit-logs?eventType=PORTFOLIO").exchange().expectStatus().isOk.expectBody()
+            .consumeWith { result ->
+                val body = String(result.responseBody!!)
+                kotlin.test.assertFalse(body.contains("private-owner-secret"))
+                kotlin.test.assertFalse(body.contains("private-request"))
+                kotlin.test.assertTrue(body.contains("상세 내용은 공개하지 않습니다"))
+            }
+    }
+
+    @Test
+    fun `이력의 일괄 뉴스 조회는 날짜별 기사를 섞거나 누락하지 않는다`() {
+        val first = briefings.save(Briefing(briefingDate = LocalDate.of(2024, 2, 1), marketSummary = "첫 날짜", dataSourceStatus = com.firewatch.backend.entity.DataSourceStatus.NORMAL))
+        val second = briefings.save(Briefing(briefingDate = LocalDate.of(2024, 2, 2), marketSummary = "둘째 날짜", dataSourceStatus = com.firewatch.backend.entity.DataSourceStatus.NORMAL))
+        briefingNews.save(com.firewatch.backend.entity.NewsArticle(briefingId = first.id!!, title = "첫 날짜 기사", link = "https://example.com/first"))
+        briefingNews.save(com.firewatch.backend.entity.NewsArticle(briefingId = second.id!!, title = "둘째 날짜 기사", link = "https://example.com/second"))
+        client.get().uri("/api/briefings?from=2024-02-01&to=2024-02-02").exchange().expectStatus().isOk.expectBody()
+            .jsonPath("$[0].news[0].title").isEqualTo("둘째 날짜 기사")
+            .jsonPath("$[1].news[0].title").isEqualTo("첫 날짜 기사")
+    }
 
     @Test
     fun `실제 뉴스 보관함은 과거 브리핑과 RSS를 날짜 키워드로 검색하고 삭제하지 않는다`() {
