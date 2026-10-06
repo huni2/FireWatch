@@ -47,10 +47,10 @@ flowchart TB
     WEB["Web — Cloudflare Pages<br/>(React + Vite + AntD)"] -->|"REST API"| BE
     DB -->|"조회"| WEB
 
-    PUSH -->|"FCM"| APP["Mobile (계획, Expo)"]
+    PUSH -->|"FCM"| APP["Mobile (Expo, 주요 화면 구현)"]
 ```
 
-세 서비스(`backend/`, `web/`, `mobile/`) 중 backend·web은 배포 완료 상태이고, mobile은 스캐폴딩 전이다. 감사로그는 `AuditLogAspect`가 스케줄러·외부 API 호출·푸시 발송을 전부 가로채 `SUCCESS`/`WARNING`/`FALLBACK`/`FAILURE` 4개 상태 중 하나로 자동 기록한다 — 어느 코드에도 로깅 코드를 직접 흩뿌리지 않는다.
+세 서비스(`backend/`, `web/`, `mobile/`) 중 backend·web은 배포 완료 상태이고, mobile은 Expo 기반으로 주요 화면·설정·알림 등록까지 구현했으며 스토어 출시는 준비 중이다. 감사로그는 `AuditLogAspect`가 스케줄러·외부 API 호출·푸시 발송을 전부 가로채 `SUCCESS`/`WARNING`/`FALLBACK`/`FAILURE` 4개 상태 중 하나로 자동 기록한다 — 어느 코드에도 로깅 코드를 직접 흩뿌리지 않는다.
 
 ## 기술 스택과 선택 이유
 
