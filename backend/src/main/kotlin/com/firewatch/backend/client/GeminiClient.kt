@@ -13,6 +13,10 @@ data class GeminiBriefingResult(
     // 2026-09-01 — 관심 키워드 추천(BE-11). 기본값 필수: 기존 테스트가 named-arg로 이 필드 없이
     // 생성 중이라 기본값이 없으면 전부 깨진다.
     val trendingKeywords: List<String> = emptyList(),
+    // 2026-10-06 — 추천종목 이름→티커 변환을 Yahoo 검색(한글 미지원, 중소형주 인덱스 누락)에만 맡기면
+    // "현재가 조회 실패"가 잦았다(RecommendedStockPerformanceService). Gemini가 프롬프트에서 함께 준
+    // 티커를 이름→심볼 맵으로 들고 있다가 RecommendedStockSnapshotService가 우선 시도하게 한다.
+    val recommendedStockSymbols: Map<String, String> = emptyMap(),
 ) {
     // fetchTodaysBriefing()이 이 값을 그대로 반환해, AuditLogAspect의 감사로그 응답요약에
     // "GeminiBriefingResult(marketSummary=..., recommendedStocks=[...])" 같은 필드명 래퍼가 그대로
@@ -91,6 +95,9 @@ class GeminiClient(
         private const val TIMEOUT_SECONDS = 60L
         private val STOCK_LINE_REGEX = Regex("""^추천\s*종목\s*[:：]\s*(.+)$""", RegexOption.MULTILINE)
         private val KEYWORD_LINE_REGEX = Regex("""^핵심\s*키워드\s*[:：]\s*(.+)$""", RegexOption.MULTILINE)
+        // "삼성전자(005930.KS)"에서 이름·티커를 분리. 괄호가 없으면(모델이 티커를 못 줬으면) 전체를
+        // 이름으로 보고 심볼은 비워둔다 — 기존 "추천종목: 삼성전자" 형식과도 호환.
+        private val STOCK_ENTRY_REGEX = Regex("""^(.+?)\((.+?)\)$""")
 
         internal fun buildPrompt(
             goldPrice: BigDecimal?,
@@ -140,9 +147,12 @@ class GeminiClient(
                 2. 위 뉴스와 시세 흐름을 참고해 관심 가질 만한 테마주나 섹터를 2~3개 추천하고 간단한 이유를 붙여줘
                    — 실시간 시세 조회 없이 일반적인 상관관계 수준의 참고용 추천이라는 점을 자연스럽게 녹여줘.
                 3. 마지막 두 줄에는 아래 두 형식을 각각 정확히 지켜서 딱 한 줄씩 추가해줘(다른 설명 없이) —
-                   첫 줄은 위에서 언급한 구체적인 종목명만 쉼표로 구분, 둘째 줄은 위 뉴스에서 오늘 자주
-                   등장한 핵심 키워드나 이슈 3~5개를 쉼표로 구분:
-                   추천종목: 삼성전자, SK하이닉스
+                   첫 줄은 위에서 언급한 구체적인 종목명 뒤에 괄호로 정확한 티커를 붙여 쉼표로 구분해줘
+                   (국내는 코스피 .KS·코스닥 .KQ 접미사를 붙인 종목코드, 해외는 영문 티커 그대로).
+                   실제로 거래소에 상장돼 매매 가능한 종목만 추천하고, 티커를 확신할 수 없으면 그 종목은
+                   추천에서 빼줘. 둘째 줄은 위 뉴스에서 오늘 자주 등장한 핵심 키워드나 이슈 3~5개를
+                   쉼표로 구분:
+                   추천종목: 삼성전자(005930.KS), SK하이닉스(000660.KS)
                    핵심키워드: 반도체, 금리인하, 환율
             """.trimIndent()
         }
@@ -163,11 +173,18 @@ class GeminiClient(
             // 구조화하고 본문에서는 뺀다. 형식을 안 지키면(정규식 매칭 실패) 그냥 빈 리스트로 떨어진다 —
             // 크래시 없이 열화되는 기존 추천종목과 동일한 방식.
             val stockLine = STOCK_LINE_REGEX.find(text)
-            val recommendedStocks = stockLine?.groupValues?.get(1)
+            val stockEntries = stockLine?.groupValues?.get(1)
                 ?.split(",", "、")
                 ?.map { it.trim() }
                 ?.filter { it.isNotEmpty() }
                 ?: emptyList()
+            val recommendedStocks = stockEntries.map { entry -> STOCK_ENTRY_REGEX.find(entry)?.groupValues?.get(1)?.trim() ?: entry }
+            val recommendedStockSymbols = stockEntries.mapNotNull { entry ->
+                val match = STOCK_ENTRY_REGEX.find(entry) ?: return@mapNotNull null
+                val name = match.groupValues[1].trim()
+                val symbol = match.groupValues[2].trim()
+                if (name.isEmpty() || symbol.isEmpty()) null else name to symbol
+            }.toMap()
             val keywordLine = KEYWORD_LINE_REGEX.find(text)
             val trendingKeywords = keywordLine?.groupValues?.get(1)
                 ?.split(",", "、")
@@ -183,6 +200,7 @@ class GeminiClient(
                 marketSummary = marketSummary,
                 recommendedStocks = recommendedStocks,
                 trendingKeywords = trendingKeywords,
+                recommendedStockSymbols = recommendedStockSymbols,
             )
         }
     }

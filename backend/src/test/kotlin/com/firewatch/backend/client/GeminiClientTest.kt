@@ -75,6 +75,26 @@ class GeminiClientTest {
     }
 
     @Test
+    fun `추천종목에 괄호로 티커가 붙어 있으면 이름과 심볼을 분리한다`() {
+        val response = mapOf(
+            "candidates" to listOf(
+                mapOf(
+                    "content" to mapOf(
+                        "parts" to listOf(
+                            mapOf("text" to "코스피는 반도체 강세.\n추천종목: 삼성전자(005930.KS), 메타(META)"),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val result = GeminiClient.parseResponse(response)
+
+        assertEquals(listOf("삼성전자", "메타"), result.recommendedStocks)
+        assertEquals(mapOf("삼성전자" to "005930.KS", "메타" to "META"), result.recommendedStockSymbols)
+    }
+
+    @Test
     fun `추천종목 줄이 없으면 빈 목록이고 본문은 그대로다`() {
         val response = mapOf(
             "candidates" to listOf(
