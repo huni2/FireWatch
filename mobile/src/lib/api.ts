@@ -9,6 +9,10 @@ export interface Settings {
   interestKeywords: string[]
   watchedStocks: string[]
   updatedAt: string
+  // Google 계정에 연동된 행이면 그 이메일, 아니면 null(2026-10-06 추가) — 서버가 확인한 연동
+  // 상태라 앱을 재실행해도 그대로 유지된다(이전엔 GoogleLinkButton 내부 state로만 추적해 재실행
+  // 때마다 "연동 안 됨"으로 보이던 버그가 있었음).
+  linkedEmail: string | null
 }
 
 export type DataSourceStatus = 'NORMAL' | 'FALLBACK'
@@ -93,6 +97,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiRequestError(apiError, response.status)
   }
 
+  if (response.status === 204) {
+    return undefined as T
+  }
   return (await response.json()) as T
 }
 
@@ -124,6 +131,13 @@ export async function linkGoogleAccount(idToken: string): Promise<Settings> {
     headers: { 'X-Device-Id': deviceId },
     body: JSON.stringify({ idToken }),
   })
+}
+
+// Play 스토어 계정 삭제 요건(2026-10-06) — 연동된 계정·공유 설정을 서버에서 완전히 삭제한다.
+// 기기 자체(익명 상태)는 남고, 다음 설정 조회부터는 새 익명 행으로 다시 시작한다.
+export async function deleteAccount(): Promise<void> {
+  const deviceId = await getDeviceId()
+  await request<void>('/api/auth/account', { method: 'DELETE', headers: { 'X-Device-Id': deviceId } })
 }
 
 // fcmToken만 새로 등록하고 기존 pushTime/keywords/watchedStocks는 그대로 유지 — 호출부가

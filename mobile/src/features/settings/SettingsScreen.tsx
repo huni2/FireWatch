@@ -25,6 +25,7 @@ export function SettingsScreen() {
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
   const [showPicker, setShowPicker] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [linkedEmail, setLinkedEmail] = useState<string | null>(null)
 
   // 서버(외부 시스템)에서 비동기로 도착한 값으로 편집 가능한 로컬 상태를 동기화 — web/SettingsPage.tsx와
   // 동일한 정당한 effect 용례(React Compiler 린트가 일반적인 setState-in-effect 안티패턴과 구분 못 함).
@@ -34,6 +35,7 @@ export function SettingsScreen() {
       setPushTime(settings.pushTime)
       setKeywords(settings.interestKeywords)
       setWatchedStocks(settings.watchedStocks)
+      setLinkedEmail(settings.linkedEmail)
     }
   }, [settings])
 
@@ -43,6 +45,12 @@ export function SettingsScreen() {
     setPushTime(settings.pushTime)
     setKeywords(settings.interestKeywords)
     setWatchedStocks(settings.watchedStocks)
+    setLinkedEmail(settings.linkedEmail)
+  }
+
+  // 계정 삭제(2026-10-06, Play 스토어 요건) 후 이 기기는 다시 익명 상태 — 연동 전 표시로 되돌린다.
+  function handleDeleted() {
+    setLinkedEmail(null)
   }
 
   function handleTimeChange(event: DateTimePickerEvent, date?: Date) {
@@ -117,7 +125,7 @@ export function SettingsScreen() {
 
       <View className="gap-2">
         <Text className="text-sm font-semibold text-neutral-500">계정 (선택)</Text>
-        <GoogleLinkButton onLinked={handleLinked} />
+        <GoogleLinkButton linkedEmail={linkedEmail} onLinked={handleLinked} onDeleted={handleDeleted} />
         <Text className="text-xs text-neutral-400">
           연동하면 여러 기기에서 같은 설정을 쓸 수 있습니다. 연동하지 않아도 이 기기에서 계속 쓸 수 있습니다.
         </Text>
