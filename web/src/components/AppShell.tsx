@@ -115,7 +115,10 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
       <Content style={{ padding: 24, maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
         <Outlet />
       </Content>
-      <Footer style={{ textAlign: 'center', fontSize: 13 }}>
+      <Footer style={{ textAlign: 'center', fontSize: 13, display: 'flex', justifyContent: 'center', gap: 16 }}>
+        <Link to="/guide" style={{ color: 'var(--ant-color-text-secondary)' }}>
+          이용안내
+        </Link>
         <Link to="/privacy" style={{ color: 'var(--ant-color-text-secondary)' }}>
           개인정보처리방침
         </Link>
