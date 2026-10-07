@@ -9,6 +9,7 @@ import { useWebPushSubscription } from './hooks/useWebPushSubscription'
 import { ApiRequestError, updateSettings, type Settings } from '../../lib/api'
 import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 import { OperatorPushSetup } from '../../components/OperatorPushSetup'
+import { CollectionNotice } from '../../components/CollectionNotice'
 import { useIsOperator } from '../../lib/operatorAccess'
 import { useLatestBriefing } from '../dashboard/hooks/useLatestBriefing'
 import { BRAND_GREEN, SECTION_CARD_PROPS } from '../../lib/theme'
@@ -31,6 +32,7 @@ export function SettingsPage() {
   const [pushTime, setPushTime] = useState<string>('08:00')
   const [keywords, setKeywords] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState(false)
 
   // 서버(외부 시스템)에서 비동기로 도착한 값으로 편집 가능한 로컬 상태를 동기화 — 정당한 effect 용례.
   useEffect(() => {
@@ -114,6 +116,7 @@ export function SettingsPage() {
 
       {data && <WebPushCard settings={data} onSubscribed={reload} />}
       {isOperator && <OperatorPushSetup />}
+      {isOperator && <details onToggle={event => setDiagnosticsOpen(event.currentTarget.open)}><summary>운영자 수집 상태 확인</summary>{diagnosticsOpen && <CollectionNotice />}</details>}
     </Space>
   )
 }
