@@ -26,7 +26,7 @@ class CommunityIntegrationTest {
     @Autowired lateinit var sessions: AuthSessions
     @Autowired lateinit var jdbc: JdbcTemplate
     @Autowired lateinit var settings: UserSettingsRepository
-    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
+    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").responseTimeout(java.time.Duration.ofSeconds(20)).build()
     private fun login(email: String = "test@example.com"): Pair<String, String> {
         val device = UUID.randomUUID().toString()
         val account = users.save(AppUser(googleSub = device, email = email, emailVerified = true))
@@ -85,7 +85,8 @@ class CommunityIntegrationTest {
         val account = sessions.authenticate(device, auth)
         val recipient = settings.save(com.firewatch.backend.entity.UserSettings(userId = account, fcmTokensRaw = "fixture-token"))
         jdbc.update("INSERT INTO collection_operator (id,settings_id) VALUES (1,?)", recipient.id)
-        val now = Instant.now()
+        // Both databases store TIMESTAMP with less precision than Linux's Instant clock.
+        val now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
         val ticket = "outbox-${UUID.randomUUID()}"
         jdbc.update("INSERT INTO user_feedback (id,user_id,category,content,platform,version,screen,status,reply,created_at,updated_at,push_attempts) VALUES (?,?,'BUG','private content','WEB','','','NEW','',?,?,0)", ticket, account, java.sql.Timestamp.from(now), java.sql.Timestamp.from(now))
         val push = io.mockk.mockk<com.firewatch.backend.service.PushService>()

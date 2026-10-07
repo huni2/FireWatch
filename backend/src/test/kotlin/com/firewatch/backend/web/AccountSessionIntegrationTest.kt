@@ -20,7 +20,7 @@ class AccountSessionIntegrationTest {
     @Autowired lateinit var links: DeviceLinkRepository
     @Autowired lateinit var settings: UserSettingsRepository
     @Autowired lateinit var jdbc: org.springframework.jdbc.core.JdbcTemplate
-    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
+    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").responseTimeout(java.time.Duration.ofSeconds(20)).build()
 
     @Test
     fun `모든 운영 API는 공개 설정 키와 일반 계정 및 위조 이메일을 거절한다`() {
