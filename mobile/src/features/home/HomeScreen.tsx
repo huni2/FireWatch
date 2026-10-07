@@ -1,5 +1,4 @@
 import tokens from '../../../../shared/design-tokens.json'
-import { CollectionNotice } from '../../components/CollectionNotice'
 // 상단 세그먼트 탭(홈/종목/지수/뉴스)으로 화면을 전환하는 홈 화면 — 하단 탭·드로어 대신 사용자가 선택한
 // 네비게이션 구조(2026-10-04, APP-8~10). 알림 탭 시 바텀시트를 띄우려면 탭을 바꿔도 브리핑 데이터가
 // 유지돼야 해서, 브리핑 조회·바텀시트는 여기(최상위)에서 관리하고 각 탭 화면엔 표시만 맡긴다.
@@ -66,7 +65,6 @@ export function HomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: tokens.light.canvas }}>
       <StatusBar style="dark" />
-      <CollectionNotice />
       <Stack.Screen
         options={{
           headerStyle: { backgroundColor: tokens.light.surface },

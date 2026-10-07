@@ -123,7 +123,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         </nav>
       </Drawer>
       <Content className="app-content" style={{ maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
-        <CollectionNotice />
+        {isOperator && <CollectionNotice />}
         {(exploration || market) && <nav className="context-navigation" aria-label={exploration ? '기업 탐색 화면' : '시장 소식 화면'}>{(exploration ? [{ to: '/candidates', label: '추천·분야 탐색' }, { to: '/stocks', label: '회사 검색·시세' }, { to: '/short-term', label: '단기 관찰' }] : [{ to: '/news', label: '뉴스' }, { to: '/briefing', label: '브리핑' }, { to: '/indices', label: '시장 지표' }]).map(item => <Link key={item.to} to={item.to} aria-current={location.pathname === item.to ? 'page' : undefined}>{item.label}</Link>)}</nav>}
         <Outlet />
       </Content>

@@ -14,7 +14,7 @@ import java.time.Instant
 
 data class CollectionAlertResponse(val id: String, val category: String, val message: String, val paused: Boolean, val updatedAt: Instant)
 
-/** Public operational notices contain no device, portfolio, symbol or provider credentials. */
+/** Collection diagnostics are restricted to authenticated operators. */
 @RestController
 @RequestMapping("/api/collection")
 class CollectionStatusController(private val jdbc: JdbcTemplate, private val identity: SettingsIdentityResolver,
@@ -43,8 +43,13 @@ class CollectionStatusController(private val jdbc: JdbcTemplate, private val ide
         return push.testOperatorNotification(settings)
     }
     @GetMapping("/alerts")
-    fun alerts(): List<CollectionAlertResponse> = jdbc.query(
+    fun alerts(@RequestHeader("X-API-Key", required = false) apiKey: String?,
+               @RequestHeader("X-Device-Id", required = false) deviceId: String?,
+               @RequestHeader("Authorization", required = false) authorization: String?): List<CollectionAlertResponse> {
+        operatorAccess.requireOperator(deviceId, authorization, apiKey)
+        return jdbc.query(
         "SELECT id, category, message, paused, updated_at FROM collection_alerts WHERE resolved_at IS NULL ORDER BY updated_at DESC",
         { row, _ -> CollectionAlertResponse(row.getString("id"), row.getString("category"), row.getString("message"), row.getBoolean("paused"), row.getTimestamp("updated_at").toInstant()) },
-    ).distinctBy { it.category }
+        ).distinctBy { it.category }
+    }
 }

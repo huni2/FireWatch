@@ -3,12 +3,13 @@ import { Alert } from 'antd'
 import { Link } from 'react-router-dom'
 import { request } from '../lib/api'
 import { collectionNames, type CollectionAlert } from '../../../shared/collection'
+import { getOperatorKey } from '../lib/operatorAccess'
 
 export function CollectionNotice() {
   const [alerts, setAlerts] = useState<CollectionAlert[]>([])
   useEffect(() => {
     let active = true
-    const load = () => { if (document.visibilityState === 'visible') void request<CollectionAlert[]>('/api/collection/alerts')
+    const load = () => { if (document.visibilityState === 'visible') void request<CollectionAlert[]>('/api/collection/alerts', { headers: { 'X-API-Key': getOperatorKey() } })
       .then(data => { if (active && Array.isArray(data)) setAlerts(data) }).catch(() => {}) }
     load()
     document.addEventListener('visibilitychange', load)

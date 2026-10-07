@@ -3,8 +3,9 @@ import { request } from '../lib/api'
 import { useResource } from '../lib/useResource'
 import { collectionNames, type CollectionAlert } from '../../../shared/collection'
 import tokens from '../../../shared/design-tokens.json'
+import { getDeviceId } from '../lib/deviceId'
 
-const fetchAlerts = () => request<CollectionAlert[]>('/api/collection/alerts')
+const fetchAlerts = async () => request<CollectionAlert[]>('/api/collection/alerts', { headers: { 'X-Device-Id': await getDeviceId() } })
 export function CollectionNotice() {
   const { data } = useResource(fetchAlerts)
   if (!Array.isArray(data) || !data.length) return null

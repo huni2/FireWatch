@@ -11,6 +11,9 @@
 
 ## 2026-10-07
 
+- **[BE] 수집 장애 진단 API의 운영자 권한 강제**: 사용자 지적으로 공개 GET /api/collection/alerts에 OperatorAccess를 적용했다. 익명 401·일반/미검증 운영자 이메일 403·다른 기기 세션 401·검증 운영자/서버 키 성공 통합 테스트 통과. 장애·감사·재시도 기록은 삭제하지 않는다.
+- **[WEB] 일반 이용자 수집 장애 배너와 감사 링크 제거**: AppShell의 서버 확인 운영자 조건에만 배너를 마운트하여 익명/일반은 진단 API도 요청하지 않는다. 브라우저 fixture 3역할에서 비노출/요청 0·운영자 정상 표시를 확인했고 build/lint 통과(기존 경고 2개). 배포 검증은 후속 기록한다.
+- **[APP] 홈 수집 장애 표시를 운영자 설정으로 이동**: 일반 홈의 배너를 제거하고 서버가 허용한 OperatorPushSetup 내부에서만 표시한다. 요청에 기기 ID·세션을 사용한다. 기존 대기 preview는 이전 코드이므로 새 APK 필요 여부를 별도로 확인한다.
 - **[APP] 무료 preview APK 빌드 접수**: 수정·실제 archive 검사 후 cde6e85를 기존 원격 서명 설정으로 EAS에 업로드(2.3MB)했다. 3a953867-62a0-4448-aea1-bd99bdba713c의 마지막 확인은 IN_QUEUE다. 무료 플랜이며 유료 전환/스토어 제출/실제 운영 발송은 하지 않았다. Google·문의·공지·푸시 실기기 검증은 빌드 완료 후 이어간다.
 - **[APP] EAS 업로드 디렉터리 규칙 교정**: 첫 preview 요청 0c07cf07의 472B 업로드에서 디렉터리 제외를 발견해 취소했다. EAS의 디렉터리 검사에 맞춰 .easignore의 예외를 수정하고 build:inspect archive의 실제 89개/3,006,722B·필수 9개·제외 7개를 확인했다. 앱/shared는 포함되고 .env·서명 키·로컬 Firebase 파일·개인 문서·backend/web은 제외된다. 첫 빌드는 설치 가능한 결과가 아니다.
 - **[APP] Firebase 앱 파일 및 EAS 빌드 파일 연결**: 사용자 추가 google-services.json의 firewatch-25e21·com.firewatch.mobile 일치, Expo 동적 파일 연결과 release:check 통과를 확인했다. 사용자는 Expo FCM V1 키 등록을 완료했다고 알렸다. 기존 @huni2/mobile에 GOOGLE_SERVICES_JSON secret 파일 변수를 preview/production 등록하고 .easignore로 앱/shared만 업로드하도록 제한했다. 계정 Free·빌드 사용 0/30·기존 비용 0 확인. 실제 키 발송/수신과 APK 설치는 별도 검증한다.

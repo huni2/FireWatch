@@ -1,5 +1,8 @@
 # FireWatch — Context
 
+## 2026-10-07 수집 장애 안내 운영자 한정
+일반 사용자에게 노출되던 CollectionNotice와 공개 /api/collection/alerts를 수정했다. 웹은 서버 확인 운영자만 배너를 마운트하고 모바일은 홈에서 제거해 운영자 설정으로 옮겼다. API는 OperatorAccess로 익명·일반·미검증 이메일·기기 불일치를 차단한다. 브라우저 3역할·백엔드 권한 통합 검증 통과. 기존 장애/감사/수집 자료는 유지한다. 운영 반영 및 APK 결과는 최신 로그를 따른다.
+
 ## 2026-10-07 Android 출시 설정 보강
 사용자 Firebase 앱 파일 firewatch-25e21/com.firewatch.mobile 일치와 로컬 검사 성공을 확인했다. @huni2/mobile EAS preview/production에 GOOGLE_SERVICES_JSON secret 파일 변수를 등록하고 사용자는 FCM V1 키 등록을 확인했다. Free 플랜·사용 0/30·기존 비용 0을 확인한 뒤 preview 준비. 첫 업로드 제외 규칙 오류 빌드는 취소하고 실제 build:inspect archive의 앱/shared 포함·환경/키/개인 문서 제외를 확인했다. 실제 APK·SHA-1·푸시 실수신은 후속이다.
 APP-21: 사용자 제공 Android 공개 OAuth ID를 git 제외 mobile/.env와 EAS base에 반영하고 운영 API를 명시했다. app.config.js는 로컬 google-services.json 또는 EAS 파일 변수 GOOGLE_SERVICES_JSON을 연결한다. preview/production post-install 검사는 API/OAuth/패키지/FCM 파일과 공개 비밀 키를 검사하며 CI는 8개 회귀를 실행한다. Firebase 파일 검증/등록은 완료했고 서명·실기기는 미검증이다. cde6e85의 preview 빌드 3a953867-62a0-4448-aea1-bd99bdba713c 접수 후 마지막 확인은 IN_QUEUE이며 APK 결과는 아직 없다. PLAY_STORE.md의 금융 정보 미수집/모든 금융 기능 없음/내부·비공개 테스트 혼동을 현재 기능과 Google 공식 정책 기준으로 수정했다. APK·스토어 출시 완료를 의미하지 않는다.
