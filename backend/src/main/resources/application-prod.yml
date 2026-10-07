@@ -7,6 +7,14 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      # Supabase session pooler: 15 client slots shared by running + deploying instances.
+      # During the first rollout, old defaults (10) + this pool (3) stay below 15.
+      maximum-pool-size: 3
+      minimum-idle: 0
+      idle-timeout: 60000
+      max-lifetime: 600000
+      connection-timeout: 10000
   sql:
     init:
       platform: postgresql

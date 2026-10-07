@@ -84,3 +84,6 @@ Claude Code가 우선 읽는 구현 컨텍스트. "지금 무엇을 만드는가
 
 ### 2026-10-07 도움말 재구성
 웹 /guide와 구 /usage는 동일한 검색형 도움말이다. 6개 주제·19개 질문으로 첫 기록, 추천과 뉴스, 가상게임 거래/턴, 저장·푸시, 문제 해결을 안내한다. 질문의 title/summary/paragraphs/steps/keywords를 검색하며 ?topic=saved-data 등 질문 직접 열기와 기존 5단계 안내 재실행도 지원한다. 과거 GuidePage/UsagePage의 티커 우선·사이드바 안내를 제거했다. 내용 데이터는 web/src/features/help/helpTopics.ts에서 관리한다.
+
+### 2026-10-07 Render DB 연결 예산
+Supabase session pooler 15개 한도에 prod Hikari 최대3/유휴0/유휴반환60초를 사용한다. 운영 진단 /api/operations/database-pool은 X-API-Key 필요, 연결 수만 공개. 백엔드가 바뀌지 않은 웹·앱·위키 커밋에는 [skip render]를 사용한다. render.yaml buildFilter는 backend/** 및 render.yaml이며 Blueprint 동기화 여부는 별도로 확인해야 한다. 백엔드 변경이 있는 커밋에는 skip을 붙이지 않는다.

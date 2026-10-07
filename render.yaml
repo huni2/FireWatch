@@ -10,6 +10,10 @@ services:
     plan: free
     region: singapore
     healthCheckPath: /api/health
+    buildFilter:
+      paths:
+        - backend/**
+        - render.yaml
     envVars:
       - key: GEMINI_API_KEY
         sync: false

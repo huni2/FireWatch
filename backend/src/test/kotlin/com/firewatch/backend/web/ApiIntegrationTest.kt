@@ -42,6 +42,20 @@ class ApiIntegrationTest @Autowired constructor(
     @Autowired private lateinit var jdbc: org.springframework.jdbc.core.JdbcTemplate
 
     @Test
+    fun `DB 연결 풀 상태는 관리 키가 있어야 조회하며 연결 정보는 공개하지 않는다`() {
+        webTestClient.get().uri("/api/operations/database-pool").exchange().expectStatus().isUnauthorized
+        webTestClient.get().uri("/api/operations/database-pool").header("X-API-Key", "wrong-key")
+            .exchange().expectStatus().isUnauthorized
+        webTestClient.get().uri("/api/operations/database-pool").header("X-API-Key", "test-key")
+            .exchange().expectStatus().isOk.expectBody()
+            .jsonPath("$.maximumConnections").isNumber
+            .jsonPath("$.activeConnections").isNumber
+            .jsonPath("$.waitingRequests").isNumber
+            .jsonPath("$.password").doesNotExist()
+            .jsonPath("$.jdbcUrl").doesNotExist()
+    }
+
+    @Test
     fun `운영자 장애 푸시 수신자 등록은 관리 키와 기존 푸시 구독이 필요하다`() {
         webTestClient.post().uri("/api/collection/operator").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isUnauthorized
         webTestClient.post().uri("/api/collection/operator").header("X-API-Key", "test-key").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isEqualTo(409)
