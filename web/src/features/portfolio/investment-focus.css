@@ -1,0 +1,6 @@
+.investment-focus-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); align-items: start; gap: 16px; margin: 16px 0; }
+.investment-focus-item { min-width: 0; padding: 18px; border: 1px solid var(--ant-color-border-secondary); border-radius: 16px; display: flex; flex-direction: column; gap: 12px; overflow-wrap: anywhere; }
+.investment-focus-item p { margin: 0; line-height: 1.65; }
+.investment-focus-reason { padding: 12px; border-radius: 10px; background: var(--ant-color-fill-tertiary); }
+.investment-focus-reason small { display: block; margin-top: 8px; color: var(--ant-color-text-secondary); }
+.investment-focus-actions { margin-top: auto; padding-top: 4px; }

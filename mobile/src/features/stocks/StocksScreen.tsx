@@ -12,10 +12,11 @@ import { StockChart } from './components/StockChart'
 import { StockSearchInput } from './components/StockSearchInput'
 import { stockLabel } from '../../../../shared/stock-labels'
 import { useStockNames } from './hooks/useStockNames'
+import { InvestmentContext } from './components/InvestmentContext'
 
 const TICKER_PATTERN = /^[A-Za-z0-9]+(\.[A-Za-z0-9]+)?$/
 
-export function StocksScreen({ initialSymbol, initialQuery = '' }: { initialSymbol?: string; initialQuery?: string }) {
+export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio }: { initialSymbol?: string; initialQuery?: string; onOpenPortfolio?: () => void }) {
   const { settings, loading } = useSettings()
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
   const [selected, setSelected] = useState<string | null>(initialSymbol && TICKER_PATTERN.test(initialSymbol) ? initialSymbol : null)
@@ -92,6 +93,7 @@ export function StocksScreen({ initialSymbol, initialQuery = '' }: { initialSymb
             </View>
           </ScrollView>
           {selected && <StockChart key={selected} symbol={selected} name={labelForValue(selected)} onNameFound={rememberName} />}
+          {selected && <InvestmentContext symbol={selected} name={labelForValue(selected)} onOpenPortfolio={onOpenPortfolio} />}
         </View>
       )}
     </ScrollView>

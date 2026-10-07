@@ -1,6 +1,7 @@
 import { ScreenIntro } from '@/components/ScreenIntro'
 import { InvestmentNotice } from '@/components/InvestmentNotice'
 import { PortfolioExposureCard } from './PortfolioExposureCard'
+import { InvestmentFocus } from './InvestmentFocus'
 import etfs from '../../../../shared/etfs.json'
 import { StockSearchInput } from '../stocks/components/StockSearchInput'
 import { companies, sectors } from '../../../../shared/discovery'
@@ -28,7 +29,7 @@ function Field({ label, value, onChange, numeric = false }: { label: string; val
   return <View className="gap-1"><Text className="text-xs text-muted">{label}</Text><TextInput accessibilityLabel={label} value={numeric ? text : value} onFocus={() => { focused.current = true }} onBlur={() => { focused.current = false; setText(value) }} onChangeText={next => { setText(next); onChange(next) }} keyboardType={numeric ? 'decimal-pad' : 'default'} className="rounded-lg border border-line bg-surface p-3 text-ink" /></View>
 }
 
-export function PortfolioScreen() {
+export function PortfolioScreen(navigation: { onOpenStock?: (symbol: string) => void; onOpenNews?: (query: string) => void; onOpenCandidates?: () => void } = {}) {
   const query = useResource(fetchPortfolio)
   const [draft, setDraft] = useState<PortfolioDraft | null>(null)
   const [dirty, setDirty] = useState(false)
@@ -52,6 +53,7 @@ export function PortfolioScreen() {
   return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10" refreshControl={<RefreshControl refreshing={query.loading} onRefresh={query.reload} />}>
       <ScreenIntro eyebrow="MY INVESTMENT PLAN" title="내 포트폴리오" description="목표와 보유 자산을 연결하고, 시장 변화에 맞춰 점검하세요." />
       <InvestmentNotice />
+    <InvestmentFocus portfolio={query.data} {...navigation} />
     {query.error && <View className="gap-2 rounded-xl bg-red-50 p-4"><Text>{query.error}</Text><Pressable onPress={query.reload}><Text className="text-brand">다시 시도</Text></Pressable></View>}
     {!draft && query.loading && <ActivityIndicator />}
     {draft && <View className="gap-5" pointerEvents={saving ? 'none' : 'auto'}>

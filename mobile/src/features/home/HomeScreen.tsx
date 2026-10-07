@@ -88,7 +88,7 @@ export function HomeScreen() {
         ))}
       </ScrollView>
 
-      <View style={{ flex: 1, display: activeTab === 'portfolio' ? 'flex' : 'none' }}><PortfolioScreen /></View>
+      <View style={{ flex: 1, display: activeTab === 'portfolio' ? 'flex' : 'none' }}><PortfolioScreen {...discoveryNavigation} onOpenCandidates={() => setActiveTab('candidates')} /></View>
       {activeTab === 'candidates' && <CandidatesScreen {...discoveryNavigation} />}
       {activeTab === 'short-term' && <CandidatesScreen shortTerm {...discoveryNavigation} />}
       {activeTab === 'practice' && <PracticeScreen />}
@@ -103,7 +103,7 @@ export function HomeScreen() {
           onOpenSheet={() => sheetRef.current?.present()}
         />
       )}
-      {activeTab === 'stocks' && <StocksScreen initialSymbol={stockTarget.symbol} initialQuery={stockTarget.query} />}
+      {activeTab === 'stocks' && <StocksScreen initialSymbol={stockTarget.symbol} initialQuery={stockTarget.query} onOpenPortfolio={discoveryNavigation.onOpenPortfolio} />}
       {activeTab === 'indices' && <IndicesScreen />}
       {activeTab === 'news' && <NewsScreen initialQuery={newsQuery} />}
 

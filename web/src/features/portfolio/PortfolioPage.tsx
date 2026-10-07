@@ -11,6 +11,7 @@ import { RelatedNewsCard } from '../news/components/RelatedNewsCard'
 import { InvestmentNotice } from '../../components/InvestmentNotice'
 import { PortfolioExposureCard } from './PortfolioExposureCard'
 import etfs from '../../../../shared/etfs.json'
+import { InvestmentFocus } from './InvestmentFocus'
 const { Title, Text } = Typography
 
 export function PortfolioPage() {
@@ -60,6 +61,7 @@ export function PortfolioPage() {
       <div className="sample-allocation">{[{ name: '예시 기업 A', value: 60 }, { name: '예시 ETF B', value: 20 }, { name: '현금', value: 20 }].map(item => <div key={item.name}><strong>{item.name} · {item.value}%</strong><Progress percent={item.value} showInfo={false} /></div>)}</div>
       <p><strong>입력하면 이런 점을 확인해요.</strong></p><ul><li>어떤 자산에 보유 비중이 몰려 있는지</li><li>같은 기업·분야가 겹치는지</li><li>수집된 가격으로 평가할 수 있는지와 자료 기준 시각</li></ul><p>ETF 안에 포함된 기업은 상품 정보를 별도로 확인해야 합니다.</p>
     </Modal>
+    <InvestmentFocus portfolio={query.data} />
     {query.data && (query.data.holdings.length > 0 || query.data.cash > 0) && <Card title="내 기록 한눈에"><Space wrap size={32}><Statistic title="투자원금 (원)" value={query.data.investedKrw ?? '—'} /><Statistic title="현금 포함 평가금액 (원)" value={query.data.totalValueKrw ?? '시세 확인 중'} /><a href="#portfolio-analysis">비중·분석 확인 ↓</a></Space></Card>}
     <details className="portfolio-editor" open={editing || !(query.data?.holdings.length || query.data?.cash)} onToggle={e => { if (query.data?.holdings.length || query.data?.cash) setEditing(e.currentTarget.open) }}><summary>보유 자산 입력·수정</summary>
     <Card data-tour="portfolio-holdings" title="보유 자산 직접 등록" extra={<Button disabled={saving || draft.holdings.length >= 50} onClick={addHolding}>자산 추가</Button>}>

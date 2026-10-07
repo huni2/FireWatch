@@ -11,6 +11,7 @@ import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 import { SECTION_CARD_PROPS } from '../../lib/theme'
 import { stockLabel } from '../../../../shared/stock-labels'
 import { useStockNames } from './hooks/useStockNames'
+import { InvestmentContext } from './components/InvestmentContext'
 
 // Navigation parameters use internal identifiers; the visible UI uses company names.
 const TICKER_PATTERN = /^[A-Za-z0-9]+(\.[A-Za-z0-9]+)?$/
@@ -129,6 +130,7 @@ export function StocksPage() {
           </Card>
         </motion.div>
       )}
+      {selected && <InvestmentContext symbol={selected} name={labelForValue(selected)} />}
     </Space>
   )
 }
