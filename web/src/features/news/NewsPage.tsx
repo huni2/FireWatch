@@ -24,7 +24,7 @@ export function NewsPage() {
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       <div className="page-intro"><span className="eyebrow">FIREWATCH / NEWS ARCHIVE</span><Typography.Title level={2}>쌓아둔 소식에서, 투자 맥락을 찾다.</Typography.Title><Typography.Text type="secondary">저장된 실제 뉴스와 브리핑 기사를 날짜·종목명·키워드로 찾아보세요.</Typography.Text></div>
-      <form onSubmit={e => { e.preventDefault(); setFilters({ ...draft, page: 0, size: 20 }) }}>
+      <form data-tour="news-search" onSubmit={e => { e.preventDefault(); setFilters({ ...draft, page: 0, size: 20 }) }}>
         <div className="portfolio-fields"><label>종목명·키워드<Input aria-label="뉴스 검색어" value={draft.q} maxLength={100} placeholder="예: 삼성전자, 반도체, 금리" onChange={e => setDraft(v => ({ ...v, q: e.target.value }))} /></label><label>시작 날짜<Input aria-label="뉴스 시작 날짜" type="date" value={draft.from} onChange={e => setDraft(v => ({ ...v, from: e.target.value }))} /></label><label>마지막 날짜<Input aria-label="뉴스 마지막 날짜" type="date" value={draft.to} onChange={e => setDraft(v => ({ ...v, to: e.target.value }))} /></label></div>
         <Space style={{ marginTop: 16 }}><Button type="primary" htmlType="submit" loading={latest.loading}>뉴스 찾기</Button><Button onClick={() => { setDraft({ q: '', from: '', to: '' }); setFilters({ page: 0, size: 20 }) }}>전체 보기</Button></Space>
       </form>

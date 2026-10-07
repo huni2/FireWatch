@@ -1,4 +1,5 @@
-import { Space, Tabs, Typography } from 'antd'
+import { showFirstVisitGuide } from '../../components/guideEvents'
+import { Button, Space, Tabs, Typography } from 'antd'
 import { useLocation } from 'react-router-dom'
 import { GuidePage } from '../guide/GuidePage'
 import { UsagePage } from '../usage/UsagePage'
@@ -17,6 +18,7 @@ export function HelpPage() {
       <Title level={4} style={{ margin: 0 }}>
         도움말
       </Title>
+      <Button onClick={showFirstVisitGuide}>처음 사용 안내 다시 보기</Button>
       <Tabs
         defaultActiveKey={initialTab}
         items={[

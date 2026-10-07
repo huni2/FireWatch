@@ -88,3 +88,21 @@ button:focus-visible,a:focus-visible { outline: 2px solid var(--ant-color-primar
   transform: scale(0.95);
   transition: transform 0.1s ease;
 }
+
+/* Readable feedback and a skippable first-visit walkthrough in either theme. */
+.ant-alert.ant-alert { padding: 16px 20px; border-radius: 16px; }
+.ant-alert.ant-alert .ant-alert-message { font-size: 17px; font-weight: 700; line-height: 1.5; }
+.ant-alert.ant-alert .ant-alert-description { font-size: 15px; line-height: 1.7; overflow-wrap: anywhere; }
+.ant-alert.ant-alert .ant-alert-icon { font-size: 22px; }
+.ant-message .ant-message-notice .ant-message-notice-content { padding: 16px 20px; font-size: 16px; line-height: 1.6; max-width: min(520px, calc(100vw - 32px)); overflow-wrap: anywhere; }
+.site-footer-links button { border: 0; background: transparent; color: var(--ant-color-text); font: inherit; cursor: pointer; min-height: 44px; padding: 0; }
+.site-footer-links button:focus-visible { outline: 2px solid var(--ant-color-primary); outline-offset: 4px; }
+.guide-welcome { font-size: 17px; line-height: 1.7; }
+.first-visit-tour.ant-tour { width: 380px; max-width: calc(100vw - 32px); }
+.first-visit-tour .ant-tour-inner { border-radius: 18px; }
+.first-visit-tour .ant-tour-description { font-size: 16px; line-height: 1.7; }
+.first-visit-tour .ant-tour-title { font-size: 18px; }
+.first-visit-tour .ant-tour-buttons { flex-wrap: wrap; gap: 8px; }
+.first-visit-tour .ant-btn { min-height: 40px; }
+[data-tour] { scroll-margin-top: 128px; }
+.game-bottom-bar .ant-btn { min-height: 48px; font-weight: 700; }

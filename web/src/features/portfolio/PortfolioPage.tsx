@@ -31,7 +31,7 @@ export function PortfolioPage() {
   if (query.error) return <Alert type="error" showIcon message="포트폴리오 조회 실패" description={query.error.message} action={<Button onClick={query.reload}>다시 시도</Button>} />
   if (!draft) return <Card loading title="내 포트폴리오" />
   return <ConfigProvider componentDisabled={saving}><Space direction="vertical" size={24} style={{ width: '100%' }}>
-    <div className="page-intro"><span className="eyebrow">FIREWATCH / MY INVESTMENT PLAN</span><Title level={2}>내 투자에, 방향을 더하다.</Title><Text type="secondary">목표와 보유 자산을 연결하고, 시장 변화에 맞춰 내 포트폴리오를 점검하세요.</Text><Space wrap style={{ marginTop: 24, display: 'flex' }}><Link to="/candidates"><Button type="primary">투자 후보·ETF 비교</Button></Link><Link to="/briefing"><Button>시장 브리핑</Button></Link><Link to="/game"><Button>가상투자 게임 ↗</Button></Link></Space></div>
+    <div className="page-intro" data-tour="portfolio-intro"><span className="eyebrow">FIREWATCH / MY INVESTMENT PLAN</span><Title level={2}>내 투자에, 방향을 더하다.</Title><Text type="secondary">목표와 보유 자산을 연결하고, 시장 변화에 맞춰 내 포트폴리오를 점검하세요.</Text><Space wrap style={{ marginTop: 24, display: 'flex' }}><Link to="/candidates"><Button type="primary">투자 후보·ETF 비교</Button></Link><Link to="/briefing"><Button>시장 브리핑</Button></Link><Link to="/game"><Button>가상투자 게임 ↗</Button></Link></Space></div>
     <Card title="투자 계획" extra={query.data?.updatedAt ? <Text type="secondary">저장 {new Date(query.data.updatedAt).toLocaleString('ko-KR')}</Text> : '첫 포트폴리오'}>
       <Text>먼저 보유 자산 하나를 등록해보세요. 수량과 매입가로 집중·중복을 확인할 수 있습니다.</Text>
       <details style={{ marginTop: 12 }}><summary>투자 조건 더 설정하기 · {draft.horizonMonths}개월 · {riskLabels[draft.riskLevel]} · {accountLabels[draft.accountType]}</summary>
@@ -45,7 +45,7 @@ export function PortfolioPage() {
       </div>
       </details>
     </Card>
-    <Card title="보유 자산 직접 등록" extra={<Button disabled={saving || draft.holdings.length >= 50} onClick={() => change({ holdings: [...draft.holdings, emptyHolding()] })}>자산 추가</Button>}>
+    <Card data-tour="portfolio-holdings" title="보유 자산 직접 등록" extra={<Button disabled={saving || draft.holdings.length >= 50} onClick={() => change({ holdings: [...draft.holdings, emptyHolding()] })}>자산 추가</Button>}>
       {draft.holdings.length === 0 && <Empty description="첫 보유 자산을 추가하거나 현금을 입력해보세요." />}
       <Space direction="vertical" size={16} style={{ width: '100%' }}>{draft.holdings.map((h, i) => <Card key={i} size="small" title={`자산 ${i + 1}`} extra={<Button danger size="small" disabled={saving} onClick={() => change({ holdings: draft.holdings.filter((_, index) => index !== i) })}>삭제</Button>}>
         <div className="portfolio-fields">

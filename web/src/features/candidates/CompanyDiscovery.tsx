@@ -24,7 +24,7 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, shortTe
       <Typography.Paragraph type="secondary">분야 → 기업이 하는 일 → 추천 근거 → 내 보유와 비교</Typography.Paragraph>
       <Space wrap><Tag>{sectors.length}개 분야</Tag><Tag>탐색 기업 {companies.length}개</Tag><Tag color="orange">{loading ? '추천 자료 확인 중' : `근거 있는 브리핑 후보 ${picks.length}개`}</Tag>{briefing && <Tag>자료 기준 {briefing.briefingDate}</Tag>}</Space>
     </Card>
-    <section aria-label="개별 종목 추천">
+    <section aria-label="개별 종목 추천" data-tour="candidate-recommendations">
       <Typography.Title level={4}>{shortTerm ? '장전 개별 종목 관찰 후보' : '브리핑이 고른 개별 종목'}</Typography.Title>
       {loading && !picks.length ? <Typography.Paragraph type="secondary">브리핑 추천 자료를 불러오는 중이에요. 분야와 기업은 먼저 탐색할 수 있어요.</Typography.Paragraph> : picks.length ? <div className="company-grid">{picks.map(pick => {
         const company = findCompany(pick.stockName)

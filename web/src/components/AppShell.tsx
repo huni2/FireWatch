@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { GuidedTour } from './GuidedTour'
+import { showFirstVisitGuide } from './guideEvents'
 import { CollectionNotice } from './CollectionNotice'
 import { Layout, Switch } from 'antd'
 import {
@@ -119,6 +121,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
             <p>시장을 읽고, 내 투자 계획을 점검하세요.</p>
           </div>
           <nav aria-label="서비스 안내" className="site-footer-links">
+            <button type="button" onClick={showFirstVisitGuide}>처음 사용 안내</button>
             <Link to="/guide">이용안내</Link>
             <Link to="/open-source">오픈소스 고지</Link>
             <Link to="/privacy">개인정보처리방침</Link>
@@ -126,6 +129,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         </div>
         <div className="site-footer-meta"><span>시장 자료 · 포트폴리오 · 가상투자 연습</span><span>가상투자 게임의 뉴스와 가격은 가상 자료입니다.</span></div>
       </Footer>
+      <GuidedTour />
     </Layout>
   )
 }

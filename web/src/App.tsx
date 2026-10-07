@@ -34,7 +34,7 @@ export default function App() {
 
   return (
     <ConfigProvider theme={darkMode ? darkThemeConfig : lightThemeConfig}>
-      <AntApp>
+      <AntApp message={{ duration: 5, maxCount: 3 }}>
         <BrowserRouter>
           <Routes>
             <Route element={<AppShell darkMode={darkMode} onToggleDarkMode={setDarkMode} />}>
