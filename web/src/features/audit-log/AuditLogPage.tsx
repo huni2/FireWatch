@@ -45,7 +45,7 @@ export function AuditLogPage() {
     } catch (err) { setError(err instanceof Error ? err.message : '운영자 인증에 실패했습니다.') }
     finally { setLoading(false) }
   }
-  if (!operatorKey) return <Card title="운영자 전용 감사로그"><Typography.Paragraph>운영 기록은 일반 사용자에게 공개하지 않습니다. 현재 웹에서는 운영 키로 접근할 수 있습니다.</Typography.Paragraph><form onSubmit={e => { e.preventDefault(); void authenticate() }}><Space wrap><Input.Password aria-label="운영 키" autoComplete="off" value={draft} onChange={e => setDraft(e.target.value)} /><Button type="primary" htmlType="submit" loading={loading} disabled={!draft.trim()}>운영자 인증</Button></Space></form>{error && <Alert style={{ marginTop: 16 }} type="error" message={error} />}</Card>
+  if (!operatorKey) return <Card title="운영자 전용 감사로그"><Typography.Paragraph>웹 구글 로그인은 아직 준비 중입니다. 별도의 서버 운영 키가 설정된 경우 이 화면에서 인증해 접근할 수 있습니다.</Typography.Paragraph><form onSubmit={e => { e.preventDefault(); void authenticate() }}><Space wrap><Input.Password aria-label="운영 키" placeholder="서버 전용 운영 키" autoComplete="off" value={draft} onChange={e => setDraft(e.target.value)} /><Button type="primary" htmlType="submit" loading={loading} disabled={!draft.trim()}>운영자 인증</Button></Space></form>{error && <Alert style={{ marginTop: 16 }} type="error" message={error} />}</Card>
   return <Space direction="vertical" style={{ width: '100%' }}><Button onClick={() => setOperatorKey('')}>운영자 접근 종료</Button><AuditLogContent /></Space>
 }
 
