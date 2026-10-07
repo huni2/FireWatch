@@ -22,8 +22,16 @@ object GameSimulation {
             Triple(GameInstrumentType.DOW, null, "다우"), Triple(GameInstrumentType.GOLD, null, "금"),
             Triple(GameInstrumentType.SILVER, null, "은"), Triple(GameInstrumentType.USD, null, "달러"),
         )
-        return targets.map { (type, symbol, name) -> GameAssetHistory(type, symbol, name,
-            (0..currentTurn.coerceIn(0, 23)).map { index -> GamePriceHistoryPoint(index, price(seed, index, type, symbol)!!) }) }
+        return targets.map { (type, symbol, name) ->
+            // Accumulate the unrounded path once. Rounding each displayed point must not
+            // change subsequent prices or the value of an existing saved game.
+            var value = basePrice(type, symbol)!!.toDouble()
+            val points = (0..currentTurn.coerceIn(0, 23)).map { index ->
+                if (index > 0) value = advancePrice(seed, index, type, symbol, value)
+                GamePriceHistoryPoint(index, roundedPrice(value))
+            }
+            GameAssetHistory(type, symbol, name, points)
+        }
     }
     val assets = listOf(
         VirtualGameAsset("AURA", "오로라 반도체", "반도체", 24000),
@@ -32,6 +40,7 @@ object GameSimulation {
         VirtualGameAsset("LUMEN", "루멘 헬스", "헬스케어", 32000),
         VirtualGameAsset("NEXUS", "넥서스 클라우드", "클라우드", 46000),
     )
+    private val assetsBySymbol = assets.associateBy { it.symbol }
     private val scenarios = listOf(
         Triple("성장 기대", "가상 중앙은행, 금리 인하 검토…성장주에 기대감", 0.025),
         Triple("위험 회피", "가상 물가 지표 예상 상회…투자자들은 방어 자산으로 이동", -0.035),
@@ -86,23 +95,26 @@ object GameSimulation {
         }
         GamePick(symbol, asset.name, reason, blockedReason(seed, turn, GameInstrumentType.STOCK, symbol) ?: "다음 턴은 새 시나리오입니다. 시장 방향과 자산별 변동으로 하락할 수 있으며 픽이 상승을 보장하지 않습니다.", "[가상 뉴스] ${event.second}")
     }
-    fun price(seed: Long, turn: Int, type: GameInstrumentType, symbol: String?): BigDecimal? {
-        val base = when (type) {
-            GameInstrumentType.STOCK -> assets.find { it.symbol == symbol }?.basePrice ?: return null
+    private fun basePrice(type: GameInstrumentType, symbol: String?): Int? = when (type) {
+            GameInstrumentType.STOCK -> assetsBySymbol[symbol]?.basePrice
             GameInstrumentType.KOSPI -> 3000; GameInstrumentType.KOSDAQ -> 900; GameInstrumentType.SP500 -> 6000
             GameInstrumentType.NASDAQ -> 18000; GameInstrumentType.DOW -> 42000
             GameInstrumentType.GOLD -> 2500; GameInstrumentType.SILVER -> 30; GameInstrumentType.USD -> 1300
-        }
-        var price = base.toDouble()
-        for (index in 1..turn) {
-            if (type == GameInstrumentType.STOCK && blockedReason(seed, index, type, symbol) != null) continue
-            val event = scenario(seed, index)
-            val noise = Random(seed xor (index.toLong() * 65537L) xor (symbol ?: type.name).hashCode().toLong()).nextDouble() * .04 - .02
-            val exposure = when (type) { GameInstrumentType.GOLD -> -.6; GameInstrumentType.USD -> -.25; GameInstrumentType.SILVER -> -.2; else -> 1.0 }
-            val sector = if (type == GameInstrumentType.STOCK && ((event.first == "기술주 강세" && symbol in listOf("AURA", "NEXUS")) || (event.first == "에너지 전환" && symbol == "SOLAR"))) .04 else 0.0
-            price *= 1 + event.third * exposure + noise + sector
-        }
-        return BigDecimal.valueOf(price.coerceAtLeast(.01)).setScale(4, RoundingMode.HALF_UP)
+    }
+
+    private fun roundedPrice(value: Double) = BigDecimal.valueOf(value.coerceAtLeast(.01)).setScale(4, RoundingMode.HALF_UP)
+    private fun advancePrice(seed: Long, turn: Int, type: GameInstrumentType, symbol: String?, value: Double): Double {
+        if (type == GameInstrumentType.STOCK && blockedReason(seed, turn, type, symbol) != null) return value
+        val event = scenario(seed, turn)
+        val noise = Random(seed xor (turn.toLong() * 65537L) xor (symbol ?: type.name).hashCode().toLong()).nextDouble() * .04 - .02
+        val exposure = when (type) { GameInstrumentType.GOLD -> -.6; GameInstrumentType.USD -> -.25; GameInstrumentType.SILVER -> -.2; else -> 1.0 }
+        val sector = if (type == GameInstrumentType.STOCK && ((event.first == "기술주 강세" && symbol in listOf("AURA", "NEXUS")) || (event.first == "에너지 전환" && symbol == "SOLAR"))) .04 else 0.0
+        return value * (1 + event.third * exposure + noise + sector)
+    }
+    fun price(seed: Long, turn: Int, type: GameInstrumentType, symbol: String?): BigDecimal? {
+        var value = basePrice(type, symbol)?.toDouble() ?: return null
+        for (index in 1..turn) value = advancePrice(seed, index, type, symbol, value)
+        return roundedPrice(value)
     }
     fun briefing(seed: Long, turn: Int, date: LocalDate): Briefing {
         val event = scenario(seed, turn)

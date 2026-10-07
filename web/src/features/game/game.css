@@ -1,4 +1,39 @@
 .game-page { display: grid; gap: 24px; font-variant-numeric: tabular-nums; }
+.order-rail { min-width: 0; }
+.order-actions { padding: 0 20px 20px; }
+.game-desktop-next { display: none; }
+/* Keep decisions in view while the market feed scrolls independently. */
+@media(min-width:900px) {
+  .game-page.has-session { gap: 12px; }
+  .has-session .game-hero.in-session { display: flex; align-items: center; gap: 16px; padding: 8px 16px; border-radius: 14px; }
+  .has-session .game-hero.in-session h1 { margin: 0; font-size: 20px; }
+  .has-session .game-hero.in-session .eyebrow { display: none; }
+  .has-session .game-hero.in-session .ant-btn { margin-left: auto; }
+  .has-session .game-metrics > div { padding: 12px 20px; gap: 4px; }
+  .has-session .game-metrics strong { font-size: 26px; }
+  .has-session .game-metrics small { display: none; }
+  .has-session .game-workspace { grid-template-columns: minmax(0,1fr) 360px; gap: 16px; height: max(300px, calc(100dvh - 320px)); }
+  .has-session .market-column { height: 100%; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-gutter: stable; align-content: start; gap: 16px; padding-right: 6px; }
+  .has-session .game-panel { padding: 18px; border-radius: 16px; }
+  .has-session .game-panel h2 { font-size: 19px; margin: 6px 0 10px; }
+  .has-session .order-rail { display: flex; flex-direction: column; height: 100%; min-height: 0; border: 1px solid var(--ant-color-border); border-radius: 16px; background: var(--ant-color-bg-container); overflow: hidden; }
+  .has-session .order-actions { flex-shrink: 0; padding: 8px 16px; }
+  .has-session .order-panel { position: static; flex: 1; overflow-y: auto; min-height: 0; border: 0; border-radius: 0; padding: 16px; }
+  .has-session .order-panel .eyebrow,.has-session .order-panel > p,.has-session .order-footnote { display: none; }
+  .has-session .order-panel label { margin: 10px 0; gap: 4px; }
+  .has-session .order-preview { padding: 12px; margin: 12px 0; min-height: 0; }
+  .has-session .order-preview dl { gap: 8px; }
+  .has-session .preview-total { padding: 8px 0; }
+  .has-session .game-desktop-next { display: grid; gap: 8px; flex-shrink: 0; padding: 12px 16px; border-top: 1px solid var(--ant-color-border); }
+  .has-session .game-desktop-next small { color: var(--ant-color-text-secondary); }
+  .has-session .game-bottom-bar { display: none; }
+  .has-session .pick-guide img { width: 56px; height: 64px; }
+  .has-session .market-readings { padding-top: 12px; }
+  .has-session .game-company-list { grid-template-columns: 1fr; }
+  .has-session .game-company-list article { grid-template-columns: minmax(0,1fr) auto; gap: 8px 16px; }
+  .has-session .game-company-list article > small { grid-column: 1; }
+  .has-session .game-company-list article > .ant-space { grid-column: 2; grid-row: 2/4; }
+}
 .game-page h1,.game-page h2,.game-page h3 { margin: 10px 0; letter-spacing: -.035em; }
 .game-page p { color: var(--ant-color-text-secondary); line-height: 1.7; }
 .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .15em; color: var(--ant-color-primary); }
@@ -76,10 +111,14 @@
 .replay-guide img { width: 64px; height: 76px; }.replay-guide h2 { font-size: 17px; }.replay-guide p { margin: 6px 0; font-size: 13px; }
 .replay-outcome h2 { font-size: 26px; margin: 12px 0; }
 @media(max-width:899px) {
+  .view-market:not(.session-ended) .order-rail { display: none; }
+  .view-positions:not(.session-ended) .game-workspace { display: block; }
+  .view-positions:not(.session-ended) .market-column { display: grid; }
+  .view-positions:not(.session-ended) .market-column > :not(.game-positions):not(.game-receipts):not(.game-contributions) { display: none; }
+  .view-positions:not(.session-ended) .order-rail { display: none; }
   .game-mobile-tabs { display: block; }.game-workspace { grid-template-columns: minmax(0,1fr); }.order-panel { position: static; }
   .view-market:not(.session-ended) .order-panel,.view-market:not(.session-ended) .game-positions,.view-market:not(.session-ended) .game-receipts,.view-market:not(.session-ended) .game-contributions { display: none; }
   .view-order:not(.session-ended) .market-column,.view-order:not(.session-ended) .game-positions,.view-order:not(.session-ended) .game-receipts,.view-order:not(.session-ended) .game-contributions { display: none; }
-  .view-positions:not(.session-ended) .game-workspace { display: none; }
   .game-bottom-bar { position: sticky; bottom: 12px; z-index: 5; box-shadow: 0 8px 24px #0002; }
 }
 @media(max-width:599px) {
@@ -88,3 +127,9 @@
   .game-positions .ant-table-wrapper,.game-receipts .ant-table-wrapper { display: none; }
   .game-bottom-bar { padding: 12px; }.game-bottom-bar > div { display: none; }.game-bottom-bar .ant-btn { width: 100%; }
 }
+
+.game-page .game-session-title { font-size: 20px; margin: 0; }
+
+.order-total-summary { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 8px 0; font-size: 13px; }
+.order-total-summary strong { color: var(--ant-color-primary); }
+@media(min-width:900px) { .order-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }.order-stock > .ant-tag { display: none; }.has-session .game-desktop-next > small { display: none; } }

@@ -8,6 +8,16 @@ import kotlin.test.assertTrue
 
 class GameSimulationHistoryTest {
     @Test
+    fun `incremental histories preserve every independently valued turn across seeds`() {
+        for (seed in listOf(0L, 42L, 314159L, Long.MAX_VALUE, -991L)) {
+            val histories = GameSimulation.histories(seed, 23)
+            for (history in histories) for (point in history.points) {
+                assertEquals(GameSimulation.price(seed, point.turnIndex, history.instrumentType, history.symbol), point.price,
+                    "seed=$seed ${history.name} turn=${point.turnIndex}")
+            }
+        }
+    }
+    @Test
     fun `pick explanations use the same scenario shortlist and provided virtual news`() {
         for (turn in 0..23) {
             val picks = GameSimulation.picks(42L, turn)
