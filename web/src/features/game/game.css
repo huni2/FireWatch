@@ -133,3 +133,5 @@
 .order-total-summary { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 8px 0; font-size: 13px; }
 .order-total-summary strong { color: var(--ant-color-primary); }
 @media(min-width:900px) { .order-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }.order-stock > .ant-tag { display: none; }.has-session .game-desktop-next > small { display: none; } }
+
+@media(min-width:900px) { .has-session .order-panel { padding: 12px; }.has-session .order-panel h2 { font-size: 17px; margin: 0 0 8px; }.has-session .order-panel .ant-alert { padding: 8px 10px; font-size: 13px; }.has-session .order-panel label { margin: 8px 0; } }
