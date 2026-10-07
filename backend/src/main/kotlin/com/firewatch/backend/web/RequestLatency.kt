@@ -42,7 +42,7 @@ class RequestLatency : WebFilter {
             val queue = samples.computeIfAbsent(key) { ArrayDeque() }
             synchronized(queue) {
                 if (queue.size >= 256) queue.removeFirst()
-                queue.addLast(Sample((System.nanoTime() - start) / 1_000_000, (exchange.response.statusCode?.value() ?: 500) >= 500))
+                queue.addLast(Sample((System.nanoTime() - start) / 1_000_000, (exchange.response.statusCode?.value() ?: 200) >= 500))
             }
         }
     }

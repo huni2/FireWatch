@@ -66,6 +66,8 @@ class AccountSessionIntegrationTest {
     fun `응답 시간 헤더를 제공하고 운영 지표는 관리 키로 보호한다`() {
         client().get().uri("/api/portfolio").header("X-Device-Id", "latency-anonymous").exchange().expectStatus().isOk.expectHeader().valueMatches("Server-Timing", "application;dur=\\d+")
         client().get().uri("/api/operations/latency").exchange().expectStatus().isUnauthorized
-        client().get().uri("/api/operations/latency").header("X-API-Key", "session-test-key").exchange().expectStatus().isOk.expectBody().jsonPath("$[?(@.operation == 'GET portfolio')]").isNotEmpty
+        client().get().uri("/api/operations/latency").header("X-API-Key", "session-test-key").exchange().expectStatus().isOk.expectBody()
+            .jsonPath("$[?(@.operation == 'GET portfolio')]").isNotEmpty
+            .jsonPath("$[?(@.operation == 'GET portfolio')].failures").isEqualTo(0)
     }
 }

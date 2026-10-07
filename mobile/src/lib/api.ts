@@ -133,8 +133,7 @@ export async function fetchSettings(): Promise<Settings> {
   return request<Settings>('/api/settings', { headers: { 'X-Device-Id': deviceId } })
 }
 
-// APP-6 — Google 로그인으로 받은 ID 토큰을 서버에 넘겨 이 기기를 계정에 연동(ADR 0012). 세션 토큰은
-// 발급되지 않으며, 이후에도 계속 X-Device-Id로 식별한다.
+// ADR 0020 — Google ID 토큰 검증 후 발급된 기기별 로그인 세션을 SecureStore에 저장한다.
 export async function linkGoogleAccount(idToken: string): Promise<Settings> {
   const deviceId = await getDeviceId()
   const settings = await request<Settings>('/api/auth/google/link', {
