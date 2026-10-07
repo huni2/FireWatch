@@ -24,14 +24,15 @@ import org.springframework.web.bind.annotation.RestController
 class AuthController(
     private val authService: AuthService,
     private val identityResolver: SettingsIdentityResolver,
+    private val sessions: com.firewatch.backend.repository.AuthSessions,
 ) {
     @PostMapping("/google/link")
-    fun linkGoogleAccount(
+    suspend fun linkGoogleAccount(
         @RequestHeader("X-Device-Id", required = false) deviceId: String?,
         @RequestBody request: GoogleLinkRequest,
-    ): SettingsResponse {
+    ): SettingsResponse = withContext(Dispatchers.IO) {
         val settings = authService.linkGoogleAccount(deviceId = deviceId.requireDeviceId(), idToken = request.idToken)
-        return settings.toResponse(identityResolver.linkedEmailFor(settings))
+        settings.toResponse(identityResolver.linkedEmailFor(settings)).copy(session = sessions.issue(deviceId.requireDeviceId()))
     }
 
     // Play 스토어 계정 삭제 요건(2026-10-06) — 연동된 계정과 그 공유 설정을 완전히 삭제한다.
@@ -39,5 +40,21 @@ class AuthController(
     @ResponseStatus(HttpStatus.NO_CONTENT)
     suspend fun deleteAccount(@RequestHeader("X-Device-Id", required = false) deviceId: String?) {
         withContext(Dispatchers.IO) { authService.deleteAccount(deviceId.requireDeviceId()) }
+    }
+
+    @org.springframework.web.bind.annotation.GetMapping("/devices")
+    suspend fun devices(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @RequestHeader("Authorization", required = false) authorization: String?) =
+        withContext(Dispatchers.IO) { sessions.devices(deviceId.requireDeviceId(), authorization) }
+
+    @DeleteMapping("/devices/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    suspend fun revoke(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @RequestHeader("Authorization", required = false) authorization: String?, @org.springframework.web.bind.annotation.PathVariable id: String) {
+        withContext(Dispatchers.IO) { authService.revokeDevice(deviceId.requireDeviceId(), authorization, id) }
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    suspend fun logout(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @RequestHeader("Authorization", required = false) authorization: String?) {
+        withContext(Dispatchers.IO) { authService.logout(deviceId.requireDeviceId(), authorization) }
     }
 }

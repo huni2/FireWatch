@@ -19,5 +19,6 @@ class CorsConfig(
             .allowedOrigins(*allowedOrigins.toTypedArray())
             .allowedMethods("GET", "PUT", "POST", "DELETE", "OPTIONS")
             .allowedHeaders("*")
+            .exposedHeaders("Server-Timing")
     }
 }

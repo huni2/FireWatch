@@ -40,6 +40,7 @@ data class SettingsResponse(
     // 매번 "연동 안 됨"으로 보였다 — 이 필드로 서버 상태를 그대로 반영하게 한다(Play 계정 삭제
     // 요건 대응으로 "연동 해제/계정 삭제" UI를 만들려면 서버가 확인한 연동 상태가 먼저 필요했다).
     val linkedEmail: String? = null,
+    val session: com.firewatch.backend.repository.LoginSession? = null,
 )
 
 fun UserSettings.toResponse(linkedEmail: String? = null) = SettingsResponse(

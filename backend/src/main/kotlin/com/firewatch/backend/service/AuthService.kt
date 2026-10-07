@@ -34,6 +34,7 @@ class AuthService(
     private val userSettingsRepository: UserSettingsRepository,
     private val portfolios: PortfolioRepository? = null,
     private val revisions: PortfolioRevisionRepository? = null,
+    private val sessions: com.firewatch.backend.repository.AuthSessions? = null,
 ) : AuditedComponent {
     override val auditEventType = AuditEventType.AUTH
 
@@ -45,6 +46,8 @@ class AuthService(
         val appUser = appUserRepository.findByGoogleSub(identity.googleSub)
             ?: appUserRepository.save(AppUser(googleSub = identity.googleSub, email = identity.email))
         val userId = appUser.id ?: error("저장된 AppUser에 id가 없음")
+        val linked = deviceLinkRepository.findById(deviceId).orElse(null)
+        if (linked != null && linked.userId != userId) throw UnauthorizedException("현재 연결된 Google 계정으로 로그인해주세요.")
         val anonymous = userSettingsRepository.findByDeviceId(deviceId)
         val existingAccount = userSettingsRepository.findByUserId(userId)
         if (anonymous != null && existingAccount != null && anonymous.id != existingAccount.id && portfolios?.existsById(anonymous.id) == true) {
@@ -72,6 +75,7 @@ class AuthService(
         val link = deviceLinkRepository.findById(deviceId).orElse(null)
             ?: throw NotFoundException("연동된 계정이 없습니다.")
         val userId = link.userId
+        sessions?.revokeAccount(userId)
         deviceLinkRepository.deleteByUserId(userId)
         userSettingsRepository.findByUserId(userId)?.let {
             revisions?.deleteByOwnerId(it.id)
@@ -80,4 +84,7 @@ class AuthService(
         }
         appUserRepository.deleteById(userId)
     }
+
+    fun logout(deviceId: String, authorizationToken: String?) { requireNotNull(sessions).logout(deviceId, authorizationToken) }
+    fun revokeDevice(deviceId: String, authorizationToken: String?, targetId: String) { requireNotNull(sessions).revokeDevice(deviceId, authorizationToken, targetId) }
 }

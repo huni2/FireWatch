@@ -3,7 +3,7 @@ import { OperatorPushSetup } from '@/components/OperatorPushSetup'
 // 설정 화면 — 수신 시간·관심 키워드. web/src/features/settings/SettingsPage.tsx와 동일 원칙
 // (관심 종목은 이 화면이 아니라 홈의 "종목" 탭에서 관리, 그대로 넘겨서 덮어쓰지 않음).
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Platform, Pressable, ScrollView, Text, View } from 'react-native'
 import Toast from 'react-native-toast-message'
 
@@ -21,7 +21,7 @@ function timeStringToDate(hhmm: string): Date {
 }
 
 export function SettingsScreen() {
-  const { settings, loading } = useSettings()
+  const { settings, loading, reload } = useSettings()
   const [pushTime, setPushTime] = useState('08:00')
   const [keywords, setKeywords] = useState<string[]>([])
   const [showPicker, setShowPicker] = useState(false)
@@ -41,16 +41,18 @@ export function SettingsScreen() {
 
   // Google 연동(APP-6) 성공 시 서버가 돌려준 설정(연동 전 이 기기의 관심종목 등이 유지됨)으로
   // 편집 중인 화면을 즉시 갱신한다 — 완료 기준이 바로 이 반영이다.
-  function handleLinked(settings: Settings) {
+  const handleLinked = useCallback((settings: Settings) => {
     setPushTime(settings.pushTime)
     setKeywords(settings.interestKeywords)
     setLinkedEmail(settings.linkedEmail)
-  }
+    void reload()
+  }, [reload])
 
   // 계정 삭제(2026-10-06, Play 스토어 요건) 후 이 기기는 다시 익명 상태 — 연동 전 표시로 되돌린다.
-  function handleDeleted() {
+  const handleDeleted = useCallback(() => {
     setLinkedEmail(null)
-  }
+    void reload()
+  }, [reload])
 
   function handleTimeChange(event: DateTimePickerEvent, date?: Date) {
     if (Platform.OS === 'android') setShowPicker(false)
@@ -85,7 +87,7 @@ export function SettingsScreen() {
     )
   }
 
-  if (!settings) return <View className="flex-1 items-center justify-center bg-canvas p-6"><Text>설정을 불러오지 못했습니다. 화면을 다시 열어주세요.</Text></View>
+  if (!settings) return <View className="flex-1 justify-center gap-4 bg-canvas p-6"><Text>설정을 불러오지 못했습니다. 로그인했던 기기라면 Google 계정으로 다시 로그인해주세요.</Text><GoogleLinkButton linkedEmail={null} onLinked={handleLinked} onDeleted={handleDeleted} /><Pressable onPress={() => void reload()} className="min-h-11 items-center justify-center"><Text className="text-brand">설정 다시 불러오기</Text></Pressable></View>
 
   return (
     <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">

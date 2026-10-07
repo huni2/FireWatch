@@ -1,17 +1,19 @@
 import { ScreenIntro } from '@/components/ScreenIntro'
 import { ActivityIndicator, Linking, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
-import { fetchLatestBriefing } from '@/lib/api'
-import { fetchPortfolio } from '@/lib/investingApi'
+import { fetchPortfolio, fetchRecommendations } from '@/lib/investingApi'
 import { useResource } from '@/lib/useResource'
 import { accountLabels, productChecklist, riskLabels } from '../../../../shared/investing'
 import { CompanyDiscovery } from './CompanyDiscovery'
+import { RecommendationHistory } from './RecommendationHistory'
 
 export function CandidatesScreen({ shortTerm = false, ...navigation }: { shortTerm?: boolean; onOpenStock?: (symbol: string) => void; onOpenNews?: (query: string) => void; onOpenPortfolio?: () => void; onSearchStock?: (name: string) => void }) {
-  const briefing = useResource(fetchLatestBriefing)
+  const briefing = useResource(fetchRecommendations)
   const portfolio = useResource(fetchPortfolio)
   return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5" refreshControl={<RefreshControl refreshing={briefing.loading} onRefresh={() => { void briefing.reload(); void portfolio.reload() }} />}>
     <ScreenIntro eyebrow={shortTerm ? "PRE-MARKET WATCH" : "INVESTMENT CANDIDATES"} title={shortTerm ? "단기 투자 후보" : "투자 발견 · 분야와 기업"} description="분야별 기업을 살펴보고 추천 이유와 내 보유 자산을 함께 비교하세요." />
     <CompanyDiscovery briefing={briefing.data} portfolio={portfolio.data} loading={briefing.loading} {...navigation} />
+    <RecommendationHistory />
+    {briefing.data?.analyzedAt && <Text className="text-sm text-muted">분석 {new Date(briefing.data.analyzedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} 한국 시간 · 지표 기준 {briefing.data.sourceBriefingDate}. 추가 소식은 뉴스 메뉴에서 확인하세요.</Text>}
     {portfolio.error && <Text className="text-red-600">포트폴리오: {portfolio.error}</Text>}
     {portfolio.data && <View className="gap-2 rounded-xl bg-surface border border-line p-4"><Text>{accountLabels[portfolio.data.accountType]} · {riskLabels[portfolio.data.riskLevel]} · {portfolio.data.horizonMonths}개월</Text>{portfolio.data.insights.map(x => <Text key={x} className="text-sm">• {x}</Text>)}</View>}
     {briefing.error && <Text className="text-red-600">브리핑: {briefing.error}</Text>}

@@ -31,7 +31,8 @@ class PortfolioService(
 
     fun get(deviceId: String): PortfolioResponse {
         val owner = identityResolver.resolveForDevice(deviceId).id
-        return analyze(portfolios.findById(owner).orElse(null) ?: Portfolio(ownerId = owner))
+        val stored = portfolios.findById(owner).orElse(null)
+        return analyze(stored ?: Portfolio(ownerId = owner), stored != null)
     }
 
     @Transactional
@@ -50,7 +51,7 @@ class PortfolioService(
         row.updatedAt = Instant.now()
         val saved = portfolios.saveAndFlush(row)
         revisions.save(PortfolioRevision(ownerId = owner, revision = saved.version, snapshotJson = mapper.writeValueAsString(input)))
-        return analyze(saved)
+        return analyze(saved, true)
     }
 
     private fun validate(input: PortfolioUpdateRequest) {
@@ -71,9 +72,9 @@ class PortfolioService(
         if (errors.isNotEmpty()) throw ValidationException("포트폴리오 입력을 확인해주세요.", errors)
     }
 
-    private fun analyze(row: Portfolio): PortfolioResponse {
+    private fun analyze(row: Portfolio, persisted: Boolean): PortfolioResponse {
         val holdings = readHoldings(row)
-        val latest = briefings.findTopByOrderByBriefingDateDesc()
+        val latest = if (holdings.isEmpty()) null else briefings.findTopByOrderByBriefingDateDesc()
         val fx = latest?.usdKrw?.takeIf { it > BigDecimal.ZERO }
         val quoteMap = quotes.findAllById(holdings.map { it.symbol.uppercase() }).associateBy { it.symbol }
         val views = holdings.map { h ->
@@ -110,9 +111,9 @@ class PortfolioService(
         val target = targetFor(row.riskLevel, row.horizonMonths)
         val contribution = target.mapValues { (_, weight) -> row.monthlyContribution.multiply(weight).divide(BigDecimal("100"), 0, RoundingMode.DOWN) }.toMutableMap()
         if (contribution.isNotEmpty()) contribution["CASH"] = contribution.getValue("CASH") + row.monthlyContribution - contribution.values.fold(BigDecimal.ZERO) { a, v -> a + v }
-        val articles = (newsFeed.findTop50ByOrderByPubDateDescCollectedAtDesc().map { NewsArticleResponse(it.title, it.link, it.description, it.pubDate) } + latest?.id?.let { news.findByBriefingId(it).map { n -> n.toResponse() } }.orEmpty())
+        val articles = (if (holdings.isEmpty()) emptyList() else newsFeed.findTop50ByOrderByPubDateDescCollectedAtDesc().map { NewsArticleResponse(it.title, it.link, it.description, it.pubDate) } + latest?.id?.let { news.findByBriefingId(it).map { n -> n.toResponse() } }.orEmpty())
             .distinctBy { it.link }.filter { article -> holdings.any { h -> article.title.contains(h.name, true) || (h.symbol.length >= 3 && Regex("(?i)(?<![A-Za-z0-9])${Regex.escape(h.symbol)}(?![A-Za-z0-9])").containsMatchIn(article.title)) } }.take(10)
-        return PortfolioResponse(row.version, row.goal, row.horizonMonths, row.riskLevel, row.accountType, row.monthlyContribution, row.cash, views, invested, total, if (total != null && invested != null) percent(total - row.cash - invested, invested) else null, allocation, target, contribution, insights, articles, row.updatedAt.takeIf { portfolios.existsById(row.ownerId) }, latest?.briefingDate?.toString().takeIf { fx != null })
+        return PortfolioResponse(row.version, row.goal, row.horizonMonths, row.riskLevel, row.accountType, row.monthlyContribution, row.cash, views, invested, total, if (total != null && invested != null) percent(total - row.cash - invested, invested) else null, allocation, target, contribution, insights, articles, row.updatedAt.takeIf { persisted }, latest?.briefingDate?.toString().takeIf { fx != null })
     }
 
     companion object {

@@ -1,6 +1,7 @@
 // 백엔드(FireWatch backend) REST API 클라이언트. web/src/lib/api.ts와 동일 스타일 —
 // Design Ref: docs/02-design/features/mobile-app.design.md §4.
 import { getDeviceId } from './deviceId'
+import { sessionToken, saveSession, clearSession, type LoginSession } from './session'
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -13,6 +14,7 @@ export interface Settings {
   // 상태라 앱을 재실행해도 그대로 유지된다(이전엔 GoogleLinkButton 내부 state로만 추적해 재실행
   // 때마다 "연동 안 됨"으로 보이던 버그가 있었음).
   linkedEmail: string | null
+  session?: LoginSession | null
 }
 
 export type DataSourceStatus = 'NORMAL' | 'FALLBACK'
@@ -88,11 +90,12 @@ export class ApiRequestError extends Error {
 }
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = path === '/api/auth/google/link' ? null : await sessionToken()
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), 45000)
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(init?.headers ?? {}) },
     signal: init?.signal ?? controller.signal,
   }).finally(() => clearTimeout(timer))
 
@@ -134,11 +137,14 @@ export async function fetchSettings(): Promise<Settings> {
 // 발급되지 않으며, 이후에도 계속 X-Device-Id로 식별한다.
 export async function linkGoogleAccount(idToken: string): Promise<Settings> {
   const deviceId = await getDeviceId()
-  return request<Settings>('/api/auth/google/link', {
+  const settings = await request<Settings>('/api/auth/google/link', {
     method: 'POST',
     headers: { 'X-Device-Id': deviceId },
     body: JSON.stringify({ idToken }),
   })
+  if (!settings.session) throw new Error('로그인 세션을 받지 못했습니다.')
+  await saveSession(settings.session)
+  return settings
 }
 
 // Play 스토어 계정 삭제 요건(2026-10-06) — 연동된 계정·공유 설정을 서버에서 완전히 삭제한다.
@@ -146,6 +152,15 @@ export async function linkGoogleAccount(idToken: string): Promise<Settings> {
 export async function deleteAccount(): Promise<void> {
   const deviceId = await getDeviceId()
   await request<void>('/api/auth/account', { method: 'DELETE', headers: { 'X-Device-Id': deviceId } })
+  await clearSession()
+}
+
+export type LinkedDevice = { id: string; linkedAt: string; current: boolean }
+export const fetchLinkedDevices = async () => request<LinkedDevice[]>('/api/auth/devices', { headers: { 'X-Device-Id': await getDeviceId() } })
+export const revokeLinkedDevice = async (id: string) => request<void>(`/api/auth/devices/${encodeURIComponent(id)}`, { method: 'DELETE', headers: { 'X-Device-Id': await getDeviceId() } })
+export async function logoutAccount() {
+  await request<void>('/api/auth/logout', { method: 'POST', headers: { 'X-Device-Id': await getDeviceId() } })
+  await clearSession()
 }
 
 // fcmToken만 새로 등록하고 기존 pushTime/keywords/watchedStocks는 그대로 유지 — 호출부가

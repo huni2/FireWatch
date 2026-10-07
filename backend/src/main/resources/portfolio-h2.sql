@@ -47,3 +47,13 @@ ALTER TABLE collection_alerts ADD COLUMN IF NOT EXISTS push_attempts INT NOT NUL
 ALTER TABLE collection_alerts ADD COLUMN IF NOT EXISTS notify_after TIMESTAMP;
 ALTER TABLE collection_alerts ADD COLUMN IF NOT EXISTS notified_at TIMESTAMP;
 ALTER TABLE briefings ADD COLUMN IF NOT EXISTS recommendation_details TEXT;
+
+CREATE TABLE IF NOT EXISTS recommendation_reports (analysis_date DATE PRIMARY KEY, source_briefing_date DATE NOT NULL, analyzed_at TIMESTAMP NOT NULL, report_json TEXT NOT NULL);
+
+CREATE TABLE IF NOT EXISTS auth_sessions (
+  token_hash VARCHAR(64) PRIMARY KEY,
+  device_id VARCHAR(255) NOT NULL,
+  user_id BIGINT NOT NULL,
+  expires_at TIMESTAMP NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_auth_sessions_device ON auth_sessions(device_id);

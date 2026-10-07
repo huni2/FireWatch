@@ -36,6 +36,9 @@ class AuditLogAspect(
     fun auditServiceCall(joinPoint: ProceedingJoinPoint): Any? {
         val target = joinPoint.target
         val declaredEventType = (target as? AuditedComponent)?.auditEventType
+        // Read-only views use HTTP timing; mutations retain durable audit records.
+        if ((declaredEventType == AuditEventType.GAME && joinPoint.signature.name in setOf("getCurrentTurn", "preview")) ||
+            (declaredEventType == AuditEventType.PORTFOLIO && joinPoint.signature.name == "get")) return joinPoint.proceed()
         val actionName = "${target.javaClass.simpleName}.${joinPoint.signature.name}"
         val requestPayload = summarizeArgs(joinPoint)
         val clientIp = joinPoint.args.filterIsInstance<HasClientIp>().firstOrNull()?.clientIp

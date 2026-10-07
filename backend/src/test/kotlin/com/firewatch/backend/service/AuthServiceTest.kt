@@ -29,6 +29,17 @@ class AuthServiceTest {
     private val userSettingsRepository = mockk<UserSettingsRepository>(relaxed = true)
     private val authService = AuthService(verifier, appUserRepository, deviceLinkRepository, userSettingsRepository)
 
+    init { every { deviceLinkRepository.findById(any()) } returns Optional.empty() }
+
+    @Test
+    fun `연결된 기기 ID를 다른 Google 계정으로 가져갈 수 없다`() {
+        every { verifier.verify("other-token") } returns GoogleIdentity("other-user", "other@example.com")
+        every { appUserRepository.findByGoogleSub("other-user") } returns AppUser(id = 7L, googleSub = "other-user")
+        every { deviceLinkRepository.findById("linked-device") } returns Optional.of(DeviceLink("linked-device", 42L))
+        assertFailsWith<UnauthorizedException> { authService.linkGoogleAccount("linked-device", "other-token") }
+        verify(exactly = 0) { deviceLinkRepository.save(any()) }
+    }
+
     @Test
     fun `토큰이 유효하지 않으면 UnauthorizedException을 던진다`() {
         every { verifier.verify("bad-token") } returns null

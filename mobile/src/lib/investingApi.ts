@@ -1,9 +1,12 @@
 import { request } from './api'
+import type { RecommendationReport } from '../../../shared/discovery'
 import { getDeviceId } from './deviceId'
 import { newsQuery, type NewsFilters, type Portfolio, type PortfolioDraft, type NewsFeed } from '../../../shared/investing'
 export const fetchPortfolio = async () => request<Portfolio>('/api/portfolio', { headers: { 'X-Device-Id': await getDeviceId() } })
 export const savePortfolio = async (draft: PortfolioDraft) => request<Portfolio>('/api/portfolio', { method: 'PUT', headers: { 'X-Device-Id': await getDeviceId() }, body: JSON.stringify(draft) })
 export const fetchNewsFeed = (filters?: NewsFilters) => request<NewsFeed>(`/api/news?${newsQuery(filters)}`)
+export const fetchRecommendations = () => request<RecommendationReport>('/api/recommendations/latest')
+export const fetchRecommendationHistory = (from?: string, to?: string) => request<RecommendationReport[]>(`/api/recommendations?${new URLSearchParams({ ...(from ? { from } : {}), ...(to ? { to } : {}) })}`)
 
 export interface PracticeTurn {
   gamePicks?: import('../../../shared/game-turn').GamePick[]

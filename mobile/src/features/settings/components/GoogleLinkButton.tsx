@@ -7,7 +7,7 @@ import * as Google from 'expo-auth-session/providers/google'
 import * as WebBrowser from 'expo-web-browser'
 import Toast from 'react-native-toast-message'
 
-import { ApiRequestError, deleteAccount, linkGoogleAccount, type Settings } from '@/lib/api'
+import { ApiRequestError, deleteAccount, linkGoogleAccount, logoutAccount, fetchLinkedDevices, revokeLinkedDevice, type LinkedDevice, type Settings } from '@/lib/api'
 
 WebBrowser.maybeCompleteAuthSession()
 
@@ -20,9 +20,38 @@ interface GoogleLinkButtonProps {
   onDeleted: () => void
 }
 
-export function GoogleLinkButton({ linkedEmail, onLinked, onDeleted }: GoogleLinkButtonProps) {
+export function GoogleLinkButton(props: GoogleLinkButtonProps) {
+  if (!process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID) return <Text className="text-sm text-muted">이 빌드에서는 Google 로그인을 준비 중입니다. 계정 연동 없이도 이용할 수 있습니다.</Text>
+  return <ConfiguredGoogleLinkButton {...props} />
+}
+
+function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: GoogleLinkButtonProps) {
   const [linking, setLinking] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [devices, setDevices] = useState<LinkedDevice[] | null>(null)
+  const [deviceBusy, setDeviceBusy] = useState(false)
+  async function manageDevices() {
+    setDeviceBusy(true)
+    try { setDevices(await fetchLinkedDevices()) }
+    catch (error) { Toast.show({ type: 'error', text1: '기기 확인 실패', text2: error instanceof Error ? error.message : '다시 로그인해주세요.' }) }
+    finally { setDeviceBusy(false) }
+  }
+  function revokeDevice(device: LinkedDevice) {
+    Alert.alert('이 기기의 연결을 해제할까요?', '계정에 저장한 데이터는 유지됩니다. 이 기기는 다시 로그인해야 접근할 수 있어요.', [
+      { text: '취소', style: 'cancel' }, { text: '연결 해제', style: 'destructive', onPress: async () => {
+        setDeviceBusy(true)
+        try { await revokeLinkedDevice(device.id); setDevices((rows) => rows?.filter((row) => row.id !== device.id) ?? null) }
+        catch (error) { Toast.show({ type: 'error', text1: '연결 해제 실패', text2: error instanceof Error ? error.message : '잠시 후 다시 시도해주세요.' }) }
+        finally { setDeviceBusy(false) }
+      } },
+    ])
+  }
+  async function logout() {
+    setDeviceBusy(true)
+    try { await logoutAccount(); setDevices(null); onDeleted(); Toast.show({ type: 'success', text1: '로그아웃했습니다', text2: '계정 데이터는 보관됩니다.' }) }
+    catch (error) { Toast.show({ type: 'error', text1: '로그아웃 실패', text2: error instanceof Error ? error.message : '다시 시도해주세요.' }) }
+    finally { setDeviceBusy(false) }
+  }
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
   })
@@ -73,6 +102,15 @@ export function GoogleLinkButton({ linkedEmail, onLinked, onDeleted }: GoogleLin
     return (
       <View className="gap-2">
         <Text className="text-center text-sm font-semibold text-brand">{linkedEmail} 계정과 연동되었습니다 ✓</Text>
+        <Text className="text-xs text-muted">로그인은 30일간 유지됩니다. 만료되면 Google 계정으로 다시 로그인해주세요.</Text>
+        <Pressable disabled={!request || linking} onPress={() => promptAsync()} className="min-h-11 items-center justify-center"><Text className="text-brand">Google 로그인 갱신</Text></Pressable>
+        <Pressable disabled={deviceBusy} onPress={manageDevices} className="min-h-11 items-center justify-center"><Text className="text-brand">연결된 기기 확인</Text></Pressable>
+        {devices?.map((device, index) => <View key={device.id} className="rounded-xl border border-line p-3">
+          <Text className="font-semibold text-ink">{device.current ? '현재 기기' : `연결 기기 ${index + 1}`}</Text>
+          <Text className="text-xs text-muted">연결일 · {new Date(device.linkedAt).toLocaleDateString('ko-KR')}</Text>
+          {!device.current && <Pressable disabled={deviceBusy} onPress={() => revokeDevice(device)} className="min-h-11 justify-center"><Text className="text-red-600">연결 해제</Text></Pressable>}
+        </View>)}
+        <Pressable disabled={deviceBusy} onPress={logout} className="min-h-11 items-center justify-center"><Text className="text-muted">이 기기에서 로그아웃</Text></Pressable>
         <Pressable onPress={handleDeletePress} disabled={deleting} className="items-center py-2">
           {deleting ? <ActivityIndicator /> : <Text className="text-sm font-semibold text-red-600">계정 삭제</Text>}
         </Pressable>

@@ -40,6 +40,8 @@ class SchedulerController(
     @Value("\${firewatch.scheduler.poll-window-minutes}") private val pollWindowMinutes: Long,
     @Value("\${firewatch.scheduler.generate-after}") private val generateAfter: String,
     private val marketCollection: MarketCollectionService,
+    private val recommendations: com.firewatch.backend.service.RecommendationReportService,
+    private val operationsPush: com.firewatch.backend.service.OperationsPushService,
 ) {
     private val triggerScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -49,7 +51,7 @@ class SchedulerController(
         if (expectedApiKey.isBlank() || apiKey != expectedApiKey) {
             throw UnauthorizedException()
         }
-        triggerScope.launch { schedulerJob.triggerManually(apiKey) }
+        triggerScope.launch { schedulerJob.triggerManually(apiKey); recommendations.collectIfDue(); operationsPush.flush(java.time.Instant.now()) }
     }
 
     // 2026-08-23 — pushTime을 실제로 반영하려고 GitHub Actions가 이 엔드포인트를 짧은 주기로 폴링한다.
@@ -69,12 +71,12 @@ class SchedulerController(
         val now = LocalTime.now(zone)
         val today = LocalDate.now(zone)
         val briefing = briefingRepository.findByBriefingDate(today)
-        triggerScope.launch { marketCollection.collectIfDue() }
+        triggerScope.launch { marketCollection.collectIfDue(); recommendations.collectIfDue(); operationsPush.flush(java.time.Instant.now()) }
 
         var triggered = false
         if (briefing == null) {
             if (now.isAfter(LocalTime.parse(generateAfter))) {
-                triggerScope.launch { schedulerJob.triggerManually(apiKey) }
+                triggerScope.launch { schedulerJob.triggerManually(apiKey); recommendations.collectIfDue(); operationsPush.flush(java.time.Instant.now()) }
                 triggered = true
             }
         } else {
