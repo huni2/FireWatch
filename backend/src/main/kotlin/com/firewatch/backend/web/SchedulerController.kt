@@ -21,9 +21,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 
-// Design Ref: §4.1 — POST /api/scheduler/trigger. 디버그·QA용 수동 실행, X-API-Key 필요(ADR 0004).
-// 공개 배포 전환(2026-09) 이후 이 키는 설정 API가 아니라 스케줄러 관리 전용이다 — 설정 쓰기는
-// X-Device-Id로 대체됐다(SettingsController 참고).
+// Manual operations use the verified operator session; scheduled jobs use the separate
+// server-only OPERATOR_API_KEY. The public settings key cannot authorize either route.
 //
 // 202 ACCEPTED를 선언한 대로 실제로 즉시 응답한다 — 파이프라인(Gemini·금융API·뉴스·FCM 합산 최대 수십 초)을
 // 응답 전에 기다리면, 여기에 Render 콜드스타트(30~60초)까지 겹쳐 GitHub Actions curl이 타임아웃난다

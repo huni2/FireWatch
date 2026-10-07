@@ -49,7 +49,12 @@ export function companyNews(company: Company, briefing?: DiscoveryBriefing | nul
 }
 export function portfolioContext(company: Company, portfolio?: Portfolio | null): string {
   if (!portfolio) return '포트폴리오를 등록하면 내 보유 기업과 비교할 수 있어요.'
-  if (portfolio.holdings.some(row => row.holding.symbol === company.symbol)) return '이미 보유한 기업이에요. 추가 검토 전에 보유 수량과 비중을 확인하세요.'
+  const held = portfolio.holdings.find(row => row.holding.symbol === company.symbol)
+  if (held) {
+    const total = portfolio.investedKrw == null ? null : portfolio.investedKrw + portfolio.cash
+    const weight = held.investedKrw != null && total != null && total > 0 ? ` 현금 포함 매입원금의 ${(held.investedKrw / total * 100).toFixed(1)}%입니다.` : ' 원화 비중을 계산할 자료가 부족합니다.'
+    return `이미 보유한 기업이에요.${weight} 보유 수량과 비중을 함께 확인하세요.`
+  }
   const peers = portfolio.holdings.filter(row => row.holding.assetClass === 'STOCK' && (findCompany(row.holding.symbol)?.sectorId === company.sectorId || row.holding.sector === companySector(company).name))
-  return peers.length ? `같은 분야 기업 ${peers.length}개를 보유 중이에요. 분야가 겹치는지 확인하세요.` : '현재 등록한 개별주식과 다른 기업이에요. ETF 안에 포함된 기업은 별도로 확인하세요.'
+  return peers.length ? `같은 분야의 ${peers.slice(0, 3).map(row => row.holding.name).join(' · ')}${peers.length > 3 ? ` 외 ${peers.length - 3}개` : ''}를 보유 중이에요. 분야가 겹치는지 확인하세요.` : '현재 등록한 개별주식과 다른 기업이에요. ETF 안에 포함된 기업은 별도로 확인하세요.'
 }

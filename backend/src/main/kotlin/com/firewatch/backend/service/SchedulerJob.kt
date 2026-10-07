@@ -51,7 +51,7 @@ class SchedulerJob(
     @Scheduled(cron = "\${firewatch.scheduler.cron}", zone = "\${firewatch.scheduler.timezone}")
     fun runMorningBriefing() { try { executePipeline() } finally { operationsPush.flush(java.time.Instant.now()) } }
 
-    // Design Ref: §4.1 POST /api/scheduler/trigger — 디버그·QA용 수동 실행, 쓰기 API라 X-API-Key 요구(ADR 0004).
+    // Manual entry shares OperatorAccess with the controller; scheduled internal execution stays independent.
     // runMorningBriefing()을 this로 재호출하지 않고 별도 진입점으로 둔다 — Spring AOP는 같은 빈 안에서
     // this.메서드() 자기호출을 가로채지 못해(self-invocation), 그렇게 하면 이 진입점 자체가 감사로그에
     // 안 남는다. 별도 public 메서드라야 프록시를 거쳐 SCHEDULER 이벤트가 정상적으로 기록된다.
