@@ -30,15 +30,16 @@ button:focus-visible,a:focus-visible { outline: 2px solid var(--ant-color-primar
 @media(max-width:600px) { .site-header.ant-layout-header { padding: 0 16px; }.site-brand-row { gap: 0; }.site-brand-row a { padding-inline: 7px !important; font-size: 12px !important; }.page-intro { padding: 24px; } }
 
 .app-content { padding: 24px; }
-.site-footer.ant-layout-footer { padding: 32px 24px 24px; border-top: 1px solid var(--ant-color-border); background: var(--ant-color-bg-container); color: var(--ant-color-text-secondary); }
+.site-footer.ant-layout-footer { --footer-muted: color-mix(in srgb,var(--ant-color-text) 76%,var(--ant-color-bg-container)); padding: 32px 24px 24px; border-top: 1px solid var(--ant-color-border); background: var(--ant-color-bg-container); color: var(--footer-muted); }
 .site-footer-inner,.site-footer-meta { max-width: 1352px; margin-inline: auto; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .site-footer-brand a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--ant-color-text); font-size: 17px; }
 .site-footer-brand p { margin: 4px 0 0; font-size: 13px; }
 .site-footer-links { display: flex; align-items: center; gap: 8px 16px; flex-wrap: wrap; }
-.site-footer-links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ant-color-text-secondary); font-size: 13px; }
+.site-footer-links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--footer-muted); font-size: 13px; }
 .site-footer-links a:hover { color: var(--ant-color-primary); }
 .site-footer-meta { border-top: 1px solid var(--ant-color-border); padding-top: 16px; margin-top: 24px; font-size: 12px; line-height: 1.7; }
 .opensource-page { display: grid; gap: 24px; max-width: 960px; margin-inline: auto; }
+.opensource-page .ant-typography-secondary { color: color-mix(in srgb,var(--ant-color-text) 76%,var(--ant-color-bg-container)); }
 .opensource-credit-heading { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
 .opensource-symbol { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: var(--ant-color-fill-tertiary); color: var(--ant-color-primary); font-size: 26px; }
 .opensource-credit-heading .ant-tag { margin-inline-start: auto; }
