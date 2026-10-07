@@ -1,0 +1,36 @@
+# EAS archives the Git repository root. Ship only the Android app and shared code.
+*
+!.easignore
+!mobile/
+!mobile/src/
+!mobile/src/**
+!mobile/assets/
+!mobile/assets/**
+!mobile/scripts/
+!mobile/scripts/**
+!mobile/app.config.js
+!mobile/app.json
+!mobile/babel.config.js
+!mobile/eas.json
+!mobile/eslint.config.js
+!mobile/metro.config.js
+!mobile/nativewind-env.d.ts
+!mobile/package.json
+!mobile/package-lock.json
+!mobile/tailwind.config.js
+!mobile/tsconfig.json
+!mobile/LICENSE
+!shared/
+!shared/**
+
+# Never upload local credentials, environment files, or generated output.
+**/.env*
+**/*.jks
+**/*.pem
+**/*.key
+**/*service-account*.json
+**/*firebase-adminsdk*.json
+**/google-services.json
+**/node_modules/
+**/dist/
+**/dist-review/

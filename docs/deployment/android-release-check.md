@@ -5,7 +5,8 @@
 ## 준비
 
 - 사용자 제공 Android OAuth 공개 ID를 로컬 `mobile/.env`와 `eas.json` 공통 프로필에 반영했다. 운영 API도 EAS에 명시했다. ID 설정과 실제 로그인 성공은 구분한다.
-- `cd mobile`에서 `npm run release:check`를 실행한다. 현재 Firebase 앱 파일이 없어 푸시 검사는 실패한다. `mobile/google-services.json` 또는 EAS 파일 변수 `GOOGLE_SERVICES_JSON`으로 공급한다. preview/production post-install도 검사한다.
+- `cd mobile`에서 `npm run release:check`를 실행한다. 사용자 추가 Firebase 앱 파일의 프로젝트 firewatch-25e21·Android 패키지 일치·동적 설정 연결 및 로컬 검사 통과를 확인했다. EAS preview/production에 secret 파일 변수 `GOOGLE_SERVICES_JSON`을 등록했다. preview/production post-install도 검사한다.
+- 저장소 루트 `.easignore`는 mobile/shared만 빌드에 전달하며 로컬 환경·서명 키·Firebase 파일·개인 작업 문서를 제외한다. Firebase 앱 파일은 위 EAS 파일 변수로 전달한다.
 - EAS Credentials의 FCM V1 서비스 계정 설정과 서명 SHA-1은 별도 확인한다. 비밀 키는 앱 번들에 넣지 않는다. [Expo FCM 안내](https://docs.expo.dev/push-notifications/fcm-credentials/).
 - Google Console의 패키지 `com.firewatch.mobile`과 실제 서명 SHA-1이 설치 빌드에 맞는지 확인한다. 개발·Play 서명이 다르면 해당 서명의 클라이언트를 준비하고 Render audience 목록에도 포함한다.
 - `mobile/eas.json`의 development APK는 dev client로 로그인 확인에 사용한다. Expo Go/Android JS 번들은 설치 앱 OAuth 확인을 대신하지 않는다.
