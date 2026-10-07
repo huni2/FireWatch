@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Alert, Button, Card, Drawer, Empty, Grid, Input, Segmented, Space, Tag, Typography } from 'antd'
 import { Link } from 'react-router-dom'
-import { catalogVerifiedAt, companies, companyNews, companySector, findCompany, isRecommended, portfolioContext, qualifiedRecommendations, recommendationFor, searchCompanies, sectors, type Company, type DiscoveryBriefing } from '../../../../shared/discovery'
+import { catalogVerifiedAt, companies, companyNews, companySector, findCompany, isRecommended, portfolioContext, qualifiedRecommendations, recommendationFor, searchCompanies, sectors, type Company, type RecommendationReport } from '../../../../shared/discovery'
 import type { Portfolio } from '../../../../shared/investing'
 import './discovery.css'
 
-export function CompanyDiscovery({ briefing, portfolio, loading = false, shortTerm = false }: { briefing?: DiscoveryBriefing | null; portfolio?: Portfolio | null; loading?: boolean; shortTerm?: boolean }) {
+export function CompanyDiscovery({ briefing, portfolio, loading = false, shortTerm = false }: { briefing?: RecommendationReport | null; portfolio?: Portfolio | null; loading?: boolean; shortTerm?: boolean }) {
   const screens = Grid.useBreakpoint()
   const [sectorId, setSectorId] = useState('all')
   const [region, setRegion] = useState('all')
@@ -18,18 +18,19 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, shortTe
   const detail = selected && recommendationFor(selected, briefing)
   const news = selected ? companyNews(selected, briefing) : []
   return <Space direction="vertical" size={24} style={{ width: '100%' }}>
-    <Card className="discovery-intro">
-      <span className="eyebrow">{shortTerm ? 'PRE-MARKET WATCH' : 'FIND YOUR NEXT IDEA'}</span>
-      <Typography.Title level={2}>분야를 이해하고, 기업을 발견하세요.</Typography.Title>
-      <Typography.Paragraph type="secondary">분야 → 기업이 하는 일 → 추천 근거 → 내 보유와 비교</Typography.Paragraph>
-      <Space wrap><Tag>{sectors.length}개 분야</Tag><Tag>탐색 기업 {companies.length}개</Tag><Tag color="orange">{loading ? '추천 자료 확인 중' : `근거 있는 브리핑 후보 ${picks.length}개`}</Tag>{briefing && <Tag>자료 기준 {briefing.briefingDate}</Tag>}</Space>
-    </Card>
+    <header className="compact-intro discovery-intro">
+      <Typography.Title level={2}>{shortTerm ? '단기 관찰 후보를 점검하세요.' : '분야별 기업과 추천 근거를 살펴보세요.'}</Typography.Title>
+      <p>{shortTerm ? '장전 자료 기반의 관찰 목록 · 일반 후보와 같은 분석을 사용하며 실시간 진입·청산 신호는 제공하지 않아요.' : '분야 → 기업 → 추천 이유·위험 → 내 보유와 비교'}</p>
+      <Space wrap style={{ marginTop: 12 }}><Tag>{sectors.length}개 분야 · 기업 {companies.length}개</Tag><Tag color="orange">{loading ? '추천 자료 확인 중' : '근거 있는 후보 ' + picks.length + '개'}</Tag></Space>
+    </header>
+    {briefing && <div className="data-status-line"><div><strong>사용 지표 기준 · {briefing.sourceBriefingDate ?? briefing.briefingDate}</strong><span>{briefing.analyzedAt ? '분석 ' + new Date(briefing.analyzedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + ' KST' : '분석 시각 확인 필요'}</span></div><Link to="/news">이후 뉴스 확인 →</Link></div>}
     <section aria-label="개별 종목 추천" data-tour="candidate-recommendations">
       <Typography.Title level={4}>{shortTerm ? '장전 개별 종목 관찰 후보' : '브리핑이 고른 개별 종목'}</Typography.Title>
       {loading && !picks.length ? <Typography.Paragraph type="secondary">브리핑 추천 자료를 불러오는 중이에요. 분야와 기업은 먼저 탐색할 수 있어요.</Typography.Paragraph> : picks.length ? <div className="company-grid">{picks.map(pick => {
         const company = findCompany(pick.stockName)
         return <Card key={pick.stockName} className="company-card"><Tag color="orange">AI 해석 · {briefing?.briefingDate}</Tag><Typography.Title level={4}>{company?.name ?? pick.stockName}</Typography.Title>
-          <Typography.Paragraph>{pick.reason}</Typography.Paragraph><Typography.Paragraph type="secondary">확인할 위험 · {pick.risk}</Typography.Paragraph>
+          <Typography.Paragraph>{pick.reason}</Typography.Paragraph><div className="recommendation-risk"><strong>확인할 위험</strong><p>{pick.risk}</p></div>
+          <details className="recommendation-evidence"><summary>근거 기사 {pick.sourceNewsLinks.length}개 확인</summary><ul>{pick.sourceNewsLinks.map(link => briefing?.news.find(article => article.link === link)).filter(article => article != null).map(article => <li key={article.link}><a href={article.link} target="_blank" rel="noopener noreferrer">{article.title}</a></li>)}</ul></details>
           {company ? <Button onClick={() => setSelected(company)}>기업과 근거 살펴보기</Button> : <Link to={`/stocks?q=${encodeURIComponent(pick.stockName)}`}>종목명으로 확인</Link>}
         </Card>
       })}</div> : <Alert type="info" showIcon message="종목별 근거가 확인된 추천을 기다리고 있어요." description="기업 탐색은 아래에서 계속할 수 있어요. 과거 추천 중 근거가 없는 기록은 추천 목록에 포함하지 않습니다." />}

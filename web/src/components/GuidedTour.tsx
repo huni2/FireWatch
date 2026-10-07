@@ -9,7 +9,7 @@ const lessons = [
   { path: '/', target: 'portfolio-intro', title: '내 투자 기록부터 시작해요', description: 'FireWatch는 보유 자산과 목표를 직접 기록하고 점검하는 공간이에요. 실제 주식 주문이나 증권사 계좌 연동은 여기서 이루어지지 않아요.' },
   { path: '/', target: 'portfolio-holdings', title: '회사명 → 수량 → 평균 매입가', description: '자산 추가를 누르고 회사 이름을 검색한 뒤 보유 수량과 평균 매입가를 입력하세요. 저장하고 분석하기를 누르면 내 투자 구성을 확인할 수 있어요. 안내 중에는 입력이나 저장을 하지 않아요.' },
   { path: '/candidates', target: 'candidate-recommendations', title: '추천의 이유와 위험을 함께 읽어요', description: '분야별 기업을 둘러보고, 개별 종목 추천의 근거와 위험을 확인하세요. 기업을 선택하면 가격·그래프·관련 뉴스를 자세히 볼 수 있어요.' },
-  { path: '/news', target: 'news-search', title: '그때의 뉴스도 다시 찾아봐요', description: '회사명이나 관심 키워드를 입력하고 날짜 범위를 선택하세요. 수집해 저장한 뉴스에서 투자 판단의 맥락을 찾아볼 수 있어요.' },
+  { path: '/news', target: 'news-search', title: '그때의 뉴스도 다시 찾아봐요', description: '회사명이나 관심 키워드를 입력하세요. 오늘·최근 7일을 선택하거나 날짜 직접 선택을 펼쳐 범위를 지정할 수 있어요. 수집해 저장한 뉴스에서 투자 판단의 맥락을 찾아볼 수 있어요.' },
   { path: '/game', target: 'game-intro', title: '가상투자로 선택을 연습해요', description: '게임 시작 → AI 픽의 이유 확인 → 매수·매도 금액 확인 → 다음 턴 순서로 진행해요. 턴 결과에서 가격이 움직인 이유를 돌아보세요. 가격·뉴스·AI 픽은 모두 가상이며 실제 포트폴리오와 별개예요.' },
 ]
 const entryPaths = new Set(['/', '/candidates', '/briefing', '/stocks', '/indices', '/news', '/short-term', '/game', '/guide', '/usage'])

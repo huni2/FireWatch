@@ -1,14 +1,15 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { GuidedTour } from './GuidedTour'
 import { showFirstVisitGuide } from './guideEvents'
 import { CollectionNotice } from './CollectionNotice'
-import { Layout, Switch } from 'antd'
+import { Button, Drawer, Layout, Switch } from 'antd'
 import {
   AuditOutlined,
   FundOutlined,
   LineChartOutlined,
   DashboardOutlined,
   MoonOutlined,
+  MenuOutlined,
   QuestionCircleOutlined,
   ReadOutlined,
   SettingOutlined,
@@ -30,8 +31,7 @@ interface NavItem {
   label: string
 }
 
-// WEB-12(2026-10-04) — "가이드"·"사용방법"이 각자 자리를 차지해 메뉴 8자리 중 2자리를 썼다는
-// 지적(2026-09-28)으로 "도움말" 하나로 통합(HelpPage 내부 탭으로 두 콘텐츠 모두 접근 가능).
+// Keep four daily destinations visible and every other route discoverable in 전체 메뉴.
 const CONTENT_ITEMS: NavItem[] = [
   { key: '/', icon: <DashboardOutlined />, label: '내 포트폴리오' },
   { key: '/candidates', icon: <FundOutlined />, label: '투자 후보' },
@@ -48,30 +48,20 @@ const ADMIN_ITEMS: NavItem[] = [
   { key: '/audit-log', icon: <AuditOutlined />, label: '감사로그' },
   { key: '/settings', icon: <SettingOutlined />, label: '설정' },
 ]
+const COMPACT_LABELS: Record<string, string> = { '/': '내 기록', '/candidates': '기업 탐색', '/news': '뉴스', '/game': '게임' }
 
-// 상단 헤더 메뉴 — AntD `Menu mode="horizontal"`을 쓰면 폭이 좁을 때 항목이 자동으로 "..."
-// 더보기 안에 숨는데, 그게 오히려 "일부 메뉴가 안 보인다"는 지적으로 이어졌다(2026-08-23) —
-// 항목을 절대 숨기지 않는 직접 만든 링크 목록으로 대체, 안 들어가면 가로 스크롤로 처리한다.
+// Primary routes stay visible; the explicitly labelled menu exposes all destinations.
 function TopNavLink({ item, active }: { item: NavItem; active: boolean }) {
   return (
     <Link
       to={item.key}
+      aria-label={item.label}
       aria-current={active ? 'page' : undefined}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        height: 46,
-        padding: '0 12px',
-        whiteSpace: 'nowrap',
-        fontSize: 14,
-        color: active ? 'var(--ant-color-primary)' : 'var(--ant-color-text)',
-        fontWeight: active ? 600 : 400,
-        borderBottom: active ? '2px solid var(--ant-color-primary)' : '2px solid transparent',
-      }}
+      className={`nav-link ${active ? 'is-active' : ''}`}
     >
-      {item.icon}
-      {item.label}
+      <span className="nav-icon" aria-hidden="true">{item.icon}</span>
+      <span className="nav-desktop-label" aria-hidden="true">{item.label}</span>
+      <span className="nav-mobile-label" aria-hidden="true">{COMPACT_LABELS[item.key] ?? item.label}</span>
     </Link>
   )
 }
@@ -81,6 +71,8 @@ function TopNavLink({ item, active }: { item: NavItem; active: boolean }) {
 // 사이드바의 완전 숨김 토글도 더는 필요 없어 헤더가 그 자체로 항상 보이는 메뉴가 된다.
 export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
   const location = useLocation()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const active = (item: NavItem) => location.pathname === item.key || (item.key === '/guide' && location.pathname === '/usage')
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -92,11 +84,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
             FireWatch
           </span>
         </Link>
-        <div style={{ display: 'flex', marginInlineStart: 'auto', flexShrink: 0 }}>
-          {ADMIN_ITEMS.map((item) => (
-            <TopNavLink key={item.key} item={item} active={location.pathname === item.key} />
-          ))}
-        </div>
+        <Button className="all-menu-button" aria-label="전체 메뉴" icon={<MenuOutlined />} aria-expanded={menuOpen} onClick={() => setMenuOpen(true)} style={{ marginInlineStart: 'auto' }}>전체 메뉴</Button>
         <Switch
           aria-label="다크 모드"
           checked={darkMode}
@@ -107,9 +95,14 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         />
         </div>
         <nav className="site-navigation" aria-label="주요 메뉴">
-          {CONTENT_ITEMS.map((item) => <TopNavLink key={item.key} item={item} active={location.pathname === item.key || (item.key === '/guide' && location.pathname === '/usage')} />)}
+          {CONTENT_ITEMS.filter(item => ['/', '/candidates', '/news', '/game'].includes(item.key)).map(item => <TopNavLink key={item.key} item={item} active={active(item)} />)}
         </nav>
       </Header>
+      <Drawer title="전체 메뉴" open={menuOpen} onClose={() => setMenuOpen(false)} width="min(400px, 100vw)">
+        <nav aria-label="전체 메뉴 목록" className="all-menu-list">
+          {[{ title: '투자 기록·탐색', paths: ['/', '/candidates', '/stocks', '/short-term'] }, { title: '시장 소식·자료', paths: ['/news', '/briefing', '/indices'] }, { title: '게임·이용 안내', paths: ['/game', '/guide', '/settings'] }, { title: '운영', paths: ['/audit-log'] }].map(group => <section key={group.title}><h2>{group.title}</h2>{[...CONTENT_ITEMS, ...ADMIN_ITEMS].filter(item => group.paths.includes(item.key)).map(item => <Link key={item.key} to={item.key} aria-current={active(item) ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{item.icon}<span>{item.key === '/short-term' ? '단기 관찰' : item.label}</span></Link>)}</section>)}
+        </nav>
+      </Drawer>
       <Content className="app-content" style={{ maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
         <CollectionNotice />
         <Outlet />
