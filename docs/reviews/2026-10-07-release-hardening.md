@@ -23,7 +23,7 @@ Android `expo export --platform android --output-dir dist-review` 성공. 이는
 
 ## 남은 단계
 
-Render/GitHub에 동일한 서버 전용 OPERATOR_API_KEY 등록 확인 후 main 반영·서버/웹 배포·예약 수집 확인이 필요하다. 배포 전 작업 브랜치는 기존 운영 데이터를 변경하지 않았다. 운영 푸시 테스트는 기기에서 실제 수신 확인이 필요하며 제공처 수락만으로 완료 처리하지 않는다.
+2026-10-07 사용자 키 등록 확인 후 33bcd37을 main에 반영했다. Render health/ETF 카탈로그 200, 익명 운영 진단 401을 확인했다. [예약 폴링 37602746664](https://github.com/huni2/FireWatch/actions/runs/37602746664)는 새 OPERATOR_API_KEY로 HTTP 200·triggered:true에 성공했다. 수집 접수와 완료는 구분한다. Cloudflare 프로덕션 9ecdd71d 배포 후 실제 Google 버튼 360/390/1440px·익명 감사로그 차단, ETF 필터 5→한국 2개·투자 이용안내 390/1440px를 확인했다. JS 오류·가로 넘침 없음. 운영 푸시 테스트는 기기에서 실제 수신 확인이 필요하며 제공처 수락만으로 완료 처리하지 않는다.
 
 19개 목록은 전 시장 카탈로그가 아니며 최신 비용·ETF 구성 종목·환헤지·시장 휴장/확정 종가를 자동 수집하는 작업은 별도다. 대규모 pg_trgm 유사 검색·응답 시간 계획도 후속이다.
 
