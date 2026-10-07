@@ -4,7 +4,14 @@
     "appVersionSource": "local"
   },
   "build": {
+    "base": {
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://firewatch-backend-q3cv.onrender.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "36757449765-ffq3v9lmljf1ahladb2uhvhbqb78l696.apps.googleusercontent.com"
+      }
+    },
     "development": {
+      "extends": "base",
       "developmentClient": true,
       "distribution": "internal",
       "android": {
@@ -12,12 +19,16 @@
       }
     },
     "preview": {
+      "extends": "base",
+      "environment": "preview",
       "distribution": "internal",
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
+      "extends": "base",
+      "environment": "production",
       "autoIncrement": true
     }
   }

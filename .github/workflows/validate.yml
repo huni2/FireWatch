@@ -54,3 +54,5 @@ jobs:
         run: npm run build
       - if: matrix.client == 'mobile'
         run: npx tsc --noEmit
+      - if: matrix.client == 'mobile'
+        run: node --test scripts/release-check.test.cjs

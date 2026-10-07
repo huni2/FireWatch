@@ -1,6 +1,5 @@
-// 설정 화면에 Google 계정 연동(선택) 버튼 추가(APP-6, ADR 0012). expo-auth-session의 Android 네이티브
-// 클라이언트 플로우는 Expo Go에서 동작하지 않음(Expo 호스팅 리다이렉트 프록시 폐지, 2026-10) —
-// 커스텀 dev client 빌드(`eas build --profile development`)에서만 실제 로그인 왕복이 가능하다.
+// 선택적 Google 계정 연결(APP-6). 커스텀 Android 빌드에서 서명/OAuth 왕복을 검증한다.
+// Expo Go와 JS export는 설치 앱의 로그인 검증을 대신하지 않는다.
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native'
 import * as Google from 'expo-auth-session/providers/google'

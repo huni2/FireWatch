@@ -1,5 +1,8 @@
 # FireWatch — Context
 
+## 2026-10-07 Android 출시 설정 보강
+APP-21: 사용자 제공 Android 공개 OAuth ID를 git 제외 mobile/.env와 EAS base에 반영하고 운영 API를 명시했다. app.config.js는 로컬 google-services.json 또는 EAS 파일 변수 GOOGLE_SERVICES_JSON을 연결한다. preview/production post-install 검사는 API/OAuth/패키지/FCM 파일과 공개 비밀 키를 검사하며 CI는 8개 회귀를 실행한다. Firebase 앱 파일은 아직 없고 EAS FCM 자격증명·서명·실기기는 미검증이다. PLAY_STORE.md의 금융 정보 미수집/모든 금융 기능 없음/내부·비공개 테스트 혼동을 현재 기능과 Google 공식 정책 기준으로 수정했다. APK·스토어 출시 완료를 의미하지 않는다.
+
 ## 2026-10-07 피드백·공지 구현
 최종 5215be7 CI 37609558546에서 전체 153개 테스트·실제 PostgreSQL·웹/모바일 성공. 관리 API는 Google 운영자 세션만 허용하며 예약 서버 키는 읽기 권한이 없다. 사용자 Render 완료 확인 후 새 공지 API 200·익명 관리 401을 확인하고 Cloudflare 프로덕션 8917ec2f 배포했다. 실제 390/1440px 공지 빈 상태·문의 로그인 안내·운영 탭 숨김·개인정보 안내를 확인했으며 JS 오류/가로 넘침/실제 쓰기 0건이다. 기존 09-01~10-07 브리핑 37건은 배포 전후 유지됐다. BE-26/WEB-20 종료, APP-20 실기기 확인은 남아 있다.
 BE-26/WEB-20/APP-20 등록 후 로그인 사용자 문의/본인 답변, 운영자 웹 접수·상태·답변·공지 편집, 서버 권한과 시간당 3건·요청 UUID 중복 방지, 영속 운영 푸시 outbox를 추가했다. 웹/네이티브 공지 목록·첫 진입 모달과 KST 오늘 숨김(계정 서버 공유/익명 기기 저장)을 연결했다. 웹은 닫기 후 탭 세션에서 재노출하지 않으며 안내와 겹치지 않는다. 개인정보 방침에 문의·숨김 저장과 계정 삭제 범위를 반영했다. docs/product/community-support.md. 운영 배포 여부는 최신 로그를 따른다. Android 실기기/푸시 실수신은 별도이며 실제 운영 DB에 테스트 공지는 만들지 않는다.

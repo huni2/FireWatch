@@ -4,7 +4,9 @@
 
 ## 준비
 
-- `mobile/.env` 또는 EAS 환경에 운영 API 주소와 **EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID**를 설정한다. Android OAuth의 공개 ID이며 이번 웹 ID로 대체하지 않는다. 현 로컬 번들은 Android ID가 없어 로그인 준비 중 화면을 표시한다.
+- 사용자 제공 Android OAuth 공개 ID를 로컬 `mobile/.env`와 `eas.json` 공통 프로필에 반영했다. 운영 API도 EAS에 명시했다. ID 설정과 실제 로그인 성공은 구분한다.
+- `cd mobile`에서 `npm run release:check`를 실행한다. 현재 Firebase 앱 파일이 없어 푸시 검사는 실패한다. `mobile/google-services.json` 또는 EAS 파일 변수 `GOOGLE_SERVICES_JSON`으로 공급한다. preview/production post-install도 검사한다.
+- EAS Credentials의 FCM V1 서비스 계정 설정과 서명 SHA-1은 별도 확인한다. 비밀 키는 앱 번들에 넣지 않는다. [Expo FCM 안내](https://docs.expo.dev/push-notifications/fcm-credentials/).
 - Google Console의 패키지 `com.firewatch.mobile`과 실제 서명 SHA-1이 설치 빌드에 맞는지 확인한다. 개발·Play 서명이 다르면 해당 서명의 클라이언트를 준비하고 Render audience 목록에도 포함한다.
 - `mobile/eas.json`의 development APK는 dev client로 로그인 확인에 사용한다. Expo Go/Android JS 번들은 설치 앱 OAuth 확인을 대신하지 않는다.
 - 실수신할 기기를 준비한다. 현재 작업 환경에서 연결된 Android 기기/ADB는 확인하지 못했다.
@@ -18,3 +20,5 @@
 5. 기기 해제·로그아웃 후 계정 자료가 유지되고 재로그인으로 다시 읽히는지 확인한다.
 6. 계정 삭제는 별도 폐기 가능한 테스트 계정으로 검증한다. 운영자 실제 기록은 삭제 시험에 사용하지 않는다.
 7. Play 게시 전에 개인정보처리방침·Data Safety·금융 기능 선언·공개 삭제 안내를 실제 현재 기능과 대조한다. 이 문서는 게시/심사 완료를 의미하지 않는다.
+8. 일반 사용자 문의 접수 → 내 문의 재조회 → 운영자 웹 답변 → 앱 답변 확인. 타인의 문의와 운영 관리가 노출되지 않아야 한다.
+9. Android/ALL 대상 공지가 있을 때 첫 진입 모달·닫기·이동 중 재노출 없음·오늘 숨김·KST 자정 후 다음 실행을 확인한다. 운영 DB에 검증 공지를 자동 생성하지 않는다.

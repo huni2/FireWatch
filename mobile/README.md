@@ -1,67 +1,38 @@
 # FireWatch Mobile
 
-Expo(React Native) + NativeWind + Expo Router 기반 FireWatch 모바일 앱. `web/`이 소비하는 것과 동일한 백엔드 API를 재사용한다 — 자세한 배경은 `docs/02-design/features/mobile-app.design.md` 참조.
+Expo + React Native + Expo Router 기반 앱. 웹과 동일한 백엔드를 사용하며 개인 포트폴리오, 시장 자료, 별도의 가상 게임, 공지·문의 화면을 제공한다.
 
-## 시작하기
+## 개발
 
-```bash
-npm install
+~~~bash
+npm ci
 npx expo start
-```
+~~~
 
-터미널에 뜨는 QR코드를 [Expo Go](https://expo.dev/go) 앱으로 스캔하면 실기기에서 확인할 수 있다. 이 개발 환경(Windows)에서는 iOS 시뮬레이터를 쓸 수 없어 실기기 검증이 기본 경로다.
+Expo Go에서 볼 수 있는 화면과 설치 앱 검증을 구분한다. Google 로그인과 Android 원격 푸시는 커스텀 네이티브 빌드·실기기에서 확인한다.
 
-### 푸시 알림 테스트 전 1회만: EAS 프로젝트 연결
+## Android 출시 준비
 
-FCM 토큰 등록(APP-2)은 Expo Push Service를 쓰는데, `getExpoPushTokenAsync()`가 `app.json`의
-`extra.eas.projectId`를 필요로 한다. 무료 Expo 계정으로 한 번만 연결하면 된다.
+~~~bash
+npm run release:check
+npx eas-cli build --platform android --profile preview
+~~~
 
-```bash
-npx eas login    # 계정 없으면 https://expo.dev 에서 무료 가입
-npx eas init     # app.json에 extra.eas.projectId를 자동으로 채워준다
-```
+EAS 프로젝트는 이미 app.json에 연결되어 있다. eas.json은 운영 API·Android 공개 OAuth ID를 공통 설정으로 전달한다. preview는 APK, production은 AAB다. 두 Android 프로필의 post-install 검사는 누락된 Firebase 파일·잘못된 API/OAuth/패키지 설정을 차단한다.
 
-연결 전에는 앱이 크래시하지 않고 콘솔에 경고만 남기며 토큰 등록을 건너뛴다(`useNotificationRegistration.ts`).
+로컬 google-services.json 또는 EAS 파일 변수 GOOGLE_SERVICES_JSON이 필요하다. app.config.js가 연결한다. EAS FCM V1 자격증명과 Google 서명 SHA-1은 별도로 설정·검증한다. 서버 운영 키·클라이언트 비밀번호는 앱 환경변수에 넣지 않는다.
 
-## 폰에 설치하기(APK 다운로드)
+[Play 제출 안내](./PLAY_STORE.md)와 [실기기 검증 목록](../docs/deployment/android-release-check.md)을 따른다. 설정 검사 통과는 실제 로그인·푸시·심사 통과를 의미하지 않는다.
 
-스토어 등록 없이 APK 파일을 직접 받아 설치하는 방식 — Android만 지원한다(iOS 사이드로드는 Apple
-Developer Program 연 $99가 필요해 이 프로젝트의 "월 $0" 원칙과 맞지 않아 범위에서 제외, [[../llm-wiki/Decisions/0003-mvp-scope-and-user-model]]).
+## 이전 APK
 
-**다운로드**: **[FireWatch-mobile.apk](https://github.com/huni2/FireWatch/releases/download/mobile-android-preview/FireWatch-mobile.apk)**
-([Release 페이지](https://github.com/huni2/FireWatch/releases/tag/mobile-android-preview)) — 폰에서 이 링크를 열어 받고
-"출처를 알 수 없는 앱 설치 허용"을 한 번 켜주면 설치된다. GitHub Release라 Expo 빌드 만료(14일)와 무관하게 계속 유효하다.
-
-새로 빌드해서 갱신하려면:
-
-```bash
-npx eas build --platform android --profile preview
-```
-
-빌드가 끝나면(보통 10~20분) `eas build:view <buildId> --json`의 `artifacts.buildUrl`에서 APK를 받아
-같은 릴리스에 다시 올린다:
-
-```bash
-gh release upload mobile-android-preview <다운로드한-apk-경로> --clobber
-```
+[기존 공개 APK](https://github.com/huni2/FireWatch/releases/download/mobile-android-preview/FireWatch-mobile.apk)는 과거 빌드다. 최근 공지·피드백·보안 변경이 포함되었다고 보장하지 않는다. 새 APK는 실기기 검증과 빌드 커밋 확인 후 릴리스에 올린다.
 
 ## 구조
 
-```
-src/
-├── app/        Expo Router 라우트(index, settings)
-├── features/   화면별 로직 (module-2부터 채워짐)
-└── lib/        api.ts, offlineCache.ts 등 공유 유틸
-```
+- src/app: Expo Router 경로
+- src/features: 기능별 화면과 상태
+- src/lib: API·기기·세션·캐시
+- scripts/release-check.cjs: Android 출시 설정 검사
 
-`app/`이 `src/` 밑에 있는 것은 이 SDK 버전의 `create-expo-app` 기본 템플릿 관례를 따른 것 — Design 문서의 `mobile/app/`과 경로만 다르고 계층 구분 의도는 동일하다.
-
-## 진행 상태
-
-- [x] APP-1: 스캐폴딩(Expo Router+NativeWind)
-- [x] APP-2: FCM 토큰 등록 + 푸시 수신(코드 완료 — 실기기+EAS 프로젝트 연결 필요)
-- [x] APP-3: 브리핑 홈 화면 + 오프라인 캐시(코드 완료 — 실기기 검증 필요)
-- [x] APP-4: 설정 화면(코드 완료 — 실기기 검증 필요)
-
-코드는 전부 끝났다. 남은 건 위에서 안내한 EAS 연결(`npx eas login && npx eas init`) 후
-`npx expo start`로 실기기 왕복 검증뿐 — 완료되면 이 체크리스트를 최종 확정한다.
+웹 배포가 완료되어도 APK는 자동 갱신되지 않는다. 현재 남은 확인은 설치 앱 Google 왕복·실제 푸시·공지/문의/삭제와 Play 제출 양식이다.
