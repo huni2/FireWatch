@@ -17,6 +17,7 @@ const NewsPage = lazy(() => import('./features/news/NewsPage').then((m) => ({ de
 const GamePage = lazy(() => import('./features/game/GamePage').then((m) => ({ default: m.GamePage })))
 const HelpPage = lazy(() => import('./features/help/HelpPage').then((m) => ({ default: m.HelpPage })))
 const PrivacyPage = lazy(() => import('./features/privacy/PrivacyPage').then((m) => ({ default: m.PrivacyPage })))
+const OpenSourcePage = lazy(() => import('./features/opensource/OpenSourcePage').then(m => ({ default: m.OpenSourcePage })))
 const PortfolioPage = lazy(() => import('./features/portfolio/PortfolioPage').then(m => ({ default: m.PortfolioPage })))
 const CandidatesPage = lazy(() => import('./features/candidates/CandidatesPage').then(m => ({ default: m.CandidatesPage })))
 
@@ -114,6 +115,7 @@ export default function App() {
                 }
               />
               <Route path="*" element={<NotFoundPage />} />
+              <Route path="open-source" element={<Suspense fallback={<Skeleton active />}><OpenSourcePage /></Suspense>} />
             </Route>
           </Routes>
         </BrowserRouter>

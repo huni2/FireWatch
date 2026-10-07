@@ -112,14 +112,19 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         <CollectionNotice />
         <Outlet />
       </Content>
-      <Footer style={{ textAlign: 'center', fontSize: 13, display: 'flex', justifyContent: 'center', gap: 16 }}>
-        <Link to="/guide" style={{ color: 'var(--ant-color-text-secondary)' }}>
-          이용안내
-        </Link>
-        <a href="/third-party-notices.txt" style={{ color: 'var(--ant-color-text-secondary)' }}>오픈소스 고지</a>
-        <Link to="/privacy" style={{ color: 'var(--ant-color-text-secondary)' }}>
-          개인정보처리방침
-        </Link>
+      <Footer className="site-footer">
+        <div className="site-footer-inner">
+          <div className="site-footer-brand">
+            <Link to="/" aria-label="푸터 FireWatch 메인 페이지로 이동"><img src="/favicon.png" alt="" width={24} height={24} /><strong>FireWatch</strong></Link>
+            <p>시장을 읽고, 내 투자 계획을 점검하세요.</p>
+          </div>
+          <nav aria-label="서비스 안내" className="site-footer-links">
+            <Link to="/guide">이용안내</Link>
+            <Link to="/open-source">오픈소스 고지</Link>
+            <Link to="/privacy">개인정보처리방침</Link>
+          </nav>
+        </div>
+        <div className="site-footer-meta"><span>시장 자료 · 포트폴리오 · 가상투자 연습</span><span>가상투자 게임의 뉴스와 가격은 가상 자료입니다.</span></div>
       </Footer>
     </Layout>
   )
