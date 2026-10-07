@@ -84,12 +84,12 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
     <Layout style={{ minHeight: '100vh' }}>
       <Header className="site-header">
         <div className="site-brand-row">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginInlineEnd: 16 }}>
+        <Link to="/" aria-label="FireWatch 메인 페이지로 이동" style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, flexShrink: 0, marginInlineEnd: 16 }}>
           <img src="/favicon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
           <span style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.4, color: 'var(--ant-color-text)' }}>
             FireWatch
           </span>
-        </div>
+        </Link>
         <div style={{ display: 'flex', marginInlineStart: 'auto', flexShrink: 0 }}>
           {ADMIN_ITEMS.map((item) => (
             <TopNavLink key={item.key} item={item} active={location.pathname === item.key} />
