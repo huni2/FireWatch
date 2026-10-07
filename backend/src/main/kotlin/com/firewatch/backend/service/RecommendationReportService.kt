@@ -21,6 +21,7 @@ data class RecommendationReport(
     val news: List<NewsArticleResponse>,
     val status: String,
     val marketSummary: String = "",
+    val excludedCount: Int = 0,
 )
 
 /** New analyses are immutable. Never backfill reasons into an old briefing. */
@@ -49,7 +50,7 @@ class RecommendationReportService(
             val links = articles.map { it.link }.filter { it.startsWith("https://") || it.startsWith("http://") }.toSet()
             val details = generated.recommendationDetails.filter { detail ->
                 detail.stockName in generated.recommendedStocks && detail.reason.isNotBlank() && detail.risk.isNotBlank() &&
-                    detail.sourceNewsLinks.any { it in links }
+                    detail.sourceNewsLinks.any { link -> link in links && articles.any { article -> article.link == link && mentionsCompany(article, detail.stockName) } }
             }.map { it.copy(sourceNewsLinks = it.sourceNewsLinks.filter { link -> link in links }) }.distinctBy { it.stockName }
             check(details.isNotEmpty()) { "NO_QUALIFIED_RECOMMENDATIONS" }
             RecommendationReport(today, source.briefingDate, now, details.map { it.stockName }, details, articles, "READY", generated.marketSummary)
@@ -64,7 +65,7 @@ class RecommendationReportService(
         val today = now.atZone(zone).toLocalDate()
         val json = jdbc.query("SELECT report_json FROM recommendation_reports WHERE analysis_date<=? ORDER BY analysis_date DESC LIMIT 1",
             { row, _ -> row.getString(1) }, today).firstOrNull()
-        return json?.let { mapper.readValue(it, RecommendationReport::class.java) }
+        return json?.let { visibleReport(mapper.readValue(it, RecommendationReport::class.java)) }
             ?: RecommendationReport(today, null, null, emptyList(), emptyList(), emptyList(), "WAITING")
     }
 
@@ -72,6 +73,22 @@ class RecommendationReportService(
         if (from > to || java.time.temporal.ChronoUnit.DAYS.between(from, to) > 366)
             throw com.firewatch.backend.web.ValidationException("분석 이력은 1년 이내 날짜 범위로 조회해주세요.", emptyMap())
         return jdbc.query("SELECT report_json FROM recommendation_reports WHERE analysis_date BETWEEN ? AND ? ORDER BY analysis_date DESC",
-            { row, _ -> mapper.readValue(row.getString(1), RecommendationReport::class.java) }, from, to)
+            { row, _ -> visibleReport(mapper.readValue(row.getString(1), RecommendationReport::class.java)) }, from, to)
+    }
+
+    private fun mentionsCompany(article: NewsArticleResponse, name: String): Boolean {
+        fun normalize(text: String) = text.lowercase().replace(Regex("\\s+"), "")
+        return name.isNotBlank() && normalize("${article.title} ${article.description.orEmpty()}").contains(normalize(name))
+    }
+
+    /** Preserve the original JSON; apply current evidence checks when displaying existing reports. */
+    private fun visibleReport(report: RecommendationReport): RecommendationReport {
+        val qualified = report.recommendationDetails.filter { detail ->
+            detail.stockName in report.recommendedStocks && detail.reason.isNotBlank() && detail.risk.isNotBlank() &&
+                detail.sourceNewsLinks.any { link -> report.news.any { article -> article.link == link && mentionsCompany(article, detail.stockName) } }
+        }
+        return report.copy(recommendedStocks = qualified.map { it.stockName }, recommendationDetails = qualified,
+            status = if (qualified.isEmpty()) "WAITING" else "READY", excludedCount = report.recommendationDetails.size - qualified.size,
+            marketSummary = if (qualified.size < report.recommendationDetails.size) "" else report.marketSummary)
     }
 }

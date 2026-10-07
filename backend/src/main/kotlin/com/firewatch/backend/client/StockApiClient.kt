@@ -73,9 +73,9 @@ class StockApiClient(
         if (trimmed.isEmpty()) return emptyList()
 
         val localMatches = KOREAN_STOCK_ALIASES.entries
-            .filter { (name, _) -> name.contains(trimmed) }
+            .filter { (name, _) -> name.contains(trimmed, ignoreCase = true) }
             .map { (name, symbol) -> StockSearchResult(symbol = symbol, name = name, exchange = "Korea") }
-        if (localMatches.isNotEmpty()) return localMatches.take(10)
+        if (localMatches.isNotEmpty()) return localMatches.distinctBy { it.symbol }.take(10)
 
         val encoded = UriUtils.encode(trimmed, StandardCharsets.UTF_8)
         val response = yahooClient.get()
@@ -94,6 +94,8 @@ class StockApiClient(
         // 코스피/코스닥 시가총액 상위권 위주 — 전수가 아니라 자주 찾을 법한 대형주만 커버(유지보수 부담 최소화).
         // 여기 없는 종목은 Yahoo 영문 검색으로 폴백되므로, 정확한 영문 사명을 알면 그걸로도 찾을 수 있다.
         private val KOREAN_STOCK_ALIASES = mapOf(
+            "HLB" to "028300.KQ",
+            "에이치엘비" to "028300.KQ",
             "삼성전자" to "005930.KS",
             "SK하이닉스" to "000660.KS",
             "LG에너지솔루션" to "373220.KS",

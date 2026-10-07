@@ -9,6 +9,13 @@ import kotlin.test.assertFailsWith
 class StockApiClientTest {
 
     @Test
+    fun `HLB는 같은 약칭의 해외 은행 대신 국내 상장 회사를 먼저 찾는다`() {
+        val client = StockApiClient("http://127.0.0.1:1")
+        assertEquals("028300.KQ", client.searchSymbols("hlb").single().symbol)
+        assertEquals("028300.KQ", client.searchSymbols("에이치엘비").single().symbol)
+    }
+
+    @Test
     fun `timestamp와 close를 짝지어 날짜별 종가를 뽑는다`() {
         val response = mapOf(
             "chart" to mapOf(

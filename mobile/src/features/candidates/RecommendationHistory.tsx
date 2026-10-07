@@ -15,7 +15,7 @@ export function RecommendationHistory() {
   }
   return <View className="gap-3 rounded-xl border border-line bg-surface p-4">
     <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={() => open ? setOpen(false) : void load()} className="min-h-11 justify-center"><Text className="text-lg font-semibold text-ink">추천 분석 보관함 · {open ? '접기' : '날짜별 근거 보기'}</Text></Pressable>
-    <Text className="text-sm text-muted">분석 당시 이유·위험·사용 기사를 그대로 보관합니다.</Text>
+    <Text className="text-sm text-muted">분석 당시 기록을 보존하고, 기업과 기사 연결을 확인한 후보의 이유·위험을 보여줍니다.</Text>
     {open && <>
       <TextInput accessibilityLabel="추천 분석 시작일" placeholder="시작일 YYYY-MM-DD (선택)" value={from} onChangeText={setFrom} className="rounded-lg border border-line p-3 text-ink" />
       <TextInput accessibilityLabel="추천 분석 종료일" placeholder="종료일 YYYY-MM-DD (선택)" value={to} onChangeText={setTo} className="rounded-lg border border-line p-3 text-ink" />

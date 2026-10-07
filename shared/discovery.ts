@@ -2,7 +2,7 @@ import type { FeedArticle, Portfolio } from './investing'
 
 export interface RecommendationDetail { stockName: string; reason: string; risk: string; sourceNewsLinks: string[] }
 export interface DiscoveryBriefing { briefingDate: string; recommendedStocks: string[]; recommendationDetails?: RecommendationDetail[]; news: FeedArticle[] }
-export interface RecommendationReport extends DiscoveryBriefing { sourceBriefingDate: string | null; analyzedAt: string | null; status: 'READY' | 'WAITING'; marketSummary: string }
+export interface RecommendationReport extends DiscoveryBriefing { sourceBriefingDate: string | null; analyzedAt: string | null; status: 'READY' | 'WAITING'; marketSummary: string; excludedCount?: number }
 export interface Sector { id: string; name: string; description: string; keywords: string[]; checks: string[] }
 export interface Company { symbol: string; name: string; aliases: string[]; sectorId: string; region: 'KR' | 'US'; description: string; source: string }
 export const catalogVerifiedAt = '2026-10-07'

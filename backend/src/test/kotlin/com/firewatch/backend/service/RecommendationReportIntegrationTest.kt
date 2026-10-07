@@ -62,4 +62,20 @@ class RecommendationReportIntegrationTest {
             GeminiBriefingResult("새 분석", listOf("삼성전자"), recommendationDetails = listOf(StockRecommendationDetail("삼성전자", "기사에 따른 관찰 이유", "확인할 위험", listOf(link))))
         return RecommendationReportService(jdbc, briefings, archive, gemini, jobs)
     }
+
+    @Test
+    fun `동일 기사 링크여도 다른 기업의 뉴스는 제외하고 원본 분석을 보존한다`() {
+        val date = LocalDate.of(2026, 10, 11)
+        val report = RecommendationReport(date, date, Instant.parse("2026-10-11T00:00:00Z"), listOf("미래에셋증권"),
+            listOf(StockRecommendationDetail("미래에셋증권", "계열사 혼동", "위험", listOf("https://example.com/affiliate"))),
+            listOf(NewsArticleResponse("TIGER ETF 순매수 증가", "https://example.com/affiliate", "미래에셋자산운용은 ETF를 운용한다", null)), "READY", "검증되지 않은 해석")
+        val json = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build().writeValueAsString(report)
+        jdbc.update("INSERT INTO recommendation_reports (analysis_date, source_briefing_date, analyzed_at, report_json) VALUES (?, ?, ?, ?)", date, date, java.sql.Timestamp.from(report.analyzedAt), json)
+        val result = service("https://example.com/affiliate").latest(Instant.parse("2026-10-11T01:00:00Z"))
+        assertEquals(0, result.recommendationDetails.size)
+        assertEquals(1, result.excludedCount)
+        assertEquals("WAITING", result.status)
+        assertEquals("", result.marketSummary)
+        assertEquals(json, jdbc.queryForObject("SELECT report_json FROM recommendation_reports WHERE analysis_date=?", String::class.java, date))
+    }
 }

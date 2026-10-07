@@ -13,6 +13,7 @@ export function CandidatesPage({ shortTerm = false }: { shortTerm?: boolean }) {
   const etfs = portfolio.data?.holdings.filter(h => h.holding.assetClass === 'ETF') ?? []
   return <Space direction="vertical" size={24} style={{ width: '100%' }}>
     <CompanyDiscovery briefing={briefing.data} portfolio={portfolio.data} loading={briefing.loading} shortTerm={shortTerm} />
+    {!!briefing.data?.excludedCount && <Alert type="info" message={`기업명과 근거 기사 연결을 확인하지 못한 후보 ${briefing.data.excludedCount}개는 제외했습니다.`} description="분석 원본은 보존하며 확인되지 않은 계열사 관계를 추천 근거로 사용하지 않습니다." />}
     {briefing.data?.analyzedAt && <Typography.Text type="secondary">분석 {new Date(briefing.data.analyzedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} 한국 시간 · 사용 지표 기준 {briefing.data.sourceBriefingDate} · 분석 후 추가 뉴스는 뉴스 메뉴에서 확인하세요.</Typography.Text>}
     <Alert type="info" showIcon message={shortTerm ? '실시간 진입·청산 신호는 제공하지 않습니다.' : '후보 확인 → 상품 비교 → 내 포트폴리오에 등록'} description={shortTerm ? '장전 자료로 선정된 관찰 후보입니다. 장중 뉴스와 가격 변화는 별도로 확인하세요.' : '브리핑 후보는 개별 매수 지시가 아닙니다. 보유 비중과 상품 설명을 함께 확인하세요.'} />
     {portfolio.error && <Alert type="warning" message="내 포트폴리오를 불러오지 못했습니다." action={<Button onClick={portfolio.reload}>재시도</Button>} />}

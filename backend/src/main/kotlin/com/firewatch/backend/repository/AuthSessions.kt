@@ -22,7 +22,7 @@ class AuthSessions(private val jdbc: JdbcTemplate) {
 
     @Transactional
     fun issue(deviceId: String, now: Instant = Instant.now()): LoginSession {
-        val userId = linkedUser(deviceId) ?: throw UnauthorizedException()
+        val userId = jdbc.query("SELECT user_id FROM device_links WHERE device_id=? FOR UPDATE", { row, _ -> row.getLong(1) }, deviceId).firstOrNull() ?: throw UnauthorizedException()
         val token = Base64.getUrlEncoder().withoutPadding().encodeToString(ByteArray(32).also(random::nextBytes))
         val expiry = now.plusSeconds(30L * 24 * 3600).truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
         jdbc.update("DELETE FROM auth_sessions WHERE device_id=?", deviceId)
