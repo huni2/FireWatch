@@ -8,7 +8,7 @@
 **BE는 번호가 곧 의존 순서**(스케줄러·감사로그 인프라가 먼저 서야 나머지가 그 위에 쌓인다).
 **WEB·APP은 서로 독립**이지만 대부분 특정 BE 과제에 의존한다 — 각 과제의 `무엇`에 명시.
 
-**진행 상황(2026-10-05)**: BE-1·BE-2·BE-4·BE-5·BE-6·BE-7·BE-8·BE-9·BE-10·WEB-1~5 전부 완료. Phase 1(BE+WEB) 종료. **남은 건 BE-3(Gemini 성공 응답 재확인, 현재 무료 티어 레이트리밋으로 FALLBACK만 확인됨)뿐.** Phase 2(APP-1~4)는 **코드 전부 완료** — 남은 건 사용자의 실기기 왕복 검증뿐(세션이 대신 못 하는 계정 행동).
+**진행 상황(2026-10-07)**: 기본 백엔드·웹 구현과 운영 배포 완료. Gemini 실제 응답도 운영에서 확인해 BE-3을 종료했다. 현재 열린 과제는 카탈로그·상품/시장 일정·운영자 실제 수신 등 후속 출시 보강이다. 모바일은 새 보안 세션까지 구현했으며 실기기 로그인·푸시·출시 빌드 검증이 남아 있다.
 
 **Phase 1(현재 Plan) = BE 전체 + WEB 전체. Phase 2(별도 Plan) = APP 전체.** 근거는 [[Decisions/0003-mvp-scope-and-user-model]] — 모바일 앱은 Expo 빌드·스토어 심사 등 원자재가 달라 `docs/01-plan/features/firewatch.plan.md`의 범위 밖이다. 아래 APP 섹션은 Phase 2 착수 시점에 별도 Plan 문서로 옮겨질 예정이며, 그 전까지는 백로그로만 유지한다.
 
@@ -17,7 +17,7 @@
 ## 열린 과제 — 백엔드(BE)
 
 ### BE-23. 실제 뉴스·추천 기록 보관 및 조회 확장
-**최신 진행(2026-10-07)** — 아래 초기 로컬 상태보다 우선한다. 기존 서버·웹 배포에서 뉴스/장애 API 200과 브리핑 45건·연결 뉴스 775건 보존을 확인했다. 새 독립 추천 분석 기록·날짜별 조회·기사 근거 검사·제한 수집을 추가하고 테스트했다. 신규 실제 모델 수집 성공과 운영자 실기기 푸시 수신은 운영 확인이 필요하다. ADR 0019.
+**최신 진행(2026-10-07)** — 아래 초기 로컬 상태보다 우선한다. 기존 서버·웹 배포에서 뉴스/장애 API 200과 브리핑 45건·연결 뉴스 775건 보존을 확인했다. 새 독립 추천 분석 기록·날짜별 조회·기사 근거 검사·제한 수집을 추가하고 테스트했다. 신규 실제 모델 수집·추천 1개/연결 제외 1개·날짜별 이력은 운영 확인 완료. 운영자 실기기 푸시 수신은 남아 있다. ADR 0019.
 **수집 진행(2026-10-07)** — 영속 작업/종류별 잠금, 제한 재시도/일별 중지, FAILURE 감사로그, 운영자 푸시 outbox·수신자 등록, 뉴스/시장 관측 이력 누적, 관심/보유/추천 종목 수집과 종목 요청 상한을 로컬 구현·테스트. Docker 기본 prod로 임시 H2 기동을 방지한다. 운영 배포/PG migration/운영자 구독 등록과 실제 수신 검증은 남아 있다. 정책은 ADR 0015.
 **운영 읽기 확인(2026-10-07)** — 브리핑 44건·뉴스 항목 755건·10-06 지수/후보 보존 확인. 당일 자료만 찾는 latest 때문에 자정 후 관련 화면이 비는 버그를 로컬 수정/테스트. 새 뉴스 API는 운영 500 응답이며 GitHub 최신 코드에는 아직 신규 컨트롤러가 없다. 원본 로그 확인 및 백엔드/웹 일치 배포가 필요하다. DB 삭제·재수집으로 대응하지 않는다.
 **진행(2026-10-07)** — 실제 뉴스/추천 DB 초기화·삭제 코드는 없으며 기존 UI가 최신 50건만 보여주던 문제를 확인. 뉴스 API에 한국 시간 날짜·제목/설명 키워드·페이지 필터를 추가하고 과거 briefing_news까지 통합 조회한다. 데이터 보존·중복 제거·기간/키워드·페이지 검증 완료. 게임의 가상 뉴스는 실제 뉴스 테이블에 저장하지 않는다.
@@ -59,18 +59,6 @@
 **무엇** — Google Cloud Console에서 이 앱용 OAuth 2.0 클라이언트 ID(Android 앱)를 발급하고, Render 백엔드 환경변수 `GOOGLE_OAUTH_CLIENT_IDS`(쉼표 구분, `firewatch.google.oauth-client-ids`가 읽음)에 등록.
 **왜** — 공개 배포 전환(ADR 0012)으로 `GoogleIdTokenVerifierClient`가 ID 토큰의 audience를 검증하는데, 발급된 클라이언트 ID 없이는 실제 Google 로그인 왕복 자체가 불가능함.
 **완료 기준** — Google Cloud Console에 프로젝트+OAuth 동의 화면+클라이언트 ID(패키지명 `com.firewatch.mobile`, SHA-1 지문 등록) 준비 완료, Render에 `GOOGLE_OAUTH_CLIENT_IDS` 설정 후 재배포. 이후 모바일에서 실제 ID 토큰으로 `POST /api/auth/google/link` 왕복 확인. **진행 상황(2026-10-04)** — 사용자가 Google Cloud Console에서 클라이언트 ID 발급 완료, Render에 `GOOGLE_OAUTH_CLIENT_IDS` 등록·재배포까지 끝남(세션이 배포 성공·`/api/health` 200 확인). **남은 건 실제 왕복 확인뿐 — APP-6(모바일 Google Sign-In UI, 아직 코드 없음)이 먼저 구현돼야 가능하므로, 사실상 APP-6 쪽에 남은 작업.**
-
-### BE-3. 스케줄러 + Gemini API 연동 (부분 완료)
-**무엇** — `@Scheduled` 잡 + Gemini API(Google Search Grounding) 호출로 국내/미국 증시 요약·추천 종목 텍스트 생성(FR-01, FR-02). **BE-2 의존.**
-**왜** — 시스템의 핵심 파이프라인.
-**완료 기준** — 수동 트리거로 잡 실행 → Gemini 응답 텍스트 생성 → `audit_logs`에 SCHEDULER/GEMINI_API 이벤트 기록.
-**진행 상황** — `SchedulerJob`·`GeminiBriefingService`·`GeminiClient` 구현 완료, 단위테스트(Mock) 통과. 코드 자체는 완성, **막힌 건 Google 쪽 무료 티어 모델 가용성**(2026-08-21 Google AI Studio 쿼터 화면 실측):
-  - `gemini-3.7-flash`(최초 선택) — Gemini 3 계열(3/3.1/3.5/3.6/3.7 전부) 자체가 무료 티어에서 Search Grounding 일일 할당량 **0건**. 429는 "너무 많이 써서"가 아니라 애초에 0건 허용이라 항상 실패.
-  - `gemini-2.5-flash`(1차 대체) — 이번엔 **404 Not Found**. 공식 단종은 2026년 10월인데 이미 조기 404 사례가 다수 보고됨(2.0 계열도 예정보다 일찍 6월에 완전 종료된 전례).
-  - `gemini-3.5-flash`(2차 확인) — 사용자가 "Flash-Lite 계열은 할당량이 넉넉하다"는 일반 정보를 근거로 재확인 요청 → 실측 결과 **역시 429**. Search Grounding 도구의 무료 할당량은 세부 모델(Flash/Flash-Lite, 3.1/3.5/3.6/3.7)이 아니라 **"Gemini 3" 메이저 버전 단위로 묶여 0**이라, 계열 안에서 어떤 걸 골라도 결과는 같음 — "일부러 빡센 모델을 고른 것" 아님을 실측 3종(3.7/2.5/3.5)으로 확정.
-  - **결론: 현재 무료 티어로 Search Grounding이 되는 Gemini 모델이 사실상 없음(추정이 아니라 3종 실측으로 확정)** — Google이 세대 전환 중 무료 그라운딩 자체를 걷어낸 것으로 보임. FALLBACK(금/은/환율만 정상 제공)으로 당분간 운영하기로 사용자와 합의, 모델명은 엔드포인트가 살아있는(404 아닌) `gemini-3.5-flash`로 고정(재검토 시 aistudio.google.com/rate-limit의 "도구 > 검색 그라운딩" 섹션에서 모델 계열별 RPD를 먼저 확인하되, 대시보드 표시와 실제가 다를 수 있어(2.5 사례) 반드시 실측 재확인).
-  - **결제(빌링) 활성화는 옵션에서 완전히 제외**(사용자 확정, 2026-08-21) — [[Decisions/0003-mvp-scope-and-user-model]]의 월 $0 하드 제약을 그대로 유지. Gemini 그라운딩이 계속 막혀 있어도 결제로 우회하지 않는다 — 재검토는 Google이 무료 티어 정책을 바꾸거나 대체 무료 수단(다른 검색 그라운딩 제공자 등)이 생겼을 때만.
-  - 이 조사 과정에서 **별개의 진짜 버그 2개**를 더 발견해 수정함 — 스케줄러 날짜가 컨테이너 기본(UTC) 타임존을 써서 매일 자동 실행마다 스킵될 뻔한 버그, 한국수출입은행 API가 08:00(영업일 11시 이전) 요청이라 항상 빈 응답이던 버그. 둘 다 재배포 후 프로덕션에서 왕복 확인 완료 — 자세한 내용은 [[log]] 2026-08-21.
 
 ## 열린 과제 — 웹(WEB)
 
@@ -123,11 +111,13 @@
 
 | 과제 | 제목 | 결과 | 근거 |
 |---|---|---|---|
+| BE-3 | 스케줄러 + Gemini 실제 응답 확인 | 2026-10-07 운영 수동 트리거로 새 추천 분석·날짜별 저장과 GEMINI_API 출력 기록 확인. Search Grounding 대신 보관 RSS/시세 입력 사용. WARNING은 시간 임계값 초과이며 출력 생성 성공. | ADR 0011·0019, docs/reviews/2026-10-07-followup-review.md |
 | WEB-18 | 공통 디자인 토큰과 주요 모바일 화면 개편 | 기본 라이트·선택 웹 다크/오렌지, 색상·간격·타이포·radius 공유, 모바일 주요 화면과 게임 적용. 타입/빌드/린트·브라우저/Android 번들 검증 완료. 네이티브 실기기·선택형 모바일 다크는 별도. | shared/design-tokens.json, mobile/src/components/ScreenIntro.tsx, ADR 0014, 2026-10-07 log |
 
 
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
+| BE-3 | 스케줄러 + Gemini 실제 응답 확인 | 2026-10-07 운영 수동 트리거로 새 추천 분석·날짜별 저장과 GEMINI_API 출력 기록 확인. Search Grounding 대신 보관 RSS/시세 입력 사용. WARNING은 시간 임계값 초과이며 출력 생성 성공. | ADR 0011·0019, docs/reviews/2026-10-07-followup-review.md |
 | APP-10 | 모바일 뉴스 화면 추가 | 완료. 웹 `NewsPage` 대응 — 오늘의 관련 뉴스 목록을 홈 세그먼트 탭 4번째("뉴스")에 표시, 항목을 탭하면 `Linking.openURL`로 외부 브라우저에서 기사를 연다(RN엔 `target="_blank"` 링크 개념이 없어 명시적 오픈 필요). 모바일 `Briefing` 인터페이스에 `news: NewsArticle[]` 필드 추가(APP-9에서 지수 필드를 넣은 것과 동일한 이유로, 그동안 홈 화면만 쓰던 좁은 선언을 웹과 맞춤). 이걸로 2026-10-04 앱 리뷰로 시작된 모바일 기능보강(APP-8 종목·APP-9 지수·APP-10 뉴스)이 전부 끝나, 모바일 홈이 4개 탭(홈/종목/지수/뉴스)을 갖춤. `tsc --noEmit`·`expo lint` 통과, 실기기 검증은 기존과 동일하게 사용자 몫 | `mobile/src/{features/{home/HomeScreen.tsx,news/NewsScreen.tsx},lib/api.ts}` (2026-10-05 [[log]]) |
 | APP-9 | 모바일 지수 화면 추가 | 완료. 웹 `IndicesPage` 대응 — 금/은/환율 + 국내외 지수·채권 수익률 현재값을 "지수" 탭(홈 세그먼트 탭 3번째)에 그리드로 표시. 완료 기준이 "확인 가능"까지라 웹의 시계열 `RateChart`·전일대비 트렌드 화살표는 이번엔 빼고 현재값만(필요해지면 `/api/briefings?from=&to=` 히스토리 조회를 추가하면 됨). 모바일 `Briefing` 인터페이스가 그동안 홈 화면이 쓰는 필드만 선언해뒀던 걸 웹과 동일한 지수 필드까지 확장(백엔드 `BriefingDtos.kt` 응답 구조 확인 후 반영). `tsc --noEmit`·`expo lint` 통과, 실기기 검증은 기존과 동일하게 사용자 몫 | `mobile/src/{features/{home/HomeScreen.tsx,indices/**},lib/api.ts}` (2026-10-04 [[log]]) |
 | APP-8 | 모바일 종목 화면 추가 | 완료. 웹 `StocksPage` 대응 — 관심종목 검색/티커 직접입력 탭(`StockSearchInput` 신규, RN엔 AntD Select가 없어 TextInput+결과목록 직접 구현) + `react-native-gifted-charts` LineChart로 기간별(하루~5년) 차트. 네비게이션은 사용자가 명시적으로 하단 탭·드로어를 거부("너무 AI티 나는데")하고 고른 **상단 세그먼트 탭**(홈/종목) — 로컬 state, 별도 라우팅 라이브러리 없음. 알림 탭 시 탭 전환에도 바텀시트가 정상 동작해야 해서 브리핑 조회·바텀시트·알림 처리를 `BriefingScreen`에서 신설 `HomeScreen`(상위)으로 끌어올리고 `BriefingScreen`은 표시 전용으로 축소. `KeywordInput`에 웹(WEB-11)과 동일한 `showInput` prop 추가해 검색 탭에서 태그만 노출. `tsc --noEmit`·`expo lint` 통과, 실기기 검증은 기존과 동일하게 사용자 몫 | `mobile/src/{app/index.tsx,features/{home/HomeScreen.tsx,briefing/BriefingScreen.tsx,stocks/**,settings/{SettingsScreen.tsx,components/KeywordInput.tsx},lib/api.ts}}` (2026-10-04 [[log]]) |
