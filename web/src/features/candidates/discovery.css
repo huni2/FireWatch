@@ -34,3 +34,6 @@
 .sector-notes { margin-top: 16px; line-height: 1.8; }
 @media(min-width:992px) { .discovery-layout.has-detail { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }.company-detail-pane { position: sticky; top: 130px; max-height: calc(100vh - 150px); overflow-y: auto; }.has-detail .company-grid { grid-template-columns: minmax(0,1fr); } }
 @media(min-width:1200px) { .discovery-layout.has-detail { grid-template-columns: minmax(0,.8fr) minmax(0,1.2fr); } }
+.recommendation-context { padding: 14px 16px; margin-bottom: 16px; border-radius: 12px; background: var(--ant-color-fill-quaternary); border: 1px solid var(--ant-color-border-secondary); line-height: 1.7; }
+.recommendation-context strong { font-size: 13px; color: var(--ant-color-text-secondary); }.recommendation-context p { margin: 6px 0; }.recommendation-context a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ant-color-primary); font-weight: 600; }
+.discovery-intro { background: transparent; }.company-card .ant-card-body > p { max-width: 75ch; }

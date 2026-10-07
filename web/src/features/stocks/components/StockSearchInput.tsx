@@ -58,6 +58,7 @@ export function StockSearchInput({ onSelect, initialQuery = '' }: StockSearchInp
 
   return (
     <Select
+      aria-label="회사·상품 이름 검색"
       showSearch
       searchValue={query}
       value={value}

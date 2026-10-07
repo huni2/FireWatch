@@ -16,7 +16,7 @@ export function InvestmentFocus({ portfolio }: { portfolio: Portfolio | null }) 
   const rows = investmentFocus(settings.data?.watchedStocks ?? [], portfolio, names)
   const [page, setPage] = useState(0)
   const currentPage = Math.min(page, Math.max(0, Math.ceil(rows.length / 6) - 1))
-  return <Card title="내 기업 점검" extra={<Link to="/stocks">관심 기업 관리</Link>}>
+  return <Card className="investment-focus" title="내 기업 점검" extra={<Link to="/stocks">관심 기업 관리</Link>}>
     <Typography.Paragraph type="secondary">관심 기업과 보유 주식의 뉴스·분석 근거를 확인하고, 내 투자 구성과 비교하세요.</Typography.Paragraph>
     {settings.error && <Alert type="warning" message="관심 기업 목록을 불러오지 못했습니다." action={<Button onClick={settings.reload}>다시 시도</Button>} />}
     {report.error && <Alert type="warning" message="추천 분석을 불러오지 못했습니다. 가격과 뉴스는 계속 확인할 수 있어요." action={<Button onClick={report.reload}>다시 시도</Button>} />}

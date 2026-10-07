@@ -7,7 +7,7 @@ import { SECTION_CARD_PROPS } from '../../../lib/theme'
 interface RelatedNewsCardProps {
   news: NewsArticle[]
   loading: boolean
-  title?: string
+  title?: string | null
   emptyDescription?: string
   // 뉴스 화면에서는 페이지의 유일한 콘텐츠라 박스 카드로, 대시보드 핫이슈 섹션에서는 2026-10-05
   // 재설계로 지면의 한 섹션처럼(변수 없이) 보여야 해 false로 넘긴다.

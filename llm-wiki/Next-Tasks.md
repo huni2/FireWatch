@@ -58,7 +58,7 @@
 
 ### WEB-26. 출시 전 기능·UI/UX·디자인 정밀 점검
 **무엇** — 홈·기업 탐색·뉴스·계정·게임의 정보 순서·입력·실패 상태·반응형을 점검/개선한다.
-**진행(2026-10-08)** — 홈 자산 우선/접는 보조 안내·계정 로그인 우선·추천 후보 내 보유 맥락·뉴스 URL 조건과 응답 일치 수정 중. 웹 build 통과. 사용자 요청으로 과제 상태 정리를 위해 중단했으며 브라우저 회귀·시각 확인·문서/배포는 아직 미완료.
+**진행(2026-10-08)** — 목록 정리 뒤 재개. 홈 자산 우선/접는 안내·계정 로그인 우선·추천 후보 내 보유 맥락·뉴스 URL/응답 조건 일치·포트폴리오 재조회 실패 편집 보존 구현. build/lint·라이트20/다크4화면·뉴스/편집/계정/기업 점검/게임/수집 진단 fixture 회귀 통과. 리뷰 문서 작성. 코드 반영/공개 배포 확인은 아직 미완료.
 **완료 기준** — 핵심 흐름·실패 조건 검사, 라이트/다크·PC/모바일 시각 확인, 리뷰 문서·회귀·웹 배포 확인. 차별점은 자료/추천과 내 보유의 연결이며 검증되지 않은 사용자 성과를 주장하지 않는다.
 
 ## 열린 과제 — 모바일(APP)
@@ -163,4 +163,3 @@
 | BE-6 | 브리핑 이력 저장 API | 완료. `BriefingController`(`GET /latest`, `GET ?from=&to=`). 함께 `AuditLogController`(`GET /api/audit-logs`, 원래 Next-Tasks에 독립 항목이 없었는데 Design §4.1이 요구해 이번에 같이 구현 — WEB-3의 전제조건)와 `SchedulerController`(`POST /api/scheduler/trigger`, 디버그용 수동 실행)도 이 모듈에서 함께 만듦. `ApiIntegrationTest`(WebTestClient, 실제 내장 서버 기동)로 확인 | `backend/.../web/BriefingController.kt` (2026-08-19 [[log]]) |
 | BE-7 | 사용자 설정 API | 완료. `SettingsController` + `SettingsService`(USER_SETTING 이벤트). API 키 검증을 컨트롤러가 아니라 **Service 메서드 안에서** 해 인증 실패도 감사로그에 남게 함([[Decisions/0004-write-api-protection]]). `ApiIntegrationTest`로 401/200/400(fieldErrors) 전부 확인, 실제 서버 기동해 curl로도 재확인 | `backend/.../service/SettingsService.kt` (2026-08-19 [[log]]) |
 | BE-5 | FCM 푸시 발송 서비스 | 완료. `FirebaseFcmSender`(Firebase Admin SDK `sendEachForMulticast`) + `PushService`, 무효 토큰(`MessagingErrorCode.UNREGISTERED`) 자동 정제해 `user_settings.fcm_tokens`에서 제거. `PushSendResult(tokenCount, successCount)`를 반환해 감사로그 response_summary에 발송 통계가 그대로 남음(FR-07 요건). `PushServiceTest` 3개 시나리오 통과. **Phase 1엔 등록 토큰이 없는 게 정상**(모바일 앱은 Phase 2) — 실기기 발송은 Phase 2에서 검증 | `backend/.../service/PushService.kt` (2026-08-19 [[log]]) |
-

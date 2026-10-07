@@ -46,15 +46,16 @@ export function PortfolioPage() {
       row?.querySelector<HTMLElement>('[role="combobox"]')?.focus({ preventScroll: true })
     })
   }
-  if (query.error) return <Alert type="error" showIcon message="포트폴리오 조회 실패" description={query.error.message} action={<Button onClick={query.reload}>다시 시도</Button>} />
+  if (query.error && !draft) return <Alert type="error" showIcon message="포트폴리오 조회 실패" description={query.error.message} action={<Button onClick={query.reload}>다시 시도</Button>} />
   if (!draft) return <Card loading title="내 포트폴리오" />
   return <ConfigProvider componentDisabled={saving}><Space direction="vertical" size={24} style={{ width: '100%' }}>
-    <InvestmentNotice />
+    {query.error && <Alert type="error" showIcon message="최신 기록을 확인하지 못했습니다. 편집 내용은 유지됩니다." description={query.error.message} action={<Button onClick={query.reload}>다시 시도</Button>} />}
     <div className="page-intro portfolio-intro" data-tour="portfolio-intro">
-      <Title level={2}>{query.data?.holdings.length || query.data?.cash ? '내 투자 기록을 점검하세요.' : '보유 자산 하나로 시작하세요.'}</Title>
-      <p>직접 등록하는 보유 기록입니다. 회사명·수량·매입가를 입력하면 비중과 집중·중복을 확인할 수 있어요.</p>
+      <div className="portfolio-heading"><div><span className="page-eyebrow">내 투자 기록</span><Title level={2}>{query.data?.holdings.length || query.data?.cash ? '내 자산, 한눈에' : '보유 자산 하나로 시작하세요.'}</Title><p>직접 등록한 기록으로 비중과 집중·중복을 점검해요.</p></div>
       <Space wrap><Button type="primary" size="large" disabled={draft.holdings.length >= 50} onClick={addHolding}>{query.data?.holdings.length || query.data?.cash ? '보유 자산 추가' : '첫 자산 등록하기'}</Button>{!query.data?.holdings.length && !query.data?.cash && <Button size="large" onClick={() => setSampleOpen(true)}>분석 예시 보기</Button>}<Link to="/candidates">기업·추천 살펴보기 →</Link></Space>
-      <div className="record-status" role="status"><strong>{dirty ? '저장 전 · 변경한 내용을 저장해주세요.' : query.data?.updatedAt ? '저장 완료 · ' + new Date(query.data.updatedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + ' KST' : '아직 등록한 기록이 없어요.'}</strong><span>현재 브라우저로 연결된 기록 · 실제 주식 주문·증권사 자동 연동은 제공하지 않아요.</span><Link to="/guide?topic=saved-data">다른 기기에서 기록이 안 보이나요?</Link></div>
+      </div>
+      {query.data && (query.data.holdings.length > 0 || query.data.cash > 0) && <div className="portfolio-overview" aria-label="내 기록 한눈에"><Statistic title="현금 포함 평가금액 · 원" value={query.data.totalValueKrw ?? '시세 확인 필요'} /><Statistic title="투자원금 · 원" value={query.data.investedKrw ?? '환율 확인 필요'} /><div className="portfolio-overview-link"><strong>보유 자산 {query.data.holdings.length}개</strong><a href="#portfolio-analysis">비중·분석 확인 ↓</a><small>평가는 수집 시세 기준</small></div></div>}
+      <div className="record-status"><strong role="status">{dirty ? '저장 전 · 변경한 내용을 저장해주세요.' : query.data?.updatedAt ? '저장 완료 · ' + new Date(query.data.updatedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + ' KST' : '아직 등록한 기록이 없어요.'}</strong><details><summary>기록 보관·연동 안내</summary><span>현재 브라우저로 연결된 기록 · 실제 주식 주문·증권사 자동 연동은 제공하지 않아요.</span><Link to="/guide?topic=saved-data">다른 기기에서 기록이 안 보이나요?</Link></details></div>
     </div>
     <Modal title="포트폴리오 분석 예시" open={sampleOpen} onCancel={() => setSampleOpen(false)} footer={<><Button onClick={() => setSampleOpen(false)}>닫기</Button><Button type="primary" onClick={() => { setSampleOpen(false); addHolding() }}>내 첫 자산 등록하기</Button></>}>
       <Tag color="orange">가상 예시 · 개인 기록에 저장되지 않음</Tag><p>매입원금 80만원과 현금 20만원을 입력했다고 가정한 예시입니다. 실제 시세·추천 상품이 아닙니다.</p>
@@ -62,7 +63,7 @@ export function PortfolioPage() {
       <p><strong>입력하면 이런 점을 확인해요.</strong></p><ul><li>어떤 자산에 보유 비중이 몰려 있는지</li><li>같은 기업·분야가 겹치는지</li><li>수집된 가격으로 평가할 수 있는지와 자료 기준 시각</li></ul><p>ETF 안에 포함된 기업은 상품 정보를 별도로 확인해야 합니다.</p>
     </Modal>
     <InvestmentFocus portfolio={query.data} />
-    {query.data && (query.data.holdings.length > 0 || query.data.cash > 0) && <Card title="내 기록 한눈에"><Space wrap size={32}><Statistic title="투자원금 (원)" value={query.data.investedKrw ?? '—'} /><Statistic title="현금 포함 평가금액 (원)" value={query.data.totalValueKrw ?? '시세 확인 중'} /><a href="#portfolio-analysis">비중·분석 확인 ↓</a></Space></Card>}
+    <InvestmentNotice />
     <details className="portfolio-editor" open={editing || !(query.data?.holdings.length || query.data?.cash)} onToggle={e => { if (query.data?.holdings.length || query.data?.cash) setEditing(e.currentTarget.open) }}><summary>보유 자산 입력·수정</summary>
     <Card data-tour="portfolio-holdings" title="보유 자산 직접 등록" extra={<Button disabled={saving || draft.holdings.length >= 50} onClick={addHolding}>자산 추가</Button>}>
       {draft.holdings.length === 0 && <p>첫 보유 자산을 추가하거나 아래 투자 계획에 현금을 입력해보세요.</p>}
