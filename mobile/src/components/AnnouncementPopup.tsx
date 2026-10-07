@@ -6,6 +6,9 @@ import { communityRequest } from '@/features/community/CommunityScreen'
 import { sessionToken } from '@/lib/session'
 import { type Notice, kstTomorrow } from '../../../shared/community'
 
+let startupInteracted = false
+export function noteStartupInteraction() { startupInteracted = true }
+
 export function AnnouncementPopup() {
   const [items, setItems] = useState<Notice[]>([])
   const [busy, setBusy] = useState(false)
@@ -19,8 +22,10 @@ export function AnnouncementPopup() {
     async function load() {
       const token = await sessionToken()
       if (!token && Number(await AsyncStorage.getItem('notice-hidden-anonymous')) > Date.now()) return
-      const data = await communityRequest<Notice[]>('/popup?platform=ANDROID')
-      if (active && initialPath === path.current && token === await sessionToken()) setItems(data)
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 5000)
+      const data = await communityRequest<Notice[]>('/popup?platform=ANDROID', { signal: controller.signal }).finally(() => clearTimeout(timeout))
+      if (active && !startupInteracted && initialPath === path.current && token === await sessionToken()) setItems(data)
     }
     load().catch(() => { /* Public notices must not block startup. */ })
     return () => { active = false }
