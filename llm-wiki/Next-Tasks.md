@@ -5,6 +5,7 @@
 **왜** — 웹 배포와 별개로 Android 빌드의 누락된 로그인/푸시 설정을 배포 전에 확인한다.
 **진행(2026-10-07)** — Android ID 로컬/EAS 반영, 출시 검사 8건·타입/린트·Android export 및 전체 CI 성공. 사용자 Firebase 앱 파일의 프로젝트/패키지·동적 연결 검사 통과, EAS preview/production secret 파일 변수 등록 완료. 사용자가 FCM V1 키 등록을 확인했다. 실제 EAS 업로드 자료 89개·필수 9개/제외 7개를 archive inspect로 확인했다. 서명 SHA-1·APK 로그인/수신은 미검증이다. 브라우저 Google 인증의 실제 호환성 확인 후 필요하면 네이티브 인증으로 전환한다. Play 제출 문서의 금융 자료 미수집·금융 기능 전부 없음 등 잘못된 안내를 수정했다.
 **완료 기준** — Firebase 설정·EAS 자격증명 확인, preview APK의 로그인·공지/문의·푸시·삭제 실기기 검증, production AAB 테스트 트랙 확인. 설정 검사 통과만으로 종료하지 않는다.
+**빌드 접수** — cde6e85의 [preview 3a953867](https://expo.dev/accounts/huni2/projects/mobile/builds/3a953867-62a0-4448-aea1-bd99bdba713c). 마지막 상태 IN_QUEUE; 설치/실수신 완료 아님.
 
 ### APP-20. 모바일 피드백·공지
 **진행(2026-10-07)** — 네이티브 접수/공지/내 문의·초기 모달·숨김·조작 후 늦은 모달 차단 구현. 타입/린트·Android export 성공. 실제 설치·로그인·공지/접수·운영 푸시 실수신과 Play 리뷰 링크는 남아 있다.
