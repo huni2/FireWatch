@@ -29,4 +29,12 @@ class FinancialDataServiceTest {
         every { client.fetchMarketIndices() } throws IllegalStateException("offline")
         assertFailsWith<IllegalStateException> { FinancialDataService(client).fetchLatestSnapshot() }
     }
+
+    @Test fun `빈 응답 객체나 음수 가격도 정상 수집으로 처리하지 않는다`() {
+        val client = mockk<FinancialApiClient>()
+        every { client.fetchExchangeRates(any()) } throws IllegalStateException("offline")
+        every { client.fetchPreciousMetalPrices() } returns PreciousMetalPrices(BigDecimal.ZERO, BigDecimal("-1"))
+        every { client.fetchMarketIndices() } returns MarketIndices(null, null, null, null, null, null, null)
+        assertFailsWith<IllegalStateException> { FinancialDataService(client).fetchLatestSnapshot() }
+    }
 }

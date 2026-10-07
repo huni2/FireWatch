@@ -48,8 +48,7 @@ class FinancialDataService(
         val rates = runCatching { financialApiClient.fetchExchangeRates() }.getOrNull()
         val metals = runCatching { financialApiClient.fetchPreciousMetalPrices() }.getOrNull()
         val indices = runCatching { financialApiClient.fetchMarketIndices() }.getOrNull()
-        check(rates != null || metals != null || indices != null) { "금융 자료 제공처가 모두 실패했습니다." }
-        return FinancialSnapshot(
+        val snapshot = FinancialSnapshot(
             goldPrice = metals?.goldPriceUsd,
             silverPrice = metals?.silverPriceUsd,
             usdKrw = rates?.usdKrw,
@@ -63,5 +62,11 @@ class FinancialDataService(
             usBondYield10y = indices?.usBondYield10y,
             krBondYield10y = indices?.krBondYield10y,
         )
+        check(listOf(snapshot.goldPrice, snapshot.silverPrice, snapshot.usdKrw, snapshot.jpy100Krw,
+            snapshot.cnyKrw, snapshot.kospi, snapshot.kosdaq, snapshot.sp500, snapshot.nasdaq,
+            snapshot.dow, snapshot.usBondYield10y, snapshot.krBondYield10y).any { it != null && it.signum() > 0 }) {
+            "금융 자료 제공처가 모두 실패했습니다."
+        }
+        return snapshot
     }
 }

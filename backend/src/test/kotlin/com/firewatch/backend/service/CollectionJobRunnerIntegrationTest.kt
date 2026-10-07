@@ -11,6 +11,7 @@ import java.time.Duration
 import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -89,6 +90,20 @@ class CollectionJobRunnerIntegrationTest {
         assertEquals(CollectionOutcome.PAUSED, runner.run("financial:2026-10-07-close", now.plusSeconds(10000), fetch = { error("must not run") }, persist = { _: Unit -> CollectionWrite(0) }))
         assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM market_observations", Int::class.java))
         assertEquals(3, jdbc.queryForObject("SELECT COUNT(*) FROM audit_logs WHERE status='FAILURE' AND action_name='collection.financial'", Int::class.java))
+    }
+
+    @Test fun `누락 지표 목록이 길어도 성공값을 저장하고 안전한 장애 코드만 남긴다`() {
+        val missing = listOf("USD_KRW", "JPY100_KRW", "CNY_KRW", "KOSPI", "KOSDAQ", "SP500", "NASDAQ", "DOW", "US_BOND_10Y", "KR_BOND_10Y", "https://secret-key")
+        assertEquals(CollectionOutcome.PARTIAL, runner.run("financial:2026-10-07-morning", now, fetch = { 1 }, persist = {
+            CollectionWrite(observations.save("GOLD", BigDecimal("2500"), "USD/oz", "TEST", null, now, "morning"), true, missing)
+        }))
+        assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM market_observations", Int::class.java))
+        val code = jdbc.queryForObject("SELECT error_code FROM collection_jobs", String::class.java)!!
+        assertTrue(code.startsWith("INCOMPLETE_DATA:USD_KRW"))
+        assertTrue(code.length <= 80)
+        val summary = jdbc.queryForObject("SELECT response_summary FROM audit_logs WHERE action_name='collection.financial'", String::class.java)!!
+        assertTrue(summary.contains("US_BOND_10Y"))
+        assertFalse(summary.contains("secret-key"))
     }
 
     @Test fun `장애 푸시는 지정한 운영자만 한 번 받고 브리핑 발송 시각을 변경하지 않는다`() {

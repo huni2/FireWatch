@@ -62,7 +62,9 @@ class MarketCollectionService(
             var count = 0
             values.forEach { (asset, value) -> if (value != null && value.signum() > 0) count += observations.save(asset, value, observations.financialUnit(asset), "FINANCIAL_API", null, now, slot) }
             // KR bond is optional when ECOS is unconfigured. Core gaps remain visible.
-            CollectionWrite(count, values.filterKeys { it != "KR_BOND_10Y" }.values.any { it == null || it.signum() <= 0 })
+            val missing = values.filterKeys { it != "KR_BOND_10Y" }
+                .filterValues { it == null || it.signum() <= 0 }.keys.toList()
+            CollectionWrite(count, missing.isNotEmpty(), missing)
         })
         val symbols = (portfolios.findAll().flatMap { mapper.readValue(it.holdingsJson, Array<com.firewatch.backend.web.dto.PortfolioHoldingInput>::class.java).map { h -> h.symbol } } +
             settings.findAll().flatMap { it.watchedStocks() } + recommendations.findAllByOrderByBriefingDateDesc().mapNotNull { it.symbol })

@@ -90,4 +90,12 @@ class FinancialApiClientTest {
             FinancialApiClient.parseEcosLatestYield(mapOf("StatisticSearch" to mapOf("row" to emptyList<Any>())))
         }
     }
+
+    @Test fun `ECOS 응답이 날짜 역순이어도 최신 값을 선택한다`() {
+        val response = mapOf("StatisticSearch" to mapOf("row" to listOf(
+            mapOf("TIME" to "20261007", "DATA_VALUE" to "3.2"),
+            mapOf("TIME" to "20261006", "DATA_VALUE" to "3.1"),
+        )))
+        assertEquals(BigDecimal("3.2"), FinancialApiClient.parseEcosLatestYield(response))
+    }
 }

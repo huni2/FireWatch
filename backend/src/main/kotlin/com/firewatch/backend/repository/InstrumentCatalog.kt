@@ -36,14 +36,16 @@ class InstrumentCatalog(private val jdbc: JdbcTemplate, private val transactions
         }
     }
 
-    fun search(query: String = "", assetClass: String = "", region: String = "", sectorId: String = "", limit: Int = 20): CatalogPage {
+    fun search(query: String = "", assetClass: String = "", region: String = "", sectorId: String = "", limit: Int = 20, page: Int = 0): CatalogPage {
+        require(page in 0..10000) { "카탈로그 페이지 범위를 확인해주세요." }
+        val size = limit.coerceIn(1, 50)
         val term = normalize(query.take(100))
         val pattern = "%${term.replace("!", "!!").replace("%", "!%").replace("_", "!_")}%"
         val where = "WHERE c.search_text LIKE ? ESCAPE '!' AND (?='' OR c.asset_class=?) AND (?='' OR c.region=?) AND (?='' OR c.sector_id=?)"
         val args = arrayOf<Any>(pattern, assetClass, assetClass, region, region, sectorId, sectorId)
         val total = jdbc.queryForObject("SELECT COUNT(*) FROM instrument_catalog c $where", Int::class.java, *args) ?: 0
-        val rows = jdbc.query("SELECT c.metadata_json, q.price, q.as_of FROM instrument_catalog c LEFT JOIN market_quotes q ON c.symbol=q.symbol $where ORDER BY CASE WHEN c.normalized_name=? THEN 0 WHEN c.symbol=? THEN 0 ELSE 1 END, c.name LIMIT ?", { row, _ -> CatalogView(mapper.readValue(row.getString("metadata_json"), CatalogItem::class.java), row.getBigDecimal("price"), row.getTimestamp("as_of")?.toInstant()) }, *args, term, query.trim().uppercase(), limit.coerceIn(1, 50))
-        return CatalogPage(rows, total, total > rows.size)
+        val rows = jdbc.query("SELECT c.metadata_json, q.price, q.as_of FROM instrument_catalog c LEFT JOIN market_quotes q ON c.symbol=q.symbol $where ORDER BY CASE WHEN c.normalized_name=? THEN 0 WHEN c.symbol=? THEN 0 ELSE 1 END, c.name, c.symbol LIMIT ? OFFSET ?", { row, _ -> CatalogView(mapper.readValue(row.getString("metadata_json"), CatalogItem::class.java), row.getBigDecimal("price"), row.getTimestamp("as_of")?.toInstant()) }, *args, term, query.trim().uppercase(), size, page * size)
+        return CatalogPage(rows, total, total > page * size + rows.size)
     }
 
     companion object { fun normalize(value: String) = value.lowercase().replace(Regex("[\\s&._-]"), "") }

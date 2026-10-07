@@ -10,7 +10,7 @@ import java.time.Instant
 import java.util.UUID
 
 enum class CollectionOutcome { SKIPPED, SUCCESS, PARTIAL, FAILED, PAUSED }
-data class CollectionWrite(val count: Int, val partial: Boolean = false)
+data class CollectionWrite(val count: Int, val partial: Boolean = false, val missingAssets: List<String> = emptyList())
 
 /** Durable leases and bounded retry backoff. Network calls never hold a DB transaction. */
 @Service
@@ -48,12 +48,16 @@ class CollectionJobRunner(private val jdbc: JdbcTemplate, private val transactio
                 // overwrite the replacement worker's result; every write rolls back on failure.
                 if (jdbc.update("UPDATE collection_jobs SET lease_until=? WHERE id=? AND lease_token=?", Timestamp.from(now.plusSeconds(600)), key, token) != 1) return@execute CollectionOutcome.SKIPPED
                 val saved = persist(result)
+                // Only internal asset identifiers, never provider exceptions or URLs.
+                val incompleteCode = "INCOMPLETE_DATA" + saved.missingAssets
+                    .filter { it.matches(Regex("[A-Z0-9_]{1,30}")) }.take(12)
+                    .takeIf { it.isNotEmpty() }?.joinToString(",", prefix = ":").orEmpty()
                 val next = if (saved.partial) retryAt else refresh?.let { now.plus(it) }
                 jdbc.update("""UPDATE collection_jobs SET status=?, last_success_at=CASE WHEN ? THEN last_success_at ELSE ? END,
                     next_attempt_at=?, failure_count=?, collected_count=?, error_code=?, lease_token=NULL, lease_until=NULL WHERE id=? AND lease_token=?""",
                     if (saved.partial) "PARTIAL" else "SUCCESS", saved.partial, Timestamp.from(now), next?.let(Timestamp::from),
-                    if (saved.partial) failures + 1 else 0, saved.count, if (saved.partial) "INCOMPLETE_DATA" else null, key, token)
-                if (saved.partial) recordFailure(category, circuit, key, now, "INCOMPLETE_DATA")
+                    if (saved.partial) failures + 1 else 0, saved.count, if (saved.partial) incompleteCode.take(80) else null, key, token)
+                if (saved.partial) recordFailure(category, circuit, key, now, incompleteCode)
                 else {
                     val dayStart = now.atZone(java.time.ZoneId.of("Asia/Seoul")).toLocalDate().atStartOfDay(java.time.ZoneId.of("Asia/Seoul")).toInstant()
                     val pending = jdbc.queryForObject("SELECT COUNT(*) FROM collection_jobs WHERE id LIKE ? AND last_attempt_at>=? AND status IN ('FAILED','PARTIAL','PAUSED')", Int::class.java, "$category:%", Timestamp.from(dayStart)) ?: 0

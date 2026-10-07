@@ -7,6 +7,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 data class ExchangeRates(
@@ -64,12 +65,12 @@ class FinancialApiClient(
     // 반환"(2026-08-21 실측 확인 — 08:00 KST 스케줄러가 당일자를 요청해 매번 빈 배열을 받고 있었다).
     // 스케줄러는 항상 11시 이전(08:00 KST)에 도니 애초에 "오늘"을 요청하면 안 된다 — 전일부터 거꾸로
     // 조회해 데이터가 있는 가장 최근 영업일을 찾는다(주말/공휴일 며칠 연속 대비 최대 MAX_LOOKBACK_DAYS일).
-    fun fetchExchangeRates(date: LocalDate = LocalDate.now()): ExchangeRates {
+    fun fetchExchangeRates(date: LocalDate = LocalDate.now(ZoneId.of("Asia/Seoul"))): ExchangeRates {
         check(eximApiKey.isNotBlank()) { "EXIM_API_KEY가 설정되지 않았습니다" }
 
         for (daysAgo in 1..MAX_LOOKBACK_DAYS) {
             val searchDate = date.minusDays(daysAgo.toLong())
-            val response = eximClient.get()
+            val response = try { eximClient.get()
                 .uri { builder ->
                     builder.path("/site/program/financial/exchangeJSON")
                         .queryParam("authkey", eximApiKey)
@@ -82,6 +83,10 @@ class FinancialApiClient(
                 .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
                 .block()
                 ?: error("한국수출입은행 API 응답이 비어 있음")
+            } catch (_: Exception) {
+                // Request URLs contain authkey. Never propagate them into logs or causes.
+                throw IllegalStateException("한국수출입은행 API 호출 실패")
+            }
 
             if (response.any { (it["result"] as? Number)?.toInt() == 1 }) {
                 return parseExchangeRates(response)
@@ -91,21 +96,25 @@ class FinancialApiClient(
     }
 
     fun fetchPreciousMetalPrices(): PreciousMetalPrices = PreciousMetalPrices(
-        goldPriceUsd = fetchYahooPrice(GOLD_SYMBOL),
-        silverPriceUsd = fetchYahooPrice(SILVER_SYMBOL),
+        goldPriceUsd = availablePrice(GOLD_SYMBOL),
+        silverPriceUsd = availablePrice(SILVER_SYMBOL),
     )
 
     // 2026-08-23 실측 확인(curl -A "Mozilla/5.0..."): ^KS11=코스피, ^KQ11=코스닥, ^GSPC=S&P500,
     // ^IXIC=나스닥종합, ^DJI=다우존스 전부 정상 응답. ^TNX(미국채10년물)는 이미 %값 그대로 온다(×10 아님).
     fun fetchMarketIndices(): MarketIndices = MarketIndices(
-        kospi = fetchYahooPrice(KOSPI_SYMBOL),
-        kosdaq = fetchYahooPrice(KOSDAQ_SYMBOL),
-        sp500 = fetchYahooPrice(SP500_SYMBOL),
-        nasdaq = fetchYahooPrice(NASDAQ_SYMBOL),
-        dow = fetchYahooPrice(DOW_SYMBOL),
-        usBondYield10y = fetchYahooPrice(US_BOND_10Y_SYMBOL),
-        krBondYield10y = fetchKoreaBondYield10y(),
+        kospi = availablePrice(KOSPI_SYMBOL),
+        kosdaq = availablePrice(KOSDAQ_SYMBOL),
+        sp500 = availablePrice(SP500_SYMBOL),
+        nasdaq = availablePrice(NASDAQ_SYMBOL),
+        dow = availablePrice(DOW_SYMBOL),
+        usBondYield10y = availablePrice(US_BOND_10Y_SYMBOL),
+        krBondYield10y = runCatching { fetchKoreaBondYield10y() }.getOrNull(),
     )
+
+    // Each asset gets one request. A single failed/invalid asset must not erase its peers.
+    private fun availablePrice(symbol: String): BigDecimal? =
+        runCatching { fetchYahooPrice(symbol).takeIf { it.signum() > 0 } }.getOrNull()
 
     // ECOS(한국은행 Open API) 인증키는 쿼리파라미터가 아니라 URL 경로 자체에 들어간다
     // (`/api/StatisticSearch/{키}/...`) — 실측 확인(2026-10-02). 그래서 HTTP 에러·타임아웃·연결 실패 시
@@ -116,11 +125,11 @@ class FinancialApiClient(
     // 스택트레이스를 통째로 출력하는 로깅 경로까지 대비). 이 방어를 우회하는 변경은 하지 말 것.
     private fun fetchKoreaBondYield10y(): BigDecimal? {
         if (ecosApiKey.isBlank()) return null
-        val today = LocalDate.now()
+        val today = LocalDate.now(ZoneId.of("Asia/Seoul"))
         return try {
             val response = ecosClient.get()
                 .uri(
-                    "/api/StatisticSearch/$ecosApiKey/json/kr/1/5/$ECOS_BOND_STAT_CODE/D/" +
+                    "/api/StatisticSearch/$ecosApiKey/json/kr/1/100/$ECOS_BOND_STAT_CODE/D/" +
                         "${today.minusDays(ECOS_LOOKBACK_DAYS).format(DATE_FORMAT)}/${today.format(DATE_FORMAT)}/" +
                         ECOS_BOND_10Y_ITEM_CODE,
                 )
@@ -208,7 +217,7 @@ class FinancialApiClient(
         internal fun parseEcosLatestYield(response: Map<String, Any?>): BigDecimal {
             val body = response["StatisticSearch"] as? Map<String, Any?> ?: error("ECOS 응답 형식 이상: StatisticSearch 없음")
             val rows = body["row"] as? List<Map<String, Any?>> ?: error("ECOS 응답 형식 이상: row 없음")
-            val latest = rows.lastOrNull() ?: error("ECOS 응답에 데이터가 없음")
+            val latest = rows.maxByOrNull { it["TIME"] as? String ?: "" } ?: error("ECOS 응답에 데이터가 없음")
             return (latest["DATA_VALUE"] as? String)?.toBigDecimalOrNull()
                 ?: error("ECOS DATA_VALUE 형식 이상: ${latest["DATA_VALUE"]}")
         }
