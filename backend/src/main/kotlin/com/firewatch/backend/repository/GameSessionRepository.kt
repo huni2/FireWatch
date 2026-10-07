@@ -8,5 +8,7 @@ import jakarta.persistence.LockModeType
 
 interface GameSessionRepository : JpaRepository<GameSession, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    fun findByIdAndDeviceId(id: Long, deviceId: String): GameSession?
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     fun findByDeviceIdAndStatus(deviceId: String, status: GameSessionStatus): GameSession?
 }

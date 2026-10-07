@@ -32,7 +32,7 @@ jobs:
         working-directory: backend
         env:
           FIREWATCH_TEST_POSTGRES_URL: jdbc:postgresql://localhost:5432/firewatch_test
-        run: bash gradlew test --tests '*SettingsCreationConcurrencyTest' --tests '*CatalogIntegrationTest' --tests '*CommunityIntegrationTest' --rerun-tasks
+        run: bash gradlew test --tests '*SettingsCreationConcurrencyTest' --tests '*CatalogIntegrationTest' --tests '*CommunityIntegrationTest' --tests '*GameRankingIntegrationTest' --rerun-tasks
   clients:
     runs-on: ubuntu-latest
     strategy:

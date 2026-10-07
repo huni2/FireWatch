@@ -8,6 +8,8 @@ import { PracticeReplay, type PracticeReplayState } from './PracticeReplay'
 import { virtualOrderPreview } from '../../../../shared/game-preview'
 import * as Crypto from 'expo-crypto'
 import { practice, previewPractice, type PracticePreview, type PracticeTurn } from '@/lib/investingApi'
+import { PracticeRankings } from './PracticeRankings'
+import type { RankingTab } from '../../../../shared/game-ranking'
 import tokens from '../../../../shared/design-tokens.json'
 
 const c = tokens.light, accent = tokens.light.accent
@@ -16,6 +18,8 @@ const assets = [['KOSPI', '코스피'], ['KOSDAQ', '코스닥'], ['SP500', 'S&P 
 
 export function PracticeScreen() {
   const [turn, setTurn] = useState<PracticeTurn | null>(null)
+  const [rankingTab, setRankingTab] = useState<RankingTab>('board'), [rankingOpen, setRankingOpen] = useState(false)
+  function showRanking(tab: RankingTab) { setRankingTab(tab); setRankingOpen(true) }
   const [replay, setReplay] = useState<PracticeReplayState | null>(null)
   const [lastReplay, setLastReplay] = useState<PracticeReplayState | null>(null)
   const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false)
@@ -79,6 +83,7 @@ export function PracticeScreen() {
     const body = name === 'start' ? { difficulty, allowShortSelling: short } : name === 'trade' ? { instrumentType: instrument, symbol: ticker ?? undefined, action: side, quantity: qty, requestId: requestId.current ?? (requestId.current = Crypto.randomUUID()), expectedTurnIndex: turn?.turnIndex, expectedPrice: preview!.unitPrice } : name === 'next-turn' ? { expectedTurnIndex: turn?.turnIndex } : undefined
     try {
       const updated = await practice(name, body)
+      if (updated.status === 'ENDED' && updated.simulation && updated.turnIndex > 0 && (name === 'end' || name === 'next-turn')) Alert.alert('게임 기록을 공개할까요?', '선택한 기록만 닉네임으로 주간 순위에 공개합니다.', [{ text: '등록하지 않기', style: 'cancel' }, { text: '등록하기', onPress: () => showRanking('publish') }])
       setTurn(updated); setPreview(null); setRevision(v => v + 1)
       if (replayBefore && updated.turnIndex > replayBefore.turnIndex) { const completed = { before: replayBefore, after: updated }; setLastReplay(completed); setReplay(current => current ? completed : null) }
       else if (replayBefore) setReplay(null)
@@ -92,6 +97,9 @@ export function PracticeScreen() {
     Alert.alert('거래 금액 확인', `${assetName(instrument, ticker)} · ${qty}개\n총 ${amount(preview.total)} 게임머니\n거래 후 현금 ${amount(preview.cashAfter)}`, [{ text: '돌아가기', style: 'cancel' }, { text: '이 금액으로 체결', onPress: () => void action('trade') }])
   }
   return <ScrollView ref={scrollRef} style={s.screen} contentContainerStyle={s.content}>
+    {rankingOpen && <PracticeRankings turn={turn} initialTab={rankingTab} close={() => setRankingOpen(false)} />}
+    <GameButton label="주간 순위 · 역대 주간 우승자" disabled={busy} onPress={() => showRanking('board')} />
+    {turn && <GameButton label="이 게임 기록 등록" disabled={busy || !turn.simulation || turn.turnIndex < 1} onPress={() => showRanking('publish')} />}
     <PracticeReplay value={replay} close={() => setReplay(null)} />
     {lastReplay && <GameButton label="지난 턴 복기 다시보기" onPress={() => setReplay(lastReplay)} disabled={busy} />}
     <View style={s.hero}><Text style={s.eyebrow}>FIREWATCH / MARKET ARCADE</Text><Text style={s.title}>가상투자 게임</Text><Text style={s.text}>시장을 읽고, 다음 턴을 선택하세요.</Text><Text style={s.muted}>가상 뉴스·지표·가격·AI 픽으로 진행합니다. 날짜는 무작위이고 모든 매매는 게임머니를 사용합니다.</Text>{<GameButton label={'게임 규칙'} onPress={ () => Alert.alert('게임 규칙', '뉴스·지표·가격·AI 픽은 가상입니다. 가격은 턴 순서와 시나리오를 따라 변화합니다. 단가 × 수량을 게임머니로 계산합니다. 가상 사이드카는 이번 턴 지수 주문만 막습니다. 가상 종목 거래정지는 직전 가격을 유지하고 매매만 막습니다. 다음 턴에 제한이 해제되며 새 사건이 다시 발생할 수 있습니다. 실제 거래소 제도와 다른 게임 규칙입니다. 실제 원화 환산·수수료·세금·기업행사는 반영하지 않습니다. 가격이 없으면 평가 미확정이며, 다음 턴의 보유 가격이 없으면 현재 턴을 유지합니다. 공매도 모드는 증거금·강제청산을 반영하지 않습니다.')} disabled={busy} />}</View>

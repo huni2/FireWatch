@@ -16,6 +16,7 @@ class AccountSessionFilter(private val sessions: AuthSessions) : WebFilter {
     override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
         val path = exchange.request.path.value()
         val protected = path == "/api/portfolio" || path == "/api/settings" || path == "/api/collection/operator" ||
+            (path.startsWith("/api/game/") && !path.startsWith("/api/game/rankings")) ||
             (path.startsWith("/api/auth/") && path != "/api/auth/google/link")
         val deviceId = exchange.request.headers.getFirst("X-Device-Id")
         if (!protected || deviceId == null || exchange.request.method.name() == "OPTIONS") return chain.filter(exchange)

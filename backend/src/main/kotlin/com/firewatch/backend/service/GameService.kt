@@ -114,6 +114,15 @@ class GameService(
 
     fun getCurrentTurn(deviceId: String): GameTurnSnapshot = buildTurnSnapshot(activeSessionOrThrow(deviceId))
 
+    // Ranking submissions lock the same game row as trades/turn advances and derive
+    // the score from the persisted ledger, never from a client-supplied balance.
+    fun getRankingSnapshot(deviceId: String, sessionId: Long): GameTurnSnapshot {
+        val session = gameSessionRepository.findByIdAndDeviceId(sessionId, deviceId)
+            ?: throw NotFoundException("이 기기의 게임 기록을 찾을 수 없습니다.")
+        if (session.simulationSeed == null) throw ValidationException("완전 가상 게임 기록만 순위에 등록할 수 있습니다.", emptyMap())
+        return buildTurnSnapshot(session)
+    }
+
     fun trade(
         deviceId: String,
         instrumentType: GameInstrumentType,
