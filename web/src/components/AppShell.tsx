@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { GuidedTour } from './GuidedTour'
 import { showFirstVisitGuide } from './guideEvents'
 import { CollectionNotice } from './CollectionNotice'
@@ -17,7 +17,9 @@ import {
   TrophyOutlined,
 } from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { useOperatorKey } from '../lib/operatorAccess'
+import { setAccountOperator, useIsOperator } from '../lib/operatorAccess'
+import { useLoginSession, watchLoginSession } from '../lib/loginSession'
+import { request } from '../lib/api'
 
 const { Header, Content, Footer } = Layout
 
@@ -73,7 +75,14 @@ function TopNavLink({ item, active }: { item: NavItem; active: boolean }) {
 export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
-  const operatorKey = useOperatorKey()
+  const isOperator = useIsOperator()
+  const session = useLoginSession()
+  useEffect(watchLoginSession, [])
+  useEffect(() => {
+    let active = true
+    if (session) request<{ operator: boolean }>('/api/operations/access').then(result => { if (active) setAccountOperator(result.operator ? session.token : '') }).catch(() => { if (active) setAccountOperator('') })
+    return () => { active = false }
+  }, [session])
   const active = (item: NavItem) => location.pathname === item.key || (item.key === '/guide' && location.pathname === '/usage')
   const exploration = ['/candidates', '/stocks', '/short-term'].includes(location.pathname)
   const market = ['/news', '/briefing', '/indices'].includes(location.pathname)
@@ -103,10 +112,10 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         </nav>
       </Header>
       <Drawer title="계정·설정" open={menuOpen} onClose={() => setMenuOpen(false)} width="min(360px, 100vw)">
-        <p className="account-note">현재 브라우저의 기록으로 이용 중입니다. 웹 Google 로그인은 아직 준비 중입니다.</p>
+        <p className="account-note">{session ? 'Google 연결 세션으로 이용 중입니다. 내 계정에서 연결 상태와 기기를 확인하세요.' : '현재 브라우저의 익명 기록으로 이용 중입니다. Google 연결 상태는 내 계정에서 확인하세요.'}</p>
         <nav aria-label="계정 메뉴" className="all-menu-list">
-          <Link to="/guide?topic=saved-data" onClick={() => setMenuOpen(false)}>내 기록과 계정 안내</Link>
-          {[...CONTENT_ITEMS, ...ADMIN_ITEMS].filter(item => ['/settings', '/guide', ...(operatorKey ? ['/audit-log'] : [])].includes(item.key)).map(item => <Link key={item.key} to={item.key} aria-current={active(item) ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{item.icon}<span>{item.label}</span></Link>)}
+          <Link to="/account" onClick={() => setMenuOpen(false)}>내 계정 · Google 로그인</Link>
+          {[...CONTENT_ITEMS, ...ADMIN_ITEMS].filter(item => ['/settings', '/guide', ...(isOperator ? ['/audit-log'] : [])].includes(item.key)).map(item => <Link key={item.key} to={item.key} aria-current={active(item) ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{item.icon}<span>{item.label}</span></Link>)}
         </nav>
       </Drawer>
       <Content className="app-content" style={{ maxWidth: 1400, width: '100%', marginInline: 'auto' }}>

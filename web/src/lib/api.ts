@@ -1,6 +1,7 @@
 // 백엔드(FireWatch backend) REST API 클라이언트. Design Ref: docs/02-design/features/firewatch.design.md §4.
 import { getDeviceId } from './deviceId'
-import { getOperatorKey } from './operatorAccess'
+import { getOperatorKey, setAccountOperator } from './operatorAccess'
+import { clearLoginSession, getLoginSession } from './loginSession'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -65,6 +66,8 @@ export interface AuditLogPage {
 }
 
 export interface Settings {
+  linkedEmail?: string | null
+  session?: { token: string; expiresAt: string } | null
   pushTime: string
   interestKeywords: string[]
   watchedStocks: string[]
@@ -127,15 +130,18 @@ export class ApiRequestError extends Error {
 }
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const session = path === '/api/auth/google/link' ? null : getLoginSession()
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), 45000)
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    headers: { 'Content-Type': 'application/json', ...(session ? { Authorization: `Bearer ${session.token}`, 'X-Device-Id': session.deviceId } : {}), ...(init?.headers ?? {}) },
     signal: init?.signal ?? controller.signal,
   }).finally(() => clearTimeout(timer))
 
   if (!response.ok) {
+    if (response.status === 401 && session && !new Headers(init?.headers).get('X-API-Key') && getLoginSession()?.token === session.token) clearLoginSession()
+    if (response.status === 403 && (path.startsWith('/api/audit-logs') || path === '/api/operations/access')) setAccountOperator('')
     const body = (await response.json().catch(() => null)) as { error?: ApiErrorBody } | null
     const apiError: ApiErrorBody = body?.error ?? {
       code: 'UNKNOWN',
