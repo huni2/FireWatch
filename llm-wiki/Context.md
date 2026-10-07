@@ -1,6 +1,6 @@
 # FireWatch — 현재 맥락
 
-최신화: 2026-10-08. 기능 코드 `79cd12f` 기준이며 이후 문서 커밋은 기능 변경이 아니다. 이전 설계·운영 이력은 [[log]]와 `Decisions/` 디렉터리를 확인한다.
+최신화: 2026-10-08. 웹 UI 코드 `79cd12f`·백엔드/Android 설정 코드 `9991091` 기준이며 이후 문서 커밋은 기능 변경이 아니다. 이전 설계·운영 이력은 [[log]]와 `Decisions/` 디렉터리를 확인한다.
 
 ## 제품 정체성과 범위
 
@@ -18,9 +18,9 @@
 | Backend | Kotlin 2.3.21·Java21·Spring Boot4.1.0·WebFlux/WebClient+JPA/JDBC. Render `https://firewatch-backend-q3cv.onrender.com` |
 | DB | 운영 Supabase PostgreSQL, 개발 H2. 데이터 초기화 금지 |
 | Mobile | Expo SDK57·React Native0.86·NativeWind·Expo Router. 최신 APK 실기기 검증과 Play 출시 준비 중 |
-| CI | 79cd12f의 main run37658863371 성공. H2와 PostgreSQL 통합 검사, 클라이언트 검사 포함 |
+| CI | 18cb55d의 main run37704342437 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·클라이언트 검사 포함 |
 
-웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 마지막 기능 배포는 37f8979d, 최근 기능 커밋은79cd12f이다. 작업 브랜치는 codex/release-hardening이며 이후 문서 커밋은 배포된 기능을 변경하지 않는다. 백엔드 변경 없는 문서 작업은 불필요한 Render 재시작을 피한다.
+웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 마지막 기능 배포는 37f8979d, 웹 UI는79cd12f, 백엔드 수집/검색과 Android 설정은9991091이다. Render에서 새 page 경계400/빈2페이지를 확인했다. 작업 브랜치는 codex/release-hardening이며 이후 문서 커밋은 배포된 기능을 변경하지 않는다. 백엔드 변경 없는 문서 작업은 불필요한 Render 재시작을 피한다.
 
 ## 핵심 동작
 
@@ -33,7 +33,7 @@
 
 ## 운영 경계
 
-수집은 DB lease·종류별 KST 하루 실패 한도3·제한된 재시도를 사용한다. 네트워크 호출 동안 저장 트랜잭션을 유지하지 않는다. 실패 시 마지막 정상 관측과 기록을 보존한다. 지수·환율 실제 수집 장애의 복구는 아직 확인하지 않았다.
+수집은 DB lease·종류별 KST 하루 실패 한도3·제한된 재시도를 사용한다. 네트워크 호출 동안 저장 트랜잭션을 유지하지 않는다. 실패 시 마지막 정상 관측과 기록을 보존한다. 단일 지수/금속 및 선택 국채 실패가 정상값을 버리던 문제를 수정·서버 반영 확인했다. 실제 수집 작업의 장애 해소·운영자 실수신은 아직 미확인이다. 공개 2026-10-08 브리핑에는 금융12항목이 있으나 별도 수집 작업 성공의 증거로 대체하지 않는다.
 
 운영 DB Hikari는 최대3·유휴0·유휴 반환60초. session pooler의 공유 연결 예산을 고려한다.
 
@@ -43,7 +43,7 @@
 
 ## 출시 전 확인과 다음 작업
 
-- 최신 APK의 Google 로그인·푸시 실수신·계정 삭제·공지/문의/게임 설치 검증. 과거 APK에 최근 변경이 반영됐다고 주장하지 않는다.
+- 최신 APK bf7a706a(소스9991091·versionCode2)는 EAS IN_PROGRESS 확인. 빌드 완료 후 Google 로그인·푸시 실수신·계정 삭제·공지/문의/게임 설치 검증. 과거 APK는 최신 소스가 아니다.
 - 금융 수집 장애 원인과 실제 복구 확인. 예약 HTTP200/triggered:true는 수집 완료 증거가 아니다.
 - 웹 기능/UI/UX 개선은 배포·회귀 완료. 실제 첫 이용자의 자산 등록·추천 비교·기사 도달을 관찰하고 Android 설치 화면을 별도로 확인.
 - 개인정보·투자 정보 제공 범위·Play 제출 항목을 실제 처리와 일치시키기.
@@ -54,3 +54,5 @@
 ## 문서·검증 원칙
 
 원본 요구사항은 `docs/specs/`, 설계 선택은 `Decisions/`, 운영/검증 이력은 `log.md`에 보관한다. 코드와 최신 확인 증거를 우선한다. 구현·배포·fixture 검사·실기기 검증을 구분하고 측정하지 않은 사용자 성과를 만들지 않는다. AI 개발 보조는 Claude Code·Codex를 활용했음을 명시한다.
+
+수집 항목 격리·카탈로그 안정 페이지/합성3,000건 검사·CI PostgreSQL 별도 복원 훈련과 보관/출시 범위 문서를 보강했다. docs/deployment/data-preservation.md와 docs/product/release-scope.md 참조. 운영 DB 초기화·무제한 재시도·임의 게임 목록 교체 없음.

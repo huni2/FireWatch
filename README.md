@@ -10,7 +10,7 @@
 
 ## 현재 상태
 
-2026-10-08 기준, 기능 코드 `79cd12f`을 바탕으로 정리했습니다.
+2026-10-08 기준, 기능 코드 `18cb55d`을 바탕으로 정리했습니다.
 
 | 영역 | 상태 |
 |---|---|
@@ -95,7 +95,7 @@ OpenSearch는 비용과 운영 부담으로 보류했습니다. 종목 검색은
 
 서버가 저장 기록과 거래 장부의 기준입니다. 웹은 기능별 훅과 로컬 상태로 조회·편집·처리 중·실패를 관리하며, 모바일은 같은 API 계약을 사용합니다. 전역 서버 캐시 라이브러리는 아직 도입하지 않았습니다. 검색 결과와 조건의 일치, 요청 경쟁, 중복 조회는 계속 점검할 항목입니다.
 
-[CI 워크플로](.github/workflows/validate.yml)는 백엔드 테스트, PostgreSQL 동시성·카탈로그·문의·게임 순위 통합 검사, 웹 lint/build, 모바일 lint/타입 검사와 출시 설정 검사 테스트를 수행합니다. 기능 코드 `79cd12f`의 [main CI](https://github.com/huni2/FireWatch/actions/runs/37658863371)는 성공했습니다. 이 결과가 실제 기기 푸시 수신이나 현재 외부 수집 성공을 증명하지는 않습니다.
+[CI 워크플로](.github/workflows/validate.yml)는 백엔드 테스트, PostgreSQL 동시성·카탈로그/합성3,000건·문의·게임 순위 통합 검사 및 별도 DB 백업 복원/행 서명/시퀀스 대조, 웹 lint/build, 모바일 lint/타입 검사와 출시 설정 검사 테스트를 수행합니다. 기능 코드 `18cb55d`의 [main CI](https://github.com/huni2/FireWatch/actions/runs/37704342437)는 성공했습니다. 이 결과가 실제 기기 푸시 수신이나 현재 외부 수집 성공을 증명하지는 않습니다.
 
 ## 로컬 실행
 
@@ -132,10 +132,11 @@ node --test scripts/release-check.test.cjs
 
 - [개발 포트폴리오 사례·소개 문구](docs/portfolio/firewatch-case-study.md)
 - [배포·환경변수·운영 점검](DEPLOY.md)
+- [자료 보관·백업·복구 절차](docs/deployment/data-preservation.md) · [출시 기능 범위](docs/product/release-scope.md)
 - [Android 개발 안내](mobile/README.md) · [Play 제출 안내](mobile/PLAY_STORE.md) · [실기기 검증](docs/deployment/android-release-check.md)
 - [프로덕트 문서](docs/product/) · [기존 디자인·기능 리뷰](docs/reviews/)
 - [현재 맥락](llm-wiki/Context.md) · [열린 과제](llm-wiki/Next-Tasks.md) · [설계 결정](llm-wiki/Decisions/) · [작업 로그](llm-wiki/log.md)
 
-남은 핵심 작업은 최신 Android 설치 검증, 금융 데이터 수집 복구 확인, UI/UX 재점검, 개인정보·투자 정보 범위와 Play 제출 항목 확인입니다. 게임 종목은 현재 가상 기업 5개이며 실제 기업명 기반 확대는 설계·성능 검토 단계입니다. 분야별 시작 목록과 ETF 비교도 전체 상장 종목·상품 데이터베이스는 아닙니다.
+남은 핵심 작업은 최신 Android 설치 검증, 금융 데이터 수집 복구 확인, 개인정보·투자 정보 범위와 Play 제출 항목 확인입니다. 게임 종목은 현재 가상 기업 5개이며 실제 기업명 기반 확대는 설계·성능 검토 단계입니다. 분야별 시작 목록과 ETF 비교도 전체 상장 종목·상품 데이터베이스는 아닙니다.
 
 개발 과정에서는 Claude Code와 Codex를 활용했습니다. 요구사항·기술 결정·실패와 검증 결과를 코드와 함께 기록하며, AI 생성 결과는 테스트와 운영 확인으로 검토합니다. 도구가 생성한 코드와 사람이 내린 제품·운영 판단을 구분해 설명합니다.

@@ -1,6 +1,6 @@
 # FireWatch — 개발 포트폴리오 사례
 
-기준일: 2026-10-08 · 기능 코드: `79cd12f` · 개인 프로젝트 · 웹/백엔드 배포, Android 출시 준비 중
+기준일: 2026-10-08 · 기능 코드: `18cb55d` · 개인 프로젝트 · 웹/백엔드 배포, Android 출시 준비 중
 
 ## 소개에 바로 쓸 수 있는 문구
 
@@ -104,7 +104,7 @@ Google ID 토큰은 서버에서 검증하며 세션과 기기를 연결합니�
 
 | 증거 | 확인할 수 있는 것 | 확인할 수 없는 것 |
 |---|---|---|
-| [기능 코드 main CI](https://github.com/huni2/FireWatch/actions/runs/37658863371) | 백엔드 검사·PostgreSQL 통합 검사·웹 build/lint·모바일 타입/lint/설정 검사 | 실기기 푸시 수신, 전체 서비스 무장애 |
+| [기능 코드 main CI](https://github.com/huni2/FireWatch/actions/runs/37704342437) | 백엔드 검사·PostgreSQL 통합 검사·웹 build/lint·모바일 타입/lint/설정 검사 | 실기기 푸시 수신, 전체 서비스 무장애 |
 | [CI 정의](../../.github/workflows/validate.yml) | 재실행 가능한 검증 명령과 DB 환경 | 실제 운영 데이터의 현재 상태 |
 | [프로덕트 문서](../product/) | 구현 범위·사용자 흐름·제약 | 사용자 유지율·만족도 개선 수치 |
 | [기존 리뷰](../reviews/) | 당시 점검 조건, fixture와 운영 확인의 차이 | 현재 모든 화면의 디자인 승인 |
