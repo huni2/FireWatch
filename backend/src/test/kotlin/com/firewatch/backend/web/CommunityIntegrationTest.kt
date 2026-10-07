@@ -45,6 +45,7 @@ class CommunityIntegrationTest {
         client().get().uri("/api/community/feedback").header("X-Device-Id", other).header("Authorization", otherAuth).exchange().expectStatus().isOk.expectBody().json("[]")
         client().get().uri("/api/community/operator/feedback").header("X-Device-Id", device).header("Authorization", auth).exchange().expectStatus().isForbidden
         client().get().uri("/api/community/operator/notices").exchange().expectStatus().isUnauthorized
+        client().get().uri("/api/community/operator/feedback").header("X-API-Key", "community-operator").exchange().expectStatus().isUnauthorized
         client().put().uri("/api/community/operator/feedback/${row.id}").header("X-Device-Id", device).header("Authorization", auth).bodyValue(FeedbackUpdate("RESOLVED", "답변")).exchange().expectStatus().isForbidden
         val (op, opAuth) = login("powerhch@gmail.com")
         client().put().uri("/api/community/operator/feedback/${row.id}").header("X-Device-Id", op).header("Authorization", opAuth).bodyValue(FeedbackUpdate("REVIEWING", "확인하고 있습니다.")).exchange().expectStatus().isOk
@@ -59,7 +60,8 @@ class CommunityIntegrationTest {
         jdbc.update("DELETE FROM community_notices")
         val now = Instant.now()
         val base = NoticeInput("새 기능", "포트폴리오 분석 안내", "WEB", true, now.minusSeconds(60), null, true)
-        fun create(input: NoticeInput) = client().post().uri("/api/community/operator/notices").header("X-API-Key", "community-operator").bodyValue(input).exchange().expectStatus().isOk
+        val (operatorDevice, operatorAuth) = login("powerhch@gmail.com")
+        fun create(input: NoticeInput) = client().post().uri("/api/community/operator/notices").header("X-Device-Id", operatorDevice).header("Authorization", operatorAuth).bodyValue(input).exchange().expectStatus().isOk
         create(base); create(base.copy(title = "앱", target = "ANDROID")); create(base.copy(title = "초안", published = false)); create(base.copy(title = "예정", startsAt = now.plusSeconds(3600))); create(base.copy(title = "종료", startsAt = now.minusSeconds(7200), endsAt = now.minusSeconds(3600)))
         client().get().uri("/api/community/notices?platform=WEB").exchange().expectStatus().isOk.expectBody().jsonPath("$.length()").isEqualTo(1).jsonPath("$[0].title").isEqualTo("새 기능")
         client().get().uri("/api/community/notices?platform=ANDROID").exchange().expectStatus().isOk.expectBody().jsonPath("$.length()").isEqualTo(1)

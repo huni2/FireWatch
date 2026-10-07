@@ -47,16 +47,16 @@ class CommunityController(private val jdbc: JdbcTemplate, private val sessions: 
     }
 
     @GetMapping("/operator/feedback")
-    fun inbox(@RequestHeader("X-Device-Id", required = false) device: String?, @RequestHeader("Authorization", required = false) auth: String?, @RequestHeader("X-API-Key", required = false) key: String?, @RequestParam(defaultValue = "0") page: Int): List<FeedbackView> {
-        operator.requireOperator(device, auth, key)
+    fun inbox(@RequestHeader("X-Device-Id", required = false) device: String?, @RequestHeader("Authorization", required = false) auth: String?, @RequestParam(defaultValue = "0") page: Int): List<FeedbackView> {
+        operator.requireOperator(device, auth, null)
         if (page !in 0..10000) bad("페이지가 올바르지 않습니다.")
         return feedbackRows("SELECT * FROM user_feedback ORDER BY created_at DESC LIMIT 50 OFFSET ?", page * 50)
     }
 
     @PutMapping("/operator/feedback/{id}")
     @Transactional
-    fun reply(@PathVariable id: String, @RequestHeader("X-Device-Id", required = false) device: String?, @RequestHeader("Authorization", required = false) auth: String?, @RequestHeader("X-API-Key", required = false) key: String?, @RequestBody input: FeedbackUpdate): Map<String, Boolean> {
-        operator.requireOperator(device, auth, key)
+    fun reply(@PathVariable id: String, @RequestHeader("X-Device-Id", required = false) device: String?, @RequestHeader("Authorization", required = false) auth: String?, @RequestBody input: FeedbackUpdate): Map<String, Boolean> {
+        operator.requireOperator(device, auth, null)
         if (input.status !in listOf("NEW", "REVIEWING", "RESOLVED", "DEFERRED") || input.reply.length > 3000) bad("상태와 답변 길이를 확인해주세요.")
         if (jdbc.update("UPDATE user_feedback SET status=?,reply=?,updated_at=? WHERE id=?", input.status, input.reply.trim(), Timestamp.from(Instant.now()), id) != 1) throw NotFoundException("접수 내역을 찾을 수 없습니다.")
         audit("community.feedbackReply", "운영자가 문의 답변·상태를 저장했습니다.")
@@ -88,15 +88,15 @@ class CommunityController(private val jdbc: JdbcTemplate, private val sessions: 
     }
 
     @GetMapping("/operator/notices")
-    fun allNotices(@RequestHeader("X-Device-Id", required = false) device: String?, @RequestHeader("Authorization", required = false) auth: String?, @RequestHeader("X-API-Key", required = false) key: String?): List<NoticeView> {
-        operator.requireOperator(device, auth, key)
+    fun allNotices(@RequestHeader("X-Device-Id", required = false) device: String?, @RequestHeader("Authorization", required = false) auth: String?): List<NoticeView> {
+        operator.requireOperator(device, auth, null)
         return noticeRows("SELECT * FROM community_notices ORDER BY starts_at DESC LIMIT 100")
     }
 
     @PostMapping("/operator/notices")
     @Transactional
-    fun createNotice(@RequestHeader("X-Device-Id", required = false) device: String?, @RequestHeader("Authorization", required = false) auth: String?, @RequestHeader("X-API-Key", required = false) key: String?, @RequestBody input: NoticeInput): NoticeView {
-        operator.requireOperator(device, auth, key)
+    fun createNotice(@RequestHeader("X-Device-Id", required = false) device: String?, @RequestHeader("Authorization", required = false) auth: String?, @RequestBody input: NoticeInput): NoticeView {
+        operator.requireOperator(device, auth, null)
         validateNotice(input)
         val id = UUID.randomUUID().toString()
         jdbc.update("INSERT INTO community_notices (id,title,content,target,popup,starts_at,ends_at,published) VALUES (?,?,?,?,?,?,?,?)", id, input.title.trim(), input.content.trim(), input.target, input.popup, Timestamp.from(input.startsAt), input.endsAt?.let(Timestamp::from), input.published)
@@ -106,8 +106,8 @@ class CommunityController(private val jdbc: JdbcTemplate, private val sessions: 
 
     @PutMapping("/operator/notices/{id}")
     @Transactional
-    fun updateNotice(@PathVariable id: String, @RequestHeader("X-Device-Id", required = false) device: String?, @RequestHeader("Authorization", required = false) auth: String?, @RequestHeader("X-API-Key", required = false) key: String?, @RequestBody input: NoticeInput): Map<String, Boolean> {
-        operator.requireOperator(device, auth, key)
+    fun updateNotice(@PathVariable id: String, @RequestHeader("X-Device-Id", required = false) device: String?, @RequestHeader("Authorization", required = false) auth: String?, @RequestBody input: NoticeInput): Map<String, Boolean> {
+        operator.requireOperator(device, auth, null)
         validateNotice(input)
         if (jdbc.update("UPDATE community_notices SET title=?,content=?,target=?,popup=?,starts_at=?,ends_at=?,published=? WHERE id=?", input.title.trim(), input.content.trim(), input.target, input.popup, Timestamp.from(input.startsAt), input.endsAt?.let(Timestamp::from), input.published, id) != 1) throw NotFoundException("공지를 찾을 수 없습니다.")
         audit("community.noticeUpdate", "운영자가 공지 내용·게시 상태를 변경했습니다.")
