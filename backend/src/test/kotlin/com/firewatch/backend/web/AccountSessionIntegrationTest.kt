@@ -12,7 +12,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import java.time.Instant
 import kotlin.test.*
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = ["spring.datasource.url=jdbc:h2:mem:session-test;DB_CLOSE_DELAY=-1", "firewatch.scheduler.cron=-", "firewatch.settings.api-key=session-test-key"])
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = ["spring.datasource.url=jdbc:h2:mem:session-test;DB_CLOSE_DELAY=-1", "firewatch.scheduler.cron=-", "firewatch.settings.api-key=session-test-key", "firewatch.operator.api-key=operator-test-key"])
 class AccountSessionIntegrationTest {
     @LocalServerPort var port: Int = 0
     @Autowired lateinit var sessions: AuthSessions
@@ -21,6 +21,29 @@ class AccountSessionIntegrationTest {
     @Autowired lateinit var settings: UserSettingsRepository
     @Autowired lateinit var jdbc: org.springframework.jdbc.core.JdbcTemplate
     private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
+
+    @Test
+    fun `감사로그는 인증된 운영자나 관리 키만 읽을 수 있다`() {
+        client().get().uri("/api/audit-logs").exchange().expectStatus().isUnauthorized
+        client().get().uri("/api/audit-logs").header("X-API-Key", "wrong").exchange().expectStatus().isUnauthorized
+        client().get().uri("/api/audit-logs").header("X-API-Key", "session-test-key").exchange().expectStatus().isUnauthorized
+        client().get().uri("/api/audit-logs").header("X-API-Key", "operator-test-key").exchange().expectStatus().isOk
+        data class Case(val suffix: String, val email: String, val verified: Boolean, val allowed: Boolean)
+        for ((suffix, email, verified, allowed) in listOf(
+            Case("owner", "powerhch@gmail.com", true, true),
+            Case("user", "user@example.com", true, false),
+            Case("unverified", "powerhch@gmail.com", false, false),
+        )) {
+            val device = "operator-$suffix"
+            val user = users.save(AppUser(googleSub = device, email = email, emailVerified = verified))
+            links.save(DeviceLink(device, user.id!!))
+            val session = sessions.issue(device)
+            client().get().uri("/api/audit-logs").header("X-Device-Id", device).exchange().expectStatus().isUnauthorized
+            val response = client().get().uri("/api/audit-logs").header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").header("X-User-Email", "powerhch@gmail.com").exchange()
+            if (allowed) response.expectStatus().isOk else response.expectStatus().isForbidden
+            client().get().uri("/api/audit-logs").header("X-Device-Id", "other-$device").header("Authorization", "Bearer ${session.token}").exchange().expectStatus().isUnauthorized
+        }
+    }
 
     @Test
     fun `연동된 개인 데이터는 기기 ID만으로 읽을 수 없고 만료와 기기 바인딩을 검사한다`() {

@@ -17,6 +17,9 @@ class ConflictException(message: String) : ApiException("CONFLICT", message, Htt
 class UnauthorizedException(message: String = "API 키가 올바르지 않습니다.") :
     ApiException("UNAUTHORIZED", message, HttpStatus.UNAUTHORIZED)
 
+class ForbiddenException(message: String = "운영자만 접근할 수 있습니다.") :
+    ApiException("FORBIDDEN", message, HttpStatus.FORBIDDEN)
+
 class ValidationException(message: String, fieldErrors: Map<String, String>) :
     ApiException("VALIDATION_ERROR", message, HttpStatus.BAD_REQUEST, mapOf("fieldErrors" to fieldErrors))
 

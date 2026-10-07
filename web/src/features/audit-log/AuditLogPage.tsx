@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Card, DatePicker, Select, Space, Table, Tooltip, Typography } from 'antd'
+import { Alert, Button, Card, DatePicker, Input, Select, Space, Table, Tooltip, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs, { type Dayjs } from 'dayjs'
 import { AuditStatusTag } from './components/AuditStatusTag'
@@ -7,6 +7,8 @@ import { useAuditLogs } from './hooks/useAuditLogs'
 import type { AuditLogEntry } from '../../lib/api'
 import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 import { SECTION_CARD_PROPS } from '../../lib/theme'
+import { request } from '../../lib/api'
+import { setOperatorKey, useOperatorKey } from '../../lib/operatorAccess'
 
 const { RangePicker } = DatePicker
 
@@ -31,6 +33,23 @@ const STATUS_OPTIONS = [
 
 // Design Ref: §5.4 감사로그(Audit Log) 체크리스트 — FR-07
 export function AuditLogPage() {
+  const operatorKey = useOperatorKey()
+  const [draft, setDraft] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const authenticate = async () => {
+    setLoading(true); setError('')
+    try {
+      await request('/api/operations/access', { headers: { 'X-API-Key': draft } })
+      setOperatorKey(draft); setDraft('')
+    } catch (err) { setError(err instanceof Error ? err.message : '운영자 인증에 실패했습니다.') }
+    finally { setLoading(false) }
+  }
+  if (!operatorKey) return <Card title="운영자 전용 감사로그"><Typography.Paragraph>운영 기록은 일반 사용자에게 공개하지 않습니다. 현재 웹에서는 운영 키로 접근할 수 있습니다.</Typography.Paragraph><form onSubmit={e => { e.preventDefault(); void authenticate() }}><Space wrap><Input.Password aria-label="운영 키" autoComplete="off" value={draft} onChange={e => setDraft(e.target.value)} /><Button type="primary" htmlType="submit" loading={loading} disabled={!draft.trim()}>운영자 인증</Button></Space></form>{error && <Alert style={{ marginTop: 16 }} type="error" message={error} />}</Card>
+  return <Space direction="vertical" style={{ width: '100%' }}><Button onClick={() => setOperatorKey('')}>운영자 접근 종료</Button><AuditLogContent /></Space>
+}
+
+function AuditLogContent() {
   const [eventType, setEventType] = useState<string | undefined>(undefined)
   const [status, setStatus] = useState<string | undefined>(undefined)
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null)

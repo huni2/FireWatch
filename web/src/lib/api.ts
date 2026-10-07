@@ -1,5 +1,6 @@
 // 백엔드(FireWatch backend) REST API 클라이언트. Design Ref: docs/02-design/features/firewatch.design.md §4.
 import { getDeviceId } from './deviceId'
+import { getOperatorKey } from './operatorAccess'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -178,7 +179,7 @@ export function fetchAuditLogs(params: {
   if (params.to) query.set('to', params.to)
   query.set('page', String(params.page ?? 0))
   query.set('size', String(params.size ?? 20))
-  return request<AuditLogPage>(`/api/audit-logs?${query.toString()}`)
+  return request<AuditLogPage>(`/api/audit-logs?${query.toString()}`, { headers: { 'X-API-Key': getOperatorKey() } })
 }
 
 export function fetchSettings(): Promise<Settings> {

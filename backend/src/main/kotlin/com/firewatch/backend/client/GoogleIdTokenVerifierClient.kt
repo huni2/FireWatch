@@ -6,7 +6,7 @@ import com.google.api.client.json.gson.GsonFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
-data class GoogleIdentity(val googleSub: String, val email: String?)
+data class GoogleIdentity(val googleSub: String, val email: String?, val emailVerified: Boolean = false)
 
 interface GoogleIdentityVerifier {
     // 유효하지 않은 토큰(서명 불일치·만료·audience 불일치 등)이면 null을 반환한다 — 호출부(AuthService)가
@@ -29,6 +29,6 @@ class GoogleIdTokenVerifierClient(
 
     override fun verify(idToken: String): GoogleIdentity? {
         val token = verifier.verify(idToken) ?: return null
-        return GoogleIdentity(googleSub = token.payload.subject, email = token.payload.email)
+        return GoogleIdentity(googleSub = token.payload.subject, email = token.payload.email, emailVerified = token.payload.emailVerified == true)
     }
 }

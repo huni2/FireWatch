@@ -11,7 +11,7 @@ import com.firewatch.backend.entity.Briefing
 import java.math.BigDecimal
 import java.time.LocalDate
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = ["spring.datasource.url=jdbc:h2:mem:portfolio-test;DB_CLOSE_DELAY=-1", "firewatch.scheduler.cron=-"])
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = ["spring.datasource.url=jdbc:h2:mem:portfolio-test;DB_CLOSE_DELAY=-1", "firewatch.scheduler.cron=-", "firewatch.operator.api-key=portfolio-operator-key"])
 class PortfolioApiIntegrationTest {
     @Autowired private lateinit var auditLogs: com.firewatch.backend.repository.AuditLogRepository
     @Autowired private lateinit var briefings: BriefingRepository
@@ -22,11 +22,12 @@ class PortfolioApiIntegrationTest {
     private val client get() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
 
     @Test
-    fun `공개 감사 로그는 이전에 저장한 개인 포트폴리오 내용도 노출하지 않는다`() {
+    fun `운영자 감사 로그도 이전에 저장한 개인 포트폴리오 내용을 노출하지 않는다`() {
         auditLogs.save(com.firewatch.backend.entity.AuditLog(eventType = com.firewatch.backend.entity.AuditEventType.PORTFOLIO,
             actionName = "privatePortfolio", status = com.firewatch.backend.entity.AuditStatus.SUCCESS,
             responseSummary = "private-owner-secret: holdings=123456", requestPayload = "private-request"))
-        client.get().uri("/api/audit-logs?eventType=PORTFOLIO").exchange().expectStatus().isOk.expectBody()
+        client.get().uri("/api/audit-logs?eventType=PORTFOLIO").exchange().expectStatus().isUnauthorized
+        client.get().uri("/api/audit-logs?eventType=PORTFOLIO").header("X-API-Key", "portfolio-operator-key").exchange().expectStatus().isOk.expectBody()
             .consumeWith { result ->
                 val body = String(result.responseBody!!)
                 kotlin.test.assertFalse(body.contains("private-owner-secret"))

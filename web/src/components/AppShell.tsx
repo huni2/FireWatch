@@ -17,6 +17,7 @@ import {
   TrophyOutlined,
 } from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useOperatorKey } from '../lib/operatorAccess'
 
 const { Header, Content, Footer } = Layout
 
@@ -72,6 +73,7 @@ function TopNavLink({ item, active }: { item: NavItem; active: boolean }) {
 export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const operatorKey = useOperatorKey()
   const active = (item: NavItem) => location.pathname === item.key || (item.key === '/guide' && location.pathname === '/usage')
 
   return (
@@ -100,7 +102,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
       </Header>
       <Drawer title="전체 메뉴" open={menuOpen} onClose={() => setMenuOpen(false)} width="min(400px, 100vw)">
         <nav aria-label="전체 메뉴 목록" className="all-menu-list">
-          {[{ title: '투자 기록·탐색', paths: ['/', '/candidates', '/stocks', '/short-term'] }, { title: '시장 소식·자료', paths: ['/news', '/briefing', '/indices'] }, { title: '게임·이용 안내', paths: ['/game', '/guide', '/settings'] }, { title: '운영', paths: ['/audit-log'] }].map(group => <section key={group.title}><h2>{group.title}</h2>{[...CONTENT_ITEMS, ...ADMIN_ITEMS].filter(item => group.paths.includes(item.key)).map(item => <Link key={item.key} to={item.key} aria-current={active(item) ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{item.icon}<span>{item.key === '/short-term' ? '단기 관찰' : item.label}</span></Link>)}</section>)}
+          {[{ title: '투자 기록·탐색', paths: ['/', '/candidates', '/stocks', '/short-term'] }, { title: '시장 소식·자료', paths: ['/news', '/briefing', '/indices'] }, { title: '게임·이용 안내', paths: ['/game', '/guide', '/settings'] }, ...(operatorKey ? [{ title: '운영', paths: ['/audit-log'] }] : [])].map(group => <section key={group.title}><h2>{group.title}</h2>{[...CONTENT_ITEMS, ...ADMIN_ITEMS].filter(item => group.paths.includes(item.key)).map(item => <Link key={item.key} to={item.key} aria-current={active(item) ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{item.icon}<span>{item.key === '/short-term' ? '단기 관찰' : item.label}</span></Link>)}</section>)}
         </nav>
       </Drawer>
       <Content className="app-content" style={{ maxWidth: 1400, width: '100%', marginInline: 'auto' }}>

@@ -21,9 +21,13 @@ import java.time.Instant
 @RequestMapping("/api/audit-logs")
 class AuditLogController(
     private val auditLogRepository: AuditLogRepository,
+    private val operatorAccess: com.firewatch.backend.service.OperatorAccess,
 ) {
     @GetMapping
     suspend fun search(
+        @org.springframework.web.bind.annotation.RequestHeader("X-Device-Id", required = false) deviceId: String?,
+        @org.springframework.web.bind.annotation.RequestHeader("Authorization", required = false) authorization: String?,
+        @org.springframework.web.bind.annotation.RequestHeader("X-API-Key", required = false) apiKey: String?,
         @RequestParam(required = false) eventType: AuditEventType?,
         @RequestParam(required = false) status: AuditStatus?,
         @RequestParam(required = false) from: Instant?,
@@ -31,6 +35,7 @@ class AuditLogController(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
     ): AuditLogPageResponse = withContext(Dispatchers.IO) {
+        operatorAccess.requireOperator(deviceId, authorization, apiKey)
         val spec = AuditLogSpecifications.search(eventType, status, from, to)
         val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
         auditLogRepository.findAll(spec, pageable).toResponse()

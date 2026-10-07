@@ -29,7 +29,11 @@ class AuthServiceTest {
     private val userSettingsRepository = mockk<UserSettingsRepository>(relaxed = true)
     private val authService = AuthService(verifier, appUserRepository, deviceLinkRepository, userSettingsRepository)
 
-    init { every { deviceLinkRepository.findById(any()) } returns Optional.empty() }
+    init {
+        every { deviceLinkRepository.findById(any()) } returns Optional.empty()
+        every { deviceLinkRepository.save(any<DeviceLink>()) } answers { firstArg() }
+        every { appUserRepository.save(any<AppUser>()) } answers { firstArg() }
+    }
 
     @Test
     fun `연결된 기기 ID를 다른 Google 계정으로 가져갈 수 없다`() {
@@ -38,6 +42,22 @@ class AuthServiceTest {
         every { deviceLinkRepository.findById("linked-device") } returns Optional.of(DeviceLink("linked-device", 42L))
         assertFailsWith<UnauthorizedException> { authService.linkGoogleAccount("linked-device", "other-token") }
         verify(exactly = 0) { deviceLinkRepository.save(any()) }
+    }
+
+    @Test
+    fun `이메일 인증 여부는 검증된 Google 응답으로 갱신한다`() {
+        val user = AppUser(id = 42L, googleSub = "verified-owner", email = "old@example.com", emailVerified = true)
+        every { verifier.verify("owner-token") } returns GoogleIdentity("verified-owner", "powerhch@gmail.com", true)
+        every { appUserRepository.findByGoogleSub("verified-owner") } returns user
+        val shared = UserSettings(userId = 42L)
+        every { userSettingsRepository.findByUserId(42L) } returns shared
+        every { userSettingsRepository.save(shared) } returns shared
+        authService.linkGoogleAccount("owner-device", "owner-token")
+        assertEquals("powerhch@gmail.com", user.email)
+        assertEquals(true, user.emailVerified)
+        every { verifier.verify("owner-token") } returns GoogleIdentity("verified-owner", "powerhch@gmail.com", false)
+        authService.linkGoogleAccount("owner-device", "owner-token")
+        assertEquals(false, user.emailVerified)
     }
 
     @Test

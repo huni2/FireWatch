@@ -44,8 +44,10 @@ class AuthService(
             ?: throw UnauthorizedException("Google 로그인 확인에 실패했습니다.")
 
         val appUser = appUserRepository.findByGoogleSub(identity.googleSub)
-            ?: appUserRepository.save(AppUser(googleSub = identity.googleSub, email = identity.email))
-        val userId = appUser.id ?: error("저장된 AppUser에 id가 없음")
+            ?: AppUser(googleSub = identity.googleSub, email = identity.email)
+        appUser.email = identity.email
+        appUser.emailVerified = identity.emailVerified
+        val userId = appUserRepository.save(appUser).id ?: error("저장된 AppUser에 id가 없음")
         val linked = deviceLinkRepository.findById(deviceId).orElse(null)
         if (linked != null && linked.userId != userId) throw UnauthorizedException("현재 연결된 Google 계정으로 로그인해주세요.")
         val anonymous = userSettingsRepository.findByDeviceId(deviceId)

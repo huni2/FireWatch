@@ -64,6 +64,10 @@ firewatch:
   settings:
     # Design Ref: §7 / ADR 0004 — 쓰기 API 최소 보호(진짜 인증 아님)
     api-key: ${SETTINGS_API_KEY:}
+  operator:
+    email: ${FIREWATCH_OPERATOR_EMAIL:powerhch@gmail.com}
+    # Never reuse SETTINGS_API_KEY: it is included in the mobile client build.
+    api-key: ${OPERATOR_API_KEY:}
   exim:
     # 한국수출입은행 Open API. 2025-06-25부로 도메인이 oapi.koreaexim.go.kr로 이전됨(실측 확인).
     api-key: ${EXIM_API_KEY:}

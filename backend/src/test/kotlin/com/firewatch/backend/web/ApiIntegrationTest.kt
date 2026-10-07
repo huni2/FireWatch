@@ -30,6 +30,7 @@ import java.time.LocalDate
     properties = [
         "spring.datasource.url=jdbc:h2:mem:api-integration-test;DB_CLOSE_DELAY=-1",
         "firewatch.settings.api-key=test-key",
+        "firewatch.operator.api-key=test-operator-key",
     ],
 )
 class ApiIntegrationTest @Autowired constructor(
@@ -151,6 +152,7 @@ class ApiIntegrationTest @Autowired constructor(
         )
 
         webTestClient.get().uri("/api/audit-logs?status=FAILURE")
+            .header("X-API-Key", "test-operator-key")
             .exchange()
             .expectStatus().isOk
             .expectBody()
