@@ -107,7 +107,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         />
         </div>
         <nav className="site-navigation" aria-label="주요 메뉴">
-          {CONTENT_ITEMS.map((item) => <TopNavLink key={item.key} item={item} active={location.pathname === item.key} />)}
+          {CONTENT_ITEMS.map((item) => <TopNavLink key={item.key} item={item} active={location.pathname === item.key || (item.key === '/guide' && location.pathname === '/usage')} />)}
         </nav>
       </Header>
       <Content className="app-content" style={{ maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
