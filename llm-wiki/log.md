@@ -11,6 +11,7 @@
 
 ## 2026-10-07
 
+- **[APP] EAS 업로드 디렉터리 규칙 교정**: 첫 preview 요청 0c07cf07의 472B 업로드에서 디렉터리 제외를 발견해 취소했다. EAS의 디렉터리 검사에 맞춰 .easignore의 예외를 수정하고 build:inspect archive의 실제 89개/3,006,722B·필수 9개·제외 7개를 확인했다. 앱/shared는 포함되고 .env·서명 키·로컬 Firebase 파일·개인 문서·backend/web은 제외된다. 첫 빌드는 설치 가능한 결과가 아니다.
 - **[APP] Firebase 앱 파일 및 EAS 빌드 파일 연결**: 사용자 추가 google-services.json의 firewatch-25e21·com.firewatch.mobile 일치, Expo 동적 파일 연결과 release:check 통과를 확인했다. 사용자는 Expo FCM V1 키 등록을 완료했다고 알렸다. 기존 @huni2/mobile에 GOOGLE_SERVICES_JSON secret 파일 변수를 preview/production 등록하고 .easignore로 앱/shared만 업로드하도록 제한했다. 계정 Free·빌드 사용 0/30·기존 비용 0 확인. 실제 키 발송/수신과 APK 설치는 별도 검증한다.
 - **[APP] Android 출시 설정 검사와 공개 OAuth 연결**: 사용자 제공 Android ID를 로컬/EAS에 반영하고 운영 API 공통 설정·Firebase 파일 동적 연결·preview/production post-install 차단 검사를 추가했다. 검사 회귀 8건과 타입/린트·Android export(2151 modules) 통과. 현 로컬 release:check는 Firebase 앱 파일 누락을 정확히 실패 처리한다. EAS FCM V1 자격증명·SHA-1·실기기 로그인/수신 및 새 APK는 미확인으로 APP-21에 유지한다.
 - **[PROJ] Play 제출 안내의 금융·개인정보 분류 보완**: 실제 포트폴리오·문의·공지 숨김·운영 기록의 수집 검토 목록으로 교체했다. 모든 금융 기능 없음/판매하지 않으니 공유 없음/예상 등급 확정/내부·비공개 테스트 혼동을 제거하고 Google·Expo 공식 근거와 실제 검증 절차를 연결했다. 과거 공개 APK에 최신 변경이 반영되었다는 오해를 막도록 README를 수정했다.

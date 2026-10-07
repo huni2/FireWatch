@@ -1,12 +1,12 @@
 # EAS archives the Git repository root. Ship only the Android app and shared code.
 *
 !.easignore
-!mobile/
-!mobile/src/
+!mobile
+!mobile/src
 !mobile/src/**
-!mobile/assets/
+!mobile/assets
 !mobile/assets/**
-!mobile/scripts/
+!mobile/scripts
 !mobile/scripts/**
 !mobile/app.config.js
 !mobile/app.json
@@ -20,7 +20,7 @@
 !mobile/tailwind.config.js
 !mobile/tsconfig.json
 !mobile/LICENSE
-!shared/
+!shared
 !shared/**
 
 # Never upload local credentials, environment files, or generated output.

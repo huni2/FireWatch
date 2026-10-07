@@ -1,6 +1,7 @@
 # FireWatch — Context
 
 ## 2026-10-07 Android 출시 설정 보강
+사용자 Firebase 앱 파일 firewatch-25e21/com.firewatch.mobile 일치와 로컬 검사 성공을 확인했다. @huni2/mobile EAS preview/production에 GOOGLE_SERVICES_JSON secret 파일 변수를 등록하고 사용자는 FCM V1 키 등록을 확인했다. Free 플랜·사용 0/30·기존 비용 0을 확인한 뒤 preview 준비. 첫 업로드 제외 규칙 오류 빌드는 취소하고 실제 build:inspect archive의 앱/shared 포함·환경/키/개인 문서 제외를 확인했다. 실제 APK·SHA-1·푸시 실수신은 후속이다.
 APP-21: 사용자 제공 Android 공개 OAuth ID를 git 제외 mobile/.env와 EAS base에 반영하고 운영 API를 명시했다. app.config.js는 로컬 google-services.json 또는 EAS 파일 변수 GOOGLE_SERVICES_JSON을 연결한다. preview/production post-install 검사는 API/OAuth/패키지/FCM 파일과 공개 비밀 키를 검사하며 CI는 8개 회귀를 실행한다. Firebase 앱 파일은 아직 없고 EAS FCM 자격증명·서명·실기기는 미검증이다. PLAY_STORE.md의 금융 정보 미수집/모든 금융 기능 없음/내부·비공개 테스트 혼동을 현재 기능과 Google 공식 정책 기준으로 수정했다. APK·스토어 출시 완료를 의미하지 않는다.
 
 ## 2026-10-07 피드백·공지 구현
