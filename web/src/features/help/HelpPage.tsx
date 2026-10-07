@@ -30,11 +30,6 @@ export function HelpPage() {
       <div><span className="eyebrow">FIREWATCH / HELP</span><h1>FireWatch 도움말</h1><p>지금 하려는 일부터 선택하세요. 사용 방법과 막힌 순간의 답을 함께 모았어요.</p></div>
       <Button size="large" icon={<PlayCircleOutlined />} onClick={showFirstVisitGuide}>처음 사용 안내 다시 보기</Button>
     </header>
-    <section className="help-shortcuts" aria-label="바로 시작하기">
-      {shortcuts.map(item => <Link key={item.to} to={item.to} className="help-shortcut">
-        <span className="help-shortcut-number" aria-hidden="true">{item.number}</span><h2>{item.title}</h2><p>{item.description}</p><span className="help-shortcut-action">{item.label}<ArrowRightOutlined /></span>
-      </Link>)}
-    </section>
     <section className="help-answers" aria-labelledby="help-answer-title">
       <div className="help-search-row"><h2 id="help-answer-title">궁금한 점 찾기</h2><Input aria-label="도움말 검색" placeholder="예: 매수, 뉴스 날짜, 알림, 저장" allowClear size="large" value={query} onChange={e => setQuery(e.target.value)} prefix={<SearchOutlined />} maxLength={100} /></div>
       <div className="help-answer-layout">
@@ -55,6 +50,7 @@ export function HelpPage() {
         </div>
       </div>
     </section>
+    <section className="help-shortcuts" aria-label="바로 시작하기">{shortcuts.map(item => <Link key={item.to} to={item.to} className="help-shortcut"><span className="help-shortcut-number" aria-hidden="true">{item.number}</span><h2>{item.title}</h2><p>{item.description}</p><span className="help-shortcut-action">{item.label}<ArrowRightOutlined /></span></Link>)}</section>
     <aside className="help-boundary"><strong>실제 투자 기록과 가상게임은 별개예요.</strong><p>투자 후보는 저장된 자료에 대한 AI 해석입니다. 게임의 가격·뉴스·픽은 가상 자료이며, 모든 게임 거래는 게임머니로 진행됩니다.</p><Link to="/privacy">개인정보·데이터 처리 안내 <ArrowRightOutlined /></Link></aside>
   </div>
 }

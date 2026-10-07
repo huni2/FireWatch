@@ -49,19 +49,19 @@ const ADMIN_ITEMS: NavItem[] = [
   { key: '/audit-log', icon: <AuditOutlined />, label: '감사로그' },
   { key: '/settings', icon: <SettingOutlined />, label: '설정' },
 ]
-const COMPACT_LABELS: Record<string, string> = { '/': '내 기록', '/candidates': '기업 탐색', '/news': '뉴스', '/game': '게임' }
+const COMPACT_LABELS: Record<string, string> = { '/': '내 기록', '/candidates': '기업 탐색', '/news': '시장 소식', '/game': '게임' }
 
 // Primary routes stay visible; the explicitly labelled menu exposes all destinations.
 function TopNavLink({ item, active }: { item: NavItem; active: boolean }) {
   return (
     <Link
       to={item.key}
-      aria-label={item.label}
+      aria-label={COMPACT_LABELS[item.key] ?? item.label}
       aria-current={active ? 'page' : undefined}
       className={`nav-link ${active ? 'is-active' : ''}`}
     >
       <span className="nav-icon" aria-hidden="true">{item.icon}</span>
-      <span className="nav-desktop-label" aria-hidden="true">{item.label}</span>
+      <span className="nav-desktop-label" aria-hidden="true">{COMPACT_LABELS[item.key] ?? item.label}</span>
       <span className="nav-mobile-label" aria-hidden="true">{COMPACT_LABELS[item.key] ?? item.label}</span>
     </Link>
   )
@@ -75,6 +75,8 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const operatorKey = useOperatorKey()
   const active = (item: NavItem) => location.pathname === item.key || (item.key === '/guide' && location.pathname === '/usage')
+  const exploration = ['/candidates', '/stocks', '/short-term'].includes(location.pathname)
+  const market = ['/news', '/briefing', '/indices'].includes(location.pathname)
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -86,7 +88,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
             FireWatch
           </span>
         </Link>
-        <Button className="all-menu-button" aria-label="전체 메뉴" icon={<MenuOutlined />} aria-expanded={menuOpen} onClick={() => setMenuOpen(true)} style={{ marginInlineStart: 'auto' }}>전체 메뉴</Button>
+        <Button className="all-menu-button" aria-label="계정·설정 메뉴" icon={<MenuOutlined />} aria-expanded={menuOpen} onClick={() => setMenuOpen(true)} style={{ marginInlineStart: 'auto' }}>계정·설정</Button>
         <Switch
           aria-label="다크 모드"
           checked={darkMode}
@@ -97,16 +99,19 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         />
         </div>
         <nav className="site-navigation" aria-label="주요 메뉴">
-          {CONTENT_ITEMS.filter(item => ['/', '/candidates', '/news', '/game'].includes(item.key)).map(item => <TopNavLink key={item.key} item={item} active={active(item)} />)}
+          {CONTENT_ITEMS.filter(item => ['/', '/candidates', '/news', '/game'].includes(item.key)).map(item => <TopNavLink key={item.key} item={item} active={active(item) || (item.key === '/candidates' && exploration) || (item.key === '/news' && market)} />)}
         </nav>
       </Header>
-      <Drawer title="전체 메뉴" open={menuOpen} onClose={() => setMenuOpen(false)} width="min(400px, 100vw)">
-        <nav aria-label="전체 메뉴 목록" className="all-menu-list">
-          {[{ title: '투자 기록·탐색', paths: ['/', '/candidates', '/stocks', '/short-term'] }, { title: '시장 소식·자료', paths: ['/news', '/briefing', '/indices'] }, { title: '게임·이용 안내', paths: ['/game', '/guide', '/settings'] }, ...(operatorKey ? [{ title: '운영', paths: ['/audit-log'] }] : [])].map(group => <section key={group.title}><h2>{group.title}</h2>{[...CONTENT_ITEMS, ...ADMIN_ITEMS].filter(item => group.paths.includes(item.key)).map(item => <Link key={item.key} to={item.key} aria-current={active(item) ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{item.icon}<span>{item.key === '/short-term' ? '단기 관찰' : item.label}</span></Link>)}</section>)}
+      <Drawer title="계정·설정" open={menuOpen} onClose={() => setMenuOpen(false)} width="min(360px, 100vw)">
+        <p className="account-note">현재 브라우저의 기록으로 이용 중입니다. 웹 Google 로그인은 아직 준비 중입니다.</p>
+        <nav aria-label="계정 메뉴" className="all-menu-list">
+          <Link to="/guide?topic=saved-data" onClick={() => setMenuOpen(false)}>내 기록과 계정 안내</Link>
+          {[...CONTENT_ITEMS, ...ADMIN_ITEMS].filter(item => ['/settings', '/guide', ...(operatorKey ? ['/audit-log'] : [])].includes(item.key)).map(item => <Link key={item.key} to={item.key} aria-current={active(item) ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{item.icon}<span>{item.label}</span></Link>)}
         </nav>
       </Drawer>
       <Content className="app-content" style={{ maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
         <CollectionNotice />
+        {(exploration || market) && <nav className="context-navigation" aria-label={exploration ? '기업 탐색 화면' : '시장 소식 화면'}>{(exploration ? [{ to: '/candidates', label: '추천·분야 탐색' }, { to: '/stocks', label: '회사 검색·시세' }, { to: '/short-term', label: '단기 관찰' }] : [{ to: '/news', label: '뉴스' }, { to: '/briefing', label: '브리핑' }, { to: '/indices', label: '시장 지표' }]).map(item => <Link key={item.to} to={item.to} aria-current={location.pathname === item.to ? 'page' : undefined}>{item.label}</Link>)}</nav>}
         <Outlet />
       </Content>
       <Footer className="site-footer">

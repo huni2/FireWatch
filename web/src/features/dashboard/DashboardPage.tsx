@@ -35,7 +35,7 @@ export function DashboardPage() {
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       <Typography.Title level={4} style={{ margin: 0 }}>
-        대시보드
+        시장 브리핑
       </Typography.Title>
 
       <SlowLoadingHint loading={latest.loading} isSlow={latest.isSlow} />

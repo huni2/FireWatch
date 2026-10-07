@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, App, Card, Empty, Segmented, Skeleton, Space, Typography } from 'antd'
+import { Alert, App, Button, Card, Empty, Segmented, Skeleton, Space, Typography } from 'antd'
 import { motion } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
 import { KeywordInput } from '../settings/components/KeywordInput'
@@ -65,7 +65,6 @@ export function StocksPage() {
       setSelected(symbol)
       return
     }
-    handleChange([...watchedStocks, symbol])
     setSelected(symbol)
   }
 
@@ -75,6 +74,7 @@ export function StocksPage() {
     const toAdd = searchParams.get('add')
     if (toAdd && data && !watchedStocks.includes(toAdd)) {
       handleAddFromSearch(toAdd)
+      void handleChange([...watchedStocks, toAdd])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, searchParams])
@@ -86,7 +86,7 @@ export function StocksPage() {
           종목
         </Typography.Title>
         <SlowLoadingHint loading={loading} isSlow={isSlow} />
-        <Card {...SECTION_CARD_PROPS} title="관심 종목">
+        <Card {...SECTION_CARD_PROPS} title="회사 이름으로 찾기" extra={selected && !watchedStocks.includes(selected) ? <Button onClick={() => void handleChange([...watchedStocks, selected])}>관심 종목에 담기</Button> : undefined}>
           <Skeleton active />
         </Card>
       </Space>
@@ -96,10 +96,10 @@ export function StocksPage() {
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       <Typography.Title level={4} style={{ margin: 0 }}>
-        종목
+        회사 검색·시세
       </Typography.Title>
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-        <Card {...SECTION_CARD_PROPS} title="관심 종목">
+        <Card {...SECTION_CARD_PROPS} title="회사 이름으로 찾기" extra={selected && !watchedStocks.includes(selected) ? <Button onClick={() => void handleChange([...watchedStocks, selected])}>관심 종목에 담기</Button> : undefined}>
           {error && <Alert type="error" message="관심 종목 정보를 불러오지 못했습니다" description={error.message} showIcon />}
 
               <StockSearchInput onSelect={handleAddFromSearch} initialQuery={searchParams.get('q') ?? ''} />
@@ -111,7 +111,7 @@ export function StocksPage() {
       </motion.div>
 
       {watchedStocks.length === 0 && !selected ? (
-        <Empty description="관심 종목을 추가하면 차트가 표시됩니다" />
+        <Empty description="회사를 검색해 선택하면 가격·차트·뉴스를 볼 수 있어요. 관심 등록은 선택입니다." />
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 8 }}

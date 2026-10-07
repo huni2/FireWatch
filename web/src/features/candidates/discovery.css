@@ -18,3 +18,19 @@
 .recommendation-evidence summary { cursor: pointer; min-height: 40px; display: list-item; }
 .recommendation-evidence ul { margin: 8px 0; padding-left: 20px; }
 .recommendation-evidence a { overflow-wrap: anywhere; }
+.discovery-page { display: grid; gap: 20px; }
+.discovery-search { display: flex; align-items: end; gap: 20px; flex-wrap: wrap; }
+.discovery-search > label { display: grid; gap: 8px; flex: 0 1 680px; min-width: min(100%,280px); }
+.discovery-search .ant-select { max-width: 680px !important; }
+.discovery-layout { display: grid; gap: 24px; align-items: start; }
+.discovery-results,.company-detail-pane { min-width: 0; }
+.company-detail-pane { padding: 20px; border: 1px solid var(--ant-color-border); border-radius: 18px; background: var(--ant-color-bg-container); }
+.company-detail-pane .discovery-toolbar { margin-bottom: 16px; }
+.company-grid.single-pick { grid-template-columns: minmax(0,1fr); }
+.company-list { display: grid; gap: 10px; }
+.company-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; padding: 16px; border-radius: 12px; border: 1px solid var(--ant-color-border); background: var(--ant-color-bg-container); color: var(--ant-color-text); font: inherit; cursor: pointer; }
+.company-row > span:first-child { display: grid; gap: 6px; }.company-row small { color: var(--ant-color-text-secondary); line-height: 1.6; }.company-row:hover,.company-row[aria-pressed=true] { border-color: var(--ant-color-primary); }
+.sector-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.sector-notes { margin-top: 16px; line-height: 1.8; }
+@media(min-width:992px) { .discovery-layout.has-detail { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }.company-detail-pane { position: sticky; top: 130px; max-height: calc(100vh - 150px); overflow-y: auto; }.has-detail .company-grid { grid-template-columns: minmax(0,1fr); } }
+@media(min-width:1200px) { .discovery-layout.has-detail { grid-template-columns: minmax(0,.8fr) minmax(0,1.2fr); } }

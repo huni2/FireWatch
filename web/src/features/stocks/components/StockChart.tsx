@@ -14,6 +14,7 @@ interface StockChartProps {
   symbol: string
   name?: string
   onNameFound?: (symbol: string, name: string) => void
+  showNews?: boolean
 }
 
 const RANGE_OPTIONS: { label: string; value: StockChartRange }[] = [
@@ -41,7 +42,7 @@ function formatLabel(timestamp: string, range: StockChartRange): string {
 
 // Design Ref: llm-wiki/design.md §4 벤치마크 톤 — RateChart와 동일한 Area+그라디언트 스타일 재사용.
 // 2026-08-21 사용자 요청 — "5년/6개월/3개월/1달/일주일/하루 이렇게 시간적으로 볼 수 있는 차트".
-export function StockChart({ symbol, name = stockLabel(symbol), onNameFound }: StockChartProps) {
+export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, showNews = true }: StockChartProps) {
   const [range, setRange] = useState<StockChartRange>('6mo')
   const { data, loading, error } = useStockHistory(symbol, range)
   const currentData = data?.symbol === symbol ? data : null
@@ -67,7 +68,7 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound }: S
         <Typography.Text type="secondary" style={{ display: 'block' }}>{currentData?.quotePrice != null ? '최근 제공 시세' : '마지막 기록 가격'}{priceAt ? ` · ${new Date(priceAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} (한국 시간)` : ''}</Typography.Text>
       </div>}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
-        <Segmented size="small" value={range} onChange={(value) => setRange(value as StockChartRange)} options={RANGE_OPTIONS} />
+        <Segmented style={{ maxWidth: '100%', overflowX: 'auto' }} size="small" value={range} onChange={(value) => setRange(value as StockChartRange)} options={RANGE_OPTIONS} />
         {range === '1d' && (
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             30초마다 자동 갱신 — 완전한 실시간 스트리밍은 아니고 짧은 지연이 있습니다.
@@ -105,7 +106,7 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound }: S
           </AreaChart>
         </ResponsiveContainer>
       )}
-      {companyName !== '회사명 확인 필요' && <div style={{ marginTop: 24 }}><CompanyNews key={companyName} name={companyName} /></div>}
+      {showNews && companyName !== '회사명 확인 필요' && <div style={{ marginTop: 24 }}><CompanyNews key={companyName} name={companyName} /></div>}
     </div>
   )
 }

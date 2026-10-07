@@ -57,11 +57,11 @@ export function RelatedNewsCard({
                       새 탭 안내로 안 읽힌다는 지적(2026-10-05) */}
                   <ExportOutlined style={{ fontSize: 12, color: 'var(--ant-color-text-tertiary)' }} />
                 </Typography.Text>
-                {article.pubDate && <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12, marginTop: 6 }}>{new Date(article.pubDate).toLocaleString('ko-KR')}</Typography.Text>}
+                <Typography.Text className="article-meta" style={{ display: 'block', marginTop: 6 }}>{(() => { try { return new URL(article.link).hostname.replace(/^www\./, '') } catch { return '원문 출처 확인 필요' } })()}{article.pubDate ? ' · ' + new Date(article.pubDate).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + ' KST' : ' · 발행 시각 미확인'}</Typography.Text>
                 {article.description && (
                   <Typography.Paragraph
-                    type="secondary"
-                    style={{ margin: '4px 0 0', fontSize: 13 }}
+                    className="article-description"
+                    style={{ margin: '6px 0 0', fontSize: 14 }}
                     ellipsis={{ rows: 2 }}
                   >
                     {article.description}

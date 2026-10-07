@@ -11,6 +11,7 @@ interface RateChartProps {
   loading: boolean
   period: 7 | 30
   onPeriodChange: (period: 7 | 30) => void
+  initialMetric?: MetricKey
 }
 
 const METRICS = [
@@ -31,8 +32,8 @@ const METRICS = [
 type MetricKey = (typeof METRICS)[number]['key']
 
 // Design Ref: §5.4 — 환율·금은 시계열 차트, 기간 선택(7일/30일 토글)
-export function RateChart({ history, loading, period, onPeriodChange }: RateChartProps) {
-  const [metric, setMetric] = useState<MetricKey>('usdKrw')
+export function RateChart({ history, loading, period, onPeriodChange, initialMetric = 'usdKrw' }: RateChartProps) {
+  const [metric, setMetric] = useState<MetricKey>(initialMetric)
 
   const chartData = useMemo(
     () =>
@@ -93,7 +94,7 @@ export function RateChart({ history, loading, period, onPeriodChange }: RateChar
               strokeWidth={2}
               fill="url(#rateChartFill)"
               dot={false}
-              connectNulls
+              connectNulls={false}
             />
           </AreaChart>
         </ResponsiveContainer>

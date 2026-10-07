@@ -70,3 +70,21 @@
 @media(prefers-reduced-motion:reduce) { .replay-guide img,.game-replay section { animation: none; } }
 @media(max-width:480px) { .replay-guide { gap: 12px; }.replay-guide img { width: 72px; height: 92px; }.replay-guide h2 { font-size: 18px; }.pick-guide img { width: 74px; height: 88px; } }
 .game-company-list { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit,minmax(min(100%,220px),1fr)); } .game-company-list article { display: grid; gap: 10px; padding: 16px; border: 1px solid var(--ant-color-border); border-radius: 12px; }
+.game-start-options { margin-top: 20px; }.game-start-options > summary { min-height: 44px; padding: 12px 0; cursor: pointer; }
+.game-hero.in-session { padding: 18px 24px; }.game-hero.in-session h1 { font-size: 26px; }.game-hero.in-session h1 span,.game-hero.in-session p { display: none; }
+.game-mobile-tabs,.game-mobile-list { display: none; }
+.replay-guide img { width: 64px; height: 76px; }.replay-guide h2 { font-size: 17px; }.replay-guide p { margin: 6px 0; font-size: 13px; }
+.replay-outcome h2 { font-size: 26px; margin: 12px 0; }
+@media(max-width:899px) {
+  .game-mobile-tabs { display: block; }.game-workspace { grid-template-columns: minmax(0,1fr); }.order-panel { position: static; }
+  .view-market:not(.session-ended) .order-panel,.view-market:not(.session-ended) .game-positions,.view-market:not(.session-ended) .game-receipts,.view-market:not(.session-ended) .game-contributions { display: none; }
+  .view-order:not(.session-ended) .market-column,.view-order:not(.session-ended) .game-positions,.view-order:not(.session-ended) .game-receipts,.view-order:not(.session-ended) .game-contributions { display: none; }
+  .view-positions:not(.session-ended) .game-workspace { display: none; }
+  .game-bottom-bar { position: sticky; bottom: 12px; z-index: 5; box-shadow: 0 8px 24px #0002; }
+}
+@media(max-width:599px) {
+  .game-hero { padding: 20px; }.game-hero h1 { font-size: 28px; }.game-hero h1 span { font-size: 16px; margin-top: 10px; }.game-page { gap: 16px; }
+  .game-mobile-list { display: grid; gap: 12px; }.game-mobile-list article { padding: 14px; border: 1px solid var(--ant-color-border); border-radius: 12px; }.game-mobile-list p { margin: 8px 0; }
+  .game-positions .ant-table-wrapper,.game-receipts .ant-table-wrapper { display: none; }
+  .game-bottom-bar { padding: 12px; }.game-bottom-bar > div { display: none; }.game-bottom-bar .ant-btn { width: 100%; }
+}

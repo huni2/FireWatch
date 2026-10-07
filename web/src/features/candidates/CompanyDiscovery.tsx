@@ -1,61 +1,56 @@
-import { useState } from 'react'
-import { Alert, Button, Card, Drawer, Empty, Grid, Input, Segmented, Space, Tag, Typography } from 'antd'
+import { useRef, useState } from 'react'
+import { Alert, Button, Card, Drawer, Empty, Grid, Input, Modal, Segmented, Space, Tag, Typography } from 'antd'
 import { Link } from 'react-router-dom'
-import { catalogVerifiedAt, companies, companyNews, companySector, findCompany, isRecommended, portfolioContext, qualifiedRecommendations, recommendationFor, searchCompanies, sectors, type Company, type RecommendationReport } from '../../../../shared/discovery'
+import { catalogVerifiedAt, companies, companySector, findCompany, isRecommended, qualifiedRecommendations, searchCompanies, sectors, type RecommendationReport } from '../../../../shared/discovery'
 import type { Portfolio } from '../../../../shared/investing'
+import { searchStocks, type StockSearchResult } from '../../lib/api'
+import { StockSearchInput } from '../stocks/components/StockSearchInput'
+import { CompanyDetail } from './CompanyDetail'
 import './discovery.css'
 
 export function CompanyDiscovery({ briefing, portfolio, loading = false, shortTerm = false }: { briefing?: RecommendationReport | null; portfolio?: Portfolio | null; loading?: boolean; shortTerm?: boolean }) {
   const screens = Grid.useBreakpoint()
+  const [view, setView] = useState('picks')
   const [sectorId, setSectorId] = useState('all')
   const [region, setRegion] = useState('all')
   const [query, setQuery] = useState('')
-  const [onlyRecommended, setOnlyRecommended] = useState(false)
-  const [selected, setSelected] = useState<Company | null>(null)
+  const [selected, setSelected] = useState<StockSearchResult | null>(null)
+  const [choices, setChoices] = useState<StockSearchResult[] | null>(null)
+  const [lookup, setLookup] = useState('')
+  const [lookupError, setLookupError] = useState('')
+  const generation = useRef(0)
   const picks = qualifiedRecommendations(briefing)
-  const visible = searchCompanies(query, sectorId, region, onlyRecommended, briefing)
+  const visible = searchCompanies(query, sectorId, region, false, briefing)
   const sector = sectors.find(item => item.id === sectorId)
-  const detail = selected && recommendationFor(selected, briefing)
-  const news = selected ? companyNews(selected, briefing) : []
-  return <Space direction="vertical" size={24} style={{ width: '100%' }}>
-    <header className="compact-intro discovery-intro">
-      <Typography.Title level={2}>{shortTerm ? '단기 관찰 후보를 점검하세요.' : '분야별 기업과 추천 근거를 살펴보세요.'}</Typography.Title>
-      <p>{shortTerm ? '장전 자료 기반의 관찰 목록 · 일반 후보와 같은 분석을 사용하며 실시간 진입·청산 신호는 제공하지 않아요.' : '분야 → 기업 → 추천 이유·위험 → 내 보유와 비교'}</p>
-      <Space wrap style={{ marginTop: 12 }}><Tag>{sectors.length}개 분야 · 기업 {companies.length}개</Tag><Tag color="orange">{loading ? '추천 자료 확인 중' : '근거 있는 후보 ' + picks.length + '개'}</Tag></Space>
-    </header>
-    {briefing && <div className="data-status-line"><div><strong>사용 지표 기준 · {briefing.sourceBriefingDate ?? briefing.briefingDate}</strong><span>{briefing.analyzedAt ? '분석 ' + new Date(briefing.analyzedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + ' KST' : '분석 시각 확인 필요'}</span></div><Link to="/news">이후 뉴스 확인 →</Link></div>}
-    <section aria-label="개별 종목 추천" data-tour="candidate-recommendations">
-      <Typography.Title level={4}>{shortTerm ? '장전 개별 종목 관찰 후보' : '브리핑이 고른 개별 종목'}</Typography.Title>
-      {loading && !picks.length ? <Typography.Paragraph type="secondary">브리핑 추천 자료를 불러오는 중이에요. 분야와 기업은 먼저 탐색할 수 있어요.</Typography.Paragraph> : picks.length ? <div className="company-grid">{picks.map(pick => {
-        const company = findCompany(pick.stockName)
-        return <Card key={pick.stockName} className="company-card"><Tag color="orange">AI 해석 · {briefing?.briefingDate}</Tag><Typography.Title level={4}>{company?.name ?? pick.stockName}</Typography.Title>
-          <Typography.Paragraph>{pick.reason}</Typography.Paragraph><div className="recommendation-risk"><strong>확인할 위험</strong><p>{pick.risk}</p></div>
-          <details className="recommendation-evidence"><summary>근거 기사 {pick.sourceNewsLinks.length}개 확인</summary><ul>{pick.sourceNewsLinks.map(link => briefing?.news.find(article => article.link === link)).filter(article => article != null).map(article => <li key={article.link}><a href={article.link} target="_blank" rel="noopener noreferrer">{article.title}</a></li>)}</ul></details>
-          {company ? <Button onClick={() => setSelected(company)}>기업과 근거 살펴보기</Button> : <Link to={`/stocks?q=${encodeURIComponent(pick.stockName)}`}>종목명으로 확인</Link>}
-        </Card>
-      })}</div> : <Alert type="info" showIcon message="종목별 근거가 확인된 추천을 기다리고 있어요." description="기업 탐색은 아래에서 계속할 수 있어요. 과거 추천 중 근거가 없는 기록은 추천 목록에 포함하지 않습니다." />}
-    </section>
-    <section aria-label="투자 분야 탐색"><Typography.Title level={4}>어떤 분야가 궁금하세요?</Typography.Title>
-      <div className="sector-grid">{sectors.map(item => <button key={item.id} type="button" aria-pressed={sectorId === item.id} className={`sector-choice ${sectorId === item.id ? 'selected' : ''}`} onClick={() => setSectorId(sectorId === item.id ? 'all' : item.id)}>
-        <strong>{item.name}</strong><span>{item.description}</span><small>기업 {companies.filter(company => company.sectorId === item.id).length}개 · 근거 있는 후보 {companies.filter(company => company.sectorId === item.id && isRecommended(company, briefing)).length}개</small>
-      </button>)}</div>
-    </section>
-    <section aria-label="분야별 기업 목록">
-      <div className="discovery-toolbar"><Typography.Title level={4} style={{ margin: 0 }}>{sector?.name ?? '분야별 기업'} <Typography.Text type="secondary">{visible.length}개</Typography.Text></Typography.Title><Space wrap><Button type={onlyRecommended ? 'primary' : 'default'} aria-pressed={onlyRecommended} onClick={() => setOnlyRecommended(!onlyRecommended)}>근거 있는 추천만</Button><Button onClick={() => { setSectorId('all'); setRegion('all'); setQuery(''); setOnlyRecommended(false) }}>필터 초기화</Button></Space></div>
-      <Space wrap style={{ width: '100%', marginBlock: 16 }}><Input allowClear aria-label="기업과 분야 검색" placeholder="기업명·분야로 찾아보세요" value={query} onChange={event => setQuery(event.target.value)} style={{ width: 280, maxWidth: '100%' }} /><Segmented aria-label="기업 국가" value={region} onChange={value => setRegion(String(value))} options={[{ label: '전체', value: 'all' }, { label: '한국', value: 'KR' }, { label: '미국', value: 'US' }]} /></Space>
-      {sector && <Card size="small" style={{ marginBottom: 16 }}><Typography.Text strong>이 분야를 볼 때 확인할 것</Typography.Text><ul>{sector.checks.map(check => <li key={check}>{check}</li>)}</ul><Link to={`/news?q=${encodeURIComponent(sector.keywords[0])}`}>이 분야 뉴스 보기</Link></Card>}
-      {visible.length ? <div className="company-grid">{visible.map(company => <Card key={company.symbol} className="company-card"><Space wrap><Tag>{company.region === 'KR' ? '한국' : '미국'}</Tag><Tag>{companySector(company).name}</Tag>{isRecommended(company, briefing) && <Tag color="orange">브리핑 추천</Tag>}{portfolio?.holdings.some(row => row.holding.symbol === company.symbol) && <Tag color="blue">보유 중</Tag>}</Space><Typography.Title level={4}>{company.name}</Typography.Title><Typography.Paragraph style={{ marginTop: 12 }}>{company.description}</Typography.Paragraph><Button block onClick={() => setSelected(company)} aria-label={`${company.name} 기업 살펴보기`}>기업 살펴보기 →</Button></Card>)}</div> : <Empty description="조건에 맞는 기업이 없어요. 분야나 국가 필터를 바꿔보세요." />}
-      <Typography.Paragraph type="secondary" style={{ marginTop: 16 }}>기업 탐색 목록은 공식 사업 소개를 바탕으로 정리한 시작 목록입니다. 전체 상장기업 목록이나 추천 순위가 아닙니다. 정보 확인 {catalogVerifiedAt}.</Typography.Paragraph>
-      <Link to={`/stocks?q=${encodeURIComponent(query)}`}>이 목록 외 기업 검색하기 →</Link>
-    </section>
-    <Drawer title={selected ? selected.name : '기업 상세'} open={!!selected} onClose={() => setSelected(null)} width={screens.sm ? 560 : '100%'}>
-      {selected && <Space direction="vertical" size={24} style={{ width: '100%' }}>
-        <section><Tag>{companySector(selected).name}</Tag><Typography.Title level={4}>어떤 일을 하는 기업인가요?</Typography.Title><Typography.Paragraph>{selected.description}</Typography.Paragraph><a href={selected.source} target="_blank" rel="noopener noreferrer">공식 사업 소개 ↗</a></section>
-        <section><Typography.Title level={4}>개별 종목 추천 근거</Typography.Title>{isRecommended(selected, briefing) && detail ? <><Tag color="orange">AI 해석 · 자료 기준 {briefing?.briefingDate}</Tag><Typography.Paragraph style={{ marginTop: 12 }}>{detail.reason}</Typography.Paragraph><Typography.Text strong>확인할 위험</Typography.Text><Typography.Paragraph>{detail.risk}</Typography.Paragraph>{!detail.sourceNewsLinks.length && <Typography.Text type="secondary">직접 연결된 근거 기사는 없습니다. 제공된 시장 자료에 대한 AI 해석입니다.</Typography.Text>}</> : <Typography.Paragraph type="secondary">현재 근거가 확인된 추천 후보가 아닙니다. 기업 정보와 뉴스를 탐색할 수 있습니다.</Typography.Paragraph>}</section>
-        <section><Typography.Title level={4}>내 포트폴리오와 비교</Typography.Title><Typography.Paragraph>{portfolioContext(selected, portfolio)}</Typography.Paragraph><Link to="/">내 보유 자산 확인</Link></section>
-        <section><Typography.Title level={4}>관련 기사와 근거 확인</Typography.Title>{news.length ? <ul>{news.map(article => <li key={article.link}><a href={article.link} target="_blank" rel="noopener noreferrer">{article.title}</a></li>)}</ul> : <Typography.Paragraph type="secondary">저장된 브리핑에서 연결되는 기사가 없습니다.</Typography.Paragraph>}<Link to={`/news?q=${encodeURIComponent(selected.name)}`}>이 기업의 보관 뉴스 검색</Link></section>
-        <Space wrap><Link to={`/stocks?symbol=${encodeURIComponent(selected.symbol)}`}><Button>차트 보기</Button></Link><Link to={`/stocks?add=${encodeURIComponent(selected.symbol)}`}><Button type="primary">관심 종목에 담기</Button></Link></Space>
-      </Space>}
-    </Drawer>
-  </Space>
+  function select(target: StockSearchResult) { generation.current++; setSelected(target); setChoices(null); setLookup('') }
+  async function open(name: string) {
+    const company = findCompany(name)
+    if (company) { select({ symbol: company.symbol, name: company.name, exchange: company.region }); return }
+    const id = ++generation.current
+    setLookup(name); setLookupError('')
+    try {
+      const results = await searchStocks(name)
+      if (id !== generation.current) return
+      if (results.length === 1) select(results[0]); else setChoices(results)
+    } catch (e) { if (id === generation.current) setLookupError(e instanceof Error ? e.message : '회사를 찾지 못했습니다.') }
+    finally { if (id === generation.current) setLookup('') }
+  }
+  const detail = selected && <CompanyDetail key={selected.symbol} target={selected} briefing={briefing} portfolio={portfolio} />
+  return <div className="discovery-page">
+    <header className="compact-intro discovery-intro"><Typography.Title level={2}>{shortTerm ? '단기 관찰 후보' : '기업과 투자 근거를 탐색하세요.'}</Typography.Title><p>{shortTerm ? '일반 후보 분석을 바탕으로 가격·뉴스·위험을 관찰합니다. 실시간 진입·청산 신호는 제공하지 않아요.' : '회사 가격·차트·뉴스를 확인하고 내 보유와 비교하세요.'}</p></header>
+    <div className="discovery-search"><label>회사 이름으로 찾기<StockSearchInput onSelect={(symbol, name) => select({ symbol, name: name || '회사', exchange: null })} /></label><Segmented aria-label="기업 탐색 보기" value={view} onChange={v => setView(String(v))} options={[{ value: 'picks', label: '추천 후보' }, { value: 'companies', label: '분야별 기업' }]} /></div>
+    {briefing && <div className="data-status-line"><div><strong>분석 자료 기준 · {briefing.sourceBriefingDate ?? briefing.briefingDate}</strong><span>{briefing.analyzedAt ? '분석 ' + new Date(briefing.analyzedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + ' KST' : '분석 시각 확인 필요'}</span></div><Link to="/news">이후 뉴스 확인 →</Link></div>}
+    {lookupError && <Alert type="error" message={lookupError} />}
+    <div className={`discovery-layout ${selected ? 'has-detail' : ''}`}><div className="discovery-results">
+      {view === 'picks' ? <section aria-label="개별 종목 추천" data-tour="candidate-recommendations"><Typography.Title level={4}>{shortTerm ? '관찰할 후보' : '근거가 확인된 후보'} · {picks.length}개</Typography.Title>
+        {loading && !picks.length ? <p>추천 자료를 확인 중입니다. 회사 검색과 분야 탐색은 이용할 수 있어요.</p> : picks.length ? <div className={`company-grid ${picks.length === 1 ? 'single-pick' : ''}`}>{picks.map(pick => <Card key={pick.stockName} className="company-card"><Tag color="orange">AI 해석 · {briefing?.briefingDate}</Tag><Typography.Title level={4}>{pick.stockName}</Typography.Title><p>{pick.reason}</p><div className="recommendation-risk"><strong>확인할 위험</strong><p>{pick.risk}</p></div><details className="recommendation-evidence"><summary>근거 기사 확인</summary><ul>{pick.sourceNewsLinks.filter(link => /^https?:\/\//i.test(link)).map(link => briefing?.news.find(n => n.link === link)).filter(n => n != null).map(n => <li key={n.link}><a href={n.link} target="_blank" rel="noopener noreferrer">{n.title}</a></li>)}</ul></details><Button type="primary" loading={lookup === pick.stockName} onClick={() => void open(pick.stockName)}>가격·차트·근거 보기</Button></Card>)}</div> : <Alert type="info" message="근거가 확인된 추천을 기다리고 있어요." description="분야별 기업 또는 회사 이름 검색으로 탐색을 계속할 수 있습니다." />}
+      </section> : <section aria-label="분야별 기업 목록"><div className="sector-chips" aria-label="투자 분야 탐색"><Button aria-pressed={sectorId === 'all'} type={sectorId === 'all' ? 'primary' : 'default'} onClick={() => setSectorId('all')}>전체 분야</Button>{sectors.map(s => <Button key={s.id} aria-pressed={sectorId === s.id} type={sectorId === s.id ? 'primary' : 'default'} onClick={() => setSectorId(s.id)}>{s.name}</Button>)}</div><div className="discovery-toolbar"><Input aria-label="기업과 분야 검색" placeholder="시작 목록에서 기업·분야 찾기" allowClear value={query} onChange={e => setQuery(e.target.value)} /><Segmented aria-label="기업 국가" value={region} onChange={v => setRegion(String(v))} options={[{ label: '전체', value: 'all' }, { label: '한국', value: 'KR' }, { label: '미국', value: 'US' }]} /><Button onClick={() => { setSectorId('all'); setQuery(''); setRegion('all') }}>필터 초기화</Button></div>
+        {sector && <details className="sector-notes"><summary>{sector.name} · 확인할 것</summary><p>{sector.description}</p><ul>{sector.checks.map(c => <li key={c}>{c}</li>)}</ul><Link to={`/news?q=${encodeURIComponent(sector.keywords[0])}`}>분야 뉴스 보기 →</Link></details>}
+        <Typography.Title level={4}>분야별 기업 · {visible.length}개</Typography.Title>{visible.length ? <div className="company-list">{visible.map(company => <button type="button" className="company-row" key={company.symbol} aria-label={`${company.name} 기업 살펴보기`} aria-pressed={selected?.symbol === company.symbol} onClick={() => void open(company.name)}><span><strong>{company.name}</strong><small>{companySector(company).name} · {company.region === 'KR' ? '한국' : '미국'}{isRecommended(company, briefing) ? ' · 추천 근거 있음' : ''}{portfolio?.holdings.some(h => h.holding.symbol === company.symbol) ? ' · 보유 중' : ''}</small></span><span aria-hidden="true">상세 →</span></button>)}</div> : <Empty description="시작 목록에 해당 기업이 없습니다. 위 회사 검색에서 전체 종목을 찾아보세요." />}
+        <p className="catalog-note">분야별 {companies.length}개 기업의 시작 목록입니다. 전체 상장기업이나 추천 순위가 아닙니다. 정보 확인 {catalogVerifiedAt}.</p>
+      </section>}
+    </div>{screens.lg && selected && <aside className="company-detail-pane" aria-label={`${selected.name} 기업 상세`}><div className="discovery-toolbar"><strong>{selected.name}</strong><Button onClick={() => setSelected(null)}>상세 닫기</Button></div>{detail}</aside>}</div>
+    <Drawer title={selected?.name ?? '기업 상세'} open={!!selected && !screens.lg} onClose={() => setSelected(null)} width={screens.sm ? 'min(720px, 100vw)' : '100%'}>{!screens.lg && detail}</Drawer>
+    <Modal title="동일 이름의 기업을 확인하세요" open={choices != null} onCancel={() => { generation.current++; setChoices(null) }} footer={<Button onClick={() => { generation.current++; setChoices(null) }}>닫기</Button>}>{choices?.length ? <Space direction="vertical" style={{ width: '100%' }}>{choices.map(c => <Button key={c.symbol} block onClick={() => select(c)}>{c.name} · {c.exchange}</Button>)}</Space> : <p>검색 결과가 없습니다. 위 검색에서 다른 이름으로 찾아보세요.</p>}</Modal>
+  </div>
 }

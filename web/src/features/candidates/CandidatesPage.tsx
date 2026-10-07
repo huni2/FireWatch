@@ -18,13 +18,12 @@ export function CandidatesPage({ shortTerm = false }: { shortTerm?: boolean }) {
     {portfolio.error && <Alert type="warning" message="내 포트폴리오를 불러오지 못했습니다." action={<Button onClick={portfolio.reload}>재시도</Button>} />}
     {portfolio.data && <Card title="내 투자 조건"><Space wrap><Tag>{accountLabels[portfolio.data.accountType]}</Tag><Tag>{riskLabels[portfolio.data.riskLevel]}</Tag><Tag>{portfolio.data.horizonMonths}개월</Tag><Link to="/">포트폴리오 수정</Link></Space><ul>{portfolio.data.insights.map(x => <li key={x}>{x}</li>)}</ul></Card>}
     {briefing.error && <Alert type="warning" message="현재 브리핑 후보가 없습니다." description={briefing.error.message} action={<Button onClick={briefing.reload}>재시도</Button>} />}
-    {!shortTerm && <Card title="내가 등록한 ETF 정보 비교">
+    {!shortTerm && <details className="disclosure-panel"><summary>보유 ETF 정보 비교</summary><Card title="내가 등록한 ETF 정보 비교">
       <Typography.Paragraph>직접 등록한 ETF의 추종 지수·통화·지역을 비교합니다. 전체 ETF 상품 검색이나 최신 보수 자동 비교는 제공하지 않습니다.</Typography.Paragraph><details><summary>실제 상품에서 추가로 확인할 것</summary><ul>{productChecklist.map(x => <li key={x}>{x}</li>)}</ul></details>
       <Typography.Title level={5}>내가 등록한 ETF 비교</Typography.Title>
       <Table pagination={false} scroll={{ x: 550 }} rowKey={r => r.holding.symbol} dataSource={etfs} columns={[{ title: '상품', render: (_, r) => r.holding.name }, { title: '추종 지수', render: (_, r) => r.holding.underlyingIndex || '미입력' }, { title: '거래 통화', render: (_, r) => r.holding.currency }, { title: '지역', render: (_, r) => r.holding.region }]} locale={{ emptyText: '포트폴리오에 ETF와 추종 지수를 등록하면 비교할 수 있습니다.' }} />
-    </Card>}
-    <RecommendationHistory />
-    <RelatedNewsCard title="추천 분석에 사용한 뉴스" news={briefing.data?.news ?? []} loading={briefing.loading} />
+    </Card></details>}
+    <details className="disclosure-panel"><summary>추천 분석 이력·근거 뉴스</summary><RecommendationHistory /><RelatedNewsCard title="추천 분석에 사용한 뉴스" news={briefing.data?.news ?? []} loading={briefing.loading} /></details>
     <Link to="/news">브리핑 이후 추가 뉴스 확인</Link>
   </Space>
 }

@@ -52,6 +52,10 @@ function PerformanceRows({ data }: { data: RecommendedStockPerformance[] }) {
 // 그날 추천 시점 가격으로 가상매수했다고 가정했을 때 지금 수익률이 얼마인지 보여준다.
 // 2026-10-05 재설계 — 박스 카드가 아니라 지면의 한 섹션처럼(변수 없이 제목 밑줄로만 구분).
 export function RecommendedStockPerformanceCard({ data, loading, cachedData }: RecommendedStockPerformanceCardProps) {
+  return <details className="disclosure-panel"><summary>과거 선정 이력 · 가격 변화</summary><PerformanceContent data={data} loading={loading} cachedData={cachedData} /></details>
+}
+
+function PerformanceContent({ data, loading, cachedData }: RecommendedStockPerformanceCardProps) {
   // 서버를 깨우는 중(2026-10-06) — 빈 스켈레톤 대신 마지막으로 확인된 추천 성과를 보여준다.
   if (loading && cachedData && cachedData.length > 0) {
     return (
