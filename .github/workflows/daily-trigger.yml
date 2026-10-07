@@ -26,10 +26,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Call /api/scheduler/trigger-if-due
+        env:
+          BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
+          OPERATOR_KEY: ${{ secrets.OPERATOR_API_KEY }}
         run: |
+          if [ -z "$OPERATOR_KEY" ] || [ -z "$BACKEND_URL" ]; then
+            echo "::error::서버 전용 OPERATOR_API_KEY 및 RENDER_BACKEND_URL 설정이 필요합니다."
+            exit 1
+          fi
           status=$(curl -s -o /tmp/response.json -w "%{http_code}" -X POST \
-            "${{ secrets.RENDER_BACKEND_URL }}/api/scheduler/trigger-if-due" \
-            -H "X-API-Key: ${{ secrets.SETTINGS_API_KEY }}" \
+            "$BACKEND_URL/api/scheduler/trigger-if-due" \
+            -H "X-API-Key: $OPERATOR_KEY" \
             --max-time 280)
           echo "HTTP status: $status"
           cat /tmp/response.json

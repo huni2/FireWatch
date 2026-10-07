@@ -1,6 +1,6 @@
 package com.firewatch.backend.web
 
-import org.springframework.beans.factory.annotation.Value
+import com.firewatch.backend.service.OperatorAccess
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.PostMapping
@@ -11,13 +11,14 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class LegacyRecoveryController(
     private val jdbc: JdbcTemplate,
-    @Value("\${firewatch.settings.api-key}") private val expectedApiKey: String,
+    private val operatorAccess: OperatorAccess,
 ) {
     @PostMapping("/api/settings/recover-legacy")
     @Transactional
     fun recover(@RequestHeader("X-API-Key", required = false) apiKey: String?,
-                @RequestHeader("X-Device-Id", required = false) deviceId: String?): Map<String, Boolean> {
-        if (expectedApiKey.isBlank() || apiKey != expectedApiKey) throw UnauthorizedException()
+                @RequestHeader("X-Device-Id", required = false) deviceId: String?,
+                @RequestHeader("Authorization", required = false) authorization: String?): Map<String, Boolean> {
+        operatorAccess.requireOperator(deviceId, authorization, apiKey)
         val target = deviceId.requireDeviceId()
         val source = jdbc.queryForList("SELECT id, user_id FROM user_settings WHERE device_id=? FOR UPDATE", "legacy-owner-device").singleOrNull()
             ?: throw NotFoundException("이전할 기존 운영자 설정이 없습니다. 이미 이전했을 수 있습니다.")

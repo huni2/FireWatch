@@ -135,7 +135,7 @@ export function SettingsScreen() {
           연동하면 여러 기기에서 같은 설정을 쓸 수 있습니다. 연동하지 않아도 이 기기에서 계속 쓸 수 있습니다.
         </Text>
       </View>
-      <OperatorPushSetup />
+      <OperatorPushSetup linkedEmail={linkedEmail} />
     </ScrollView>
   )
 }

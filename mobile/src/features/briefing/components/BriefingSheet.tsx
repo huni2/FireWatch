@@ -8,6 +8,7 @@ import tokens from '../../../../../shared/design-tokens.json'
 import { qualifiedRecommendations } from '../../../../../shared/discovery'
 
 import { RecommendedStockChip } from './RecommendedStockChip'
+import { InvestmentNotice } from '@/components/InvestmentNotice'
 
 export type BriefingSheetRef = ComponentRef<typeof BottomSheetModal>
 
@@ -21,6 +22,7 @@ export function BriefingSheet({ ref, briefing }: BriefingSheetProps) {
     <BottomSheetModal ref={ref} snapPoints={['55%', '85%']} enablePanDownToClose backgroundStyle={{ backgroundColor: tokens.light.surface }} handleIndicatorStyle={{ backgroundColor: tokens.light.border }}>
       <BottomSheetScrollView contentContainerStyle={{ gap: 20, paddingHorizontal: 24, paddingBottom: 40, paddingTop: 12 }}>
         <Text className="text-xs font-bold text-brand">DAILY MARKET BRIEF</Text>
+        <InvestmentNotice />
         <Text className="text-lg font-bold text-neutral-900">
           {`증시 요약 · 자료 기준 ${briefing.briefingDate}`}
         </Text>

@@ -38,6 +38,14 @@ export interface Portfolio extends Omit<PortfolioDraft, 'holdings'> {
   updatedAt: string | null
   fxAsOf: string | null
   analysisVersion: string
+  exposure?: {
+    complete: boolean
+    sectorWeights: Record<string, number>
+    tradingCurrencyWeights: Record<string, number>
+    largestHoldings: { name: string; weightPercent: number }[]
+    indexOverlaps: { index: string; names: string[] }[]
+    usdFxDown10ImpactKrw: number | null
+  } | null
 }
 export interface NewsFeed { news: FeedArticle[]; updatedAt: string | null; refreshMinutes: number; page?: number; size?: number; total?: number; hasMore?: boolean }
 export interface NewsFilters { from?: string; to?: string; q?: string; page?: number; size?: number }

@@ -56,7 +56,8 @@ data class PortfolioResponse(
     val relatedNews: List<NewsArticleResponse>,
     val updatedAt: Instant?,
     val fxAsOf: String?,
-    val analysisVersion: String = "portfolio-rules-v1",
+    val analysisVersion: String = "portfolio-rules-v2",
+    val exposure: com.firewatch.backend.service.PortfolioExposure? = null,
 ) {
     override fun toString() = "포트폴리오 분석 $analysisVersion (자산 ${holdings.size}개)"
 }

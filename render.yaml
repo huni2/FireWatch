@@ -32,6 +32,10 @@ services:
         sync: false
       - key: SETTINGS_API_KEY
         sync: false
+      - key: OPERATOR_API_KEY
+        # Server-only operations credential; use the same GitHub Actions secret.
+        # Never include in VITE_* or EXPO_PUBLIC_* values.
+        sync: false
       - key: VAPID_PUBLIC_KEY
         # `npx web-push generate-vapid-keys`로 생성. 공개돼도 되는 값이지만 web/.env(VITE_VAPID_PUBLIC_KEY)와
         # 반드시 같은 값이어야 한다.

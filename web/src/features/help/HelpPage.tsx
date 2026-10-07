@@ -51,6 +51,6 @@ export function HelpPage() {
       </div>
     </section>
     <section className="help-shortcuts" aria-label="바로 시작하기">{shortcuts.map(item => <Link key={item.to} to={item.to} className="help-shortcut"><span className="help-shortcut-number" aria-hidden="true">{item.number}</span><h2>{item.title}</h2><p>{item.description}</p><span className="help-shortcut-action">{item.label}<ArrowRightOutlined /></span></Link>)}</section>
-    <aside className="help-boundary"><strong>실제 투자 기록과 가상게임은 별개예요.</strong><p>투자 후보는 저장된 자료에 대한 AI 해석입니다. 게임의 가격·뉴스·픽은 가상 자료이며, 모든 게임 거래는 게임머니로 진행됩니다.</p><Link to="/privacy">개인정보·데이터 처리 안내 <ArrowRightOutlined /></Link></aside>
+    <aside className="help-boundary"><strong>실제 투자 기록과 가상게임은 별개예요.</strong><p>투자 후보는 저장된 자료에 대한 AI 해석입니다. 원금 손실 가능성이 있으며 수익을 보장하지 않습니다. 게임의 가격·뉴스·픽은 가상 자료이며, 모든 게임 거래는 게임머니로 진행됩니다.</p><Link to="/investment-info">투자 정보 이용안내 <ArrowRightOutlined /></Link><br /><Link to="/privacy">개인정보·데이터 처리 안내 <ArrowRightOutlined /></Link></aside>
   </div>
 }

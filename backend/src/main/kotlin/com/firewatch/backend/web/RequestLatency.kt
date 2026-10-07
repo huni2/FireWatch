@@ -1,6 +1,6 @@
 package com.firewatch.backend.web
 
-import org.springframework.beans.factory.annotation.Value
+import com.firewatch.backend.service.OperatorAccess
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestHeader
@@ -55,10 +55,12 @@ class RequestLatency : WebFilter {
 }
 
 @RestController
-class LatencyController(private val latency: RequestLatency, @Value("\${firewatch.settings.api-key}") private val expectedApiKey: String) {
+class LatencyController(private val latency: RequestLatency, private val operatorAccess: OperatorAccess) {
     @GetMapping("/api/operations/latency")
-    fun get(@RequestHeader("X-API-Key", required = false) key: String?): List<LatencySummary> {
-        if (expectedApiKey.isBlank() || key != expectedApiKey) throw UnauthorizedException()
+    fun get(@RequestHeader("X-API-Key", required = false) key: String?,
+            @RequestHeader("X-Device-Id", required = false) deviceId: String?,
+            @RequestHeader("Authorization", required = false) authorization: String?): List<LatencySummary> {
+        operatorAccess.requireOperator(deviceId, authorization, key)
         return latency.summaries()
     }
 }

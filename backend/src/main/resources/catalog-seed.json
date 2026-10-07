@@ -1,0 +1,324 @@
+[
+  {
+    "symbol": "005930.KS",
+    "name": "삼성전자",
+    "aliases": [
+      "Samsung Electronics"
+    ],
+    "sectorId": "chips",
+    "region": "KR",
+    "description": "메모리·시스템 반도체와 전자기기를 만드는 기업",
+    "source": "https://semiconductor.samsung.com/about-us/business-area/",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "KRW",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "NVDA",
+    "name": "엔비디아",
+    "aliases": [
+      "NVIDIA",
+      "엔비디아 코퍼레이션"
+    ],
+    "sectorId": "chips",
+    "region": "US",
+    "description": "GPU와 AI 가속 컴퓨팅 플랫폼을 만드는 기업",
+    "source": "https://www.nvidia.com/en-us/about-nvidia/",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "035420.KS",
+    "name": "NAVER",
+    "aliases": [
+      "네이버",
+      "NAVER Corporation"
+    ],
+    "sectorId": "software",
+    "region": "KR",
+    "description": "검색·커머스·콘텐츠·클라우드 서비스를 제공하는 기업",
+    "source": "https://www.navercorp.com/company/about",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "KRW",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "MSFT",
+    "name": "마이크로소프트",
+    "aliases": [
+      "Microsoft",
+      "Microsoft Corporation"
+    ],
+    "sectorId": "software",
+    "region": "US",
+    "description": "업무 소프트웨어와 클라우드 서비스를 제공하는 기업",
+    "source": "https://www.microsoft.com/en-us/investor/default",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "005380.KS",
+    "name": "현대차",
+    "aliases": [
+      "현대자동차",
+      "Hyundai Motor"
+    ],
+    "sectorId": "mobility",
+    "region": "KR",
+    "description": "완성차와 전기차 등 이동 수단을 만드는 기업",
+    "source": "https://www.hyundai.com/worldwide/en",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "KRW",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "TSLA",
+    "name": "테슬라",
+    "aliases": [
+      "Tesla",
+      "Tesla Inc."
+    ],
+    "sectorId": "mobility",
+    "region": "US",
+    "description": "전기차와 에너지 저장 시스템을 만드는 기업",
+    "source": "https://www.tesla.com/about",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "373220.KS",
+    "name": "LG에너지솔루션",
+    "aliases": [
+      "LG Energy Solution"
+    ],
+    "sectorId": "battery",
+    "region": "KR",
+    "description": "전기차·ESS 등에 쓰이는 배터리를 만드는 기업",
+    "source": "https://www.lgensol.com/kr/company/info-outline",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "KRW",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "006400.KS",
+    "name": "삼성SDI",
+    "aliases": [
+      "Samsung SDI"
+    ],
+    "sectorId": "battery",
+    "region": "KR",
+    "description": "전기차·ESS·소형 기기용 배터리를 만드는 기업",
+    "source": "https://www.samsungsdi.com/business/index.html",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "KRW",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "207940.KS",
+    "name": "삼성바이오로직스",
+    "aliases": [
+      "Samsung Biologics"
+    ],
+    "sectorId": "health",
+    "region": "KR",
+    "description": "바이오의약품 위탁 개발·생산 서비스를 제공하는 기업",
+    "source": "https://samsungbiologics.com/about/our-dna",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "KRW",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "068270.KS",
+    "name": "셀트리온",
+    "aliases": [
+      "Celltrion"
+    ],
+    "sectorId": "health",
+    "region": "KR",
+    "description": "바이오시밀러 등 바이오의약품을 개발·생산하는 기업",
+    "source": "https://celltrion.com/en-us/company/celltrion/about",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "KRW",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "105560.KS",
+    "name": "KB금융",
+    "aliases": [
+      "KB Financial Group",
+      "KB금융지주"
+    ],
+    "sectorId": "finance",
+    "region": "KR",
+    "description": "은행·증권·보험 등 금융 계열사를 둔 금융 그룹",
+    "source": "https://www.kbfg.com/eng/ir/investor/list.jsp",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "KRW",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "JPM",
+    "name": "JP모건체이스",
+    "aliases": [
+      "JPMorgan Chase",
+      "JPMorgan",
+      "제이피모건"
+    ],
+    "sectorId": "finance",
+    "region": "US",
+    "description": "은행과 투자금융 서비스를 제공하는 금융 그룹",
+    "source": "https://www.jpmorganchase.com/about",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "012450.KS",
+    "name": "한화에어로스페이스",
+    "aliases": [
+      "Hanwha Aerospace"
+    ],
+    "sectorId": "defense",
+    "region": "KR",
+    "description": "방위 장비와 항공 엔진·우주 기술을 다루는 기업",
+    "source": "https://www.hanwhaaerospace.com/eng/media/newsroom/view.do?seq=260",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "KRW",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "LMT",
+    "name": "록히드마틴",
+    "aliases": [
+      "Lockheed Martin",
+      "록히드 마틴"
+    ],
+    "sectorId": "defense",
+    "region": "US",
+    "description": "항공·방위·우주 시스템을 만드는 기업",
+    "source": "https://www.lockheedmartin.com/en-us/who-we-are.html",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "VOO",
+    "name": "Vanguard S&P 500 ETF",
+    "aliases": [
+      "VOO",
+      "뱅가드 S&P500",
+      "뱅가드"
+    ],
+    "sectorId": "broad-market",
+    "region": "US",
+    "description": "미국 대형주 S&P 500 지수를 추종하는 ETF",
+    "source": "https://advisors.vanguard.com/investments/products/voo/vanguard-sp-500-etf",
+    "underlyingIndex": "S&P 500",
+    "issuer": "Vanguard",
+    "assetClass": "ETF",
+    "currency": "USD",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "IVV",
+    "name": "iShares Core S&P 500 ETF",
+    "aliases": [
+      "IVV",
+      "아이셰어즈 S&P500",
+      "블랙록"
+    ],
+    "sectorId": "broad-market",
+    "region": "US",
+    "description": "미국 대형주 S&P 500 지수를 추종하는 ETF",
+    "source": "https://www.ishares.com/us/products/239726/ishares-core-sp-500-etf-ivv",
+    "underlyingIndex": "S&P 500",
+    "issuer": "BlackRock",
+    "assetClass": "ETF",
+    "currency": "USD",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "SPY",
+    "name": "State Street SPDR S&P 500 ETF Trust",
+    "aliases": [
+      "SPY",
+      "스파이",
+      "SPDR S&P500"
+    ],
+    "sectorId": "broad-market",
+    "region": "US",
+    "description": "미국 대형주 S&P 500 지수를 추종하는 ETF",
+    "source": "https://www.ssga.com/us/en/individual/etfs/state-street-spdr-sp-500-etf-trust-spy",
+    "underlyingIndex": "S&P 500",
+    "issuer": "State Street",
+    "assetClass": "ETF",
+    "currency": "USD",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "379800.KS",
+    "name": "KODEX 미국S&P500",
+    "aliases": [
+      "코덱스 미국 S&P500",
+      "Kodex 미국S&P500",
+      "삼성 S&P500"
+    ],
+    "sectorId": "broad-market",
+    "region": "KR",
+    "description": "한국에 상장된 미국 S&P 500 지수 추종 ETF",
+    "source": "https://www.samsungfund.com/etf/product/view.do?id=2ETFE4",
+    "underlyingIndex": "S&P 500",
+    "issuer": "삼성자산운용",
+    "assetClass": "ETF",
+    "currency": "KRW",
+    "verifiedAt": "2026-10-07"
+  },
+  {
+    "symbol": "360750.KS",
+    "name": "TIGER 미국S&P500",
+    "aliases": [
+      "타이거 미국 S&P500",
+      "미래에셋 S&P500"
+    ],
+    "sectorId": "broad-market",
+    "region": "KR",
+    "description": "한국에 상장된 미국 S&P 500 지수 추종 ETF",
+    "source": "https://www.tigeretf.com/upload/etf/20250312031249004920.pdf",
+    "underlyingIndex": "S&P 500",
+    "issuer": "미래에셋자산운용",
+    "assetClass": "ETF",
+    "currency": "KRW",
+    "verifiedAt": "2026-10-07"
+  }
+]

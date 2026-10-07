@@ -42,6 +42,19 @@ class PushServiceTest {
     private val today = LocalDate.of(2026, 1, 1)
     private val windowMinutes = 20L
 
+    @Test
+    fun `운영자 테스트 알림은 장애와 다른 제목이고 브리핑 수신일을 변경하지 않는다`() {
+        val row = dueRow(fcmTokensRaw = "test-token")
+        every { userSettingsRepository.save(any<UserSettings>()) } answers { firstArg() }
+        every { fcmSender.sendMulticast(any(), any(), any()) } returns FcmSendResult(1, emptyList())
+        assertEquals(1, pushService.testOperatorNotification(row).successCount)
+        assertEquals(null, row.lastNotifiedDate)
+        verify(exactly = 1) { fcmSender.sendMulticast(listOf("test-token"), "FireWatch 운영자 알림 테스트", any()) }
+        every { fcmSender.sendMulticast(any(), any(), any()) } returns FcmSendResult(0, emptyList())
+        kotlin.test.assertFailsWith<IllegalStateException> { pushService.testOperatorNotification(row) }
+        assertEquals(null, row.lastNotifiedDate)
+    }
+
     private fun dueRow(fcmTokensRaw: String? = null, webPushSubscriptionsRaw: String? = null) =
         UserSettings(pushTime = "08:00", fcmTokensRaw = fcmTokensRaw, webPushSubscriptionsRaw = webPushSubscriptionsRaw)
 

@@ -41,7 +41,10 @@ class SchedulerJobTest {
         recommendedStockSnapshotService,
         briefingRepository,
         newsArticleRepository,
-        expectedApiKey = "secret-key",
+        operatorAccess = mockk<OperatorAccess> {
+            every { requireOperator(null, null, "secret-key") } returns Unit
+            every { requireOperator(null, null, "wrong-key") } throws UnauthorizedException()
+        },
         schedulerTimezone = "Asia/Seoul",
         collectionJobs = collectionJobs,
         operationsPush = mockk(relaxed = true),

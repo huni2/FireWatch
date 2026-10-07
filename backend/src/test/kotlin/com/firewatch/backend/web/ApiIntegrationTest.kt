@@ -47,7 +47,8 @@ class ApiIntegrationTest @Autowired constructor(
         webTestClient.get().uri("/api/operations/database-pool").exchange().expectStatus().isUnauthorized
         webTestClient.get().uri("/api/operations/database-pool").header("X-API-Key", "wrong-key")
             .exchange().expectStatus().isUnauthorized
-        webTestClient.get().uri("/api/operations/database-pool").header("X-API-Key", "test-key")
+        webTestClient.get().uri("/api/operations/database-pool").header("X-API-Key", "test-key").exchange().expectStatus().isUnauthorized
+        webTestClient.get().uri("/api/operations/database-pool").header("X-API-Key", "test-operator-key")
             .exchange().expectStatus().isOk.expectBody()
             .jsonPath("$.maximumConnections").isNumber
             .jsonPath("$.activeConnections").isNumber
@@ -59,11 +60,12 @@ class ApiIntegrationTest @Autowired constructor(
     @Test
     fun `운영자 장애 푸시 수신자 등록은 관리 키와 기존 푸시 구독이 필요하다`() {
         webTestClient.post().uri("/api/collection/operator").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isUnauthorized
-        webTestClient.post().uri("/api/collection/operator").header("X-API-Key", "test-key").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isEqualTo(409)
+        webTestClient.post().uri("/api/collection/operator").header("X-API-Key", "test-key").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isUnauthorized
+        webTestClient.post().uri("/api/collection/operator").header("X-API-Key", "test-operator-key").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isEqualTo(409)
         val operator = settings.findByDeviceId("operator-api-test")!!
         operator.fcmTokensRaw = "operator-token"
         settings.save(operator)
-        webTestClient.post().uri("/api/collection/operator").header("X-API-Key", "test-key").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isOk.expectBody().jsonPath("$.registered").isEqualTo(true)
+        webTestClient.post().uri("/api/collection/operator").header("X-API-Key", "test-operator-key").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isOk.expectBody().jsonPath("$.registered").isEqualTo(true)
         kotlin.test.assertEquals(operator.id, jdbc.queryForObject("SELECT settings_id FROM collection_operator WHERE id=1", Long::class.java))
         jdbc.update("DELETE FROM collection_operator")
     }

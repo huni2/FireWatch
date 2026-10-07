@@ -11,7 +11,6 @@ import com.firewatch.backend.entity.toCommaSeparated
 import com.firewatch.backend.entity.toRecommendationJson
 import com.firewatch.backend.repository.BriefingRepository
 import com.firewatch.backend.repository.NewsArticleRepository
-import com.firewatch.backend.web.UnauthorizedException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Scheduled
@@ -40,7 +39,7 @@ class SchedulerJob(
     private val recommendedStockSnapshotService: RecommendedStockSnapshotService,
     private val briefingRepository: BriefingRepository,
     private val newsArticleRepository: NewsArticleRepository,
-    @Value("\${firewatch.settings.api-key}") private val expectedApiKey: String,
+    private val operatorAccess: OperatorAccess,
     @Value("\${firewatch.scheduler.timezone}") private val schedulerTimezone: String,
     private val collectionJobs: CollectionJobRunner,
     private val operationsPush: OperationsPushService,
@@ -56,10 +55,8 @@ class SchedulerJob(
     // runMorningBriefing()을 this로 재호출하지 않고 별도 진입점으로 둔다 — Spring AOP는 같은 빈 안에서
     // this.메서드() 자기호출을 가로채지 못해(self-invocation), 그렇게 하면 이 진입점 자체가 감사로그에
     // 안 남는다. 별도 public 메서드라야 프록시를 거쳐 SCHEDULER 이벤트가 정상적으로 기록된다.
-    fun triggerManually(apiKey: String?) {
-        if (expectedApiKey.isBlank() || apiKey != expectedApiKey) {
-            throw UnauthorizedException()
-        }
+    fun triggerManually(apiKey: String?, deviceId: String? = null, authorization: String? = null) {
+        operatorAccess.requireOperator(deviceId, authorization, apiKey)
         try { executePipeline() } finally { operationsPush.flush(java.time.Instant.now()) }
     }
 

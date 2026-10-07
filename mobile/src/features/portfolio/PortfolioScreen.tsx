@@ -1,4 +1,7 @@
 import { ScreenIntro } from '@/components/ScreenIntro'
+import { InvestmentNotice } from '@/components/InvestmentNotice'
+import { PortfolioExposureCard } from './PortfolioExposureCard'
+import etfs from '../../../../shared/etfs.json'
 import { StockSearchInput } from '../stocks/components/StockSearchInput'
 import { companies, sectors } from '../../../../shared/discovery'
 import { useEffect, useRef, useState } from 'react'
@@ -48,6 +51,7 @@ export function PortfolioScreen() {
   }
   return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10" refreshControl={<RefreshControl refreshing={query.loading} onRefresh={query.reload} />}>
       <ScreenIntro eyebrow="MY INVESTMENT PLAN" title="내 포트폴리오" description="목표와 보유 자산을 연결하고, 시장 변화에 맞춰 점검하세요." />
+      <InvestmentNotice />
     {query.error && <View className="gap-2 rounded-xl bg-red-50 p-4"><Text>{query.error}</Text><Pressable onPress={query.reload}><Text className="text-brand">다시 시도</Text></Pressable></View>}
     {!draft && query.loading && <ActivityIndicator />}
     {draft && <View className="gap-5" pointerEvents={saving ? 'none' : 'auto'}>
@@ -67,8 +71,9 @@ export function PortfolioScreen() {
       {draft.holdings.map((h, i) => <View key={i} className="gap-3 rounded-xl border border-line bg-surface p-4">
         <Text>회사·상품 이름으로 찾기</Text><StockSearchInput onSelect={(symbol, name) => {
           const company = companies.find(item => item.symbol === symbol)
+          const etf = etfs.find(item => item.symbol === symbol)
           const korean = /\.(KS|KQ)$/.test(symbol)
-          holdingChange(i, { symbol, name: name || company?.name || '', currency: korean ? 'KRW' : 'USD', region: korean ? 'KR' : 'US', sector: sectors.find(item => item.id === company?.sectorId)?.name || '', underlyingIndex: '' })
+          holdingChange(i, { symbol, name: name || company?.name || etf?.name || '', assetClass: etf ? 'ETF' : 'STOCK', currency: korean ? 'KRW' : 'USD', region: korean ? 'KR' : 'US', sector: sectors.find(item => item.id === company?.sectorId)?.name || '미분류', underlyingIndex: etf?.underlyingIndex ?? '' })
         }} />{h.symbol && <Text className="text-muted">선택한 자산. {h.name || '자산 이름을 입력해주세요.'}</Text>}
         <Field label="수량" numeric value={String(h.quantity)} onChange={v => holdingChange(i, { quantity: Number(v) })} />
         <Field label="평균 매입가" numeric value={String(h.averageCost)} onChange={v => holdingChange(i, { averageCost: Number(v) })} />
@@ -100,5 +105,6 @@ export function PortfolioScreen() {
       {Object.entries(query.data.targetAllocation).map(([key, value]) => <Text key={`target-${key}`}>{assetLabels[key]} {value}% · 월 배분 예시 {query.data!.contributionPlan[key]?.toLocaleString()}원</Text>)}
       {query.data.holdings.map(h => <Text key={h.holding.symbol} className="text-xs text-muted">{h.holding.name} 시세 기준: {h.quoteAsOf ? new Date(h.quoteAsOf).toLocaleString('ko-KR') : '미수집'}</Text>)}
     </View>}
+    {query.data && (query.data.holdings.length > 0 || query.data.cash > 0) && <PortfolioExposureCard portfolio={query.data} />}
   </ScrollView>
 }

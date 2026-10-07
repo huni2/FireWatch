@@ -8,7 +8,7 @@ import { useWebPushSubscription } from './hooks/useWebPushSubscription'
 import { ApiRequestError, updateSettings, type Settings } from '../../lib/api'
 import { SlowLoadingHint } from '../../components/SlowLoadingHint'
 import { OperatorPushSetup } from '../../components/OperatorPushSetup'
-import { useOperatorKey } from '../../lib/operatorAccess'
+import { useIsOperator } from '../../lib/operatorAccess'
 import { useLatestBriefing } from '../dashboard/hooks/useLatestBriefing'
 import { BRAND_GREEN, SECTION_CARD_PROPS } from '../../lib/theme'
 
@@ -23,7 +23,7 @@ const MAX_KEYWORDS = 20
 
 // Design Ref: §5.4 Settings 체크리스트 — FR-05
 export function SettingsPage() {
-  const operatorKey = useOperatorKey()
+  const isOperator = useIsOperator()
   const { message } = App.useApp()
   const { data, loading, error, isSlow, reload } = useSettings()
   const latestBriefing = useLatestBriefing()
@@ -111,7 +111,7 @@ export function SettingsPage() {
       </Card>
 
       {data && <WebPushCard settings={data} onSubscribed={reload} />}
-      {operatorKey && <OperatorPushSetup />}
+      {isOperator && <OperatorPushSetup />}
     </Space>
   )
 }

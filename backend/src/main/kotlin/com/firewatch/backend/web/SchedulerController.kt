@@ -35,7 +35,7 @@ class SchedulerController(
     private val pushService: PushService,
     private val briefingRepository: BriefingRepository,
     private val userSettingsRepository: UserSettingsRepository,
-    @Value("\${firewatch.settings.api-key}") private val expectedApiKey: String,
+    private val operatorAccess: com.firewatch.backend.service.OperatorAccess,
     @Value("\${firewatch.scheduler.timezone}") private val schedulerTimezone: String,
     @Value("\${firewatch.scheduler.poll-window-minutes}") private val pollWindowMinutes: Long,
     @Value("\${firewatch.scheduler.generate-after}") private val generateAfter: String,
@@ -47,11 +47,11 @@ class SchedulerController(
 
     @PostMapping("/trigger")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    fun trigger(@RequestHeader("X-API-Key", required = false) apiKey: String?) {
-        if (expectedApiKey.isBlank() || apiKey != expectedApiKey) {
-            throw UnauthorizedException()
-        }
-        triggerScope.launch { schedulerJob.triggerManually(apiKey); recommendations.collectIfDue(); operationsPush.flush(java.time.Instant.now()) }
+    fun trigger(@RequestHeader("X-API-Key", required = false) apiKey: String?,
+                @RequestHeader("X-Device-Id", required = false) deviceId: String?,
+                @RequestHeader("Authorization", required = false) authorization: String?) {
+        operatorAccess.requireOperator(deviceId, authorization, apiKey)
+        triggerScope.launch { schedulerJob.triggerManually(apiKey, deviceId, authorization); recommendations.collectIfDue(); operationsPush.flush(java.time.Instant.now()) }
     }
 
     // 2026-08-23 — pushTime을 실제로 반영하려고 GitHub Actions가 이 엔드포인트를 짧은 주기로 폴링한다.
@@ -63,10 +63,10 @@ class SchedulerController(
     // 로직을 컨트롤러에 둔 원래 이유와 같은 맥락) 있으면 PushService.notifyDueUsers()에 실제 발송을
     // 맡긴다(이미 보낸 행은 lastNotifiedDate로 알아서 건너뜀).
     @PostMapping("/trigger-if-due")
-    fun triggerIfDue(@RequestHeader("X-API-Key", required = false) apiKey: String?): Map<String, Boolean> {
-        if (expectedApiKey.isBlank() || apiKey != expectedApiKey) {
-            throw UnauthorizedException()
-        }
+    fun triggerIfDue(@RequestHeader("X-API-Key", required = false) apiKey: String?,
+                     @RequestHeader("X-Device-Id", required = false) deviceId: String?,
+                     @RequestHeader("Authorization", required = false) authorization: String?): Map<String, Boolean> {
+        operatorAccess.requireOperator(deviceId, authorization, apiKey)
         val zone = ZoneId.of(schedulerTimezone)
         val now = LocalTime.now(zone)
         val today = LocalDate.now(zone)
@@ -76,7 +76,7 @@ class SchedulerController(
         var triggered = false
         if (briefing == null) {
             if (now.isAfter(LocalTime.parse(generateAfter))) {
-                triggerScope.launch { schedulerJob.triggerManually(apiKey); recommendations.collectIfDue(); operationsPush.flush(java.time.Instant.now()) }
+                triggerScope.launch { schedulerJob.triggerManually(apiKey, deviceId, authorization); recommendations.collectIfDue(); operationsPush.flush(java.time.Instant.now()) }
                 triggered = true
             }
         } else {

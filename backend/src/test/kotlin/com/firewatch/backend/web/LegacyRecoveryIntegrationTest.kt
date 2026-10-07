@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = [
     "spring.datasource.url=jdbc:h2:mem:legacy-recovery-test;DB_CLOSE_DELAY=-1",
-    "firewatch.scheduler.cron=-", "firewatch.settings.api-key=recovery-test-key",
+    "firewatch.scheduler.cron=-", "firewatch.settings.api-key=public-settings-key", "firewatch.operator.api-key=recovery-test-key",
 ])
 class LegacyRecoveryIntegrationTest {
     @Autowired lateinit var settings: UserSettingsRepository

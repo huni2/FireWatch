@@ -132,6 +132,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
           <nav aria-label="서비스 안내" className="site-footer-links">
             <button type="button" onClick={showFirstVisitGuide}>처음 사용 안내</button>
             <Link to="/guide">이용안내</Link>
+            <Link to="/investment-info">투자 정보 이용안내</Link>
             <Link to="/open-source">오픈소스 고지</Link>
             <Link to="/privacy">개인정보처리방침</Link>
           </nav>

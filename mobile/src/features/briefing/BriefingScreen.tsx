@@ -1,4 +1,5 @@
 import { ScreenIntro } from '@/components/ScreenIntro'
+import { InvestmentNotice } from '@/components/InvestmentNotice'
 // 홈 탭 콘텐츠 — 오늘의 브리핑 요약 표시만 담당. 브리핑 조회·바텀시트·알림 처리는
 // HomeScreen(상단 세그먼트 탭의 상위)이 관리한다(2026-10-04, APP-8 — 탭 전환에도 데이터 유지 위해 분리).
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
@@ -28,6 +29,7 @@ export function BriefingScreen({ briefing, cachedAt, loading, onOpenSheet, error
   return (
     <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">
       <ScreenIntro eyebrow="DAILY MARKET BRIEF" title="오늘의 브리핑" description="시장 흐름을 읽고 내 보유 자산과 함께 살펴보세요." />
+      <InvestmentNotice />
       {loading && <ActivityIndicator className="mt-10" />}
       {error && <View className="gap-2 rounded-xl bg-neutral-100 p-4"><Text>{error}</Text><Pressable onPress={onReload}><Text className="text-brand">다시 시도</Text></Pressable></View>}
 

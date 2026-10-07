@@ -23,6 +23,39 @@ class AccountSessionIntegrationTest {
     private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
 
     @Test
+    fun `모든 운영 API는 공개 설정 키와 일반 계정 및 위조 이메일을 거절한다`() {
+        val device = "ordinary-operations"
+        val user = users.save(AppUser(googleSub = device, email = "ordinary@example.com", emailVerified = true))
+        links.save(DeviceLink(device, user.id!!))
+        val session = sessions.issue(device)
+        val routes = listOf("/api/collection/operator", "/api/collection/operator/test", "/api/scheduler/trigger", "/api/scheduler/trigger-if-due", "/api/settings/recover-legacy", "/api/operations/database-pool", "/api/operations/latency")
+        for (route in routes) {
+            fun request() = if (route.startsWith("/api/operations")) client().get().uri(route) else client().post().uri(route)
+            request().exchange().expectStatus().isUnauthorized
+            request().header("X-API-Key", "session-test-key").header("X-Device-Id", device).exchange().expectStatus().isUnauthorized
+            request().header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").header("X-User-Email", "powerhch@gmail.com").exchange().expectStatus().isForbidden
+        }
+        assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM collection_operator", Int::class.java))
+    }
+
+    @Test
+    fun `운영자 세션으로 진단과 푸시 등록이 가능하고 해제하면 즉시 거절한다`() {
+        val device = "owner-operations"
+        val user = users.save(AppUser(googleSub = device, email = "powerhch@gmail.com", emailVerified = true))
+        val row = settings.save(UserSettings(userId = user.id, fcmTokensRaw = "fixture-operator-token"))
+        links.save(DeviceLink(device, user.id!!))
+        val session = sessions.issue(device)
+        for (route in listOf("/api/operations/database-pool", "/api/operations/latency")) {
+            client().get().uri(route).header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").exchange().expectStatus().isOk
+        }
+        client().post().uri("/api/collection/operator").header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").exchange().expectStatus().isOk
+        assertEquals(row.id, jdbc.queryForObject("SELECT settings_id FROM collection_operator WHERE id=1", Long::class.java))
+        sessions.logout(device, "Bearer ${session.token}")
+        client().post().uri("/api/collection/operator").header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").exchange().expectStatus().isUnauthorized
+        jdbc.update("DELETE FROM collection_operator")
+    }
+
+    @Test
     fun `감사로그는 인증된 운영자나 관리 키만 읽을 수 있다`() {
         client().get().uri("/api/audit-logs").exchange().expectStatus().isUnauthorized
         client().get().uri("/api/audit-logs").header("X-API-Key", "wrong").exchange().expectStatus().isUnauthorized
@@ -89,7 +122,8 @@ class AccountSessionIntegrationTest {
     fun `응답 시간 헤더를 제공하고 운영 지표는 관리 키로 보호한다`() {
         client().get().uri("/api/portfolio").header("X-Device-Id", "latency-anonymous").exchange().expectStatus().isOk.expectHeader().valueMatches("Server-Timing", "application;dur=\\d+")
         client().get().uri("/api/operations/latency").exchange().expectStatus().isUnauthorized
-        client().get().uri("/api/operations/latency").header("X-API-Key", "session-test-key").exchange().expectStatus().isOk.expectBody()
+        client().get().uri("/api/operations/latency").header("X-API-Key", "session-test-key").exchange().expectStatus().isUnauthorized
+        client().get().uri("/api/operations/latency").header("X-API-Key", "operator-test-key").exchange().expectStatus().isOk.expectBody()
             .jsonPath("$[?(@.operation == 'GET portfolio')]").isNotEmpty
             .jsonPath("$[?(@.operation == 'GET portfolio')].failures").isEqualTo(0)
     }

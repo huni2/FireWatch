@@ -5,6 +5,14 @@ CREATE TABLE IF NOT EXISTS portfolios (
  account_type VARCHAR(20) NOT NULL, monthly_contribution DECIMAL(16,2) NOT NULL,
  cash DECIMAL(16,2) NOT NULL, holdings_json TEXT NOT NULL, updated_at TIMESTAMP NOT NULL
 );
+CREATE TABLE IF NOT EXISTS instrument_catalog (
+ symbol VARCHAR(20) PRIMARY KEY, name VARCHAR(160) NOT NULL, normalized_name VARCHAR(160) NOT NULL,
+ search_text TEXT NOT NULL, metadata_json TEXT NOT NULL, asset_class VARCHAR(20) NOT NULL,
+ region VARCHAR(20) NOT NULL, sector_id VARCHAR(40) NOT NULL, underlying_index VARCHAR(80) NOT NULL,
+ verified_at DATE NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_catalog_filters ON instrument_catalog(asset_class, region, sector_id);
+CREATE INDEX IF NOT EXISTS idx_catalog_name ON instrument_catalog(normalized_name);
 CREATE TABLE IF NOT EXISTS market_quotes (
  symbol VARCHAR(20) PRIMARY KEY, price DECIMAL(20,4) NOT NULL, as_of TIMESTAMP NOT NULL, collected_at TIMESTAMP NOT NULL
 );

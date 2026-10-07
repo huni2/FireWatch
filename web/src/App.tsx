@@ -20,6 +20,7 @@ const PrivacyPage = lazy(() => import('./features/privacy/PrivacyPage').then((m)
 const OpenSourcePage = lazy(() => import('./features/opensource/OpenSourcePage').then(m => ({ default: m.OpenSourcePage })))
 const PortfolioPage = lazy(() => import('./features/portfolio/PortfolioPage').then(m => ({ default: m.PortfolioPage })))
 const AccountPage = lazy(() => import('./features/account/AccountPage').then(m => ({ default: m.AccountPage })))
+const InvestmentInfoPage = lazy(() => import('./features/help/InvestmentInfoPage').then(m => ({ default: m.InvestmentInfoPage })))
 const CandidatesPage = lazy(() => import('./features/candidates/CandidatesPage').then(m => ({ default: m.CandidatesPage })))
 
 // 2026-10-07: 기본은 라이트, 사용자가 저장한 다크 선택은 유지한다.
@@ -41,6 +42,7 @@ export default function App() {
             <Route element={<AppShell darkMode={darkMode} onToggleDarkMode={setDarkMode} />}>
             <Route index element={<Suspense fallback={<Skeleton active />}><PortfolioPage /></Suspense>} />
             <Route path="account" element={<Suspense fallback={<Skeleton active />}><AccountPage /></Suspense>} />
+            <Route path="investment-info" element={<Suspense fallback={<Skeleton active />}><InvestmentInfoPage /></Suspense>} />
               <Route path="briefing" element={<DashboardPage />} />
               <Route path="candidates" element={<Suspense fallback={<Skeleton active />}><CandidatesPage /></Suspense>} />
               <Route path="short-term" element={<Suspense fallback={<Skeleton active />}><CandidatesPage shortTerm /></Suspense>} />

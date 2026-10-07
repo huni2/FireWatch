@@ -54,6 +54,13 @@ class PushService(
         return result
     }
 
+    fun testOperatorNotification(settings: UserSettings): PushSendResult {
+        val result = sendToOne(settings, "FireWatch 운영자 알림 테스트", "실제 수집 장애가 아닌 수신 확인용 알림입니다. 앱·브라우저에서 알림이 보이는지 확인해주세요.")
+        userSettingsRepository.save(settings)
+        if (result.successCount + result.webPushSuccessCount == 0) throw IllegalStateException("운영자 테스트 알림 발송에 실패했습니다. 알림 등록과 권한을 확인해주세요.")
+        return result
+    }
+
     fun notifyDueUsers(briefing: Briefing, now: LocalTime, pollWindowMinutes: Long, today: LocalDate): PushSendResult {
         val dueRows = userSettingsRepository.findAll()
             .filter { SchedulerController.isRowDue(it, now, pollWindowMinutes, today) }

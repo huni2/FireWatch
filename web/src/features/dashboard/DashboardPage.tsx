@@ -1,4 +1,5 @@
 import { Alert, Empty, Space, Typography } from 'antd'
+import { InvestmentNotice } from '../../components/InvestmentNotice'
 import { BriefingSummaryCard } from './components/BriefingSummaryCard'
 import { RecommendedStockPerformanceCard } from './components/RecommendedStockPerformanceCard'
 import { WatchlistSummaryCard } from './components/WatchlistSummaryCard'
@@ -34,6 +35,7 @@ export function DashboardPage() {
 
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <InvestmentNotice />
       <Typography.Title level={4} style={{ margin: 0 }}>
         시장 브리핑
       </Typography.Title>

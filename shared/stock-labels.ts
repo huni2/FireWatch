@@ -1,4 +1,5 @@
 import koreanNames from './stock-names.json'
+import etfs from './etfs.json'
 import { findCompany } from './discovery'
 
 export type StockNames = Record<string, string>
@@ -11,7 +12,7 @@ export function parseStockNames(raw: string | null): StockNames {
   } catch { return {} }
 }
 export function stockName(symbol: string, names: StockNames = {}): string {
-  return findCompany(symbol)?.name ?? (koreanNames as StockNames)[symbol] ?? names[symbol] ?? symbol
+  return findCompany(symbol)?.name ?? etfs.find(item => item.symbol === symbol)?.name ?? (koreanNames as StockNames)[symbol] ?? names[symbol] ?? symbol
 }
 export function stockLabel(symbol: string, names: StockNames = {}): string {
   const name = stockName(symbol, names)

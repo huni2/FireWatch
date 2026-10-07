@@ -8,6 +8,9 @@ import type { Holding, PortfolioDraft } from '../../../../shared/investing'
 import { StockSearchInput } from '../stocks/components/StockSearchInput'
 import { companies, sectors } from '../../../../shared/discovery'
 import { RelatedNewsCard } from '../news/components/RelatedNewsCard'
+import { InvestmentNotice } from '../../components/InvestmentNotice'
+import { PortfolioExposureCard } from './PortfolioExposureCard'
+import etfs from '../../../../shared/etfs.json'
 const { Title, Text } = Typography
 
 export function PortfolioPage() {
@@ -45,6 +48,7 @@ export function PortfolioPage() {
   if (query.error) return <Alert type="error" showIcon message="포트폴리오 조회 실패" description={query.error.message} action={<Button onClick={query.reload}>다시 시도</Button>} />
   if (!draft) return <Card loading title="내 포트폴리오" />
   return <ConfigProvider componentDisabled={saving}><Space direction="vertical" size={24} style={{ width: '100%' }}>
+    <InvestmentNotice />
     <div className="page-intro portfolio-intro" data-tour="portfolio-intro">
       <Title level={2}>{query.data?.holdings.length || query.data?.cash ? '내 투자 기록을 점검하세요.' : '보유 자산 하나로 시작하세요.'}</Title>
       <p>직접 등록하는 보유 기록입니다. 회사명·수량·매입가를 입력하면 비중과 집중·중복을 확인할 수 있어요.</p>
@@ -64,8 +68,9 @@ export function PortfolioPage() {
         <div className="portfolio-fields">
           <div>회사·상품 이름으로 찾기<StockSearchInput onSelect={(symbol, name) => {
             const company = companies.find(item => item.symbol === symbol)
+            const etf = etfs.find(item => item.symbol === symbol)
             const korean = /\.(KS|KQ)$/.test(symbol)
-            holdingChange(i, { symbol, name: name || company?.name || '', currency: korean ? 'KRW' : 'USD', region: korean ? 'KR' : 'US', sector: sectors.find(item => item.id === company?.sectorId)?.name || '', underlyingIndex: '' })
+            holdingChange(i, { symbol, name: name || company?.name || etf?.name || '', assetClass: etf ? 'ETF' : 'STOCK', currency: korean ? 'KRW' : 'USD', region: korean ? 'KR' : 'US', sector: sectors.find(item => item.id === company?.sectorId)?.name || '미분류', underlyingIndex: etf?.underlyingIndex ?? '' })
           }} />{h.symbol && <Text type="secondary">선택한 자산. {h.name || '자산 이름을 입력해주세요.'}</Text>}</div>
           <label>보유 수량<InputNumber min={0.0001} precision={4} value={h.quantity} onChange={v => holdingChange(i, { quantity: v ?? 0 })} style={{ width: '100%' }} /></label>
           <label>평균 매입가 ({h.currency === 'KRW' ? '원' : '달러'})<InputNumber min={0.0001} precision={4} value={h.averageCost} onChange={v => holdingChange(i, { averageCost: v ?? 0 })} style={{ width: '100%' }} /></label>
@@ -108,6 +113,7 @@ export function PortfolioPage() {
         <Typography.Paragraph type="secondary">기간과 성향을 반영한 규칙 기반 출발점입니다. ETF·채권 상품의 투자 대상과 계좌 적합성을 확인한 후 비중을 결정하세요. ETF는 채권형 등 상품에 따라 실제 위험이 다릅니다.</Typography.Paragraph>
         <div className="portfolio-fields">{Object.entries(query.data.targetAllocation).map(([key, value]) => <div key={key}><Text strong>{assetLabels[key]} {value}%</Text><Progress percent={value} showInfo={false} /><Text type="secondary">월 투자금 배분 예시 {query.data!.contributionPlan[key]?.toLocaleString()}원</Text></div>)}</div>
       </Card>
+      <PortfolioExposureCard portfolio={query.data} />
       <RelatedNewsCard title="내 보유 자산 관련 소식" news={query.data.relatedNews} loading={false} emptyDescription="보유 자산 이름과 일치하는 뉴스가 없습니다. 뉴스 메뉴에서 추가 소식을 확인하세요." />
     </>}
   </Space></ConfigProvider>

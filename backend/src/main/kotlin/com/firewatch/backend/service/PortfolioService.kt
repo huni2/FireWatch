@@ -113,7 +113,7 @@ class PortfolioService(
         if (contribution.isNotEmpty()) contribution["CASH"] = contribution.getValue("CASH") + row.monthlyContribution - contribution.values.fold(BigDecimal.ZERO) { a, v -> a + v }
         val articles = (if (holdings.isEmpty()) emptyList() else newsFeed.findTop50ByOrderByPubDateDescCollectedAtDesc().map { NewsArticleResponse(it.title, it.link, it.description, it.pubDate) } + latest?.id?.let { news.findByBriefingId(it).map { n -> n.toResponse() } }.orEmpty())
             .distinctBy { it.link }.filter { article -> holdings.any { h -> article.title.contains(h.name, true) || (h.symbol.length >= 3 && Regex("(?i)(?<![A-Za-z0-9])${Regex.escape(h.symbol)}(?![A-Za-z0-9])").containsMatchIn(article.title)) } }.take(10)
-        return PortfolioResponse(row.version, row.goal, row.horizonMonths, row.riskLevel, row.accountType, row.monthlyContribution, row.cash, views, invested, total, if (total != null && invested != null) percent(total - row.cash - invested, invested) else null, allocation, target, contribution, insights, articles, row.updatedAt.takeIf { persisted }, latest?.briefingDate?.toString().takeIf { fx != null })
+        return PortfolioResponse(row.version, row.goal, row.horizonMonths, row.riskLevel, row.accountType, row.monthlyContribution, row.cash, views, invested, total, if (total != null && invested != null) percent(total - row.cash - invested, invested) else null, allocation, target, contribution, insights, articles, row.updatedAt.takeIf { persisted }, latest?.briefingDate?.toString().takeIf { fx != null }, exposure = PortfolioExposureAnalysis.analyze(views, row.cash))
     }
 
     companion object {
