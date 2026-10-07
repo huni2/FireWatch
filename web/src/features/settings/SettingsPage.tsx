@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Alert, App, Button, Card, Form, Skeleton, Space, Tag, TimePicker, Typography } from 'antd'
 import { CheckCircleFilled } from '@ant-design/icons'
 import dayjs from 'dayjs'
@@ -73,6 +74,7 @@ export function SettingsPage() {
 
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <Link to="/community">공지사항 · 문제 신고·의견 · 내 문의</Link>
       <Typography.Title level={4} style={{ margin: 0 }}>
         설정
       </Typography.Title>

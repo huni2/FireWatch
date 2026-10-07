@@ -1,5 +1,6 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { GuidedTour } from './GuidedTour'
+import { AnnouncementPopup } from './AnnouncementPopup'
 import { showFirstVisitGuide } from './guideEvents'
 import { CollectionNotice } from './CollectionNotice'
 import { Button, Drawer, Layout, Switch } from 'antd'
@@ -75,6 +76,8 @@ function TopNavLink({ item, active }: { item: NavItem; active: boolean }) {
 export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [entryFinished, setEntryFinished] = useState(false)
+  const finishEntry = useCallback(() => setEntryFinished(true), [])
   const isOperator = useIsOperator()
   const session = useLoginSession()
   useEffect(watchLoginSession, [])
@@ -115,6 +118,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         <p className="account-note">{session ? 'Google 연결 세션으로 이용 중입니다. 내 계정에서 연결 상태와 기기를 확인하세요.' : '현재 브라우저의 익명 기록으로 이용 중입니다. Google 연결 상태는 내 계정에서 확인하세요.'}</p>
         <nav aria-label="계정 메뉴" className="all-menu-list">
           <Link to="/account" onClick={() => setMenuOpen(false)}>내 계정 · Google 로그인</Link>
+          <Link to="/community" onClick={() => setMenuOpen(false)}>공지사항 · 문제 신고·의견</Link>
           {[...CONTENT_ITEMS, ...ADMIN_ITEMS].filter(item => ['/settings', '/guide', ...(isOperator ? ['/audit-log'] : [])].includes(item.key)).map(item => <Link key={item.key} to={item.key} aria-current={active(item) ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{item.icon}<span>{item.label}</span></Link>)}
         </nav>
       </Drawer>
@@ -132,6 +136,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
           <nav aria-label="서비스 안내" className="site-footer-links">
             <button type="button" onClick={showFirstVisitGuide}>처음 사용 안내</button>
             <Link to="/guide">이용안내</Link>
+            <Link to="/community">공지사항 · 의견 보내기</Link>
             <Link to="/investment-info">투자 정보 이용안내</Link>
             <Link to="/open-source">오픈소스 고지</Link>
             <Link to="/privacy">개인정보처리방침</Link>
@@ -139,7 +144,8 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         </div>
         <div className="site-footer-meta"><span>시장 자료 · 포트폴리오 · 가상투자 연습</span><span>가상투자 게임의 뉴스와 가격은 가상 자료입니다.</span></div>
       </Footer>
-      <GuidedTour />
+      {entryFinished && <GuidedTour />}
+      <AnnouncementPopup onComplete={finishEntry} />
     </Layout>
   )
 }

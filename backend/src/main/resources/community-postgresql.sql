@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS user_feedback (
+ id VARCHAR(100) PRIMARY KEY, user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+ category VARCHAR(10) NOT NULL, content TEXT NOT NULL, platform VARCHAR(10) NOT NULL, version VARCHAR(40) NOT NULL,
+ screen VARCHAR(100) NOT NULL, status VARCHAR(20) NOT NULL, reply TEXT NOT NULL,
+ created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL,
+ push_attempts INT NOT NULL DEFAULT 0, notify_after TIMESTAMP, notified_at TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_feedback_owner_date ON user_feedback(user_id,created_at);
+CREATE TABLE IF NOT EXISTS community_notices (
+ id VARCHAR(40) PRIMARY KEY, title VARCHAR(100) NOT NULL, content TEXT NOT NULL, target VARCHAR(10) NOT NULL,
+ popup BOOLEAN NOT NULL, starts_at TIMESTAMP NOT NULL, ends_at TIMESTAMP, published BOOLEAN NOT NULL
+);
+CREATE TABLE IF NOT EXISTS notice_preferences (
+ user_id BIGINT PRIMARY KEY REFERENCES app_users(id) ON DELETE CASCADE, hidden_until TIMESTAMP NOT NULL
+);
+ALTER TABLE user_feedback ENABLE ROW LEVEL SECURITY;
+ALTER TABLE community_notices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notice_preferences ENABLE ROW LEVEL SECURITY;

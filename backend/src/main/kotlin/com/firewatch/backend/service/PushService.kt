@@ -54,6 +54,12 @@ class PushService(
         return result
     }
 
+    fun notifyFeedback(settings: UserSettings): PushSendResult {
+        val result = sendToOne(settings, "FireWatch 새 피드백", "새 사용자 피드백이 접수됐습니다. 운영자 피드백 화면에서 확인해주세요.")
+        userSettingsRepository.save(settings)
+        return result
+    }
+
     fun testOperatorNotification(settings: UserSettings): PushSendResult {
         val result = sendToOne(settings, "FireWatch 운영자 알림 테스트", "실제 수집 장애가 아닌 수신 확인용 알림입니다. 앱·브라우저에서 알림이 보이는지 확인해주세요.")
         userSettingsRepository.save(settings)

@@ -6,7 +6,7 @@ const { Title, Paragraph, Text } = Typography
 // Play Console의 "Privacy policy URL" 등록에 필요. 이 페이지 자체가 그 URL이 가리키는 대상이다.
 // 수집 항목은 전부 코드(UserSettings/AppUser 엔티티, SettingsRateLimiter)에서 실제로 확인한 내용만
 // 적었다 — 法 자문이 아니라 일반적인 고지 템플릿이므로, 게시 전 한 번 검토가 필요하다.
-const EFFECTIVE_DATE = '2026-10-04'
+const EFFECTIVE_DATE = '2026-10-07'
 const CONTACT_EMAIL = 'powerhch@gmail.com'
 
 export function PrivacyPage() {
@@ -41,9 +41,13 @@ export function PrivacyPage() {
               <Text strong>선택(Google 계정 연동 시에만)</Text>
             </Paragraph>
             <ul style={{ marginTop: 0, marginBottom: 0 }}>
-              <li>Google 계정 고유 식별자, 이메일 주소 — 여러 기기 간 설정을 동기화하기 위해서만 사용</li>
+              <li>Google 계정 고유 식별자, 이메일 주소 — 여러 기기 간 설정·문의·공지 숨김 상태 동기화와 운영자 권한 확인</li>
+              <li>문제 신고·의견 제출 시 유형, 입력 내용, 앱/웹 버전, 접수 화면 경로, 처리 상태와 운영자 답변 — 문의 처리 목적으로 계정에 연결해 저장합니다. 개인 포트폴리오나 로그인 토큰은 자동 첨부하지 않습니다.</li>
+              <li>오늘 하루 공지 숨김을 선택한 로그인 사용자의 숨김 만료 시각 — 계정에 저장하며, 비로그인 사용자는 해당 기기에만 저장합니다.</li>
             </ul>
           </section>
+
+          <section><Title level={5}>문의 정보의 열람과 삭제</Title><Paragraph>문의 내용은 본인과 서버에서 권한을 확인한 운영자만 열람할 수 있습니다. 계정 삭제 시 해당 계정의 문의·답변·공지 숨김 상태도 삭제합니다. 삭제 요청은 아래 연락처로도 접수할 수 있습니다. 비밀번호·인증 토큰·계좌번호 등 민감한 정보는 문의에 입력하지 마세요.</Paragraph></section>
 
           <section>
             <Title level={5}>2. 수집하지 않는 항목</Title>

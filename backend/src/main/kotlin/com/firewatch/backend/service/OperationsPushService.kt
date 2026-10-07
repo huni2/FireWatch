@@ -15,6 +15,13 @@ class OperationsPushService(private val jdbc: JdbcTemplate, private val settings
         val ownerId = jdbc.query("SELECT settings_id FROM collection_operator WHERE id=1", { row, _ -> row.getLong(1) }).firstOrNull() ?: return
         val operator = settings.findById(ownerId).orElse(null) ?: return
         if (operator.fcmTokens().isEmpty() && operator.webPushSubscriptions().isEmpty()) return
+        val tickets = jdbc.query("SELECT id FROM user_feedback WHERE notified_at IS NULL AND push_attempts<3 AND (notify_after IS NULL OR notify_after<=?) ORDER BY created_at LIMIT 4", { row, _ -> row.getString(1) }, Timestamp.from(now))
+        tickets.forEach { id ->
+            if (jdbc.update("UPDATE user_feedback SET push_attempts=push_attempts+1,notify_after=? WHERE id=? AND notified_at IS NULL AND push_attempts<3 AND (notify_after IS NULL OR notify_after<=?)", Timestamp.from(now.plusSeconds(3600)), id, Timestamp.from(now)) != 1) return@forEach
+            val sent = runCatching { push.notifyFeedback(operator) }.getOrNull()
+            if (sent != null && sent.successCount + sent.webPushSuccessCount > 0) jdbc.update("UPDATE user_feedback SET notified_at=? WHERE id=?", Timestamp.from(now), id)
+            else jdbc.update("INSERT INTO audit_logs (event_type,action_name,status,response_summary,created_at) VALUES ('FCM_PUSH','feedback.operatorPush','FAILURE',?,?)", "사용자 피드백 알림 실패. 최대 3회·60분 간격으로 제한합니다.", Timestamp.from(now))
+        }
         val pending = jdbc.query("""SELECT id, category, message FROM collection_alerts WHERE notified_at IS NULL AND resolved_at IS NULL
             AND push_attempts<3 AND (notify_after IS NULL OR notify_after<=?) ORDER BY created_at LIMIT 4""",
             { row, _ -> Triple(row.getString("id"), row.getString("category"), row.getString("message")) }, Timestamp.from(now))

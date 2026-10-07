@@ -1,4 +1,5 @@
 import { ScreenIntro } from '@/components/ScreenIntro'
+import { Link } from 'expo-router'
 import { OperatorPushSetup } from '@/components/OperatorPushSetup'
 // 설정 화면 — 수신 시간·관심 키워드. web/src/features/settings/SettingsPage.tsx와 동일 원칙
 // (관심 종목은 이 화면이 아니라 홈의 "종목" 탭에서 관리, 그대로 넘겨서 덮어쓰지 않음).
@@ -136,6 +137,7 @@ export function SettingsScreen() {
         </Text>
       </View>
       <OperatorPushSetup linkedEmail={linkedEmail} />
+      <Link href="/community" className="py-3 text-brand">공지사항 · 문제 신고·의견 · 내 문의</Link>
     </ScrollView>
   )
 }

@@ -30,6 +30,7 @@ export function HelpPage() {
       <div><span className="eyebrow">FIREWATCH / HELP</span><h1>FireWatch 도움말</h1><p>지금 하려는 일부터 선택하세요. 사용 방법과 막힌 순간의 답을 함께 모았어요.</p></div>
       <Button size="large" icon={<PlayCircleOutlined />} onClick={showFirstVisitGuide}>처음 사용 안내 다시 보기</Button>
     </header>
+    <p><Link to="/community">답을 찾지 못했나요? 문제 신고·의견 보내기 · 공지사항</Link></p>
     <section className="help-answers" aria-labelledby="help-answer-title">
       <div className="help-search-row"><h2 id="help-answer-title">궁금한 점 찾기</h2><Input aria-label="도움말 검색" placeholder="예: 매수, 뉴스 날짜, 알림, 저장" allowClear size="large" value={query} onChange={e => setQuery(e.target.value)} prefix={<SearchOutlined />} maxLength={100} /></div>
       <div className="help-answer-layout">
