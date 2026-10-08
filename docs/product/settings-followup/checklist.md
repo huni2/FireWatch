@@ -7,4 +7,5 @@
 - [x] build/lint·PC/모바일 폭 브라우저 검증
 - [x] 과제/맥락·커밋 기록
 - [x] GitHub Issue#3·PR#4 생성/연결
-- [ ] PR 검토·CI·웹 공개 배포 검증
+- [x] PR#4 머지 fccfd85·CI37804420353 전체 성공
+- [x] Cloudflare06781638 공개1366/390px 검증·Issue#3 종료
