@@ -1,6 +1,6 @@
 # FireWatch — 현재 맥락
 
-최신화: 2026-10-08. 웹 UI 코드 `671cd60`·모바일 메뉴 `3e1b581`·백엔드 코드 `9991091`·Android versionCode4 설정 `6cedd8e` 기준이다. 이전 설계·운영 이력은 [[log]]와 `Decisions/` 디렉터리를 확인한다.
+최신화: 2026-10-08. 웹/앱 메뉴 아이콘 코드 `6df743f`·백엔드 코드 `9991091`·Android versionCode4 설정 `6cedd8e` 기준이다. 이전 설계·운영 이력은 [[log]]와 `Decisions/` 디렉터리를 확인한다.
 
 ## 제품 정체성과 범위
 
@@ -14,6 +14,8 @@
 
 게임의 자체 생성 마스코트는 장식이다. 순위/규칙/등록/복기/종료는 각44px 버튼이며 웹 hover/focus 설명·터치 직접 실행을 제공한다. 웹 계정/설정/도움말 직접 링크, 앱 주요4탭·분야별 보조 탭으로 정리했다. 웹 공개 번들 검증 완료, 앱 실기기는 APP-21에 남긴다. docs/product/game-scout-menu.md 참조.
 
+메뉴는 공용 아이콘에서 FireWatch 불꽃 서명의 전용20종 SVG로 바꿨다. shared/firewatch-icons.ts를 웹/앱이 공유하고 주요4메뉴·상단 도구·게임5도구에 적용했다. 라이트/다크·작은 화면·이름/44px 행동 유지·웹 공개 검사와 Android export 성공. docs/product/firewatch-icons.md 참조. 기존6cedd8e/versionCode4 APK에는 이 아이콘이 없어 새 빌드/설치가 필요하다.
+
 ## 현재 배포와 검증
 
 | 영역 | 현재 상태 |
@@ -22,9 +24,9 @@
 | Backend | Kotlin 2.3.21·Java21·Spring Boot4.1.0·WebFlux/WebClient+JPA/JDBC. Render `https://firewatch-backend-q3cv.onrender.com` |
 | DB | 운영 Supabase PostgreSQL, 개발 H2. 데이터 초기화 금지 |
 | Mobile | Expo SDK57·React Native0.86·NativeWind·Expo Router. 최신 APK 실기기 검증과 Play 출시 준비 중 |
-| CI | 671cd60의 main37764107701 전체 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·웹/모바일 검사 포함 |
+| CI | 6df743f의 main37767735481 전체 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·웹/모바일 검사 포함 |
 
-웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 마지막 공개 기능 배포는0c0aa9e9·웹 UI671cd60이며 백엔드 수집/검색은9991091이다. Render에서 새 page 경계400/빈2페이지를 확인했다. 작업 브랜치는 codex/release-hardening이다. Android 최신 UI 설치본은6cedd8e/versionCode4·3c4b54ea 빌드 접수 상태이며 설치 검증은 별도다. 백엔드 변경 없는 작업은 불필요한 Render 재시작을 피한다.
+웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 마지막 공개 기능 배포는3685ce90·웹/앱 메뉴 소스6df743f이며 백엔드 수집/검색은9991091이다. Render에서 새 page 경계400/빈2페이지를 확인했다. 작업 브랜치는 codex/release-hardening이다. Android 설치본은6cedd8e/versionCode4·3c4b54ea 빌드 접수 상태이며 새 아이콘은 미포함·설치 검증은 별도다. 백엔드 변경 없는 작업은 불필요한 Render 재시작을 피한다.
 
 ## 핵심 동작
 

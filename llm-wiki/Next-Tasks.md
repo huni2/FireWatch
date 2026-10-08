@@ -15,7 +15,7 @@
 | 운영/사용자 확인 | BE-30 수집 복구·운영자 실수신, WEB-19 실제 세션 권한·로그아웃, APP-21 Android 설치·제출, BE-17 선택형 이전 |
 | 비필수 보류 | 모바일 선택형 다크 모드. 기본 라이트 요구 구현은 완료 |
 
-최신 웹 코드 `671cd60`의 [main CI37764107701](https://github.com/huni2/FireWatch/actions/runs/37764107701) 전체 성공을 확인했다. CI는 실제 제공처 수집 성공·휴대폰 알림 수신을 대체하지 않는다.
+최신 웹/앱 아이콘 코드 `6df743f`의 [main CI37767735481](https://github.com/huni2/FireWatch/actions/runs/37767735481) 전체 성공을 확인했다. CI는 실제 제공처 수집 성공·휴대폰 알림 수신을 대체하지 않는다.
 
 ## 열린 과제 — 백엔드(BE)
 
@@ -52,11 +52,6 @@
 **근거** — docs/deployment/operator-access.md, CollectionJobRunnerIntegrationTest, CollectionAlertAccessIntegrationTest. 기존 BE-23/25/27의 미확인 운영 항목을 이관했다.
 
 ## 열린 과제 — 웹(WEB)
-
-### WEB-31. FireWatch 전용 메뉴 아이콘 공개 적용
-**구현 완료·배포 검증 중** — 불꽃 서명을 공유하는20종 SVG·웹/앱 렌더러. 웹 주요4메뉴·계정/설정/도움말/더보기·게임5도구에 적용하고 이름/설명/선택/권한/44px 행동을 유지한다.
-**검증** — 웹 build/lint·로컬5폭/다크·전용 SVG/접근성/운영 메뉴 숨김 성공. 게임 거래5노트북/3모바일 회귀 성공. 공개 배포·CI 검증 후 종료한다.
-**근거** — docs/product/firewatch-icons.md. 앱 설치는 APP-21로 이관한다.
 
 ### WEB-19. 실제 로그인 세션의 운영 권한·로그아웃 최종 확인
 **구현·배포 완료** — GIS 공식 버튼·세션·연결 기기 관리·운영자 메뉴/서버 인증. 사용자가 웹 실제 Google 로그인 성공 확인. 일반/운영/만료/충돌/SDK/로그아웃 실패 fixture 검증 완료.
@@ -110,6 +105,8 @@
 
 | 과제 | 제목 | 결과 | 근거 |
 |---|---|---|---|
+| WEB-31 | FireWatch 전용 메뉴 아이콘 | 6df743f·Cloudflare3685ce90 운영 배포. 전용 SVG20종 공유 원본·주요 메뉴/도구 적용, 공개5폭/다크·장식 접근성/권한/넘침0·전체36라이트/4다크·게임5노트북/3모바일 성공. main CI37767735481 전체 성공 | docs/product/firewatch-icons.md |
+| APP-26 | 전용 벡터 메뉴 적용 | 웹과 같은 원본·기존 react-native-svg로 홈4탭/상단 설정·도움말/게임 도구 구현. 타입/lint·Android export·main CI37767735481 모바일 성공. 기존versionCode4에는 미포함, 새 빌드/설치/TalkBack은 APP-21로 이관 | docs/product/firewatch-icons.md |
 | WEB-29 | 전체 화면 정보 우선순위·기준 날짜 | 1196e47/671cd60·Cloudflare0c0aa9e9 운영 배포. 지표 날짜·홈 발견·회사 차트/후보 행동·뉴스/브리핑·게임/도움말 정리. 공개 fixture36라이트/4다크·후보 상세/도움말 검색·게임5노트북/3모바일·브리핑 후속4폭/다크·실제 공개 GET6화면 성공, 운영 쓰기0. 최종 main CI37764107701 전체 성공. 실제 이용자/접근성은 WEB-30, Android 설치는 APP-21 | docs/reviews/2026-10-08-whole-ui-design-review.md |
 | WEB-28 | 게임 개별 도구·공통 메뉴 | 3e1b581·Cloudflare709d812c 공개 배포. 분리된 순위/규칙·키보드·계정/설정/도움말·익명 운영 숨김4폭/다크 및 거래5노트북/3모바일 fixture 성공. 전체 main CI37709655483 성공. 앱 설치는 APP-21 | docs/product/game-scout-menu.md |
 | WEB-27 | 게임 마스코트 로비·짧은 버튼 | 3a1d35b·Cloudflare4b4d0f5e 공개 배포. 로비4폭/다크·hover/터치·키보드·시작 실패, 주문5노트북/3모바일·초기화/체결/턴/복기 공개 번들 fixture 성공. main CI37707081625 전체 성공. 앱 설치는 APP-21 | docs/product/game-scout-menu.md |
