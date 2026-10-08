@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, App, Button, Card, Empty, Input, Select, Space, Tabs, Tag, Typography } from 'antd'
+import { Alert, App, Button, Card, Empty, Input, Select, Skeleton, Space, Tabs, Tag, Typography } from 'antd'
 import { Link } from 'react-router-dom'
 import { request } from '../../lib/api'
 import { getLoginSession, useLoginSession } from '../../lib/loginSession'
@@ -13,6 +13,9 @@ export function CommunityPage() {
   const session = useLoginSession()
   const operator = useIsOperator()
   const [notices, setNotices] = useState<Notice[]>([])
+  const [noticeLoading, setNoticeLoading] = useState(true)
+  const [noticeError, setNoticeError] = useState('')
+  const [noticeRetry, setNoticeRetry] = useState(0)
   const [mine, setMine] = useState<Feedback[]>([])
   const [mineToken, setMineToken] = useState('')
   const [error, setError] = useState('')
@@ -28,9 +31,9 @@ export function CommunityPage() {
   }
   useEffect(() => {
     let active = true
-    request<Notice[]>('/api/community/notices?platform=WEB').then(data => { if (active) setNotices(data) }).catch(e => { if (active) setError(e.message) })
+    request<Notice[]>('/api/community/notices?platform=WEB').then(data => { if (active) setNotices(data) }).catch(() => { if (active) setNoticeError('공지를 불러오지 못했어요.') }).finally(() => { if (active) setNoticeLoading(false) })
     return () => { active = false }
-  }, [])
+  }, [noticeRetry])
   useEffect(() => {
     let active = true
     if (session) request<Feedback[]>('/api/community/feedback').then(data => { if (active) { setMine(data); setMineToken(session.token) } }).catch(e => { if (active) setError(e.message) })
@@ -44,10 +47,10 @@ export function CommunityPage() {
     } catch (e) { setError((e as Error).message) } finally { setBusy(false) }
   }
   return <Space direction="vertical" size="large" style={{ width: '100%' }}>
-    <Typography.Title level={2}>공지·의견 보내기</Typography.Title>
+    <header className="compact-intro"><Typography.Title level={2}>공지·문의</Typography.Title><p>새 소식을 확인하거나 불편했던 점을 알려주세요.</p></header>
     {error && <Alert type="error" message={error} />}
     <Tabs activeKey={tab} onChange={setTab} items={[
-      { key: 'notices', label: '공지사항', children: <Space direction="vertical" style={{ width: '100%' }}>{notices.length ? notices.map(n => <Card key={n.id} title={n.title}><Tag>{targetLabels[n.target]}</Tag><p>{new Date(n.startsAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} KST</p><p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{n.content}</p></Card>) : <Empty description="등록된 공지가 없습니다." />}</Space> },
+      { key: 'notices', label: '공지사항', children: <Space direction="vertical" style={{ width: '100%' }}>{noticeLoading ? <Card><p role="status">새 소식을 확인하고 있어요.</p><Skeleton active /></Card> : noticeError ? <Alert type="warning" showIcon message={noticeError} action={<Button onClick={() => { setNoticeLoading(true); setNoticeError(''); setNoticeRetry(v => v + 1) }}>공지 다시 불러오기</Button>} /> : notices.length ? notices.map(n => <Card key={n.id} title={<span style={{ whiteSpace: 'normal', overflowWrap: 'anywhere' }}>{n.title}</span>}><Tag>{targetLabels[n.target]}</Tag><p>{new Date(n.startsAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} KST</p><p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{n.content}</p></Card>) : <Card><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="아직 새 소식이 없어요." /><p style={{ textAlign: 'center' }}>사용 중 불편한 점이 있다면 알려주세요.</p><Button onClick={() => setTab('feedback')}>의견 보내기</Button></Card>}</Space> },
       { key: 'feedback', label: '문제 신고·의견', children: session ? <Card title="문제 신고·의견 보내기"><Space direction="vertical" style={{ width: '100%' }}><Select aria-label="문의 유형" value={category} onChange={v => { setCategory(v); setRequestId(crypto.randomUUID()) }} options={Object.entries(feedbackTypes).map(([value, label]) => ({ value, label }))} /><Input.TextArea aria-label="문의 내용" placeholder="어떤 화면에서 무슨 일이 있었나요? 비밀번호·토큰·계좌번호는 입력하지 마세요." value={content} disabled={busy} onChange={e => { setContent(e.target.value); setRequestId(crypto.randomUUID()) }} maxLength={3000} showCount rows={6} /><p>운영자만 내용을 확인합니다. 접수 화면 경로와 웹 버전을 함께 저장하며, 개인 포트폴리오와 로그인 토큰은 첨부하지 않습니다.</p><Button type="primary" loading={busy} disabled={content.trim().length < 5} onClick={submit}>접수하기</Button></Space></Card> : <Alert type="info" message="내 문의와 답변을 여러 기기에서 확인하려면 로그인해주세요." action={<Link to="/account">Google 로그인</Link>} /> },
       { key: 'mine', label: '내 문의', children: session ? <Space direction="vertical" style={{ width: '100%' }}><Button onClick={refreshMine}>답변 새로고침</Button>{visibleMine.length ? visibleMine.map(f => <Card key={f.id} title={feedbackTypes[f.category]}><Tag>{feedbackStates[f.status]}</Tag><p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{f.content}</p><p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{f.reply ? `운영자 답변 · ${f.reply}` : '아직 답변이 없습니다.'}</p></Card>) : <Empty description="접수한 문의가 없습니다." />}</Space> : <Link to="/account">로그인 후 내 문의 확인</Link> },
       ...(operator ? [{ key: 'operator', label: '운영자 관리', children: <CommunityAdmin /> }] : []),
