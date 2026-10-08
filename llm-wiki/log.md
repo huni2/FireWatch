@@ -11,6 +11,8 @@
 
 ## 2026-10-09
 
+- **[APP] versionCode5 APK 빌드 접수**:7594daa·fefb17ae-ce86-417f-9016-c9230010c1b3 업로드 완료. 타입/lint·출시 검사8개·Android export 통과. 완료/실기기는 미확인. 공식 요금표 Android15+iOS15 월 한도를 총 BUILDS30 조회와 구분하고 비용0원 원칙 유지.
+
 - **[APP] 최신 Android versionCode5 준비**: APP-21의 기존6cedd8e/versionCode4 APK가 FINISHED임을 확인. 최신 커스텀 SVG·자산 등록 변경을 설치본에 담기 위해 versionCode5로 구분한다. EAS Free4/30·비용0 확인, 연결 기기/adb 미확인으로 실제 설치·로그인·푸시는 완료 처리하지 않는다.
 
 - **[WEB] 첫 이용 흐름 공개 검증·WEB-35 종료**: b9b9a3c·Cloudflare fb6c6a7e 공개 배포. 첫 등록→결과 초점→중복 상세→회사/뉴스, 키보드·Escape 보존·조회 실패/재시도2폭, 별도200% 텍스트8화면, 첫 안내2폭과 실제 시장 GET6화면 검증 성공. CI37796805618 전체 성공. 운영 시험 저장0, WEB-30 실제 관찰/스크린리더와 APP-21 설치는 남긴다. docs/reviews/2026-10-09-first-use-accessibility.md 기록.

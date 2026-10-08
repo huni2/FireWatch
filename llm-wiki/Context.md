@@ -28,9 +28,9 @@
 | Backend | Kotlin 2.3.21·Java21·Spring Boot4.1.0·WebFlux/WebClient+JPA/JDBC. Render `https://firewatch-backend-q3cv.onrender.com` |
 | DB | 운영 Supabase PostgreSQL, 개발 H2. 데이터 초기화 금지 |
 | Mobile | Expo SDK57·React Native0.86·NativeWind·Expo Router. 최신 APK 실기기 검증과 Play 출시 준비 중 |
-| CI | 6df743f의 main37767735481 전체 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·웹/모바일 검사 포함 |
+| CI | b9b9a3c의 main37796805618 전체 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·웹/모바일 검사 포함 |
 
-웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 마지막 공개 기능 배포는3685ce90·웹/앱 메뉴 소스6df743f이며 백엔드 수집/검색은9991091이다. Render에서 새 page 경계400/빈2페이지를 확인했다. 작업 브랜치는 codex/release-hardening이다. Android 설치본은6cedd8e/versionCode4·3c4b54ea 빌드 접수 상태이며 새 아이콘은 미포함·설치 검증은 별도다. 백엔드 변경 없는 작업은 불필요한 Render 재시작을 피한다.
+웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 마지막 공개 기능 배포는fb6c6a7e·웹 소스b9b9a3c이며 서버 nullable 매입가/v3 계약도 확인됐다. 작업 브랜치는 codex/release-hardening이다. Android 이전6cedd8e/versionCode4·3c4b54ea는 FINISHED이며 최신 아이콘/등록 화면은 미포함이다. 최신7594daa/versionCode5 preview APK 빌드 요청과 실제 설치는 APP-21에서 기록한다. 백엔드 변경 없는 작업은 불필요한 Render 재시작을 피한다.
 
 ## 핵심 동작
 

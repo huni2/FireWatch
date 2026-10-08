@@ -74,6 +74,7 @@
 **최신 설치본** — 개별 버튼·공통 메뉴 수정은 이전 versionCode3에 포함되지 않는다. Free 사용3/30·비용0 확인 후6cedd8e/versionCode4의 preview3c4b54ea-4233-49ff-af39-feefd05c85f1 접수. https://expo.dev/accounts/huni2/projects/mobile/builds/3c4b54ea-4233-49ff-af39-feefd05c85f1
 **추가 UI** — 전용 FireWatch 메뉴 SVG는 웹/앱 공유 원본으로 구현하고 앱 타입/lint·Android export를 확인했다. 기존6cedd8e/versionCode4 APK에는 포함되지 않아 새 빌드·설치/TalkBack 확인이 필요하다. 앱 구현 APP-26/27/28과 실제 설치를 구분한다.
 **마지막 상태(2026-10-09)** — versionCode4·소스6cedd8e의 FINISHED/APK 생성 확인. 최신 아이콘·자산 등록을 포함할 versionCode5를 준비한다. EAS Free4/30·비용0 확인. 실제 설치 확인은 미완료다. docs/product/android-preview-20261009/checklist.md 참조.
+**최신 접수** — 소스7594daa/versionCode5·preview fefb17ae-ce86-417f-9016-c9230010c1b3 업로드 완료. 타입/lint·출시 검사8개·Android export 통과. https://expo.dev/accounts/huni2/projects/mobile/builds/fefb17ae-ce86-417f-9016-c9230010c1b3 . 공식 무료 한도는 월 Android15회+iOS15회이며 총 BUILDS30 조회와 구분한다. APK 완료/설치는 미확인이다.
 **빌드 주의** — 과거 cde6e85의 preview3a953867은 현재 소스가 아니며 설치 검증 완료로 사용할 수 없다. 2026-10-08 EAS 조회에서 과거 preview3a953867의 FINISHED·APK 생성 확인. 소스 cde6e85라 최신 설치 확인을 대신하지 않는다.
 **완료 기준** — 설치 기기에서 아래 항목을 확인·기록하고 AAB/테스트 트랙 검증. JS 번들·설정 검사 성공만으로 종료하지 않는다.
 

@@ -24,8 +24,8 @@
 8. 일반 사용자 문의 접수 → 내 문의 재조회 → 운영자 웹 답변 → 앱 답변 확인. 타인의 문의와 운영 관리가 노출되지 않아야 한다.
 9. Android/ALL 대상 공지가 있을 때 첫 진입 모달·닫기·이동 중 재노출 없음·오늘 숨김·KST 자정 후 다음 실행을 확인한다. 운영 DB에 검증 공지를 자동 생성하지 않는다.
 
-## 최신 설치본 빌드 (2026-10-08)
+## 최신 설치본 빌드 (2026-10-09)
 
-[Preview APK bf7a706a](https://expo.dev/accounts/huni2/projects/mobile/builds/bf7a706a-1e44-497d-af79-068b206e874e)는 source9991091·versionCode2로 접수했고 IN_PROGRESS를 확인했다. Free 잔여 한도 확인 후 한 번만 빌드했다. 완료 여부와 실제 설치·로그인·알림 수신은 아직 미확인이다.
+[이전 versionCode4 빌드](https://expo.dev/accounts/huni2/projects/mobile/builds/3c4b54ea-4233-49ff-af39-feefd05c85f1)는 source6cedd8e로 FINISHED다. 커스텀 메뉴/게임 SVG와 자산 등록 개편은 포함되지 않는다. 최신 소스7594daa·versionCode5로 preview APK 빌드를 요청했다. Free 사용4/30·비용0을 확인했고 타입·린트·출시 검사8개·Android export를 통과했다. 현재 상태와 설치 확인은 `docs/product/android-preview-20261009/checklist.md`에 기록한다.
 
 예전 cde6e85의 preview3a953867은 FINISHED/APK 생성 상태를 확인했지만 최근 모바일 변경을 포함하지 않는다. Expo Go 또는 과거 APK 설치를 최신 기능 검증으로 처리하지 않는다.
