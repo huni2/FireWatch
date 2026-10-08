@@ -5,6 +5,6 @@
 - [x] 웹 검색→수량→등록/수정/삭제·실패 입력 보존·홈 즉시 반영.
 - [x] Android 전체 화면 입력·선택 매입가·뒤로가기·타입/lint/export.
 - [x] PC/모바일·라이트/다크 화면·비중 범위·서버 및 클라이언트 테스트.
-- [ ] Render v3 계약 확인 후 Cloudflare 배포·공개 회귀. 코드/문서/과제 갱신은 완료.
+- [x] Render v3 계약 확인 후 Cloudflare 배포·공개 회귀. 코드/문서/과제 갱신 완료.
 
-구현 b0a4a7a. 로컬 서버 전체 test 성공 및 최종 포트폴리오15개 성공. 웹5화면/부분 평가 fixture·웹 build/lint·앱 타입/lint/Android export·출시 검사8개 성공. CI37774653610 서버·PostgreSQL/복구·웹/앱 전체 성공. Render의 새 capabilities 확인 후 Cloudflare를 배포한다. 기존 사용자 데이터·운영 시험 저장은 건드리지 않는다.
+구현 b0a4a7a. 로컬 서버 전체 test 성공 및 최종 포트폴리오15개 성공. 웹5화면/부분 평가 fixture·웹 build/lint·앱 타입/lint/Android export·출시 검사8개 성공. CI37774653610 서버·PostgreSQL/복구·웹/앱 전체 성공. Render capabilities200/v3 확인 후 Cloudflare cd53c728 공개 배포 및 등록5조건 회귀를 완료했다. 기존 사용자 데이터·운영 시험 저장은 건드리지 않는다.

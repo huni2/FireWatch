@@ -53,17 +53,6 @@
 
 ## 열린 과제 — 웹(WEB)
 
-### WEB-34. 탐색·필터 컨트롤 정렬
-**구현·로컬 검증 완료** — Select 외곽32px/내부44px 불일치를 공통 높이 토큰으로 수정. 기업·상품 필터 반응형 배치, 시장 차트 선택 메뉴, 게임 주문 label 스타일 범위 수정.
-**남은 일** — Cloudflare 배포와 공개 화면 회귀. PC/모바일4폭·다크, 검색/필터/초기화, 자산 등록5조건, 시장·뉴스·종목, 게임 주문·고정 다음 턴 로컬 검증 성공. 운영 데이터 쓰기 없이 fixture로 검증한다.
-**근거** — docs/product/control-alignment/plan.md.
-
-### WEB-33. 자산 등록 분리와 홈 점검 연결
-**구현·검증 완료** — b0a4a7a. 오른쪽 단일 자산 패널·별도 현금/계획·홈 점검·저장 응답 즉시 반영.5조건 null 등록/409 보존/수정/현금/중복·부분 비중 fixture, build/lint·CI37774653610 웹 성공.
-**남은 일** — Render v3 계약 확인 후 Cloudflare 공개 배포·공개 회귀. 현재 운영 웹을 먼저 덮어쓰지 않는다.
-**근거** — docs/product/portfolio-registration/plan.md.
-
-
 ### WEB-19. 실제 로그인 세션의 운영 권한·로그아웃 최종 확인
 **구현·배포 완료** — GIS 공식 버튼·세션·연결 기기 관리·운영자 메뉴/서버 인증. 사용자가 웹 실제 Google 로그인 성공 확인. 일반/운영/만료/충돌/SDK/로그아웃 실패 fixture 검증 완료.
 **남은 일** — 실제 운영자 세션의 감사로그 접근과 실제 일반 계정 제한, 로그아웃/재로그인 후 계정 기록 보존을 사용자 기기에서 확인.
@@ -112,15 +101,13 @@
 
 ## 종료 기록
 
-| 번호 | 과제 | 결과 | 근거 |
-|---|---|---|---|
-| BE-31 | 선택 매입가·평가 기준 비중 서버 | b0a4a7a 및 CI37774653610 전체 성공. 공개 capabilities200, optionalAverageCost=true, MARKET_VALUE, portfolio-rules-v3 확인. 기존 사용자 기록 보존 | docs/product/portfolio-registration/plan.md |
-
-
 2026-10-07 게임 UX 보완을 웹·백엔드에 배포했다. 웹·앱 가상 픽에 시나리오 이유/위험/뉴스와 직접 생성한 불꽃 마스코트를 적용했고, 다음 턴 요청과 병행하는 직전 거래 복기·응답 후 지표/가격 영향/넘긴 포지션 손익/지난 픽 비교·건너뛰기/메모리 다시보기를 제공한다. 실제 가격 규칙/픽 정합성 및 롱·숏·매도 후 관찰 계산, 360/1280px 브라우저, 웹 빌드·앱 타입/린트/Android 번들 검증을 완료했다. 운영 배포 후 실제 픽 매수·다음 턴·복기·모바일 체결 그래프를 확인했다. 네이티브 실기기 확인과 운영자 수신자 등록·기존 운영자 신원 이전은 남아 있다. ADR 0018 참조.
 
 | 과제 | 제목 | 결과 | 근거 |
 |---|---|---|---|
+| WEB-34 | 탐색 바·드롭다운과 필터 정렬 | ab795ae·Cloudflare cd53c728 공개 배포. Select 외곽/내부44px, PC 탭 기준선·팝업 폭/간격, 모바일 필터 줄바꿈, 차트 선택 메뉴·게임 label 범위 수정. 공개4폭/다크 탐색·등록5조건·게임5노트북과 모바일·실제 GET6화면 성공. CI37781276263 전체 성공 | docs/product/control-alignment/plan.md |
+| WEB-33 | 자산 등록 분리와 홈 점검 연결 | b0a4a7a 구현·서버 v3 확인 후 ab795ae 웹과 함께 cd53c728 공개 배포. 공개5조건 선택 매입가/충돌 보존/수정/현금·계획/중복/부분 평가 fixture 성공, 운영 데이터 쓰기0. 설치 앱은 APP-21 | docs/product/portfolio-registration/plan.md |
+| BE-31 | 선택 매입가·평가 기준 비중 서버 | b0a4a7a 및 CI37774653610 전체 성공. 공개 capabilities200, optionalAverageCost=true, MARKET_VALUE, portfolio-rules-v3 확인. 기존 사용자 기록 보존 | docs/product/portfolio-registration/plan.md |
 | WEB-32 | 게임 행동·결과 전용 아이콘 | 6ada301·Cloudflare f4bb3275 공개 배포. 게임9종 추가/총29종 공유 SVG. 공개4조건 커스텀 버튼·선택·대비·실패 안내, 게임5노트북/3모바일 거래·초기화·턴·복기 성공. CI37770230386 웹·앱 성공 확인 | docs/product/game-icons-checklist.md |
 | APP-28 | Android 자산 등록·홈 점검 분리 | b0a4a7a. 전체 화면 회사/수량·선택 매입가, 키보드 위 저장과 뒤로가기 취소, 홈·현금/계획 분리. 타입/lint·최종 Android export·출시 검사8개·CI37774653610 앱 성공. 새 APK/실기기는 APP-21 | docs/product/portfolio-registration/plan.md |
 | APP-27 | 게임 행동 전용 벡터 | 시작/턴/픽 매수/주문/초기화/선택/결과·사건 적용. 타입/lint·Android export·CI 모바일 성공. 기존APK 미포함, 새 빌드·실기기 확인은 APP-21 | docs/product/game-icons-checklist.md |
