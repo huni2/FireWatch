@@ -22,6 +22,8 @@
 
 ## 현재 배포와 검증
 
+Android APK는 웹·서버 배포와 별도다. 일반 배포 때 자동/임의 EAS 빌드를 요청하지 않는다. 사용자가 모바일 설치본을 명시적으로 요청했을 때만 무료 잔여량·기존 빌드를 확인한 후 `mobile`의 `npm run build:apk`를 실행한다. CI 타입·린트·출시 설정 검사는 유지하며 EAS 무료 횟수를 소비하지 않는다.
+
 | 영역 | 현재 상태 |
 |---|---|
 | Web | React 18·Vite·Ant Design 5. Cloudflare Pages `https://firewatch-eqp.pages.dev` |

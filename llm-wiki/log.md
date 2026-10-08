@@ -11,6 +11,8 @@
 
 ## 2026-10-09
 
+- **[APP] APK 수동 실행 분리 APP-29**: 기존 CI에 EAS 자동 호출 없음 확인. 별도 build:apk 명령·운영 기준을 추가해 일반 웹/서버 배포에서 APK를 생성하지 않는다. 사용자 모바일 설치본 요청 시만 무료 잔여량/기존 빌드 확인 후 실행. 이번 검증은 APK를 요청하지 않는다.
+
 - **[APP] versionCode5 APK 빌드 접수**:7594daa·fefb17ae-ce86-417f-9016-c9230010c1b3 업로드 완료. 타입/lint·출시 검사8개·Android export 통과. 완료/실기기는 미확인. 공식 요금표 Android15+iOS15 월 한도를 총 BUILDS30 조회와 구분하고 비용0원 원칙 유지.
 
 - **[APP] 최신 Android versionCode5 준비**: APP-21의 기존6cedd8e/versionCode4 APK가 FINISHED임을 확인. 최신 커스텀 SVG·자산 등록 변경을 설치본에 담기 위해 versionCode5로 구분한다. EAS Free4/30·비용0 확인, 연결 기기/adb 미확인으로 실제 설치·로그인·푸시는 완료 처리하지 않는다.

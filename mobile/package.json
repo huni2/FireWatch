@@ -53,6 +53,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "release:check": "node scripts/release-check.cjs",
+    "build:apk": "npm run release:check && npx --yes eas-cli build --platform android --profile preview --non-interactive --no-wait",
     "eas-build-post-install": "node scripts/release-check.cjs --eas"
   },
   "private": true

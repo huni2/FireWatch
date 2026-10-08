@@ -107,6 +107,7 @@
 
 | 과제 | 제목 | 결과 | 근거 |
 |---|---|---|---|
+| APP-29 | APK 별도 수동 실행 | CI EAS 호출 없음 확인, build:apk 명령·웹/서버 배포와 분리 기준 기록. 일반 배포는 APK 요청을 포함하지 않음. 이번 작업 EAS 빌드0회 | docs/product/android-build-separation/plan.md |
 | WEB-35 | 첫 등록·발견·근거 확인과 키보드 동선 | b9b9a3c·Cloudflare fb6c6a7e, CI37796805618 전체 성공. 공개 첫 흐름2폭/키보드/초점/장애·별도200% 텍스트8화면·첫 안내2폭·실제 시장 GET6화면 성공. 운영 시험 기록0, 실제 관찰/스크린리더는 WEB-30 | docs/reviews/2026-10-09-first-use-accessibility.md |
 | WEB-34 | 탐색 바·드롭다운과 필터 정렬 | ab795ae·Cloudflare cd53c728 공개 배포. Select 외곽/내부44px, PC 탭 기준선·팝업 폭/간격, 모바일 필터 줄바꿈, 차트 선택 메뉴·게임 label 범위 수정. 공개4폭/다크 탐색·등록5조건·게임5노트북과 모바일·실제 GET6화면 성공. CI37781276263 전체 성공 | docs/product/control-alignment/plan.md |
 | WEB-33 | 자산 등록 분리와 홈 점검 연결 | b0a4a7a 구현·서버 v3 확인 후 ab795ae 웹과 함께 cd53c728 공개 배포. 공개5조건 선택 매입가/충돌 보존/수정/현금·계획/중복/부분 평가 fixture 성공, 운영 데이터 쓰기0. 설치 앱은 APP-21 | docs/product/portfolio-registration/plan.md |
