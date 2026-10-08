@@ -20,6 +20,10 @@ body {
   min-height: 100vh;
 }
 
+.skip-content { position: fixed; top: 8px; left: 12px; z-index: 2000; transform: translateY(-150%); padding: 12px 16px; border-radius: 10px; color: var(--ant-color-text); background: var(--ant-color-bg-container); }
+.skip-content:focus { transform: none; }
+.company-news-archive { display: inline-flex; align-items: center; min-height: 44px; }
+
 /* Responsive workspaces: narrow reading flow, wide contextual panels. */
 .context-navigation { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
 .context-navigation a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 14px; border-radius: 10px; color: var(--ant-color-text); background: var(--ant-color-bg-container); border: 1px solid var(--ant-color-border); }
@@ -51,7 +55,7 @@ body {
 @media(max-width:599px) { .context-navigation { gap: 6px; }.context-navigation a { padding-inline: 10px; font-size: 13px; }.market-metric-grid { gap: 10px; }.market-metric-grid .ant-card-body { padding: 14px; }.market-metric-grid .ant-statistic-content { font-size: 22px; }.news-filter-panel { padding: 16px; } }
 
 .site-header.ant-layout-header { position: sticky; top: 0; z-index: 10; height: auto; padding: 0 24px; line-height: normal; border-bottom: 1px solid var(--ant-color-border); }
-.site-brand-row { display: flex; align-items: center; min-height: 62px; gap: 8px; }
+.site-brand-row { display: flex; align-items: center; min-height: 62px; gap: 8px; flex-wrap: wrap; }
 .site-navigation { display: flex; overflow-x: auto; scrollbar-width: thin; }
 .page-intro { padding: 32px; border: 1px solid var(--ant-color-border); border-radius: 22px; background: linear-gradient(115deg,color-mix(in srgb,var(--ant-color-primary) 10%,var(--ant-color-bg-container)),var(--ant-color-bg-container)); }
 .page-intro h2 { margin-top: 14px; letter-spacing: -.04em; }
@@ -138,7 +142,8 @@ button:focus-visible,a:focus-visible { outline: 2px solid var(--ant-color-primar
 .game-bottom-bar .ant-btn { min-height: 48px; font-weight: 700; }
 
 /* Product review: first action, visible navigation and compact information. */
-.nav-link { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 46px; padding: 0 16px; color: var(--ant-color-text); font-size: 14px; white-space: nowrap; border-bottom: 2px solid transparent; }
+.nav-link { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 46px; min-width: 0; padding: 0 16px; color: var(--ant-color-text); font-size: 14px; text-align: center; white-space: normal; border-bottom: 2px solid transparent; }
+.nav-desktop-label,.nav-mobile-label { max-width: 100%; word-break: keep-all; overflow-wrap: anywhere; }
 .nav-link.is-active { color: var(--ant-color-primary); border-color: var(--ant-color-primary); font-weight: 700; }
 .nav-mobile-label { display: none; }
 .all-menu-button.ant-btn { min-height: 44px; }

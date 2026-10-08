@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Empty, Segmented, Skeleton, Typography } from 'antd'
+import { Alert, Button, Empty, Segmented, Skeleton, Typography } from 'antd'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { StockChartRange } from '../../../lib/api'
 import { useStockHistory } from '../hooks/useStockHistory'
@@ -7,6 +7,7 @@ import { BRAND_GREEN } from '../../../lib/theme'
 import { stockLabel } from '../../../../../shared/stock-labels'
 import { formatStockPrice } from '../../../../../shared/stock-price'
 import { CompanyNews } from './CompanyNews'
+import { SlowLoadingHint } from '../../../components/SlowLoadingHint'
 
 const CHART_COLOR = BRAND_GREEN
 
@@ -44,7 +45,7 @@ function formatLabel(timestamp: string, range: StockChartRange): string {
 // 2026-08-21 사용자 요청 — "5년/6개월/3개월/1달/일주일/하루 이렇게 시간적으로 볼 수 있는 차트".
 export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, showNews = true }: StockChartProps) {
   const [range, setRange] = useState<StockChartRange>('6mo')
-  const { data, loading, error } = useStockHistory(symbol, range)
+  const { data, loading, error, isSlow, reload } = useStockHistory(symbol, range)
   const currentData = data?.symbol === symbol ? data : null
   const companyName = name === '회사명 확인 필요' ? currentData?.companyName ?? name : name
   const latest = currentData?.points.at(-1)
@@ -68,7 +69,7 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
         <Typography.Text type="secondary" style={{ display: 'block' }}>{currentData?.quotePrice != null ? '최근 제공 시세' : '마지막 기록 가격'}{priceAt ? ` · ${new Date(priceAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} (한국 시간)` : ''}</Typography.Text>
       </div>}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
-        <Segmented style={{ maxWidth: '100%', overflowX: 'auto' }} size="small" value={range} onChange={(value) => setRange(value as StockChartRange)} options={RANGE_OPTIONS} />
+        <Segmented aria-label="주가 조회 기간" style={{ maxWidth: '100%', overflowX: 'auto' }} size="small" value={range} onChange={(value) => setRange(value as StockChartRange)} options={RANGE_OPTIONS} />
         {range === '1d' && (
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             30초마다 자동 갱신 — 완전한 실시간 스트리밍은 아니고 짧은 지연이 있습니다.
@@ -77,8 +78,9 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
       </div>
 
       {loading && <Skeleton active paragraph={{ rows: 4 }} />}
+      <SlowLoadingHint loading={loading} isSlow={isSlow} />
       {!loading && error && (
-        <Alert type="error" message={`${companyName} 시세를 불러오지 못했습니다`} description="잠시 후 다시 확인해주세요." showIcon />
+        <Alert type="error" message={`${companyName} 시세를 불러오지 못했습니다`} description="보유 기록은 유지돼요. 시세를 다시 불러와주세요." showIcon action={<Button onClick={reload}>시세 다시 확인</Button>} />
       )}
       {!loading && !error && chartData.length === 0 && <Empty description="표시할 데이터가 없습니다" />}
       {!loading && !error && chartData.length > 0 && (

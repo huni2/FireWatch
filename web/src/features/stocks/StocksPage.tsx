@@ -23,7 +23,7 @@ export function StocksPage() {
   const { data, loading, error, isSlow, reload } = useSettings()
   const [searchParams] = useSearchParams()
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
-  const [selected, setSelected] = useState<string | null>(null)
+  const [selected, setSelected] = useState<string | null>(() => { const symbol = searchParams.get('symbol'); return symbol && TICKER_PATTERN.test(symbol) ? symbol : null })
   const { names, rememberName } = useStockNames()
   const labelForValue = (symbol: string) => stockLabel(symbol, names)
 
@@ -80,14 +80,14 @@ export function StocksPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, searchParams])
 
-  if (loading) {
+  if (loading && !selected) {
     return (
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
         <Typography.Title level={4} style={{ margin: 0 }}>
           종목
         </Typography.Title>
         <SlowLoadingHint loading={loading} isSlow={isSlow} />
-        <Card {...SECTION_CARD_PROPS} title="회사 이름으로 찾기" extra={selected && !watchedStocks.includes(selected) ? <Button onClick={() => void handleChange([...watchedStocks, selected])}>관심 종목에 담기</Button> : undefined}>
+        <Card {...SECTION_CARD_PROPS} title="회사 이름으로 찾기" extra={selected && !watchedStocks.includes(selected) ? <Button disabled={!data || loading} onClick={() => void handleChange([...watchedStocks, selected])}>관심 종목에 담기</Button> : undefined}>
           <Skeleton active />
         </Card>
       </Space>
@@ -101,10 +101,10 @@ export function StocksPage() {
       </Typography.Title>
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <section className="stock-search-panel" aria-label="회사 이름으로 찾기">
-          {error && <Alert type="error" message="관심 종목 정보를 불러오지 못했습니다" description={error.message} showIcon />}
+          {error && <Alert type="error" message="관심 종목 정보를 불러오지 못했습니다" description={error.message} showIcon action={<Button onClick={reload}>관심 목록 다시 확인</Button>} />}
 
               <StockSearchInput onSelect={handleAddFromSearch} initialQuery={searchParams.get('q') ?? ''} />
-              {selected && !watchedStocks.includes(selected) && <Button onClick={() => void handleChange([...watchedStocks, selected])}>관심 종목에 담기</Button>}
+              {selected && !watchedStocks.includes(selected) && <Button disabled={!data || loading} onClick={() => void handleChange([...watchedStocks, selected])}>관심 종목에 담기</Button>}
               <details><summary>관심 회사 관리 · {watchedStocks.length}개</summary><p>회사 이름으로 검색하세요. 검색이 안 되면 영문 사명으로 찾아보세요.</p><KeywordInput value={watchedStocks} onChange={handleChange} showInput={false} labelForValue={labelForValue} /></details>
         </section>
       </motion.div>

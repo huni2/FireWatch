@@ -1,5 +1,10 @@
 /* 보유 기록 홈과 별도 입력 패널의 밀도·반응형 배치를 정의한다. */
 .portfolio-home { display: grid; gap: 24px; max-width: 1280px; margin-inline: auto; }
+.portfolio-home > * { min-width: 0; overflow-wrap: anywhere; }
+.portfolio-finding-actions > * { min-width: 0; max-width: 100%; }
+.portfolio-details .ant-card-head-title { white-space: normal; }
+.portfolio-home .ant-card-head-wrapper { flex-wrap: wrap; gap: 8px; }
+.portfolio-home .ant-card-head-title { white-space: normal; }
 .portfolio-home-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
 .portfolio-home-heading h2 { margin: 4px 0 6px; letter-spacing: -.04em; }.portfolio-home-heading p { margin: 0; color: var(--ant-color-text-secondary); }
 .portfolio-summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 24px; background: var(--ant-color-bg-container); border-radius: 20px; }
@@ -20,5 +25,9 @@
 .holding-field,.holding-advanced label { display: grid; gap: 10px; }.holding-advanced { display: grid; gap: 20px; padding-block: 12px; }
 .holding-selected { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 16px; background: var(--ant-color-fill-quaternary); border-radius: 14px; }.holding-selected > div { display: grid; gap: 6px; }.holding-selected small { color: var(--ant-color-text-secondary); }
 .holding-drawer .ant-drawer-footer { padding: 16px 24px; }
+.portfolio-finding-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; }
+.portfolio-news-link { display: inline-flex; align-items: center; min-height: 44px; }
+.portfolio-finding:focus,.portfolio-holdings:focus { outline: 2px solid var(--ant-color-primary); outline-offset: 4px; }
+.portfolio-details { scroll-margin-top: 140px; }
 @media (max-width: 899px) { .portfolio-home-grid { grid-template-columns: 1fr; gap: 18px; }.portfolio-allocation { order: 1; }.portfolio-home { gap: 18px; }.portfolio-summary { padding: 18px; flex-wrap: wrap; }.portfolio-summary > div:last-child { font-size: 13px; }.portfolio-finding { padding: 16px 18px; }.portfolio-finding strong { font-size: 16px; } }
 @media (max-width: 599px) { .portfolio-home-heading h2 { font-size: 24px; }.portfolio-home-heading p { font-size: 13px; }.portfolio-holdings,.portfolio-allocation { padding: 18px; }.portfolio-holding-row { grid-template-columns: 1fr; }.portfolio-holding-value { text-align: left; }.portfolio-holding-row > .ant-space { grid-column: 1; grid-row: 2; justify-self: end; }.portfolio-holding-value { grid-row: 3; }.portfolio-summary .ant-statistic-content { font-size: 28px; }.portfolio-summary > div:last-child small:first-of-type { display: none; }.portfolio-summary > div:last-child { gap: 4px; }.portfolio-summary { gap: 8px; } }

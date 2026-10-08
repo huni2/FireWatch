@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { investmentFocus, focusRecommendation, focusPortfolioContext, focusNews } from '../../../../shared/investment-focus'
 import type { Portfolio } from '../../../../shared/investing'
 import { useApi } from '../../lib/useApi'
+import { ApiRequestError } from '../../lib/api'
 import { fetchRecommendations } from '../../lib/investingApi'
 import { useSettings } from '../settings/hooks/useSettings'
 import { useStockNames } from '../stocks/hooks/useStockNames'
@@ -13,6 +14,7 @@ import './investment-focus.css'
 export function InvestmentFocus({ portfolio }: { portfolio: Portfolio | null }) {
   const settings = useSettings()
   const report = useApi(fetchRecommendations)
+  const noAnalysis = report.error instanceof ApiRequestError && report.error.status === 404
   const { names } = useStockNames()
   const rows = investmentFocus(settings.data?.watchedStocks ?? [], portfolio, names)
   const [page, setPage] = useState(0)
@@ -20,7 +22,8 @@ export function InvestmentFocus({ portfolio }: { portfolio: Portfolio | null }) 
   return <Card className="investment-focus" title="내 기업 점검" extra={<Link to="/stocks">관심 기업 관리</Link>}>
     <Typography.Paragraph type="secondary">관심 기업과 보유 주식의 뉴스·분석 근거를 확인하고, 내 투자 구성과 비교하세요.</Typography.Paragraph>
     {settings.error && <Alert type="warning" message="관심 기업 목록을 불러오지 못했습니다." action={<Button onClick={settings.reload}>다시 시도</Button>} />}
-    {report.error && <Alert type="warning" message="추천 분석을 불러오지 못했습니다. 가격과 뉴스는 계속 확인할 수 있어요." action={<Button onClick={report.reload}>다시 시도</Button>} />}
+    {report.error && !noAnalysis && <Alert type="warning" message="추천 분석을 불러오지 못했습니다. 가격과 뉴스는 계속 확인할 수 있어요." action={<Button onClick={report.reload}>다시 시도</Button>} />}
+    {noAnalysis && <p>아직 저장된 AI 분석이 없어요. 기업 가격과 뉴스부터 확인할 수 있어요.</p>}
     {settings.loading && !rows.length ? <Skeleton active paragraph={{ rows: 2 }} /> : !rows.length ? <Empty description={<span>지켜볼 회사부터 골라보세요. <Link to="/candidates">분야별 기업 탐색 →</Link></span>} /> : <div className="investment-focus-grid">
       {rows.slice(currentPage * 6, currentPage * 6 + 6).map(row => {
         const pick = report.error ? null : focusRecommendation(row.symbol, row.name, report.data)
@@ -28,7 +31,7 @@ export function InvestmentFocus({ portfolio }: { portfolio: Portfolio | null }) 
         return <section className="investment-focus-item" key={row.symbol}>
           <Space wrap><Typography.Text strong>{row.name}</Typography.Text>{row.held && <Tag>보유</Tag>}{row.watched && <Tag>관심</Tag>}</Space>
           <p>{focusPortfolioContext(row.symbol, portfolio)}</p>
-          {report.loading ? <Typography.Text type="secondary">추천 근거 확인 중</Typography.Text> : pick ? <div className="investment-focus-reason"><Tag color="orange">근거 있는 후보 · {report.data?.briefingDate}</Tag><p>{pick.reason}</p><small>확인할 위험 · {pick.risk}</small></div> : <Typography.Text type="secondary">{report.error ? '추천 분석 확인 필요' : '현재 근거가 확인된 추천은 없습니다.'}</Typography.Text>}
+          {report.loading ? <Typography.Text type="secondary">추천 근거 확인 중</Typography.Text> : pick ? <div className="investment-focus-reason"><Tag color="orange">근거 있는 후보 · {report.data?.briefingDate}</Tag><p>{pick.reason}</p><small>확인할 위험 · {pick.risk}</small></div> : <Typography.Text type="secondary">{report.error && !noAnalysis ? '추천 분석 확인 필요' : '현재 근거가 확인된 추천은 없습니다.'}</Typography.Text>}
           {!report.loading && !report.error && !!news.length && <div><small>분석 자료에 포함된 관련 기사 · {report.data?.briefingDate}</small><ul>{news.map(article => <li key={article.link}><a href={article.link} target="_blank" rel="noopener noreferrer">{articleText(article.title)}</a></li>)}</ul></div>}
           <Space wrap className="investment-focus-actions"><Link to={`/stocks?symbol=${encodeURIComponent(row.symbol)}`}>가격·차트·근거 →</Link>{row.name !== '회사명 확인 필요' && <Link to={`/news?q=${encodeURIComponent(row.name)}`}>저장된 뉴스 →</Link>}</Space>
         </section>

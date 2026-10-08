@@ -10,8 +10,8 @@ interface SlowLoadingHintProps {
 export function SlowLoadingHint({ loading, isSlow }: SlowLoadingHintProps) {
   if (!loading || !isSlow) return null
   return (
-    <Typography.Text type="secondary" style={{ display: 'block', fontSize: 13 }}>
-      서버를 깨우는 중이에요 — 최대 1분 정도 걸릴 수 있어요.
+    <Typography.Text role="status" type="secondary" style={{ display: 'block', fontSize: 13 }}>
+      조회가 평소보다 오래 걸리고 있어요. 기록을 유지한 채 확인 중이에요.
     </Typography.Text>
   )
 }
