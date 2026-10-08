@@ -70,6 +70,8 @@
 
 계정/설정 설명·공지 빈 상태 추가 개선과 실제 이용자/접근성 검증은 WEB-30에 남겼다. Android 설치는 APP-21에 남기며 웹 반영을 앱 설치 완료로 처리하지 않는다.
 
+최종 웹 코드671cd60·Cloudflare0c0aa9e9 운영 배포 완료. 긴 원문 fixture4폭/다크·3줄 미리보기·전체 위험 보기 성공, 실제 공개 GET6화면 가로 넘침/JS 오류0. [main CI37764107701](https://github.com/huni2/FireWatch/actions/runs/37764107701)의 서버/H2·PostgreSQL·복구·웹/모바일 전체 성공. WEB-29는 종료 기록으로 옮겼다.
+
 ### 재현 자료 경로
 
 캡처와 결과는 C:/Users/changhun/.codex/visualizations/2026/10/06/01a10ef2-3e85-7190-9a00-d19c7acd3f40/의 audit-after-*, whole-review-*, whole-ui-review.json, whole-ui-review-loaded.json에 저장했다. 개인 사용자 세션/기록은 포함하지 않았다.

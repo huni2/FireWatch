@@ -1,6 +1,6 @@
 # FireWatch — 현재 맥락
 
-최신화: 2026-10-08. 웹/모바일 메뉴 UI 코드 `3e1b581`·백엔드 코드 `9991091`·Android versionCode4 설정 `6cedd8e` 기준이다. 이전 설계·운영 이력은 [[log]]와 `Decisions/` 디렉터리를 확인한다.
+최신화: 2026-10-08. 웹 UI 코드 `671cd60`·모바일 메뉴 `3e1b581`·백엔드 코드 `9991091`·Android versionCode4 설정 `6cedd8e` 기준이다. 이전 설계·운영 이력은 [[log]]와 `Decisions/` 디렉터리를 확인한다.
 
 ## 제품 정체성과 범위
 
@@ -10,7 +10,7 @@
 
 기본 디자인은 라이트·오렌지, 웹 다크 모드는 선택형이다. 기능·UI/UX 정밀 점검과 웹 화면 개선을 공개 배포했다. 자산·기업 점검·로그인을 우선 배치하고 뉴스 검색/실패 상태와 미저장 편집 보존을 검증했다. 상세 결과와 화면은 docs/reviews/2026-10-08-release-ui-ux-review.md에 기록했다.
 
-전체 화면 후속 리뷰의 WEB-29는 날짜 카드 내부 배치·홈 저장 분석 발견·회사 차트/후보 행동·뉴스/브리핑/게임/도움말 밀도를 개선했다. 공개 배포 검증 중이며 docs/reviews/2026-10-08-whole-ui-design-review.md에 적용 범위와 미확인 항목을 기록했다. 실제 첫 이용/접근성과 보조 화면 추가 개선은 WEB-30, Android 설치는 APP-21로 구분한다.
+전체 화면 후속 리뷰의 WEB-29는 날짜 카드 내부 배치·홈 저장 분석 발견·회사 차트/후보 행동·뉴스/브리핑/게임/도움말 밀도를 개선했다. 공개36라이트/4다크·게임 거래 및 브리핑 후속4폭/다크·실제 공개 GET6화면 검증 성공. docs/reviews/2026-10-08-whole-ui-design-review.md에 적용 범위와 미확인 항목을 기록했다. 실제 첫 이용/접근성과 보조 화면 추가 개선은 WEB-30, Android 설치는 APP-21로 구분한다.
 
 게임의 자체 생성 마스코트는 장식이다. 순위/규칙/등록/복기/종료는 각44px 버튼이며 웹 hover/focus 설명·터치 직접 실행을 제공한다. 웹 계정/설정/도움말 직접 링크, 앱 주요4탭·분야별 보조 탭으로 정리했다. 웹 공개 번들 검증 완료, 앱 실기기는 APP-21에 남긴다. docs/product/game-scout-menu.md 참조.
 
@@ -22,9 +22,9 @@
 | Backend | Kotlin 2.3.21·Java21·Spring Boot4.1.0·WebFlux/WebClient+JPA/JDBC. Render `https://firewatch-backend-q3cv.onrender.com` |
 | DB | 운영 Supabase PostgreSQL, 개발 H2. 데이터 초기화 금지 |
 | Mobile | Expo SDK57·React Native0.86·NativeWind·Expo Router. 최신 APK 실기기 검증과 Play 출시 준비 중 |
-| CI | 3e1b581의 main run37709655483 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·클라이언트 검사 포함 |
+| CI | 671cd60의 main37764107701 전체 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·웹/모바일 검사 포함 |
 
-웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 마지막 공개 기능 배포는709d812c·메뉴 UI3e1b581이며 백엔드 수집/검색은9991091이다. Render에서 새 page 경계400/빈2페이지를 확인했다. 작업 브랜치는 codex/release-hardening이다. Android 최신 UI 설치본은6cedd8e/versionCode4·3c4b54ea 빌드 접수 상태이며 설치 검증은 별도다. 백엔드 변경 없는 작업은 불필요한 Render 재시작을 피한다.
+웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 마지막 공개 기능 배포는0c0aa9e9·웹 UI671cd60이며 백엔드 수집/검색은9991091이다. Render에서 새 page 경계400/빈2페이지를 확인했다. 작업 브랜치는 codex/release-hardening이다. Android 최신 UI 설치본은6cedd8e/versionCode4·3c4b54ea 빌드 접수 상태이며 설치 검증은 별도다. 백엔드 변경 없는 작업은 불필요한 Render 재시작을 피한다.
 
 ## 핵심 동작
 
