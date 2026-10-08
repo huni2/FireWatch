@@ -3,7 +3,7 @@ import { Linking, Modal, Pressable, ScrollView, Text, TextInput, View } from 're
 import Toast from 'react-native-toast-message'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { fetchSettings, updateSettings } from '@/lib/api'
-import { catalogVerifiedAt, companies, companyNews, companySector, findCompany, isRecommended, portfolioContext, qualifiedRecommendations, recommendationFor, searchCompanies, sectors, type Company, type DiscoveryBriefing } from '../../../../shared/discovery'
+import { catalogVerifiedAt, companyDefaultVerifiedAt, companies, companyNews, companySector, findCompany, isRecommended, portfolioContext, qualifiedRecommendations, recommendationFor, searchCompanies, sectors, type Company, type DiscoveryBriefing } from '../../../../shared/discovery'
 import type { Portfolio } from '../../../../shared/investing'
 
 interface Props { briefing?: DiscoveryBriefing | null; portfolio?: Portfolio | null; loading?: boolean; onOpenStock?: (symbol: string) => void; onOpenNews?: (query: string) => void; onOpenPortfolio?: () => void; onSearchStock?: (name: string) => void }
@@ -55,7 +55,7 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
     <Pressable accessibilityRole="button" onPress={() => onSearchStock?.(query)} className="min-h-11 justify-center"><Text className="text-brand">이 목록 외 기업 검색하기 →</Text></Pressable>
     <Modal visible={!!selected} animationType="slide" onRequestClose={() => setSelected(null)} presentationStyle="pageSheet">
       {selected && <SafeAreaView className="flex-1 bg-canvas"><View className="flex-row items-center justify-between border-b border-line bg-surface px-5 py-3"><Text className="flex-1 text-lg font-bold text-ink">{selected.name}</Text><Pressable accessibilityRole="button" accessibilityLabel="기업 상세 닫기" onPress={() => setSelected(null)} className="min-h-11 justify-center px-4"><Text className="text-brand">닫기</Text></Pressable></View><ScrollView contentContainerClassName="gap-5 p-5 pb-10">
-        <Text className="text-muted">{companySector(selected).name}</Text><Text className="text-ink">{selected.description}</Text><Pressable accessibilityRole="link" onPress={() => openLink(selected.source)}><Text className="text-brand">공식 사업 소개 ↗</Text></Pressable>
+        <Text className="text-muted">{companySector(selected).name}</Text><Text className="text-ink">{selected.description}</Text><Pressable accessibilityRole="link" onPress={() => openLink(selected.source)}><Text className="text-brand">공식 기업 자료 ↗</Text></Pressable><Text className="text-xs text-muted">기업 정보 확인 {selected.verifiedAt ?? companyDefaultVerifiedAt} · 가격 기준 시각과 달라요.</Text>
         <Text className="text-lg font-bold text-ink">개별 종목 추천 근거</Text>
         {isRecommended(selected, briefing) && detail ? <View className="gap-3"><Text className="text-xs text-brand">AI 해석 · 자료 기준 {briefing?.briefingDate}</Text><Text className="text-ink">{detail.reason}</Text><Text className="text-muted">확인할 위험 · {detail.risk}</Text>{!detail.sourceNewsLinks.length && <Text className="text-xs text-muted">직접 연결된 근거 기사 없이 제공된 시장 자료에 대한 AI 해석입니다.</Text>}</View> : <Text className="text-muted">현재 근거가 확인된 추천 후보가 아닙니다. 기업과 뉴스를 탐색할 수 있습니다.</Text>}
         <Text className="text-lg font-bold text-ink">내 포트폴리오와 비교</Text><Text className="text-ink">{portfolioContext(selected, portfolio)}</Text><Pressable accessibilityRole="button" onPress={() => { setSelected(null); onOpenPortfolio?.() }} className="min-h-11 justify-center"><Text className="text-brand">내 보유 자산 확인 →</Text></Pressable>

@@ -1,5 +1,213 @@
 [
   {
+    "symbol": "035720.KS",
+    "name": "카카오",
+    "aliases": [
+      "Kakao",
+      "Kakao Corp"
+    ],
+    "sectorId": "software",
+    "region": "KR",
+    "description": "메신저·콘텐츠와 플랫폼 서비스를 제공하는 기업",
+    "source": "https://www.kakaocorp.com/ir/stockInformation?lang=ko",
+    "verifiedAt": "2026-10-09",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "KRW"
+  },
+  {
+    "symbol": "000660.KS",
+    "name": "SK하이닉스",
+    "aliases": [
+      "SK hynix",
+      "하이닉스",
+      "에스케이하이닉스"
+    ],
+    "sectorId": "chips",
+    "region": "KR",
+    "description": "DRAM·NAND 등 메모리 반도체를 만드는 기업",
+    "source": "https://m.skhynix.com/ir/UI-FR-IR03/",
+    "verifiedAt": "2026-10-09",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "KRW"
+  },
+  {
+    "symbol": "000270.KS",
+    "name": "기아",
+    "aliases": [
+      "Kia",
+      "Kia Corporation",
+      "기아자동차"
+    ],
+    "sectorId": "mobility",
+    "region": "KR",
+    "description": "완성차와 전기차 등 이동 수단을 만드는 기업",
+    "source": "https://worldwide.kia.com/ko/company/investor-relations",
+    "verifiedAt": "2026-10-09",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "KRW"
+  },
+  {
+    "symbol": "012330.KS",
+    "name": "현대모비스",
+    "aliases": [
+      "Hyundai Mobis",
+      "모비스"
+    ],
+    "sectorId": "mobility",
+    "region": "KR",
+    "description": "자동차 부품과 전동화·차량 시스템을 만드는 기업",
+    "source": "https://www.mobis.com/en/index.do",
+    "verifiedAt": "2026-10-09",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "KRW"
+  },
+  {
+    "symbol": "AMD",
+    "name": "AMD",
+    "aliases": [
+      "에이엠디",
+      "Advanced Micro Devices"
+    ],
+    "sectorId": "chips",
+    "region": "US",
+    "description": "CPU·GPU와 데이터센터용 반도체를 설계하는 기업",
+    "source": "https://ir.amd.com/",
+    "verifiedAt": "2026-10-09",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD"
+  },
+  {
+    "symbol": "AVGO",
+    "name": "브로드컴",
+    "aliases": [
+      "Broadcom",
+      "Broadcom Inc"
+    ],
+    "sectorId": "chips",
+    "region": "US",
+    "description": "통신·데이터센터 반도체와 인프라 소프트웨어를 제공하는 기업",
+    "source": "https://investors.broadcom.com/",
+    "verifiedAt": "2026-10-09",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD"
+  },
+  {
+    "symbol": "GOOGL",
+    "name": "알파벳 Class A",
+    "aliases": [
+      "Alphabet Class A",
+      "알파벳",
+      "구글",
+      "Google"
+    ],
+    "sectorId": "software",
+    "region": "US",
+    "description": "Google 검색·광고·클라우드 등을 운영하는 기업의 Class A 주식",
+    "source": "https://abc.xyz/",
+    "verifiedAt": "2026-10-09",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD"
+  },
+  {
+    "symbol": "AMZN",
+    "name": "아마존",
+    "aliases": [
+      "Amazon",
+      "Amazon.com"
+    ],
+    "sectorId": "software",
+    "region": "US",
+    "description": "전자상거래와 AWS 클라우드 서비스를 제공하는 기업",
+    "source": "https://ir.aboutamazon.com/overview/default.aspx",
+    "verifiedAt": "2026-10-09",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD"
+  },
+  {
+    "symbol": "ADBE",
+    "name": "어도비",
+    "aliases": [
+      "Adobe",
+      "Adobe Inc"
+    ],
+    "sectorId": "software",
+    "region": "US",
+    "description": "콘텐츠 제작·문서·디지털 경험 소프트웨어를 제공하는 기업",
+    "source": "https://www.adobe.com/investor-relations.html",
+    "verifiedAt": "2026-10-09",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD"
+  },
+  {
+    "symbol": "GM",
+    "name": "제너럴모터스",
+    "aliases": [
+      "General Motors",
+      "제너럴 모터스"
+    ],
+    "sectorId": "mobility",
+    "region": "US",
+    "description": "완성차와 전기차를 개발·생산하는 기업",
+    "source": "https://investor.gm.com/",
+    "verifiedAt": "2026-10-09",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD"
+  },
+  {
+    "symbol": "BAC",
+    "name": "뱅크오브아메리카",
+    "aliases": [
+      "Bank of America",
+      "뱅크 오브 아메리카"
+    ],
+    "sectorId": "finance",
+    "region": "US",
+    "description": "은행·투자금융과 자산관리 서비스를 제공하는 금융 그룹",
+    "source": "https://investor.bankofamerica.com/",
+    "verifiedAt": "2026-10-09",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD"
+  },
+  {
+    "symbol": "PFE",
+    "name": "화이자",
+    "aliases": [
+      "Pfizer",
+      "Pfizer Inc"
+    ],
+    "sectorId": "health",
+    "region": "US",
+    "description": "의약품과 백신을 개발·생산하는 기업",
+    "source": "https://investors.pfizer.com/overview/default.aspx",
+    "verifiedAt": "2026-10-09",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD"
+  },
+  {
     "symbol": "005930.KS",
     "name": "삼성전자",
     "aliases": [
@@ -12,8 +220,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "KRW",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "KRW"
   },
   {
     "symbol": "NVDA",
@@ -29,8 +237,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "USD",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "USD"
   },
   {
     "symbol": "035420.KS",
@@ -46,8 +254,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "KRW",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "KRW"
   },
   {
     "symbol": "MSFT",
@@ -63,8 +271,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "USD",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "USD"
   },
   {
     "symbol": "005380.KS",
@@ -80,8 +288,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "KRW",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "KRW"
   },
   {
     "symbol": "TSLA",
@@ -97,8 +305,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "USD",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "USD"
   },
   {
     "symbol": "373220.KS",
@@ -113,8 +321,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "KRW",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "KRW"
   },
   {
     "symbol": "006400.KS",
@@ -129,8 +337,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "KRW",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "KRW"
   },
   {
     "symbol": "207940.KS",
@@ -145,8 +353,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "KRW",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "KRW"
   },
   {
     "symbol": "068270.KS",
@@ -161,8 +369,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "KRW",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "KRW"
   },
   {
     "symbol": "105560.KS",
@@ -178,8 +386,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "KRW",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "KRW"
   },
   {
     "symbol": "JPM",
@@ -196,8 +404,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "USD",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "USD"
   },
   {
     "symbol": "012450.KS",
@@ -212,8 +420,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "KRW",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "KRW"
   },
   {
     "symbol": "LMT",
@@ -229,8 +437,8 @@
     "assetClass": "STOCK",
     "underlyingIndex": "",
     "issuer": "",
-    "currency": "USD",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "USD"
   },
   {
     "symbol": "VOO",
@@ -247,8 +455,8 @@
     "underlyingIndex": "S&P 500",
     "issuer": "Vanguard",
     "assetClass": "ETF",
-    "currency": "USD",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "USD"
   },
   {
     "symbol": "IVV",
@@ -265,8 +473,8 @@
     "underlyingIndex": "S&P 500",
     "issuer": "BlackRock",
     "assetClass": "ETF",
-    "currency": "USD",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "USD"
   },
   {
     "symbol": "SPY",
@@ -283,8 +491,8 @@
     "underlyingIndex": "S&P 500",
     "issuer": "State Street",
     "assetClass": "ETF",
-    "currency": "USD",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "USD"
   },
   {
     "symbol": "379800.KS",
@@ -301,8 +509,8 @@
     "underlyingIndex": "S&P 500",
     "issuer": "삼성자산운용",
     "assetClass": "ETF",
-    "currency": "KRW",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "KRW"
   },
   {
     "symbol": "360750.KS",
@@ -318,7 +526,7 @@
     "underlyingIndex": "S&P 500",
     "issuer": "미래에셋자산운용",
     "assetClass": "ETF",
-    "currency": "KRW",
-    "verifiedAt": "2026-10-07"
+    "verifiedAt": "2026-10-07",
+    "currency": "KRW"
   }
 ]

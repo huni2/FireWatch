@@ -19,6 +19,12 @@
 
 ## 열린 과제 — 백엔드(BE)
 
+### BE-32. 공식 자료 기반 시작 기업 목록 확대
+**구현·로컬 검증 완료(2026-10-09)** — 기업14→26·ETF5 유지, 한국어/영문 별칭·분야·신규 확인일과 기존 날짜 보존. 중복/누락/출처/날짜/시세 혼입 차단·CI 생성 결과 대조. 서버 신규 검색·재시작 멱등성·최신 메타데이터/시험 시세 보존 확인.
+**검증** — 생성기3테스트, H2 카탈로그/3,000건 검색, web build/lint·mobile 타입/lint/Android export, 웹4폭 목록/분야/별칭/상세 확인일 검증 성공. 운영 쓰기0·EAS 빌드0.
+**남은 일** — Issue#5·PR 검토/CI와 머지 후 서버/웹 공개 확인. 전 시장 수입은 BE-22, 게임 확대는 BE-28.
+**근거** — docs/product/catalog-expansion/checklist.md.
+
 ### BE-17. 기존 소유자 기록의 선택형 이전 확인
 **구현 완료** — 클라이언트 고정 신원 시드 제거·서버 공개 legacy 신원 차단·운영자 인증 기반 1회 이전 경로 구현/배포. 기존 데이터는 보존한다.
 **남은 일** — 사용자가 기존 기록을 새 기기에 이전할 필요가 있는지 결정하고 필요할 때 실제 사용 브라우저에서 수행/확인한다. 자동 이전하지 않는다.
@@ -52,13 +58,6 @@
 **근거** — docs/deployment/operator-access.md, CollectionJobRunnerIntegrationTest, CollectionAlertAccessIntegrationTest. 기존 BE-23/25/27의 미확인 운영 항목을 이관했다.
 
 ## 열린 과제 — 웹(WEB)
-
-### WEB-36. 설정·공지 보조 화면의 상태와 입력 보존
-**구현·로컬 검증 완료(2026-10-09)** — 조회 실패 기본값 저장 차단·재시도, 알림 구독 후 초안 보존, 저장 실패 입력 유지·응답 즉시 반영, 추천 키워드 키보드 버튼, 설정 제목·KST 안내·연결 링크 정리. 공지 로딩/실패/빈 상태 분리와 재시도/의견 보내기.
-**검증** — web build/lint 성공(기존 푸시 훅 경고1개), 1366/390px 브라우저 가상 API에서 실패/재시도/키보드/초안 보존·넘침/JS 오류0 확인. 운영 시험 저장0·EAS 빌드0.
-**GitHub 기록** — [Issue #3](https://github.com/huni2/FireWatch/issues/3)와 [PR #4](https://github.com/huni2/FireWatch/pull/4). 사용자 결정에 따라 현재 과제부터 Issue/PR로 기록한다.
-**남은 일** — PR 검토·CI와 웹 공개 배포 검증. 실제 이용자·스크린리더는 WEB-30. 공개 확인 전 Issue 자동 종료하지 않는다.
-**근거** — docs/product/settings-followup/checklist.md.
 
 ### WEB-19. 실제 로그인 세션의 운영 권한·로그아웃 최종 확인
 **구현·배포 완료** — GIS 공식 버튼·세션·연결 기기 관리·운영자 메뉴/서버 인증. 사용자가 웹 실제 Google 로그인 성공 확인. 일반/운영/만료/충돌/SDK/로그아웃 실패 fixture 검증 완료.
@@ -115,6 +114,7 @@
 
 | 과제 | 제목 | 결과 | 근거 |
 |---|---|---|---|
+| WEB-36 | 설정 입력 보존·공지 상태 | Issue#3·PR#4, CI37804420353 전체 성공·main fccfd85 머지·Cloudflare06781638 배포. 공개1366/390px 가상 API 회귀 성공·운영 쓰기0·EAS0. 실제 이용자/스크린리더는 WEB-30 | docs/product/settings-followup/checklist.md |
 | APP-29 | APK 별도 수동 실행 | CI EAS 호출 없음 확인, build:apk 명령·웹/서버 배포와 분리 기준 기록. 일반 배포는 APK 요청을 포함하지 않음. 이번 작업 EAS 빌드0회 | docs/product/android-build-separation/plan.md |
 | WEB-35 | 첫 등록·발견·근거 확인과 키보드 동선 | b9b9a3c·Cloudflare fb6c6a7e, CI37796805618 전체 성공. 공개 첫 흐름2폭/키보드/초점/장애·별도200% 텍스트8화면·첫 안내2폭·실제 시장 GET6화면 성공. 운영 시험 기록0, 실제 관찰/스크린리더는 WEB-30 | docs/reviews/2026-10-09-first-use-accessibility.md |
 | WEB-34 | 탐색 바·드롭다운과 필터 정렬 | ab795ae·Cloudflare cd53c728 공개 배포. Select 외곽/내부44px, PC 탭 기준선·팝업 폭/간격, 모바일 필터 줄바꿈, 차트 선택 메뉴·게임 label 범위 수정. 공개4폭/다크 탐색·등록5조건·게임5노트북과 모바일·실제 GET6화면 성공. CI37781276263 전체 성공 | docs/product/control-alignment/plan.md |
