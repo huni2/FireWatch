@@ -26,9 +26,9 @@ body {
 .context-navigation a[aria-current=page] { color: var(--ant-color-primary); border-color: var(--ant-color-primary); font-weight: 700; }
 .app-content .ant-btn { height: auto; min-height: 44px; white-space: normal; }
 .ant-drawer .ant-btn { height: auto; min-height: 44px; white-space: normal; }
-.app-content .ant-input-number-input { min-height: 40px; }
-.app-content .ant-input-affix-wrapper,.app-content .ant-select-single .ant-select-selector { min-height: 44px; align-items: center; }
-.app-content .ant-segmented-item-label { min-height: 40px; display: flex; align-items: center; justify-content: center; }
+/* 외곽·입력·팝업 기준 높이는 theme의 controlHeight 토큰으로 함께 결정한다. */
+.market-chart-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+.market-chart-controls .ant-select { width: 180px; max-width: 100%; }
 .app-content > *,.news-results { min-width: 0; }
 .portfolio-editor > summary,.disclosure-panel > summary { padding: 16px; min-height: 52px; cursor: pointer; border: 1px solid var(--ant-color-border); border-radius: 12px; background: var(--ant-color-bg-container); font-weight: 700; }
 .portfolio-editor[open] > summary,.disclosure-panel[open] > summary { margin-bottom: 12px; }

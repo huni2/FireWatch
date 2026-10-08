@@ -13,6 +13,9 @@ const CARD_SHADOW_LIGHT = '0 0 0.5px rgba(0, 0, 0, 0.14), 0 1px 1px rgba(0, 0, 0
 const CARD_SHADOW_DARK = '0 0 0.5px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.5)'
 
 const sharedTokens = {
+  controlHeight: 44,
+  controlHeightSM: 44,
+  controlHeightLG: 48,
   fontFamily: FONT_FAMILY,
   colorPrimary: BRAND_GREEN,
   borderRadius: 12,

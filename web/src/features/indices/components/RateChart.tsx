@@ -52,28 +52,25 @@ export function RateChart({ history, loading, period, onPeriodChange, initialMet
     <Card
       className="hoverable-card"
       title="시계열 차트"
-      extra={
-        <div style={{ display: 'flex', gap: 12 }}>
-          <Select
-            size="small"
-            value={metric}
-            onChange={setMetric}
-            options={METRICS.map((m) => ({ value: m.key, label: m.label }))}
-            style={{ width: 150 }}
-          />
-          <Segmented
-            size="small"
-            value={period}
-            onChange={(value) => onPeriodChange(value as 7 | 30)}
-            options={[
-              { label: '7일', value: 7 },
-              { label: '30일', value: 30 },
-            ]}
-          />
-        </div>
-      }
       loading={loading}
     >
+      <div className="market-chart-controls">
+        <Select
+          aria-label="차트 지표"
+          value={metric}
+          onChange={setMetric}
+          options={METRICS.map((m) => ({ value: m.key, label: m.label }))}
+        />
+        <Segmented
+          aria-label="차트 기간"
+          value={period}
+          onChange={(value) => onPeriodChange(value as 7 | 30)}
+          options={[
+            { label: '7일', value: 7 },
+            { label: '30일', value: 30 },
+          ]}
+        />
+      </div>
       {hasData ? (
         <ResponsiveContainer width="100%" height={280}>
           <AreaChart data={chartData}>

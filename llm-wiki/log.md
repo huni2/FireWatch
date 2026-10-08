@@ -10,6 +10,9 @@
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
 ## 2026-10-08
+
+- **[WEB] 탐색 바·드롭다운 높이와 공통 필터 정렬 수정**: WEB-34. Select 외곽32/내부44와 보기 탭12px 차이를 실측 후 AntD 높이 토큰으로 통일했다. 기업·상품 반응형 필터, 시장 차트 제목과 선택 메뉴 분리, 게임 주문 label의 Segmented 침범을 수정했다.4폭/다크·뉴스/시장/종목·등록5조건·게임 주문 및 고정 rail 로컬 검증과 build/lint 성공. 공개 배포 확인은 진행 중이다.
+- **[BE] 선택 매입가 공개 서버 계약 반영 확인**: 공개 /api/portfolio/capabilities200, optionalAverageCost=true, allocationBasis=MARKET_VALUE, analysisVersion=portfolio-rules-v3 확인. 사용자 DB를 변경하는 테스트는 하지 않았다. 앞선 WEB-33의 배포 선행 조건을 충족했다.
 - **[PROJ] 첫 등록 개편 검증·Render 반영 대기**: b0a4a7a의 CI37774653610 서버/PostgreSQL/복구·웹/앱 전체 성공. 브라우저5조건/null·409 입력 보존/수정/현금/중복·부분 비중 성공. 운영 capabilities는404여서 Render 확인 요청·Cloudflare 기존 버전 유지. APP-28 구현 종료/실기기는 APP-21, BE-31/WEB-33은 공개 확인만 남는다.
 - **[BE] 선택 매입가·평가 비중 BE-31**: 매입가 null 저장/조회·원금/손익 미계산·시세 비중/누락 범위·기존 숫자 입력 호환. JSON 기록과 이력/버전 충돌 보존. 서버 전체 test 및 Portfolio 회귀 성공. 공개 capabilities는 DB 없이 배포 계약을 확인한다.
 - **[WEB] 등록 분리·홈 점검 WEB-33**: 오른쪽 단일 자산 패널과 별도 현금·계획 편집. 저장 응답을 홈에 즉시 적용하고 오래된 조회가 덮어쓰지 않게 세대 검사.5화면 조건 등록/수정/null/409 보존/중복/현금·부분 비중 fixture 성공.
