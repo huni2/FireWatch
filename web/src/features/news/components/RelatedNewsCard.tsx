@@ -3,6 +3,7 @@ import { ExportOutlined } from '@ant-design/icons'
 import { motion } from 'framer-motion'
 import type { NewsArticle } from '../../../lib/api'
 import { SECTION_CARD_PROPS } from '../../../lib/theme'
+import { articleText } from '../../../../../shared/article-text'
 
 interface RelatedNewsCardProps {
   news: NewsArticle[]
@@ -52,7 +53,7 @@ export function RelatedNewsCard({
                 style={{ display: 'block', color: 'inherit' }}
               >
                 <Typography.Text strong style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  {article.title}
+                  {articleText(article.title)}
                   {/* 새 탭으로 열린다는 걸 "링크다"보다 명확하게 — LinkOutlined는 그냥 사슬 아이콘이라
                       새 탭 안내로 안 읽힌다는 지적(2026-10-05) */}
                   <ExportOutlined style={{ fontSize: 12, color: 'var(--ant-color-text-tertiary)' }} />
@@ -64,7 +65,7 @@ export function RelatedNewsCard({
                     style={{ margin: '6px 0 0', fontSize: 14 }}
                     ellipsis={{ rows: 2 }}
                   >
-                    {article.description}
+                    {articleText(article.description)}
                   </Typography.Paragraph>
                 )}
               </a>

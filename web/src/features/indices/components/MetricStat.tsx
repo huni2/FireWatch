@@ -10,11 +10,12 @@ interface MetricStatProps {
   precision?: number
   suffix?: string
   index?: number
+  note?: string
 }
 
 // Design Ref: llm-wiki/design.md §3 — 수치 변경 틱 애니메이션(Framer Motion), 카드 hover.
 // null은 "—"로 표시한다 — 금융 API 부분 실패 시 특정 필드만 비어있을 수 있음(ADR 0006).
-export function MetricStat({ title, value, previousValue, precision = 2, suffix, index = 0 }: MetricStatProps) {
+export function MetricStat({ title, value, previousValue, precision = 2, suffix, index = 0, note }: MetricStatProps) {
   const diff = value != null && previousValue != null ? value - previousValue : null
   const trend: 'up' | 'down' | null = diff == null || diff === 0 ? null : diff > 0 ? 'up' : 'down'
   const trendColor = trend === 'up' ? TREND_UP_COLOR : trend === 'down' ? TREND_DOWN_COLOR : undefined
@@ -74,7 +75,7 @@ export function MetricStat({ title, value, previousValue, precision = 2, suffix,
                   alignItems: 'center',
                   gap: 4,
                   fontSize: 26,
-                  fontWeight: 300, // ECOS 참고(2026-10-05) — 핵심 수치는 가는 굵기로 크게, 색은 trend에만
+                  fontWeight: 600,
                   letterSpacing: -0.3,
                   fontVariantNumeric: 'tabular-nums',
                   color: trendColor,
@@ -88,6 +89,7 @@ export function MetricStat({ title, value, previousValue, precision = 2, suffix,
             )
           }}
         />
+        {note && <small className="metric-record-note">{note}</small>}
       </Card>
     </motion.div>
   )

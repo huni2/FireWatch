@@ -37,3 +37,8 @@
 @media(max-width:800px) { .help-intro { align-items: start; flex-direction: column; gap: 16px; }.help-answer-layout { grid-template-columns: 1fr; gap: 16px; }.help-categories { display: flex; flex-wrap: wrap; position: static; gap: 8px; }.help-categories button { border-color: var(--ant-color-border); }.help-search-row { flex-direction: column; align-items: stretch; gap: 12px; }.help-search-row .ant-input-affix-wrapper { max-width: none; margin-left: 0; } }
 @media(max-width:560px) { .help-page { gap: 22px; }.help-shortcuts { grid-template-columns: 1fr; gap: 10px; }.help-shortcut { padding: 16px 18px; gap: 6px; }.help-shortcut-number { display: none; }.help-shortcut h2 { font-size: 17px; }.help-shortcut-action { font-size: 14px; }.help-faq.ant-collapse .ant-collapse-header { padding: 16px; }.help-boundary { padding: 18px; } }
 @media(prefers-reduced-motion:reduce) { .help-shortcut { transition: none; } }
+.help-page { gap: 18px; }
+.help-intro h1 { margin: 0 0 6px; font-size: 28px; }
+.help-quick-links { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.help-quick-links a { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; }
+@media(max-width:560px) { .help-intro { gap: 10px; }.help-intro p { font-size: 14px; }.help-search-row { gap: 8px; }.help-categories { gap: 4px; }.help-categories button { padding: 8px 10px; min-height: 44px; font-size: 13px; }.help-page { gap: 14px; } }

@@ -236,3 +236,50 @@ button:focus-visible,a:focus-visible { outline: 2px solid var(--ant-color-primar
 @media(max-width:600px) { .news-page,.news-results { gap: 16px; }.news-layout { gap: 16px; }.news-page > .compact-intro .page-eyebrow { display: none; } }
 .app-content a { color: var(--ant-color-primary); }
 .app-content a:not(.news-link):hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Release review: keep the reading and decision surface compact. */
+.metric-record-note { display: block; margin-top: 12px; color: var(--ant-color-text-secondary); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.metric-with-status { display: flex; flex-direction: column; }
+.portfolio-intro.page-intro { padding: 20px 24px; }
+.portfolio-heading { gap: 12px; }
+.portfolio-heading .page-eyebrow { margin-bottom: 4px; }
+.portfolio-heading h2 { margin-bottom: 4px; }
+.portfolio-overview { margin-top: 16px; padding-top: 16px; gap: 16px; }
+.record-status { margin-top: 12px; padding-top: 10px; gap: 6px; }
+.record-status summary { min-height: 32px; padding-block: 4px; }
+.record-status > strong { line-height: 1.6; }
+.portfolio-key-finding { display: flex; gap: 10px 16px; align-items: center; flex-wrap: wrap; padding: 12px 16px; border-left: 3px solid var(--ant-color-primary); background: var(--ant-color-bg-container); }
+.portfolio-key-finding span { flex: 1; min-width: 180px; line-height: 1.6; }
+.portfolio-key-finding a { min-height: 44px; display: inline-flex; align-items: center; }
+.stock-search-panel { display: flex; align-items: start; gap: 8px 12px; flex-wrap: wrap; }
+.stock-search-panel > .ant-select { flex: 1; min-width: 180px; }
+.stock-search-panel > details { flex-basis: 100%; color: var(--ant-color-text-secondary); }
+.stock-search-panel summary { min-height: 32px; padding-block: 6px; cursor: pointer; }
+.company-price-chart .ant-card-body { padding: 20px; }
+.company-quote > .ant-typography:last-child { font-size: 13px; margin-top: 4px; }
+.news-filter-panel { padding: 16px; }
+.news-controls { gap: 8px; }
+.news-search-line { gap: 6px; }
+.news-search-line > .ant-btn:last-child { padding-inline: 10px; }
+.news-periods .ant-btn { background: transparent; color: var(--ant-color-text-secondary); border-color: var(--ant-color-border-secondary); padding-inline: 10px; }
+.news-periods .ant-btn[aria-pressed=true] { color: var(--ant-color-primary); border-color: var(--ant-color-primary); }
+.news-controls details { padding: 6px 10px; }
+.news-keywords { margin-top: 8px; }
+.news-keywords summary { padding-block: 4px; min-height: 32px; }
+.news-results .ant-card-body { padding: 4px 20px; }
+.news-results .news-link { padding-block: 14px; }
+.briefing-highlights small { display: block; color: var(--ant-color-text-secondary); margin-bottom: 12px; }
+.briefing-title small { display: block; font-size: 14px; font-weight: 500; line-height: 1.6; color: var(--ant-color-text-secondary); letter-spacing: 0; }
+.briefing-highlights ul { margin: 0; padding-left: 22px; display: grid; gap: 12px; }
+.briefing-highlights li { line-height: 1.7; }
+.briefing-highlights li > p { margin: 0; }
+.briefing-full-text { font-size: 15px; line-height: 1.8; }
+.context-navigation a { color: var(--ant-color-text-secondary); background: transparent; border-color: transparent; border-radius: 0; border-bottom: 2px solid transparent; }
+.context-navigation a[aria-current=page] { color: var(--ant-color-primary); border-color: transparent; border-bottom-color: var(--ant-color-primary); }
+@media(max-width:599px) {
+ .portfolio-intro.page-intro { padding: 16px 18px; }.portfolio-heading { gap: 10px; }.portfolio-heading h2 { font-size: 22px; }.portfolio-heading p { font-size: 13px; }
+ .portfolio-overview { margin-top: 12px; padding-top: 12px; gap: 10px; }.portfolio-overview-link { gap: 4px; }.record-status { margin-top: 10px; padding-top: 8px; }.record-status summary { min-height: 32px; padding-block: 4px; }
+ .portfolio-key-finding { gap: 6px; padding: 10px 14px; }.portfolio-key-finding span { flex-basis: 100%; }.portfolio-key-finding a { min-height: 32px; }
+ .news-search-line { display: grid; grid-template-columns: minmax(0,1fr) auto auto; }.news-search-line .ant-input-affix-wrapper { grid-column: auto; min-width: 0; }.news-search-line .ant-btn { padding-inline: 10px; font-size: 13px; }
+ .news-filter-panel { padding: 12px; }.news-controls details summary { min-height: 28px; }.news-results .ant-card-body { padding: 0 14px; }.company-price-chart .ant-card-body { padding: 16px; }
+}

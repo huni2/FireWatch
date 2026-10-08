@@ -61,9 +61,9 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
   )
 
   return (
-    <div>
-      <Typography.Title level={3} style={{ marginTop: 0 }}>{companyName}</Typography.Title>
-      {price != null && !error && <div style={{ marginBottom: 20 }}>
+    <div className="company-chart-content">
+      <Typography.Title level={3} style={{ marginTop: 0, marginBottom: 8 }}>{companyName}</Typography.Title>
+      {price != null && !error && <div className="company-quote" style={{ marginBottom: 12 }}>
         <Typography.Text style={{ fontSize: 28, fontWeight: 700 }}>{formatStockPrice(price, currency)}</Typography.Text>
         <Typography.Text type="secondary" style={{ display: 'block' }}>{currentData?.quotePrice != null ? '최근 제공 시세' : '마지막 기록 가격'}{priceAt ? ` · ${new Date(priceAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} (한국 시간)` : ''}</Typography.Text>
       </div>}

@@ -31,7 +31,8 @@ export function IndicesPage() {
     <div className="market-layout"><div className="market-metric-grid">{metrics.filter(m => m.group === group).map((m, i) => {
       const record = available(m.key), value = record?.[m.key] ?? null
       const previous = record && sorted.find(b => b.briefingDate < record.briefingDate && b[m.key] != null)
-      return <div key={m.key} className="metric-with-status">{value == null && !history.loading ? <Card size="small" title={m.label}><strong>미수집</strong><p>최근 30일 조회 범위에 유효한 기록이 없습니다.</p></Card> : <MetricStat index={i} title={m.label} value={value} previousValue={previous?.[m.key]} precision={m.key.includes('Yield') ? 3 : 2} />}<small>{record ? `${record.briefingDate} 기준 · ${record.briefingDate === latest.data?.briefingDate ? '최신 기록' : '과거 기록'}` : history.loading ? '기록 확인 중' : '값을 확인할 수 없습니다.'}</small></div>
+      const note = record ? `${record.briefingDate} 기준 · ${record.briefingDate === latest.data?.briefingDate ? '최신 기록' : '과거 기록'}` : history.loading ? '기록 확인 중' : '값을 확인할 수 없습니다.'
+      return <div key={m.key} className="metric-with-status">{value == null && !history.loading ? <Card size="small" title={m.label}><strong>미수집</strong><p>최근 30일 조회 범위에 유효한 기록이 없습니다.</p><small className="metric-record-note">{note}</small></Card> : <MetricStat index={i} title={m.label} value={value} previousValue={previous?.[m.key]} precision={m.key.includes('Yield') ? 3 : 2} note={note} />}</div>
     })}</div><div className="market-chart"><RateChart key={group} initialMetric={group === '주가지수' ? 'kospi' : group === '환율' ? 'usdKrw' : 'goldPrice'} history={(history.data ?? []).filter(b => b.briefingDate >= cutoff)} loading={history.loading} period={period} onPeriodChange={setPeriod} /><p className="catalog-note">차트는 저장된 날짜의 유효 값입니다. 수집이 없는 날짜는 기록이 비어 있습니다.</p></div></div>
   </div>
 }

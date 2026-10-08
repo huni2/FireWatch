@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { App, Card, Skeleton, Space, Tag, Typography } from 'antd'
+import { App, Button, Card, Skeleton, Space, Tag } from 'antd'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { searchStocks, type Briefing } from '../../../lib/api'
@@ -10,8 +10,6 @@ interface BriefingSummaryCardProps {
   briefing: Briefing | null
   loading: boolean
 }
-
-const COLLAPSED_HEIGHT = 160
 
 // Design Ref: §5.4 Dashboard 체크리스트 — 증시 요약 + 추천 종목 + FALLBACK 배지 + 로딩 스켈레톤
 export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardProps) {
@@ -46,6 +44,10 @@ export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardPr
     return null
   }
 
+  const paragraphs = briefing.marketSummary.split(/\n+/).map(line => line.trim()).filter(Boolean)
+  const excerpts = paragraphs.filter(line => !/^(안녕|오늘도|\[|#|[-=*]{3})/.test(line))
+  const preview = (excerpts.length ? excerpts : paragraphs).slice(0, 3)
+
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
       <Card
@@ -55,32 +57,18 @@ export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardPr
         style={{ background: 'transparent' }}
         styles={{
           header: { borderBottomWidth: 2 },
-          title: { fontSize: 24, fontWeight: 800, letterSpacing: -0.4 },
+          title: { fontSize: 24, fontWeight: 800, letterSpacing: -0.4, whiteSpace: 'normal' },
         }}
-        title={`증시 요약 · 자료 기준 ${briefing.briefingDate}`}
+        title={<div className="briefing-title"><strong>증시 요약</strong><small>자료 기준 {briefing.briefingDate}</small></div>}
         extra={
           briefing.dataSourceStatus === 'FALLBACK' ? (
             <Tag color="processing">대체 데이터(FALLBACK)</Tag>
           ) : null
         }
       >
-        <div style={{ position: 'relative', maxHeight: expanded ? undefined : COLLAPSED_HEIGHT, overflow: 'hidden' }}>
-          <div style={{ fontSize: 15, lineHeight: 1.7 }}>{renderMarkdownLite(briefing.marketSummary)}</div>
-          {!expanded && (
-            <div
-              style={{
-                position: 'absolute',
-                insetInline: 0,
-                bottom: 0,
-                height: 48,
-                background: 'linear-gradient(transparent, var(--ant-color-bg-layout))',
-              }}
-            />
-          )}
-        </div>
-        <Typography.Link onClick={() => setExpanded((v) => !v)} style={{ display: 'block', marginBlock: 8 }}>
-          {expanded ? '접기' : '더보기'}
-        </Typography.Link>
+        {!expanded && <div className="briefing-highlights"><small>저장된 원문에서 발췌 · 전체 내용과 위험 안내를 함께 확인하세요.</small><ul>{preview.map((line, index) => <li key={index}>{renderMarkdownLite(line)}</li>)}</ul></div>}
+        {expanded && <div className="briefing-full-text">{renderMarkdownLite(briefing.marketSummary)}</div>}
+        <Button type="text" aria-expanded={expanded} onClick={() => setExpanded(v => !v)}>{expanded ? '접기' : '전체 분석 읽기'}</Button>
         {qualifiedRecommendations(briefing).length > 0 && (
           <Space wrap size={6} style={{ marginTop: 8 }}>
             {qualifiedRecommendations(briefing).map(({ stockName: stock }) => (

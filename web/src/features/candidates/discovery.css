@@ -37,3 +37,13 @@
 .recommendation-context { padding: 14px 16px; margin-bottom: 16px; border-radius: 12px; background: var(--ant-color-fill-quaternary); border: 1px solid var(--ant-color-border-secondary); line-height: 1.7; }
 .recommendation-context strong { font-size: 13px; color: var(--ant-color-text-secondary); }.recommendation-context p { margin: 6px 0; }.recommendation-context a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ant-color-primary); font-weight: 600; }
 .discovery-intro { background: transparent; }.company-card .ant-card-body > p { max-width: 75ch; }
+.discovery-data-status { padding: 8px 12px; font-size: 13px; }
+.discovery-data-status > div { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.discovery-data-status summary { cursor: pointer; min-height: 28px; padding: 4px 0; }
+.candidate-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; flex-wrap: wrap; }
+.candidate-heading h4 { margin: 12px 0; }
+.company-card .ant-card-body { padding: 18px; gap: 8px; }
+.company-card .recommendation-context { padding: 10px 12px; margin-bottom: 4px; }
+.company-card .recommendation-context p,.company-card .recommendation-risk p { margin-bottom: 0; }
+.company-card .candidate-reason { margin: 0 0 4px; line-height: 1.7; }
+@media(max-width:599px) { .discovery-search { gap: 8px; }.discovery-page { gap: 12px; }.discovery-data-status { gap: 6px; }.company-card .ant-card-body { padding: 16px; }.candidate-heading h4 { margin: 6px 0; }.candidate-heading .ant-btn { font-size: 13px; } }

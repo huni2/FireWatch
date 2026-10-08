@@ -1,3 +1,4 @@
+import { articleText } from '../../../../shared/article-text'
 import { Alert, Button, Card, Empty, Skeleton, Space, Tag, Typography } from 'antd'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -28,7 +29,7 @@ export function InvestmentFocus({ portfolio }: { portfolio: Portfolio | null }) 
           <Space wrap><Typography.Text strong>{row.name}</Typography.Text>{row.held && <Tag>보유</Tag>}{row.watched && <Tag>관심</Tag>}</Space>
           <p>{focusPortfolioContext(row.symbol, portfolio)}</p>
           {report.loading ? <Typography.Text type="secondary">추천 근거 확인 중</Typography.Text> : pick ? <div className="investment-focus-reason"><Tag color="orange">근거 있는 후보 · {report.data?.briefingDate}</Tag><p>{pick.reason}</p><small>확인할 위험 · {pick.risk}</small></div> : <Typography.Text type="secondary">{report.error ? '추천 분석 확인 필요' : '현재 근거가 확인된 추천은 없습니다.'}</Typography.Text>}
-          {!report.loading && !report.error && !!news.length && <div><small>분석 자료에 포함된 관련 기사 · {report.data?.briefingDate}</small><ul>{news.map(article => <li key={article.link}><a href={article.link} target="_blank" rel="noopener noreferrer">{article.title}</a></li>)}</ul></div>}
+          {!report.loading && !report.error && !!news.length && <div><small>분석 자료에 포함된 관련 기사 · {report.data?.briefingDate}</small><ul>{news.map(article => <li key={article.link}><a href={article.link} target="_blank" rel="noopener noreferrer">{articleText(article.title)}</a></li>)}</ul></div>}
           <Space wrap className="investment-focus-actions"><Link to={`/stocks?symbol=${encodeURIComponent(row.symbol)}`}>가격·차트·근거 →</Link>{row.name !== '회사명 확인 필요' && <Link to={`/news?q=${encodeURIComponent(row.name)}`}>저장된 뉴스 →</Link>}</Space>
         </section>
       })}

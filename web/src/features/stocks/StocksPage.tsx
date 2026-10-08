@@ -95,20 +95,18 @@ export function StocksPage() {
   }
 
   return (
-    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+    <Space className="stock-page" direction="vertical" size={16} style={{ width: '100%' }}>
       <Typography.Title level={4} style={{ margin: 0 }}>
         회사 검색·시세
       </Typography.Title>
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-        <Card {...SECTION_CARD_PROPS} title="회사 이름으로 찾기" extra={selected && !watchedStocks.includes(selected) ? <Button onClick={() => void handleChange([...watchedStocks, selected])}>관심 종목에 담기</Button> : undefined}>
+        <section className="stock-search-panel" aria-label="회사 이름으로 찾기">
           {error && <Alert type="error" message="관심 종목 정보를 불러오지 못했습니다" description={error.message} showIcon />}
 
               <StockSearchInput onSelect={handleAddFromSearch} initialQuery={searchParams.get('q') ?? ''} />
-              <Typography.Text type="secondary" style={{ display: 'block', margin: '8px 0' }}>
-                국내 대형주는 한글명(예: 삼성전자)으로 찾을 수 있고, 그 외는 영문 사명(예: Tesla)으로 검색하세요.
-              </Typography.Text>
-              <KeywordInput value={watchedStocks} onChange={handleChange} showInput={false} labelForValue={labelForValue} />
-        </Card>
+              {selected && !watchedStocks.includes(selected) && <Button onClick={() => void handleChange([...watchedStocks, selected])}>관심 종목에 담기</Button>}
+              <details><summary>관심 회사 관리 · {watchedStocks.length}개</summary><p>회사 이름으로 검색하세요. 검색이 안 되면 영문 사명으로 찾아보세요.</p><KeywordInput value={watchedStocks} onChange={handleChange} showInput={false} labelForValue={labelForValue} /></details>
+        </section>
       </motion.div>
 
       {watchedStocks.length === 0 && !selected ? (
@@ -119,13 +117,13 @@ export function StocksPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.1 }}
         >
-          <Card {...SECTION_CARD_PROPS} title="차트">
-            <Segmented
+          <Card className="company-price-chart" {...SECTION_CARD_PROPS}>
+            {new Set([...watchedStocks, ...(selected ? [selected] : [])]).size > 1 && <Segmented
               value={selected ?? undefined}
               onChange={(value) => setSelected(value as string)}
               options={[...new Set([...watchedStocks, ...(selected ? [selected] : [])])].map(symbol => ({ value: symbol, label: labelForValue(symbol) }))}
               style={{ marginBottom: 16, maxWidth: '100%', overflowX: 'auto' }}
-            />
+            />}
             {selected && <StockChart key={selected} symbol={selected} name={labelForValue(selected)} onNameFound={rememberName} />}
           </Card>
         </motion.div>
