@@ -7,3 +7,7 @@
 로컬 서버 전체 test 성공, 최종 Portfolio15검사 성공. 웹·앱 build/타입/lint와 Android export 성공. 웹 기존 설정 경고2개는 유지한다. 브라우저5조건(1366/1920/390/360 라이트·1366 다크)에서 null 매입가·409 실패 입력 보존·저장 즉시 반영·수정·현금 계획·중복 거절·부분 계산 범위 검증 성공. 시험 저장은 fixture에서만 수행한다.
 
 공개 GET /api/portfolio/capabilities로 신원/DB 조회 없이 nullable 계약 배포를 확인한다. 서버 확인 후 웹을 배포해 신구 계약 불일치를 피한다. 기존 APK의 null 입력 표시는 지원하지 않으므로 새 앱 빌드/기기 확인이 필요하다.
+
+검증 캡처는 C:/Users/changhun/.codex/visualizations/2026/10/06/01a10ef2-3e85-7190-9a00-d19c7acd3f40/portfolio-registration-* 및 portfolio-input-*다. 가상 시험 기록이며 실제 보유 자료가 아니다. 소수 비중은 한 자리로 표시하고 주 버튼/비중 막대는 브랜드 오렌지를 따른다.
+
+CI37774653610 전체 성공 확인. 운영 capabilities의 마지막 GET은404여서 Render 반영 대기다. 사용자에게 b0a4a7a 배포 상태 확인을 요청했다. Cloudflare 운영은 f4bb3275/6ada301을 유지해 nullable 등록을 구 서버에 보내지 않는다. BE-31/WEB-33은 공개 검증만 열린 상태로 남기고 APP-28 구현은 종료·실기기는 APP-21로 이관한다.

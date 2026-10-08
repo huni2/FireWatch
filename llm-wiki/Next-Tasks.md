@@ -20,7 +20,8 @@
 ## 열린 과제 — 백엔드(BE)
 
 ### BE-31. 선택 매입가와 평가 기준 비중
-**진행** — 매입가 null 저장/원금·손익 미계산, 시세 기준 비중과 누락 범위, 기존 기록 호환/이력·버전 보존을 검증한다.
+**구현·검증 완료** — b0a4a7a. nullable 매입가/평가 비중/누락 범위·기존 기록/이력·버전 보존, 로컬 전체 test·Portfolio15개 및 CI37774653610 서버/PostgreSQL/복구 전체 성공.
+**남은 일** — Render b0a4a7a의 공개 capabilities가200/v3인지 확인한다. 마지막 운영 확인은404여서 배포 완료로 처리하지 않는다.
 **근거** — docs/product/portfolio-registration/plan.md.
 
 
@@ -59,7 +60,8 @@
 ## 열린 과제 — 웹(WEB)
 
 ### WEB-33. 자산 등록 분리와 홈 점검 연결
-**진행** — 별도 등록/수정 패널, 현금·계획 분리, 저장 응답 즉시 반영/실패 입력 보존과 PC/모바일·다크를 검증한다.
+**구현·검증 완료** — b0a4a7a. 오른쪽 단일 자산 패널·별도 현금/계획·홈 점검·저장 응답 즉시 반영.5조건 null 등록/409 보존/수정/현금/중복·부분 비중 fixture, build/lint·CI37774653610 웹 성공.
+**남은 일** — Render v3 계약 확인 후 Cloudflare 공개 배포·공개 회귀. 현재 운영 웹을 먼저 덮어쓰지 않는다.
 **근거** — docs/product/portfolio-registration/plan.md.
 
 
@@ -76,17 +78,12 @@
 
 ## 열린 과제 — 모바일(APP)
 
-### APP-28. Android 자산 등록 전용 화면
-**진행** — 키보드·뒤로가기 전체 화면 입력/선택 매입가, 홈 점검 우선/타입/lint·export 검증. 실기기는 APP-21.
-**근거** — docs/product/portfolio-registration/plan.md.
-
-
 ### APP-21. 최신 Android 설치·실수신·출시 제출 검증
 **구현·설정 완료** — Android OAuth ID·운영 API·Firebase 파일·EAS 프로젝트/preview/production 설정 연결. 사용자 FCM V1 등록 확인. 출시 검사·타입/lint·Android export·CI 통과.
 **진행(2026-10-08)** — 소스9991091·versionCode2의 bf7a706a FINISHED/APK 생성 확인. 이후 마스코트 로비·설명 하단 메뉴·짧은 버튼을 구현해 타입/lint·Android export 성공. Free 사용2/30·비용0 확인 후 소스3855eac·versionCode3의 preview fb0c49b4-39da-4e0a-9b67-328dfa4a8f95 빌드 접수. https://expo.dev/accounts/huni2/projects/mobile/builds/fb0c49b4-39da-4e0a-9b67-328dfa4a8f95
 **남은 일** — 새 APK 완료/설치, Google 서명 SHA-1과 실제 로그인 왕복, 아래 통합 체크리스트, production AAB 테스트 트랙·실제 target SDK·Play 제출 양식 대조.
 **최신 설치본** — 개별 버튼·공통 메뉴 수정은 이전 versionCode3에 포함되지 않는다. Free 사용3/30·비용0 확인 후6cedd8e/versionCode4의 preview3c4b54ea-4233-49ff-af39-feefd05c85f1 접수. https://expo.dev/accounts/huni2/projects/mobile/builds/3c4b54ea-4233-49ff-af39-feefd05c85f1
-**추가 UI** — 전용 FireWatch 메뉴 SVG는 웹/앱 공유 원본으로 구현하고 앱 타입/lint·Android export를 확인했다. 기존6cedd8e/versionCode4 APK에는 포함되지 않아 새 빌드·설치/TalkBack 확인이 필요하다. 앱 구현 APP-26/27과 실제 설치를 구분한다.
+**추가 UI** — 전용 FireWatch 메뉴 SVG는 웹/앱 공유 원본으로 구현하고 앱 타입/lint·Android export를 확인했다. 기존6cedd8e/versionCode4 APK에는 포함되지 않아 새 빌드·설치/TalkBack 확인이 필요하다. 앱 구현 APP-26/27/28과 실제 설치를 구분한다.
 **마지막 상태** — versionCode4·소스6cedd8e 빌드 IN_PROGRESS. APK 설치 완료로 처리하지 않는다.
 **빌드 주의** — 과거 cde6e85의 preview3a953867은 현재 소스가 아니며 설치 검증 완료로 사용할 수 없다. 2026-10-08 EAS 조회에서 과거 preview3a953867의 FINISHED·APK 생성 확인. 소스 cde6e85라 최신 설치 확인을 대신하지 않는다.
 **완료 기준** — 설치 기기에서 아래 항목을 확인·기록하고 AAB/테스트 트랙 검증. JS 번들·설정 검사 성공만으로 종료하지 않는다.
@@ -121,6 +118,7 @@
 | 과제 | 제목 | 결과 | 근거 |
 |---|---|---|---|
 | WEB-32 | 게임 행동·결과 전용 아이콘 | 6ada301·Cloudflare f4bb3275 공개 배포. 게임9종 추가/총29종 공유 SVG. 공개4조건 커스텀 버튼·선택·대비·실패 안내, 게임5노트북/3모바일 거래·초기화·턴·복기 성공. CI37770230386 웹·앱 성공 확인 | docs/product/game-icons-checklist.md |
+| APP-28 | Android 자산 등록·홈 점검 분리 | b0a4a7a. 전체 화면 회사/수량·선택 매입가, 키보드 위 저장과 뒤로가기 취소, 홈·현금/계획 분리. 타입/lint·최종 Android export·출시 검사8개·CI37774653610 앱 성공. 새 APK/실기기는 APP-21 | docs/product/portfolio-registration/plan.md |
 | APP-27 | 게임 행동 전용 벡터 | 시작/턴/픽 매수/주문/초기화/선택/결과·사건 적용. 타입/lint·Android export·CI 모바일 성공. 기존APK 미포함, 새 빌드·실기기 확인은 APP-21 | docs/product/game-icons-checklist.md |
 | WEB-31 | FireWatch 전용 메뉴 아이콘 | 6df743f·Cloudflare3685ce90 운영 배포. 전용 SVG20종 공유 원본·주요 메뉴/도구 적용, 공개5폭/다크·장식 접근성/권한/넘침0·전체36라이트/4다크·게임5노트북/3모바일 성공. main CI37767735481 전체 성공 | docs/product/firewatch-icons.md |
 | APP-26 | 전용 벡터 메뉴 적용 | 웹과 같은 원본·기존 react-native-svg로 홈4탭/상단 설정·도움말/게임 도구 구현. 타입/lint·Android export·main CI37767735481 모바일 성공. 기존versionCode4에는 미포함, 새 빌드/설치/TalkBack은 APP-21로 이관 | docs/product/firewatch-icons.md |
