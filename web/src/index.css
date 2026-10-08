@@ -272,7 +272,8 @@ button:focus-visible,a:focus-visible { outline: 2px solid var(--ant-color-primar
 .briefing-title small { display: block; font-size: 14px; font-weight: 500; line-height: 1.6; color: var(--ant-color-text-secondary); letter-spacing: 0; }
 .briefing-highlights ul { margin: 0; padding-left: 22px; display: grid; gap: 12px; }
 .briefing-highlights li { line-height: 1.7; }
-.briefing-highlights li > p { margin: 0; }
+.briefing-excerpt { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.briefing-excerpt p { margin: 0; }
 .briefing-full-text { font-size: 15px; line-height: 1.8; }
 .context-navigation a { color: var(--ant-color-text-secondary); background: transparent; border-color: transparent; border-radius: 0; border-bottom: 2px solid transparent; }
 .context-navigation a[aria-current=page] { color: var(--ant-color-primary); border-color: transparent; border-bottom-color: var(--ant-color-primary); }

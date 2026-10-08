@@ -66,7 +66,7 @@ export function BriefingSummaryCard({ briefing, loading }: BriefingSummaryCardPr
           ) : null
         }
       >
-        {!expanded && <div className="briefing-highlights"><small>저장된 원문에서 발췌 · 전체 내용과 위험 안내를 함께 확인하세요.</small><ul>{preview.map((line, index) => <li key={index}>{renderMarkdownLite(line)}</li>)}</ul></div>}
+        {!expanded && <div className="briefing-highlights"><small>원문 일부만 표시 · 전체 내용과 위험 안내를 함께 확인하세요.</small><ul>{preview.map((line, index) => <li key={index}><div className="briefing-excerpt">{renderMarkdownLite(line)}</div></li>)}</ul></div>}
         {expanded && <div className="briefing-full-text">{renderMarkdownLite(briefing.marketSummary)}</div>}
         <Button type="text" aria-expanded={expanded} onClick={() => setExpanded(v => !v)}>{expanded ? '접기' : '전체 분석 읽기'}</Button>
         {qualifiedRecommendations(briefing).length > 0 && (
