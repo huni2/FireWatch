@@ -22,7 +22,7 @@
 
 ## 현재 배포와 검증
 
-BE-32 기업14→26·ETF5 유지의 공식 자료/별칭·확인일 보존·시드 검증 구현 완료. 생성기3검사/H2 검색·재시작 메타데이터/시세 보존·web/mobile 검사·웹4폭 성공. Issue#5·PR#6·CI37806968572 전체 성공·main6f0f8da 머지·Cloudflare f00592b2 공개4폭 검증 완료. Render 공개 검색은 아직 새 기업 미반영으로 최신 배포 확인 요청 중이며 Issue를 열어둔다. 전체 시장 수입 BE-22/게임 BE-28 유지·EAS0.
+BE-32 기업14→26·ETF5 유지의 공식 자료/별칭·확인일 보존·시드 검증 구현 완료. 생성기3검사/H2 검색·재시작 메타데이터/시세 보존·web/mobile 검사·웹4폭 성공. Issue#5·PR#6·CI37806968572 전체 성공·main6f0f8da 머지·Cloudflare f00592b2 공개4폭 검증 완료. Render 신규4기업 검색/확인일·ETF5 유지까지 확인해 Issue#5·BE-32를 종료했다. 전체 시장 수입 BE-22/게임 BE-28 유지·EAS0.
 
 WEB-36 설정·공지 상태/입력 보존은 Issue#3·PR#4·CI37804420353 전체 성공 뒤 main fccfd85 머지·Cloudflare06781638 배포·공개1366/390px 회귀 성공으로 종료했다. 사용자 결정에 따라 앞으로 현재 과제부터 Issue에 완료 기준, PR에 변경/검증/남은 확인을 연결한다. 실제 이용자·스크린리더는 WEB-30에 남긴다. docs/product/settings-followup/checklist.md 참조. EAS 추가 빌드0회.
 
@@ -74,3 +74,5 @@ Android APK는 웹·서버 배포와 별도다. 일반 배포 때 자동/임의 
 원본 요구사항은 `docs/specs/`, 설계 선택은 `Decisions/`, 운영/검증 이력은 `log.md`에 보관한다. 코드와 최신 확인 증거를 우선한다. 구현·배포·fixture 검사·실기기 검증을 구분하고 측정하지 않은 사용자 성과를 만들지 않는다. AI 개발 보조는 Claude Code·Codex를 활용했음을 명시한다.
 
 수집 항목 격리·카탈로그 안정 페이지/합성3,000건 검사·CI PostgreSQL 별도 복원 훈련과 보관/출시 범위 문서를 보강했다. docs/deployment/data-preservation.md와 docs/product/release-scope.md 참조. 운영 DB 초기화·무제한 재시도·임의 게임 목록 교체 없음.
+
+2026-10-09 최종 확인. Render 신규 Kakao/하이닉스/구글/Adobe 검색과 확인일2026-10-09, ETF5 유지 확인. 공개 API 검사 성공·운영 쓰기0. PR#6은 머지돼 있으며 Issue#5·BE-32 종료. 다음 BE-33은 BE-28의 기존 게임 버전 보존 선행 단계다.

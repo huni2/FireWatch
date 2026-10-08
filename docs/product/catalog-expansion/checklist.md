@@ -8,6 +8,6 @@
 - [x] GitHub Issue#5·PR#6 기록
 - [x] CI37806968572 전체 성공·PR#6 main6f0f8da 머지
 - [x] Cloudflare f00592b2·공개4폭 기업 탐색 검증
-- [ ] Render 새 카탈로그 반영·공개 API 검색 확인
+- [x] Render 새 카탈로그 반영·공개 API 신규4기업 검색/확인일·ETF5 유지 확인, Issue#5 종료
 
 전체 시장 수입은 BE-22, 실제 기업명 게임 확장은 BE-28에 남긴다.

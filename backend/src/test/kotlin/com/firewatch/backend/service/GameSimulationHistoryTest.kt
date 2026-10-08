@@ -8,6 +8,31 @@ import kotlin.test.assertTrue
 
 class GameSimulationHistoryTest {
     @Test
+    fun `version one output matches the frozen pre expansion rules`() {
+        val output = buildString {
+            appendLine(GameSimulation.assets)
+            for (seed in listOf(0L, 42L, 314159L, Long.MAX_VALUE, -991L)) {
+                val dates = GameSimulation.dates(seed)
+                appendLine(dates)
+                appendLine(GameSimulation.histories(seed, 23))
+                for (turn in 0..23) {
+                    appendLine(GameSimulation.events(seed, turn))
+                    appendLine(GameSimulation.picks(seed, turn))
+                    appendLine(GameSimulation.briefing(seed, turn, dates[turn]).marketSummary)
+                    appendLine(GameSimulation.news(seed, turn).map { it.title to it.description })
+                    for (history in GameSimulation.histories(seed, 0)) {
+                        appendLine(GameSimulation.price(seed, turn, history.instrumentType, history.symbol))
+                        appendLine(GameSimulation.driver(seed, turn, history.instrumentType, history.symbol))
+                        appendLine(GameSimulation.moveReason(seed, turn, history.instrumentType, history.symbol))
+                    }
+                }
+            }
+        }
+        val digest = java.security.MessageDigest.getInstance("SHA-256")
+            .digest(output.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
+        assertEquals("41bf972c8a5b97ced825d9088526cd4fc853f88edaa1b34b6a541e365c68554b", digest)
+    }
+    @Test
     fun `incremental histories preserve every independently valued turn across seeds`() {
         for (seed in listOf(0L, 42L, 314159L, Long.MAX_VALUE, -991L)) {
             val histories = GameSimulation.histories(seed, 23)

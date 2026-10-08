@@ -65,3 +65,6 @@ CREATE TABLE IF NOT EXISTS auth_sessions (
   expires_at TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_auth_sessions_device ON auth_sessions(device_id);
+
+-- 기존 게임의 기업/난수 규칙을 버전1로 보존하며 재실행 시 값을 바꾸지 않는다.
+ALTER TABLE game_sessions ADD COLUMN IF NOT EXISTS simulation_version INT NOT NULL DEFAULT 1;

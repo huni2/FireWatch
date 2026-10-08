@@ -58,6 +58,7 @@ data class GameTurnSnapshot(
     val transactions: List<GameTransaction> = emptyList(),
     val turnChange: BigDecimal? = null,
     val simulation: Boolean = false,
+    val simulationVersion: Int? = null,
     val stockPrices: Map<String, BigDecimal> = emptyMap(),
     val marketEvents: List<GameMarketEvent> = emptyList(),
     val turnContributions: List<GameTurnContribution> = emptyList(),
@@ -99,7 +100,8 @@ class GameService(
             gameSessionRepository.saveAndFlush(existing)
         }
         val seed = java.util.concurrent.ThreadLocalRandom.current().nextLong()
-        val allDates = GameSimulation.dates(seed)
+        val version = GameSimulation.CURRENT_VERSION
+        val allDates = GameSimulation.forVersion(version).dates(seed)
         val session = gameSessionRepository.save(
             GameSession(
                 deviceId = deviceId,
@@ -107,6 +109,7 @@ class GameService(
                 startingCash = startingCashFor(difficulty),
                 allowShortSelling = allowShortSelling,
                 simulationSeed = seed,
+                simulationVersion = version,
             ),
         )
         return buildTurnSnapshot(session)
@@ -151,7 +154,7 @@ class GameService(
             }
         }
         if (expectedTurnIndex != null && session.currentTurnIndex != expectedTurnIndex) throw com.firewatch.backend.web.ConflictException("연습 날짜가 변경되었습니다. 현재 턴을 확인해주세요.")
-        session.simulationSeed?.let { seed -> GameSimulation.blockedReason(seed, session.currentTurnIndex, instrumentType, symbol)?.let { throw ValidationException(it, emptyMap()) } }
+        session.simulationSeed?.let { seed -> simulationFor(session).blockedReason(seed, session.currentTurnIndex, instrumentType, symbol)?.let { throw ValidationException(it, emptyMap()) } }
         val turnDate = session.turnDates()[session.currentTurnIndex]
         val briefing = briefingFor(session, session.currentTurnIndex)
         val price = confirmedPrice(session, instrumentType, symbol, briefing, turnDate)
@@ -233,7 +236,10 @@ class GameService(
 
     private fun activeSessionOrThrow(deviceId: String): GameSession =
         gameSessionRepository.findByDeviceIdAndStatus(deviceId, GameSessionStatus.ACTIVE)
+            ?.also { if (it.simulationSeed != null) simulationFor(it) }
             ?: throw NotFoundException("진행 중인 게임이 없습니다. 먼저 시작해주세요.")
+
+    private fun simulationFor(session: GameSession): GameSimulation = GameSimulation.forVersion(session.simulationVersion)
 
     private fun resolvePrice(
         instrumentType: GameInstrumentType,
@@ -270,7 +276,7 @@ class GameService(
     }
 
     private fun confirmedPrice(session: GameSession, type: GameInstrumentType, symbol: String?, briefing: Briefing, date: LocalDate, turnIndex: Int = session.currentTurnIndex): BigDecimal? {
-        session.simulationSeed?.let { return GameSimulation.price(it, turnIndex, type, symbol) }
+        session.simulationSeed?.let { return simulationFor(session).price(it, turnIndex, type, symbol) }
         val key = "${session.id}:$turnIndex:${type.name}:${symbol ?: "-"}"
         val cached = priceSnapshots?.findById(key)?.orElse(null)
         if (cached != null) return cached.price
@@ -293,7 +299,7 @@ class GameService(
         val owned = computeHoldingQuantities(session, ledger)[GameHoldingKey(type, symbol)] ?: BigDecimal.ZERO
         val afterCash = if (action == GameTradeAction.BUY) cash - total else cash + total
         val afterOwned = if (action == GameTradeAction.BUY) owned + quantity else owned - quantity
-        val reason = session.simulationSeed?.let { GameSimulation.blockedReason(it, session.currentTurnIndex, type, symbol) }
+        val reason = session.simulationSeed?.let { simulationFor(session).blockedReason(it, session.currentTurnIndex, type, symbol) }
             ?: if (action == GameTradeAction.BUY && afterCash < BigDecimal.ZERO) "현금이 부족합니다." else if (!session.allowShortSelling && afterOwned < BigDecimal.ZERO) "보유 수량보다 많이 팔 수 없습니다." else null
         return GameOrderPreview(session.currentTurnIndex, type, symbol, action, quantity, price, total, afterCash, afterOwned, reason == null, reason)
     }
@@ -327,7 +333,7 @@ class GameService(
 
     private fun briefingFor(session: GameSession, index: Int): Briefing {
         val date = session.turnDates()[index]
-        return session.simulationSeed?.let { GameSimulation.briefing(it, index, date) }
+        return session.simulationSeed?.let { simulationFor(session).briefing(it, index, date) }
             ?: briefingRepository.findByBriefingDate(date) ?: throw ValidationException("턴 자료가 없습니다.", emptyMap())
     }
 
@@ -335,7 +341,7 @@ class GameService(
         val turnDates = session.turnDates()
         val turnDate = turnDates[session.currentTurnIndex]
         val briefing = briefingFor(session, session.currentTurnIndex)
-        val news = session.simulationSeed?.let { GameSimulation.news(it, session.currentTurnIndex) } ?: newsArticleRepository.findByBriefingId(briefing.id!!)
+        val news = session.simulationSeed?.let { simulationFor(session).news(it, session.currentTurnIndex) } ?: newsArticleRepository.findByBriefingId(briefing.id!!)
         val cash = computeCash(session, ledger)
         val holdings = computeHoldingQuantities(session, ledger).map { (key, quantity) ->
             val price = confirmedPrice(session, key.instrumentType, key.symbol, briefing, turnDate)
@@ -364,13 +370,13 @@ class GameService(
             computeHoldingQuantities(session, ledger.filter { it.turnIndex <= previousIndex }).map { (key, qty) ->
                 // Use carried positions, including stocks sold this turn and negative short quantities.
                 // Same-turn orders exchange cash for holdings at the same price and add no turn P&L.
-                val previous = session.simulationSeed?.let { GameSimulation.price(it, previousIndex, key.instrumentType, key.symbol) }
+                val previous = session.simulationSeed?.let { simulationFor(session).price(it, previousIndex, key.instrumentType, key.symbol) }
                     ?: priceSnapshots?.findById("${session.id}:$previousIndex:${key.instrumentType.name}:${key.symbol ?: "-"}")?.orElse(null)?.price
                     ?: if (key.instrumentType != GameInstrumentType.STOCK) resolvePrice(key.instrumentType, key.symbol, previousBriefing, turnDates[previousIndex]) else null
                 val current = confirmedPrice(session, key.instrumentType, key.symbol, briefing, turnDate)
-                GameTurnContribution(key.instrumentType, key.symbol, GameSimulation.assets.find { it.symbol == key.symbol }?.name ?: (key.symbol ?: key.instrumentType.name), qty, previous, current,
+                GameTurnContribution(key.instrumentType, key.symbol, (if (session.simulationSeed != null) simulationFor(session).assets.find { it.symbol == key.symbol }?.name else null) ?: (key.symbol ?: key.instrumentType.name), qty, previous, current,
                     if (previous != null && current != null) (current - previous) * qty else null,
-                    session.simulationSeed?.let { GameSimulation.moveReason(it, session.currentTurnIndex, key.instrumentType, key.symbol) } ?: "직전 턴 보유 수량 × 가격 변화입니다. 과거 가격 자료가 없으면 손익을 확정하지 않습니다.")
+                    session.simulationSeed?.let { simulationFor(session).moveReason(it, session.currentTurnIndex, key.instrumentType, key.symbol) } ?: "직전 턴 보유 수량 × 가격 변화입니다. 과거 가격 자료가 없으면 손익을 확정하지 않습니다.")
             }
         }
         return GameTurnSnapshot(
@@ -389,12 +395,13 @@ class GameService(
             benchmarkReturnPercent = benchmark,
             review = review,
             simulation = session.simulationSeed != null,
-            marketEvents = session.simulationSeed?.let { GameSimulation.events(it, session.currentTurnIndex) } ?: emptyList(),
+            simulationVersion = if (session.simulationSeed != null) session.simulationVersion else null,
+            marketEvents = session.simulationSeed?.let { simulationFor(session).events(it, session.currentTurnIndex) } ?: emptyList(),
             turnContributions = contributions,
-            assetHistories = session.simulationSeed?.let { GameSimulation.histories(it, session.currentTurnIndex) } ?: emptyList(),
-            gamePicks = session.simulationSeed?.let { GameSimulation.picks(it, session.currentTurnIndex) } ?: emptyList(),
-            priceDrivers = session.simulationSeed?.let { seed -> GameSimulation.histories(seed, 0).map { GameSimulation.driver(seed, session.currentTurnIndex, it.instrumentType, it.symbol) } } ?: emptyList(),
-            stockPrices = session.simulationSeed?.let { seed -> GameSimulation.assets.associate { it.symbol to GameSimulation.price(seed, session.currentTurnIndex, GameInstrumentType.STOCK, it.symbol)!! } } ?: emptyMap(),
+            assetHistories = session.simulationSeed?.let { simulationFor(session).histories(it, session.currentTurnIndex) } ?: emptyList(),
+            gamePicks = session.simulationSeed?.let { simulationFor(session).picks(it, session.currentTurnIndex) } ?: emptyList(),
+            priceDrivers = session.simulationSeed?.let { seed -> simulationFor(session).histories(seed, 0).map { simulationFor(session).driver(seed, session.currentTurnIndex, it.instrumentType, it.symbol) } } ?: emptyList(),
+            stockPrices = session.simulationSeed?.let { seed -> simulationFor(session).assets.associate { it.symbol to simulationFor(session).price(seed, session.currentTurnIndex, GameInstrumentType.STOCK, it.symbol)!! } } ?: emptyMap(),
             transactions = ledger.sortedWith(compareBy({ it.turnIndex }, { it.id })),
             // Fees are zero and this turn's execution/valuation price is fixed. Order cash
             // movements cancel position changes, so carried-position P&L is the total change.

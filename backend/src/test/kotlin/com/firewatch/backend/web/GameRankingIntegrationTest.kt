@@ -67,6 +67,33 @@ class GameRankingIntegrationTest {
         client().get().uri("/api/game/rankings").exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(0)
         assertFalse(publish(p,g,"게임닉네임").visible)
     }
+
+    @Test fun `persisted simulation version selects rules and refuses unsupported version before writes`() {
+        val p = login()
+        val g = game(p, 0, false)
+        fun current() = client().get().uri("/api/game/current").header("X-Device-Id", p.device).header("Authorization", p.auth).exchange()
+        current().expectStatus().isOk.expectBody().jsonPath("$.simulationVersion").isEqualTo(1)
+            .jsonPath("$.stockPrices.AURA").isEqualTo(24000.0)
+        client().post().uri("/api/game/trade").header("X-Device-Id", p.device).header("Authorization", p.auth)
+            .bodyValue(mapOf("instrumentType" to "STOCK", "symbol" to "AURA", "action" to "BUY", "quantity" to 10))
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.simulationVersion").isEqualTo(1)
+        client().post().uri("/api/game/next-turn").header("X-Device-Id", p.device).header("Authorization", p.auth)
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.simulationVersion").isEqualTo(1)
+            .jsonPath("$.holdings[0].currentPrice").isEqualTo(GameSimulation.price(42L, 1, GameInstrumentType.STOCK, "AURA")!!.toDouble())
+        // DB의 미지원 저장 버전을 현재 규칙으로 읽거나 종료하면서 덮어쓰지 않는다.
+        jdbc.update("UPDATE game_sessions SET simulation_version=999 WHERE id=?", g.id!!)
+        current().expectStatus().isBadRequest
+        client().post().uri("/api/game/end").header("X-Device-Id", p.device).header("Authorization", p.auth)
+            .exchange().expectStatus().isBadRequest
+        val saved = games.findById(g.id!!).orElseThrow()
+        assertEquals(999, saved.simulationVersion)
+        assertEquals(1, saved.currentTurnIndex)
+        assertEquals(GameSessionStatus.ACTIVE, saved.status)
+        assertNull(saved.endedAt)
+        val ledger = transactions.findBySessionIdAndTurnIndexLessThanEqual(g.id!!, 23)
+        assertEquals(1, ledger.size)
+        assertEquals(0, ledger.single().price.compareTo(BigDecimal("24000")))
+    }
     @Test fun `leagues separate completion turn difficulty and short mode with one best place per account`() {
         val p=login();publish(p,game(p),"플레이어하나");publish(p,game(p),"플레이어하나")
         val early=login();assertEquals("PROGRESS",publish(early,game(early,4),"중도종료").board)
