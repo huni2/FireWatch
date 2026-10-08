@@ -1,5 +1,5 @@
 // 웹과 앱이 공유하는 FireWatch 전용 불꽃 메뉴 아이콘의 벡터 원본이다.
-export const firewatchIconNames = ['record', 'companies', 'news', 'game', 'account', 'settings', 'help', 'more', 'briefing', 'stocks', 'indices', 'short-term', 'audit', 'rankings', 'rules', 'publish', 'replay', 'exit', 'moon', 'sun'] as const
+export const firewatchIconNames = ['record', 'companies', 'news', 'game', 'account', 'settings', 'help', 'more', 'briefing', 'stocks', 'indices', 'short-term', 'audit', 'rankings', 'rules', 'publish', 'replay', 'exit', 'moon', 'sun', 'start', 'next-turn', 'selected', 'turn-result', 'buy', 'sell', 'reset', 'warning', 'notice'] as const
 export type FirewatchIconName = typeof firewatchIconNames[number]
 export interface FirewatchIconPath { d: string; accent?: boolean; solid?: boolean; transform?: string }
 
@@ -26,4 +26,13 @@ export const firewatchIcons: Record<FirewatchIconName, readonly FirewatchIconPat
   exit: [{ d: 'M14 5H6V27H14M13 16H28M23 11L28 16L23 21' }, ember(8, 11)],
   moon: [{ d: 'M24 22A11 11 0 0 1 10 5A11 11 0 1 0 24 22Z' }, ember(22, 3)],
   sun: [{ d: 'M16 2V5M16 27V30M2 16H5M27 16H30M6 6L8 8M24 24L26 26M6 26L8 24M24 8L26 6M23 16A7 7 0 1 1 9 16A7 7 0 1 1 23 16Z' }, ember(12.5, 10)],
+  start: [{ d: 'M11 7L26 16L11 25ZM5 10V22' }, ember(1, 0)],
+  'next-turn': [{ d: 'M4 9H19M4 16H26M4 23H19M21 10L27 16L21 22M28 5V8M28 24V27' }, ember(5, 0)],
+  selected: [{ d: 'M27 16A11 11 0 1 1 16 5M10 16L14 20L23 11' }, ember(23, 0)],
+  'turn-result': [{ d: 'M5 7V27H28M9 22L14 15L19 18L26 9M22 9H26V13' }, ember(11, 0)],
+  buy: [{ d: 'M5 19V27H27V19M16 22V6M10 12L16 6L22 12M9 23H23' }, ember(24, 0)],
+  sell: [{ d: 'M5 19V27H27V19M16 5V21M10 15L16 21L22 15M9 24H23' }, ember(24, 0)],
+  reset: [{ d: 'M6 12A11 11 0 1 1 6 22M5 5V13H13M12 12L20 20M20 12L12 20' }, ember(1, 19)],
+  warning: [{ d: 'M14 5C15 3 17 3 18 5L29 24C30 26 29 28 27 28H5C3 28 2 26 3 24ZM16 12V19M16 23H16.1' }, ember(24, 0)],
+  notice: [{ d: 'M26 11A11 11 0 1 1 19 5M16 14V22M16 10H16.1' }, ember(22, 1)],
 }

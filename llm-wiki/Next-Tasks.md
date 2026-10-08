@@ -53,6 +53,11 @@
 
 ## 열린 과제 — 웹(WEB)
 
+### WEB-32. 게임 행동·결과 전용 아이콘
+**진행** — 불꽃 SVG를 시작/턴/주문/선택/결과/알림에 적용하고 작은 화면·다크/거래 회귀·공개 배포를 검증한다.
+**근거** — docs/product/game-icons-checklist.md.
+
+
 ### WEB-19. 실제 로그인 세션의 운영 권한·로그아웃 최종 확인
 **구현·배포 완료** — GIS 공식 버튼·세션·연결 기기 관리·운영자 메뉴/서버 인증. 사용자가 웹 실제 Google 로그인 성공 확인. 일반/운영/만료/충돌/SDK/로그아웃 실패 fixture 검증 완료.
 **남은 일** — 실제 운영자 세션의 감사로그 접근과 실제 일반 계정 제한, 로그아웃/재로그인 후 계정 기록 보존을 사용자 기기에서 확인.
@@ -65,6 +70,11 @@
 **근거** — docs/reviews/2026-10-08-whole-ui-design-review.md.
 
 ## 열린 과제 — 모바일(APP)
+
+### APP-27. 게임 행동 전용 벡터 적용
+**진행** — 웹과 같은 원본을 시작/턴/주문/선택/결과에 적용하고 타입/lint·Android export를 검증한다. 실제 설치는 APP-21.
+**근거** — docs/product/game-icons-checklist.md.
+
 
 ### APP-21. 최신 Android 설치·실수신·출시 제출 검증
 **구현·설정 완료** — Android OAuth ID·운영 API·Firebase 파일·EAS 프로젝트/preview/production 설정 연결. 사용자 FCM V1 등록 확인. 출시 검사·타입/lint·Android export·CI 통과.
