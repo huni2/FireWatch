@@ -51,6 +51,12 @@ jobs:
           cache: npm
           cache-dependency-path: ${{ matrix.client }}/package-lock.json
       - run: npm ci
+      - name: Catalog metadata tests and generated seed consistency
+        if: matrix.client == 'web'
+        run: |
+          node --test ../scripts/build-catalog-seed.test.cjs
+          node ../scripts/build-catalog-seed.cjs
+          git diff --exit-code -- ../backend/src/main/resources/catalog-seed.json
       - run: npm run lint
       - if: matrix.client == 'web'
         run: npm run build

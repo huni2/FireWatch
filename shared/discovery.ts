@@ -4,8 +4,9 @@ export interface RecommendationDetail { stockName: string; reason: string; risk:
 export interface DiscoveryBriefing { briefingDate: string; recommendedStocks: string[]; recommendationDetails?: RecommendationDetail[]; news: FeedArticle[] }
 export interface RecommendationReport extends DiscoveryBriefing { sourceBriefingDate: string | null; analyzedAt: string | null; status: 'READY' | 'WAITING'; marketSummary: string; excludedCount?: number }
 export interface Sector { id: string; name: string; description: string; keywords: string[]; checks: string[] }
-export interface Company { symbol: string; name: string; aliases: string[]; sectorId: string; region: 'KR' | 'US'; description: string; source: string }
-export const catalogVerifiedAt = '2026-10-07'
+export interface Company { symbol: string; name: string; aliases: string[]; sectorId: string; region: 'KR' | 'US'; description: string; source: string; verifiedAt?: string }
+export const companyDefaultVerifiedAt = '2026-10-07'
+export const catalogVerifiedAt = '2026-10-07~2026-10-09'
 // Editorial navigation groups, not exchange classifications or a recommendation ranking.
 export const sectors: Sector[] = [
   { id: 'chips', name: '반도체·AI 인프라', description: 'AI와 전자기기를 움직이는 칩과 컴퓨팅', keywords: ['반도체', 'GPU', '메모리'], checks: ['고객 수요와 설비투자 변화', '수출 규제와 고객 집중도'] },
@@ -17,6 +18,18 @@ export const sectors: Sector[] = [
   { id: 'defense', name: '방산·항공우주', description: '방위 장비, 항공 기술과 우주 사업', keywords: ['방산', '항공', '우주'], checks: ['수주잔고와 납품 일정', '정부 예산과 수출 승인'] },
 ]
 export const companies: Company[] = [
+  { symbol: '035720.KS', name: '카카오', aliases: ['Kakao', 'Kakao Corp'], sectorId: 'software', region: 'KR', description: '메신저·콘텐츠와 플랫폼 서비스를 제공하는 기업', source: 'https://www.kakaocorp.com/ir/stockInformation?lang=ko', verifiedAt: '2026-10-09' },
+  { symbol: '000660.KS', name: 'SK하이닉스', aliases: ['SK hynix', '하이닉스', '에스케이하이닉스'], sectorId: 'chips', region: 'KR', description: 'DRAM·NAND 등 메모리 반도체를 만드는 기업', source: 'https://m.skhynix.com/ir/UI-FR-IR03/', verifiedAt: '2026-10-09' },
+  { symbol: '000270.KS', name: '기아', aliases: ['Kia', 'Kia Corporation', '기아자동차'], sectorId: 'mobility', region: 'KR', description: '완성차와 전기차 등 이동 수단을 만드는 기업', source: 'https://worldwide.kia.com/ko/company/investor-relations', verifiedAt: '2026-10-09' },
+  { symbol: '012330.KS', name: '현대모비스', aliases: ['Hyundai Mobis', '모비스'], sectorId: 'mobility', region: 'KR', description: '자동차 부품과 전동화·차량 시스템을 만드는 기업', source: 'https://www.mobis.com/en/index.do', verifiedAt: '2026-10-09' },
+  { symbol: 'AMD', name: 'AMD', aliases: ['에이엠디', 'Advanced Micro Devices'], sectorId: 'chips', region: 'US', description: 'CPU·GPU와 데이터센터용 반도체를 설계하는 기업', source: 'https://ir.amd.com/', verifiedAt: '2026-10-09' },
+  { symbol: 'AVGO', name: '브로드컴', aliases: ['Broadcom', 'Broadcom Inc'], sectorId: 'chips', region: 'US', description: '통신·데이터센터 반도체와 인프라 소프트웨어를 제공하는 기업', source: 'https://investors.broadcom.com/', verifiedAt: '2026-10-09' },
+  { symbol: 'GOOGL', name: '알파벳 Class A', aliases: ['Alphabet Class A', '알파벳', '구글', 'Google'], sectorId: 'software', region: 'US', description: 'Google 검색·광고·클라우드 등을 운영하는 기업의 Class A 주식', source: 'https://abc.xyz/', verifiedAt: '2026-10-09' },
+  { symbol: 'AMZN', name: '아마존', aliases: ['Amazon', 'Amazon.com'], sectorId: 'software', region: 'US', description: '전자상거래와 AWS 클라우드 서비스를 제공하는 기업', source: 'https://ir.aboutamazon.com/overview/default.aspx', verifiedAt: '2026-10-09' },
+  { symbol: 'ADBE', name: '어도비', aliases: ['Adobe', 'Adobe Inc'], sectorId: 'software', region: 'US', description: '콘텐츠 제작·문서·디지털 경험 소프트웨어를 제공하는 기업', source: 'https://www.adobe.com/investor-relations.html', verifiedAt: '2026-10-09' },
+  { symbol: 'GM', name: '제너럴모터스', aliases: ['General Motors', '제너럴 모터스'], sectorId: 'mobility', region: 'US', description: '완성차와 전기차를 개발·생산하는 기업', source: 'https://investor.gm.com/', verifiedAt: '2026-10-09' },
+  { symbol: 'BAC', name: '뱅크오브아메리카', aliases: ['Bank of America', '뱅크 오브 아메리카'], sectorId: 'finance', region: 'US', description: '은행·투자금융과 자산관리 서비스를 제공하는 금융 그룹', source: 'https://investor.bankofamerica.com/', verifiedAt: '2026-10-09' },
+  { symbol: 'PFE', name: '화이자', aliases: ['Pfizer', 'Pfizer Inc'], sectorId: 'health', region: 'US', description: '의약품과 백신을 개발·생산하는 기업', source: 'https://investors.pfizer.com/overview/default.aspx', verifiedAt: '2026-10-09' },
   { symbol: '005930.KS', name: '삼성전자', aliases: ['Samsung Electronics'], sectorId: 'chips', region: 'KR', description: '메모리·시스템 반도체와 전자기기를 만드는 기업', source: 'https://semiconductor.samsung.com/about-us/business-area/' },
   { symbol: 'NVDA', name: '엔비디아', aliases: ['NVIDIA', '엔비디아 코퍼레이션'], sectorId: 'chips', region: 'US', description: 'GPU와 AI 가속 컴퓨팅 플랫폼을 만드는 기업', source: 'https://www.nvidia.com/en-us/about-nvidia/' },
   { symbol: '035420.KS', name: 'NAVER', aliases: ['네이버', 'NAVER Corporation'], sectorId: 'software', region: 'KR', description: '검색·커머스·콘텐츠·클라우드 서비스를 제공하는 기업', source: 'https://www.navercorp.com/company/about' },
