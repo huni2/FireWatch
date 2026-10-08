@@ -68,6 +68,7 @@
 ## 열린 과제 — 모바일(APP)
 
 ### APP-21. 최신 Android 설치·실수신·출시 제출 검증
+**사용자 결정(2026-10-09)** — APK 빌드·배포는 과제와 디자인 후속조치 모두 완료 후 진행한다. 그전 EAS 추가 요청·사용자 대상 APK 배포는 보류하고 코드/화면 검증을 진행한다. 이미 접수된 versionCode5를 다시 빌드하지 않는다.
 **구현·설정 완료** — Android OAuth ID·운영 API·Firebase 파일·EAS 프로젝트/preview/production 설정 연결. 사용자 FCM V1 등록 확인. 출시 검사·타입/lint·Android export·CI 통과.
 **진행(2026-10-08)** — 소스9991091·versionCode2의 bf7a706a FINISHED/APK 생성 확인. 이후 마스코트 로비·설명 하단 메뉴·짧은 버튼을 구현해 타입/lint·Android export 성공. Free 사용2/30·비용0 확인 후 소스3855eac·versionCode3의 preview fb0c49b4-39da-4e0a-9b67-328dfa4a8f95 빌드 접수. https://expo.dev/accounts/huni2/projects/mobile/builds/fb0c49b4-39da-4e0a-9b67-328dfa4a8f95
 **남은 일** — 새 APK 완료/설치, Google 서명 SHA-1과 실제 로그인 왕복, 아래 통합 체크리스트, production AAB 테스트 트랙·실제 target SDK·Play 제출 양식 대조.
