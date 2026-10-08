@@ -15,7 +15,7 @@
     },
     "android": {
       "package": "com.firewatch.mobile",
-      "versionCode": 3,
+      "versionCode": 4,
       "adaptiveIcon": {
         "backgroundColor": "#F4F5F7",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
