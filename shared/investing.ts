@@ -2,7 +2,7 @@ export interface Holding {
   symbol: string
   name: string
   quantity: number
-  averageCost: number
+  averageCost: number | null
   currency: 'KRW' | 'USD'
   assetClass: 'STOCK' | 'ETF' | 'BOND' | 'OTHER'
   sector: string
@@ -37,6 +37,8 @@ export interface Portfolio extends Omit<PortfolioDraft, 'holdings'> {
   relatedNews: FeedArticle[]
   updatedAt: string | null
   fxAsOf: string | null
+  allocationBasis?: 'MARKET_VALUE'
+  valuationCoverage?: { pricedHoldings: number; totalHoldings: number; includedValueKrw: number; missingNames: string[] } | null
   analysisVersion: string
   exposure?: {
     complete: boolean
@@ -50,7 +52,7 @@ export interface Portfolio extends Omit<PortfolioDraft, 'holdings'> {
 export interface NewsFeed { news: FeedArticle[]; updatedAt: string | null; refreshMinutes: number; page?: number; size?: number; total?: number; hasMore?: boolean }
 export interface NewsFilters { from?: string; to?: string; q?: string; page?: number; size?: number }
 export const newsQuery = (filters: NewsFilters = {}) => Object.entries(filters).filter(([, value]) => value !== undefined && value !== '').map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`).join('&')
-export const emptyHolding = (): Holding => ({ symbol: '', name: '', quantity: 1, averageCost: 0, currency: 'KRW', assetClass: 'STOCK', sector: '미분류', region: 'KR', underlyingIndex: '' })
+export const emptyHolding = (): Holding => ({ symbol: '', name: '', quantity: 0, averageCost: null, currency: 'KRW', assetClass: 'STOCK', sector: '미분류', region: 'KR', underlyingIndex: '' })
 export const toDraft = (portfolio: Portfolio): PortfolioDraft => ({ version: portfolio.version, goal: portfolio.goal, horizonMonths: portfolio.horizonMonths, riskLevel: portfolio.riskLevel, accountType: portfolio.accountType, monthlyContribution: portfolio.monthlyContribution, cash: portfolio.cash, holdings: portfolio.holdings.map(h => h.holding) })
 export const accountLabels = { GENERAL: '일반 계좌', ISA: 'ISA', PENSION: '연금 계좌' }
 export const riskLabels = { CAUTIOUS: '안정 선호', BALANCED: '균형 선호', GROWTH: '성장 선호' }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiRequestError } from './api'
 
 interface UseApiResult<T> {
@@ -7,6 +7,7 @@ interface UseApiResult<T> {
   error: Error | null
   isSlow: boolean
   reload: () => void
+  replaceData: (value: T) => void
 }
 
 // Plan §7.2 결정 — 전역 상태 라이브러리(TanStack Query 등) 없이 로컬 상태만으로 API 호출을 다룬다.
@@ -22,6 +23,7 @@ const RETRY_DELAYS_MS = [2000, 4000, 8000, 15000, 25000, 35000]
 const SLOW_THRESHOLD_MS = 6000
 
 export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): UseApiResult<T> {
+  const generation = useRef(0)
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -30,7 +32,10 @@ export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): UseA
 
   const reload = useCallback(() => setReloadKey((key) => key + 1), [])
 
+  const replaceData = useCallback((value: T) => { generation.current++; setData(value); setError(null); setLoading(false); setIsSlow(false) }, [])
+
   useEffect(() => {
+    const id = ++generation.current
     let cancelled = false
     let retryTimer: ReturnType<typeof setTimeout> | undefined
     setLoading(true)
@@ -38,23 +43,23 @@ export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): UseA
     setIsSlow(false)
 
     const slowTimer = setTimeout(() => {
-      if (!cancelled) setIsSlow(true)
+      if (!cancelled && id === generation.current) setIsSlow(true)
     }, SLOW_THRESHOLD_MS)
 
     const attempt = (retryIndex: number) => {
       fetcher()
         .then((result) => {
-          if (cancelled) return
+          if (cancelled || id !== generation.current) return
           setData(result)
           setLoading(false)
         })
         .catch((err: unknown) => {
-          if (cancelled) return
+          if (cancelled || id !== generation.current) return
           const retryable = !(err instanceof ApiRequestError) || err.status >= 500 || err.status === 429
           const delay = retryable ? RETRY_DELAYS_MS[retryIndex] : undefined
           if (delay != null) {
             retryTimer = setTimeout(() => {
-              if (!cancelled) attempt(retryIndex + 1)
+              if (!cancelled && id === generation.current) attempt(retryIndex + 1)
             }, delay)
             return
           }
@@ -72,5 +77,5 @@ export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): UseA
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps, reloadKey])
 
-  return { data, loading, error, isSlow, reload }
+  return { data, loading, error, isSlow, reload, replaceData }
 }

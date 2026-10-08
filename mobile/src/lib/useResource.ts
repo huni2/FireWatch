@@ -19,5 +19,6 @@ export function useResource<T>(fetcher: () => Promise<T>) {
     const listener = AppState.addEventListener('change', state => { if (state === 'active') void reload() })
     return () => { clearTimeout(initial); requestGeneration.current++; listener.remove() }
   }, [reload])
-  return { data, error, loading, reload }
+  const replaceData = useCallback((value: T) => { generation.current++; setData(value); setError(null); setLoading(false) }, [])
+  return { data, error, loading, reload, replaceData }
 }

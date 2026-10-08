@@ -51,8 +51,10 @@ export function portfolioContext(company: Company, portfolio?: Portfolio | null)
   if (!portfolio) return '포트폴리오를 등록하면 내 보유 기업과 비교할 수 있어요.'
   const held = portfolio.holdings.find(row => row.holding.symbol === company.symbol)
   if (held) {
-    const total = portfolio.investedKrw == null ? null : portfolio.investedKrw + portfolio.cash
-    const weight = held.investedKrw != null && total != null && total > 0 ? ` 현금 포함 매입원금의 ${(held.investedKrw / total * 100).toFixed(1)}%입니다.` : ' 원화 비중을 계산할 자료가 부족합니다.'
+    const market = portfolio.allocationBasis === 'MARKET_VALUE'
+    const total = market ? portfolio.valuationCoverage?.includedValueKrw ?? null : portfolio.investedKrw == null ? null : portfolio.investedKrw + portfolio.cash
+    const amount = market ? held.valueKrw : held.investedKrw
+    const weight = amount != null && total != null && total > 0 ? ` ${market ? '평가 가능한 등록 자산과 현금' : '현금 포함 매입원금'}의 ${(amount / total * 100).toFixed(1)}%입니다.` : ' 원화 비중을 계산할 자료가 부족합니다.'
     return `이미 보유한 기업이에요.${weight} 보유 수량과 비중을 함께 확인하세요.`
   }
   const peers = portfolio.holdings.filter(row => row.holding.assetClass === 'STOCK' && (findCompany(row.holding.symbol)?.sectorId === company.sectorId || row.holding.sector === companySector(company).name))

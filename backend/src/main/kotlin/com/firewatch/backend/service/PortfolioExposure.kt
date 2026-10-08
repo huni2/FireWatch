@@ -15,14 +15,15 @@ object PortfolioExposureAnalysis {
         val overlaps = views.filter { it.holding.assetClass == "ETF" && it.holding.underlyingIndex.isNotBlank() }
             .groupBy { normalizeIndex(it.holding.underlyingIndex) }.filterValues { it.size > 1 }
             .map { (index, rows) -> IndexOverlap(index, rows.map { it.holding.name }) }
-        if (views.any { it.investedKrw == null }) return PortfolioExposure(false, emptyMap(), emptyMap(), emptyList(), overlaps, null)
-        val total = cash + views.fold(BigDecimal.ZERO) { a, v -> a + v.investedKrw!! }
-        fun weights(groups: Map<String, List<PortfolioHoldingView>>) = groups.mapValues { (_, rows) -> PortfolioService.percent(rows.fold(BigDecimal.ZERO) { a, v -> a + v.investedKrw!! }, total) }
-        val sectors = weights(views.groupBy { if (it.holding.assetClass == "ETF") "ETF 구성 미확인" else it.holding.sector.ifBlank { "미분류" } }) + ("현금" to PortfolioService.percent(cash, total))
-        val currencies = weights(views.groupBy { it.holding.currency }).toMutableMap()
+        val priced = views.filter { it.valueKrw != null }
+        val total = cash + priced.fold(BigDecimal.ZERO) { a, v -> a + v.valueKrw!! }
+        fun weights(groups: Map<String, List<PortfolioHoldingView>>) = groups.mapValues { (_, rows) -> PortfolioService.percent(rows.fold(BigDecimal.ZERO) { a, v -> a + v.valueKrw!! }, total) }
+        val sectors = weights(priced.groupBy { if (it.holding.assetClass == "ETF") "ETF 구성 미확인" else it.holding.sector.ifBlank { "미분류" } }) + ("현금" to PortfolioService.percent(cash, total))
+        val currencies = weights(priced.groupBy { it.holding.currency }).toMutableMap()
         currencies["KRW"] = (currencies["KRW"] ?: BigDecimal.ZERO) + PortfolioService.percent(cash, total)
-        val usd = views.filter { it.holding.currency == "USD" }.fold(BigDecimal.ZERO) { a, v -> a + v.investedKrw!! }
-        return PortfolioExposure(true, sectors, currencies, views.sortedByDescending { it.investedKrw }.take(3).map { HoldingWeight(it.holding.name, PortfolioService.percent(it.investedKrw!!, total)) }, overlaps, usd.multiply(BigDecimal("-0.10")))
+        val usdRows = views.filter { it.holding.currency == "USD" }
+        val usd = if (usdRows.all { it.investedKrw != null }) usdRows.fold(BigDecimal.ZERO) { a, v -> a + v.investedKrw!! } else null
+        return PortfolioExposure(priced.size == views.size, sectors, currencies, priced.sortedByDescending { it.valueKrw }.take(3).map { HoldingWeight(it.holding.name, PortfolioService.percent(it.valueKrw!!, total)) }, overlaps, usd?.multiply(BigDecimal("-0.10")))
     }
     private fun normalizeIndex(value: String) = value.uppercase().replace(Regex("[\\s&._-]"), "")
 }

@@ -7,7 +7,7 @@ data class PortfolioHoldingInput(
     val symbol: String,
     val name: String,
     val quantity: BigDecimal,
-    val averageCost: BigDecimal,
+    val averageCost: BigDecimal? = null,
     val currency: String = "KRW",
     val assetClass: String = "STOCK",
     val sector: String = "미분류",
@@ -37,6 +37,8 @@ data class PortfolioHoldingView(
     val quoteAsOf: Instant?,
 )
 
+data class ValuationCoverage(val pricedHoldings: Int, val totalHoldings: Int, val includedValueKrw: BigDecimal, val missingNames: List<String>)
+
 data class PortfolioResponse(
     val version: Long,
     val goal: String,
@@ -56,8 +58,10 @@ data class PortfolioResponse(
     val relatedNews: List<NewsArticleResponse>,
     val updatedAt: Instant?,
     val fxAsOf: String?,
-    val analysisVersion: String = "portfolio-rules-v2",
+    val analysisVersion: String = "portfolio-rules-v3",
     val exposure: com.firewatch.backend.service.PortfolioExposure? = null,
+    val allocationBasis: String = "MARKET_VALUE",
+    val valuationCoverage: ValuationCoverage? = null,
 ) {
     override fun toString() = "포트폴리오 분석 $analysisVersion (자산 ${holdings.size}개)"
 }

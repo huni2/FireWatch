@@ -18,6 +18,7 @@ class PortfolioApiIntegrationTest {
     @Autowired private lateinit var gameSessions: com.firewatch.backend.repository.GameSessionRepository
     @Autowired private lateinit var feed: com.firewatch.backend.repository.NewsFeedRepository
     @Autowired private lateinit var briefingNews: com.firewatch.backend.repository.NewsArticleRepository
+    @Autowired private lateinit var quotes: com.firewatch.backend.repository.MarketQuoteRepository
     @LocalServerPort private var port: Int = 0
     private val client get() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
 
@@ -115,6 +116,36 @@ class PortfolioApiIntegrationTest {
         client.get().uri("/api/portfolio").header("X-Device-Id", "portfolio-b").exchange().expectStatus().isOk.expectBody().jsonPath("$.holdings.length()").isEqualTo(0)
         client.put().uri("/api/portfolio").header("X-Device-Id", "portfolio-a").contentType(MediaType.APPLICATION_JSON).bodyValue(input(0)).exchange().expectStatus().isOk.expectBody().jsonPath("$.version").isEqualTo(1)
         client.put().uri("/api/portfolio").header("X-Device-Id", "portfolio-a").contentType(MediaType.APPLICATION_JSON).bodyValue(input(0)).exchange().expectStatus().isEqualTo(409)
+    }
+
+    @Test
+    fun `매입가 미입력은 저장 조회 후에도 null이며 평가 비중만 계산한다`() {
+        client.get().uri("/api/portfolio/capabilities").exchange().expectStatus().isOk.expectBody()
+            .jsonPath("$.optionalAverageCost").isEqualTo(true).jsonPath("$.analysisVersion").isEqualTo("portfolio-rules-v3")
+        quotes.save(com.firewatch.backend.entity.MarketQuote("005935.KS", BigDecimal("80000")))
+        val body = input(0, "005935.KS").replace("\"averageCost\":70000", "\"averageCost\":null")
+        client.put().uri("/api/portfolio").header("X-Device-Id", "optional-cost-owner").contentType(MediaType.APPLICATION_JSON).bodyValue(body)
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.holdings[0].holding.averageCost").isEmpty
+            .jsonPath("$.investedKrw").isEmpty.jsonPath("$.returnPercent").isEmpty
+            .jsonPath("$.holdings[0].returnPercent").isEmpty.jsonPath("$.totalValueKrw").isEqualTo(900000)
+            .jsonPath("$.allocation.STOCK").isEqualTo(88.89).jsonPath("$.valuationCoverage.pricedHoldings").isEqualTo(1)
+        client.get().uri("/api/portfolio").header("X-Device-Id", "optional-cost-owner").exchange().expectStatus().isOk.expectBody()
+            .jsonPath("$.holdings[0].holding.averageCost").isEmpty.jsonPath("$.exposure.largestHoldings[0].weightPercent").isEqualTo(88.89)
+        for (cost in listOf("0", "-1", "0.12345")) {
+            client.put().uri("/api/portfolio").header("X-Device-Id", "optional-cost-invalid-$cost").contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(input(0, "005935.KS").replace("\"averageCost\":70000", "\"averageCost\":$cost"))
+                .exchange().expectStatus().isBadRequest
+        }
+    }
+
+    @Test
+    fun `시세 누락 자산은 평가 합계에서 숨기지 않고 계산 범위를 명시한다`() {
+        val body = input(0, "009999.KS").replace("\"averageCost\":70000", "\"averageCost\":null")
+        client.put().uri("/api/portfolio").header("X-Device-Id", "optional-cost-missing").contentType(MediaType.APPLICATION_JSON).bodyValue(body)
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.totalValueKrw").isEmpty
+            .jsonPath("$.valuationCoverage.pricedHoldings").isEqualTo(0).jsonPath("$.valuationCoverage.totalHoldings").isEqualTo(1)
+            .jsonPath("$.valuationCoverage.includedValueKrw").isEqualTo(100000).jsonPath("$.valuationCoverage.missingNames[0]").isEqualTo("삼성전자")
+            .jsonPath("$.allocation.CASH").isEqualTo(100).jsonPath("$.exposure.complete").isEqualTo(false)
     }
 
     @Test

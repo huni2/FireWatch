@@ -1,0 +1,24 @@
+/* 보유 기록 홈과 별도 입력 패널의 밀도·반응형 배치를 정의한다. */
+.portfolio-home { display: grid; gap: 24px; max-width: 1280px; margin-inline: auto; }
+.portfolio-home-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.portfolio-home-heading h2 { margin: 4px 0 6px; letter-spacing: -.04em; }.portfolio-home-heading p { margin: 0; color: var(--ant-color-text-secondary); }
+.portfolio-summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 24px; background: var(--ant-color-bg-container); border-radius: 20px; }
+.portfolio-summary .ant-statistic-content { font-size: 32px; font-weight: 750; }.portfolio-summary > div:last-child { display: grid; gap: 6px; }
+.portfolio-home small { color: var(--ant-color-text-secondary); line-height: 1.6; }
+.portfolio-finding { display: grid; gap: 8px; padding: 18px 22px; border-radius: 16px; background: color-mix(in srgb, var(--ant-color-primary) 7%, var(--ant-color-bg-container)); }.portfolio-finding strong { font-size: 18px; line-height: 1.5; }
+.portfolio-finding a { min-height: 44px; display: flex; align-items: center; }
+.portfolio-home-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 28px; }
+.portfolio-holdings,.portfolio-allocation { min-width: 0; background: var(--ant-color-bg-container); padding: 22px; border-radius: 18px; }
+.portfolio-home h3 { font-size: 20px; margin: 0 0 12px; }.portfolio-section-heading { display: flex; justify-content: space-between; gap: 12px; }
+.portfolio-coverage,.portfolio-allocation p { color: var(--ant-color-text-secondary); font-size: 13px; line-height: 1.6; }
+.portfolio-holding-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; padding: 18px 0; border-bottom: 1px solid var(--ant-color-border-secondary); }
+.portfolio-holding-row > div:first-child,.portfolio-holding-value { display: grid; gap: 4px; }.portfolio-holding-row > .ant-space { grid-column: 1/-1; justify-self: end; }
+.portfolio-holding-row .ant-btn { min-height: 44px; }.portfolio-holding-value { text-align: right; }
+.portfolio-cash-row,.portfolio-weight-label { display: flex; justify-content: space-between; gap: 12px; }.portfolio-cash-row { padding-block: 18px; }
+.portfolio-profit summary,.portfolio-details > summary,.holding-drawer summary { min-height: 44px; cursor: pointer; display: flex; align-items: center; }.portfolio-details[open] > summary { margin-bottom: 12px; }
+.portfolio-welcome { padding: 28px; background: var(--ant-color-bg-container); border-radius: 20px; }.portfolio-welcome p { line-height: 1.7; }
+.holding-field,.holding-advanced label { display: grid; gap: 10px; }.holding-advanced { display: grid; gap: 20px; padding-block: 12px; }
+.holding-selected { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 16px; background: var(--ant-color-fill-quaternary); border-radius: 14px; }.holding-selected > div { display: grid; gap: 6px; }.holding-selected small { color: var(--ant-color-text-secondary); }
+.holding-drawer .ant-drawer-footer { padding: 16px 24px; }
+@media (max-width: 899px) { .portfolio-home-grid { grid-template-columns: 1fr; gap: 18px; }.portfolio-allocation { order: 1; }.portfolio-home { gap: 18px; }.portfolio-summary { padding: 18px; flex-wrap: wrap; }.portfolio-summary > div:last-child { font-size: 13px; }.portfolio-finding { padding: 16px 18px; }.portfolio-finding strong { font-size: 16px; } }
+@media (max-width: 599px) { .portfolio-home-heading h2 { font-size: 24px; }.portfolio-home-heading p { font-size: 13px; }.portfolio-holdings,.portfolio-allocation { padding: 18px; }.portfolio-holding-row { grid-template-columns: 1fr; }.portfolio-holding-value { text-align: left; }.portfolio-holding-row > .ant-space { grid-column: 1; grid-row: 2; justify-self: end; }.portfolio-holding-value { grid-row: 3; }.portfolio-summary .ant-statistic-content { font-size: 28px; }.portfolio-summary > div:last-child small:first-of-type { display: none; }.portfolio-summary > div:last-child { gap: 4px; }.portfolio-summary { gap: 8px; } }

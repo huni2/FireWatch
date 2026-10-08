@@ -24,7 +24,7 @@ export function focusPortfolioContext(symbol: string, portfolio?: Portfolio | nu
   const company = findCompany(symbol)
   if (company) return portfolioContext(company, portfolio)
   return portfolio.holdings.some(row => row.holding.symbol === symbol)
-    ? '내 보유 기록에 있는 자산입니다. 수량과 매입원금 비중을 확인하세요.'
+    ? '내 보유 기록에 있는 자산입니다. 수량과 등록 자산 내 비중을 확인하세요.'
     : '현재 등록한 보유 기록에는 없는 자산입니다. ETF 안의 기업 포함 여부는 별도로 확인하세요.'
 }
 

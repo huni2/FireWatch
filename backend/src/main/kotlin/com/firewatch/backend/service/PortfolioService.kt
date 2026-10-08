@@ -66,7 +66,7 @@ class PortfolioService(
         input.holdings.forEachIndexed { index, h ->
             val kr = h.symbol.uppercase().endsWith(".KS") || h.symbol.uppercase().endsWith(".KQ")
             if (kr && h.currency != "KRW" || !kr && h.currency != "USD") errors["holdings.$index.currency"] = "국내 티커(.KS/.KQ)는 KRW, 미국 티커는 USD로 입력해주세요."
-            if (!Regex("^[A-Za-z0-9]+(\\.[A-Za-z0-9]+)?$").matches(h.symbol) || h.symbol.length > 20 || h.name.isBlank() || h.name.length > 80 || h.quantity <= BigDecimal.ZERO || h.quantity > BigDecimal("1000000000") || h.averageCost <= BigDecimal.ZERO || h.averageCost > BigDecimal("1000000000") || h.currency !in setOf("KRW", "USD") || h.assetClass !in setOf("STOCK", "ETF", "BOND", "OTHER") || h.region !in setOf("KR", "US", "GLOBAL") || h.sector.length > 40 || h.underlyingIndex.length > 40 || h.quantity.scale() > 4 || h.averageCost.scale() > 4) errors["holdings.$index"] = "종목·수량·매입가·통화·분류를 확인해주세요."
+            if (!Regex("^[A-Za-z0-9]+(\\.[A-Za-z0-9]+)?$").matches(h.symbol) || h.symbol.length > 20 || h.name.isBlank() || h.name.length > 80 || h.quantity <= BigDecimal.ZERO || h.quantity > BigDecimal("1000000000") || (h.averageCost != null && (h.averageCost <= BigDecimal.ZERO || h.averageCost > BigDecimal("1000000000"))) || h.currency !in setOf("KRW", "USD") || h.assetClass !in setOf("STOCK", "ETF", "BOND", "OTHER") || h.region !in setOf("KR", "US", "GLOBAL") || h.sector.length > 40 || h.underlyingIndex.length > 40 || h.quantity.scale() > 4 || (h.averageCost != null && h.averageCost.scale() > 4)) errors["holdings.$index"] = "종목·수량·매입가·통화·분류를 확인해주세요."
             if (input.accountType != "GENERAL" && h.currency == "USD") errors["holdings.$index"] = "ISA·연금 상품은 계좌의 투자 가능 상품을 확인한 후 국내 상장 상품으로 등록해주세요."
         }
         if (errors.isNotEmpty()) throw ValidationException("포트폴리오 입력을 확인해주세요.", errors)
@@ -79,28 +79,32 @@ class PortfolioService(
         val quoteMap = quotes.findAllById(holdings.map { it.symbol.uppercase() }).associateBy { it.symbol }
         val views = holdings.map { h ->
             val multiplier = if (h.currency == "KRW") BigDecimal.ONE else fx
-            val quote = quoteMap[h.symbol.uppercase()]
-            val invested = multiplier?.let { h.averageCost.multiply(h.quantity).multiply(it) }
+            val quote = quoteMap[h.symbol.uppercase()]?.takeIf { it.price > BigDecimal.ZERO }
+            val invested = h.averageCost?.let { cost -> multiplier?.let { cost.multiply(h.quantity).multiply(it) } }
             val value = multiplier?.let { rate -> quote?.price?.multiply(h.quantity)?.multiply(rate) }
-            PortfolioHoldingView(h, invested, quote?.price, value, quote?.price?.let { percent(it.subtract(h.averageCost), h.averageCost) }, quote?.asOf)
+            PortfolioHoldingView(h, invested, quote?.price, value, h.averageCost?.let { cost -> quote?.price?.let { percent(it.subtract(cost), cost) } }, quote?.asOf)
         }
         val completeCost = views.all { it.investedKrw != null }
         val completeQuotes = views.all { it.valueKrw != null }
         val invested = if (completeCost) views.fold(BigDecimal.ZERO) { a, h -> a + h.investedKrw!! } else null
         val total = if (completeQuotes) views.fold(row.cash) { a, h -> a + h.valueKrw!! } else null
-        val allocation = if (invested != null && invested + row.cash > BigDecimal.ZERO) {
-            val grouped = views.groupBy { it.holding.assetClass }.mapValues { (_, hs) -> hs.fold(BigDecimal.ZERO) { a, h -> a + h.investedKrw!! } }
-            (grouped + ("CASH" to row.cash)).mapValues { (_, amount) -> percent(amount, invested + row.cash) }
+        val priced = views.filter { it.valueKrw != null }
+        val includedValue = priced.fold(row.cash) { a, h -> a + h.valueKrw!! }
+        val coverage = ValuationCoverage(priced.size, views.size, includedValue, views.filter { it.valueKrw == null }.map { it.holding.name })
+        val allocation = if (includedValue > BigDecimal.ZERO) {
+            val grouped = priced.groupBy { it.holding.assetClass }.mapValues { (_, hs) -> hs.fold(BigDecimal.ZERO) { a, h -> a + h.valueKrw!! } }
+            (grouped + ("CASH" to row.cash)).mapValues { (_, amount) -> percent(amount, includedValue) }
         } else emptyMap()
         val insights = mutableListOf<String>()
         if (holdings.isEmpty()) insights += "보유 자산과 현금을 등록하면 비중과 쏠림을 분석합니다."
-        if (!completeQuotes) insights += "일부 시세가 없어 전체 평가금액을 확정하지 않았습니다. 비중은 매입원금 기준입니다."
-        if (!completeCost) insights += "USD/KRW 기준 환율이 없어 외화 자산을 원화로 합산하지 않았습니다."
+        if (!completeQuotes) insights += "일부 가격 또는 환율이 없어 전체 평가금액을 확정하지 않았어요. 비중은 평가 가능한 자산과 현금 기준이에요."
+        if (holdings.any { it.averageCost == null }) insights += "매입가가 없는 자산이 있어 전체 투자원금과 손익을 계산하지 않았어요."
+        if (holdings.any { it.currency == "USD" } && fx == null) insights += "환율 자료가 없어 달러 자산을 원화로 합산하지 않았어요."
         if (views.any { it.quoteAsOf != null && java.time.Duration.between(it.quoteAsOf, Instant.now()).toDays() > 3 }) insights += "3일 이상 지난 시세가 있습니다. 기준 시각과 휴장 여부를 확인하세요."
-        if (invested != null && invested > BigDecimal.ZERO) {
-            views.filter { it.investedKrw!! > invested.multiply(BigDecimal("0.4")) }.forEach { insights += "${it.holding.name}: 투자원금의 40%를 초과합니다. 단일 자산 집중도를 점검하세요." }
-            views.groupBy { it.holding.sector }.filterKeys { it != "미분류" && it.isNotBlank() }.forEach { (sector, hs) ->
-                if (hs.fold(BigDecimal.ZERO) { a, h -> a + h.investedKrw!! } > invested.multiply(BigDecimal("0.6"))) insights += "$sector 분야가 투자원금의 60%를 초과합니다."
+        if (priced.size > 1 && includedValue > BigDecimal.ZERO) {
+            priced.filter { it.valueKrw!! > includedValue.multiply(BigDecimal("0.4")) }.forEach { insights += "등록한 자산에서 ${it.holding.name} 비중이 40%를 넘어요. 보유 구성을 확인해보세요." }
+            priced.groupBy { it.holding.sector }.filterKeys { it != "미분류" && it.isNotBlank() }.forEach { (sector, hs) ->
+                if (hs.fold(BigDecimal.ZERO) { a, h -> a + h.valueKrw!! } > includedValue.multiply(BigDecimal("0.6"))) insights += "평가 가능한 등록 자산에서 $sector 분야가 60%를 넘어요."
             }
         }
         holdings.filter { it.underlyingIndex.isNotBlank() }.groupBy { it.underlyingIndex.trim().uppercase() }.filterValues { it.size > 1 }.forEach { (index, _) -> insights += "$index 추종 상품을 여러 개 보유하고 있습니다. 같은 지수의 중복 노출을 확인하세요." }
@@ -113,7 +117,7 @@ class PortfolioService(
         if (contribution.isNotEmpty()) contribution["CASH"] = contribution.getValue("CASH") + row.monthlyContribution - contribution.values.fold(BigDecimal.ZERO) { a, v -> a + v }
         val articles = (if (holdings.isEmpty()) emptyList() else newsFeed.findTop50ByOrderByPubDateDescCollectedAtDesc().map { NewsArticleResponse(it.title, it.link, it.description, it.pubDate) } + latest?.id?.let { news.findByBriefingId(it).map { n -> n.toResponse() } }.orEmpty())
             .distinctBy { it.link }.filter { article -> holdings.any { h -> article.title.contains(h.name, true) || (h.symbol.length >= 3 && Regex("(?i)(?<![A-Za-z0-9])${Regex.escape(h.symbol)}(?![A-Za-z0-9])").containsMatchIn(article.title)) } }.take(10)
-        return PortfolioResponse(row.version, row.goal, row.horizonMonths, row.riskLevel, row.accountType, row.monthlyContribution, row.cash, views, invested, total, if (total != null && invested != null) percent(total - row.cash - invested, invested) else null, allocation, target, contribution, insights, articles, row.updatedAt.takeIf { persisted }, latest?.briefingDate?.toString().takeIf { fx != null }, exposure = PortfolioExposureAnalysis.analyze(views, row.cash))
+        return PortfolioResponse(row.version, row.goal, row.horizonMonths, row.riskLevel, row.accountType, row.monthlyContribution, row.cash, views, invested, total, if (total != null && invested != null) percent(total - row.cash - invested, invested) else null, allocation, target, contribution, insights, articles, row.updatedAt.takeIf { persisted }, latest?.briefingDate?.toString().takeIf { fx != null }, exposure = PortfolioExposureAnalysis.analyze(views, row.cash), valuationCoverage = coverage)
     }
 
     companion object {

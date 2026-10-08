@@ -1,12 +1,13 @@
 import { Text, View } from 'react-native'
+import { portfolioCoverageText } from '../../../../shared/holding-registration'
 import type { Portfolio } from '../../../../shared/investing'
 
 export function PortfolioExposureCard({ portfolio }: { portfolio: Portfolio }) {
   const exposure = portfolio.exposure
   if (!exposure) return null
   return <View className="gap-3 rounded-xl border border-line bg-surface p-4">
-    <Text className="text-lg font-bold text-ink">분야·통화·중복 노출 점검</Text><Text className="text-xs text-muted">현금 포함 매입원금 기준 · 외화 원금은 기준 환율로 환산하며 과거 환전 원가와 다를 수 있습니다.</Text>
-    {!exposure.complete ? <Text className="text-muted">환율 자료가 없어 전체 비중을 계산하지 않았습니다.</Text> : <>
+    <Text className="text-lg font-bold text-ink">분야·통화·중복 노출 점검</Text><Text className="text-xs text-muted">{portfolioCoverageText(portfolio)}</Text>
+    {!exposure.complete && <Text className="text-muted">가격·환율이 확인되지 않은 자산은 아래 비중에서 제외했어요.</Text>}{<>
       <Text className="font-bold text-ink">가장 큰 보유 자산</Text>{exposure.largestHoldings.map(row => <Text key={row.name} className="text-muted">{row.name} · {row.weightPercent}%</Text>)}
       <Text className="font-bold text-ink">분야별 비중</Text>{Object.entries(exposure.sectorWeights).map(([name, weight]) => <Text key={name} className="text-muted">{name} · {weight}%</Text>)}
       <Text className="font-bold text-ink">거래 통화별 비중</Text>{Object.entries(exposure.tradingCurrencyWeights).map(([name, weight]) => <Text key={name} className="text-muted">{name} · {weight}%</Text>)}
