@@ -1,6 +1,6 @@
 # FireWatch — 현재 맥락
 
-최신화: 2026-10-08. 웹 UI 코드 `79cd12f`·백엔드/Android 설정 코드 `9991091` 기준이며 이후 문서 커밋은 기능 변경이 아니다. 이전 설계·운영 이력은 [[log]]와 `Decisions/` 디렉터리를 확인한다.
+최신화: 2026-10-08. 웹/모바일 게임 UI 코드 `3a1d35b`·백엔드 코드 `9991091`·Android versionCode3 설정 `3855eac` 기준이다. 이전 설계·운영 이력은 [[log]]와 `Decisions/` 디렉터리를 확인한다.
 
 ## 제품 정체성과 범위
 
@@ -10,6 +10,8 @@
 
 기본 디자인은 라이트·오렌지, 웹 다크 모드는 선택형이다. 기능·UI/UX 정밀 점검과 웹 화면 개선을 공개 배포했다. 자산·기업 점검·로그인을 우선 배치하고 뉴스 검색/실패 상태와 미저장 편집 보존을 검증했다. 상세 결과와 화면은 docs/reviews/2026-10-08-release-ui-ux-review.md에 기록했다.
 
+게임은 자체 생성 마스코트 중심 로비와 짧은44px 버튼으로 정리했다. 웹 hover/클릭 설명 메뉴, 앱 터치 하단 메뉴, 시작 설정 접기를 제공한다. 웹 공개 번들 검증 완료, 앱 실기기는 APP-21에 남긴다. docs/product/game-scout-menu.md 참조.
+
 ## 현재 배포와 검증
 
 | 영역 | 현재 상태 |
@@ -18,9 +20,9 @@
 | Backend | Kotlin 2.3.21·Java21·Spring Boot4.1.0·WebFlux/WebClient+JPA/JDBC. Render `https://firewatch-backend-q3cv.onrender.com` |
 | DB | 운영 Supabase PostgreSQL, 개발 H2. 데이터 초기화 금지 |
 | Mobile | Expo SDK57·React Native0.86·NativeWind·Expo Router. 최신 APK 실기기 검증과 Play 출시 준비 중 |
-| CI | 18cb55d의 main run37704342437 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·클라이언트 검사 포함 |
+| CI | 3a1d35b의 main run37707081625 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·클라이언트 검사 포함 |
 
-웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 마지막 기능 배포는 37f8979d, 웹 UI는79cd12f, 백엔드 수집/검색과 Android 설정은9991091이다. Render에서 새 page 경계400/빈2페이지를 확인했다. 작업 브랜치는 codex/release-hardening이며 이후 문서 커밋은 배포된 기능을 변경하지 않는다. 백엔드 변경 없는 문서 작업은 불필요한 Render 재시작을 피한다.
+웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 마지막 공개 기능 배포는4b4d0f5e·게임 UI3a1d35b이며 백엔드 수집/검색은9991091이다. Render에서 새 page 경계400/빈2페이지를 확인했다. 작업 브랜치는 codex/release-hardening이다. Android 최신 UI 설치본은3855eac/versionCode3·fb0c49b4 빌드 접수 상태이며 설치 검증은 별도다. 백엔드 변경 없는 작업은 불필요한 Render 재시작을 피한다.
 
 ## 핵심 동작
 

@@ -53,11 +53,6 @@
 
 ## 열린 과제 — 웹(WEB)
 
-### WEB-27. 게임 마스코트 로비·짧은 버튼 공개 배포
-**구현 완료** — 자체 생성 이미지 중심 로비와 hover/클릭 설명 메뉴, 최소44px의 내용 폭 버튼, 시작 설정 접기. 기존 주문/초기화/턴 흐름 회귀 통과.
-**남은 일** — 새 로비 브라우저 검증 완료 후 공개 웹 배포/배포 번들 및 CI 확인. 앱 구현·설치 항목은 APP-21에 유지.
-**근거** — docs/product/game-scout-menu.md.
-
 ### WEB-19. 실제 로그인 세션의 운영 권한·로그아웃 최종 확인
 **구현·배포 완료** — GIS 공식 버튼·세션·연결 기기 관리·운영자 메뉴/서버 인증. 사용자가 웹 실제 Google 로그인 성공 확인. 일반/운영/만료/충돌/SDK/로그아웃 실패 fixture 검증 완료.
 **남은 일** — 실제 운영자 세션의 감사로그 접근과 실제 일반 계정 제한, 로그아웃/재로그인 후 계정 기록 보존을 사용자 기기에서 확인.
@@ -68,7 +63,7 @@
 
 ### APP-21. 최신 Android 설치·실수신·출시 제출 검증
 **구현·설정 완료** — Android OAuth ID·운영 API·Firebase 파일·EAS 프로젝트/preview/production 설정 연결. 사용자 FCM V1 등록 확인. 출시 검사·타입/lint·Android export·CI 통과.
-**진행(2026-10-08)** — Free 잔여 한도/비용0 확인 후 소스9991091·versionCode2로 preview bf7a706a-1e44-497d-af79-068b206e874e 빌드 접수, IN_PROGRESS 확인. https://expo.dev/accounts/huni2/projects/mobile/builds/bf7a706a-1e44-497d-af79-068b206e874e
+**진행(2026-10-08)** — 소스9991091·versionCode2의 bf7a706a FINISHED/APK 생성 확인. 이후 마스코트 로비·설명 하단 메뉴·짧은 버튼을 구현해 타입/lint·Android export 성공. Free 사용2/30·비용0 확인 후 소스3855eac·versionCode3의 preview fb0c49b4-39da-4e0a-9b67-328dfa4a8f95 빌드 접수. https://expo.dev/accounts/huni2/projects/mobile/builds/fb0c49b4-39da-4e0a-9b67-328dfa4a8f95
 **남은 일** — 새 APK 완료/설치, Google 서명 SHA-1과 실제 로그인 왕복, 아래 통합 체크리스트, production AAB 테스트 트랙·실제 target SDK·Play 제출 양식 대조.
 **빌드 주의** — 과거 cde6e85의 preview3a953867은 현재 소스가 아니며 설치 검증 완료로 사용할 수 없다. 2026-10-08 EAS 조회에서 과거 preview3a953867의 FINISHED·APK 생성 확인. 소스 cde6e85라 최신 설치 확인을 대신하지 않는다.
 **완료 기준** — 설치 기기에서 아래 항목을 확인·기록하고 AAB/테스트 트랙 검증. JS 번들·설정 검사 성공만으로 종료하지 않는다.
@@ -102,6 +97,7 @@
 
 | 과제 | 제목 | 결과 | 근거 |
 |---|---|---|---|
+| WEB-27 | 게임 마스코트 로비·짧은 버튼 | 3a1d35b·Cloudflare4b4d0f5e 공개 배포. 로비4폭/다크·hover/터치·키보드·시작 실패, 주문5노트북/3모바일·초기화/체결/턴/복기 공개 번들 fixture 성공. main CI37707081625 전체 성공. 앱 설치는 APP-21 | docs/product/game-scout-menu.md |
 | BE-12 | Google OAuth 클라이언트 ID/서버 허용 목록 | 설정 완료. Android·웹 ID Render 등록/배포, 사용자 실제 웹 로그인 성공. Android 실왕복은 APP-21 | Google 로그인 문서·사용자 설정/로그인 확인 |
 | BE-18 | 감사로그 인증 방향 결정·구현 | 완료. 운영자 검증 세션/서버 전용 키 적용·배포. 익명/공개키401·일반403 통합 검사, 운영 익명 차단 확인 | OperatorAccess·AuditLogController·ADR0021·계정 통합 검사 |
 | BE-19 | 브리핑 푸시 전체 실패 재시도 | 완료. 전부 실패하면 당일 완료 표시하지 않음, 다음 due 조회 가능. 무수신자/성공 처리 회귀 통과·배포 | PushService·PushServiceTest·9667eb1 CI |
