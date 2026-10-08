@@ -1,6 +1,6 @@
 # FireWatch — 현재 맥락
 
-최신화: 2026-10-08. 웹/앱 메뉴 아이콘 코드 `6df743f`·백엔드 코드 `9991091`·Android versionCode4 설정 `6cedd8e` 기준이다. 이전 설계·운영 이력은 [[log]]와 `Decisions/` 디렉터리를 확인한다.
+최신화: 2026-10-08. 웹/앱 메뉴·게임 아이콘 코드 `6ada301`·백엔드 코드 `9991091`·Android versionCode4 설정 `6cedd8e` 기준이다. 이전 설계·운영 이력은 [[log]]와 `Decisions/` 디렉터리를 확인한다.
 
 ## 제품 정체성과 범위
 
@@ -15,6 +15,8 @@
 게임의 자체 생성 마스코트는 장식이다. 순위/규칙/등록/복기/종료는 각44px 버튼이며 웹 hover/focus 설명·터치 직접 실행을 제공한다. 웹 계정/설정/도움말 직접 링크, 앱 주요4탭·분야별 보조 탭으로 정리했다. 웹 공개 번들 검증 완료, 앱 실기기는 APP-21에 남긴다. docs/product/game-scout-menu.md 참조.
 
 메뉴20종에 게임 행동/결과9종을 추가해 FireWatch 불꽃 서명의 전용29종 SVG를 적용했다. shared/firewatch-icons.ts를 웹/앱이 공유하고 주요4메뉴·상단 도구·게임5도구에 적용했다. 라이트/다크·작은 화면·이름/44px 행동 유지·웹 공개 검사와 Android export 성공. docs/product/firewatch-icons.md 참조. 기존6cedd8e/versionCode4 APK에는 이 아이콘이 없어 새 빌드/설치가 필요하다.
+
+게임 아이콘 WEB-32/APP-27 완료.6ada301·Cloudflare f4bb3275 공개 검증과 CI37770230386 웹/앱 성공 확인. 백엔드 코드는 변경하지 않았다.
 
 ## 현재 배포와 검증
 

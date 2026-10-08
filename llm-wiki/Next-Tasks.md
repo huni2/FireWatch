@@ -53,11 +53,6 @@
 
 ## 열린 과제 — 웹(WEB)
 
-### WEB-32. 게임 행동·결과 전용 아이콘
-**진행** — 불꽃 SVG를 시작/턴/주문/선택/결과/알림에 적용하고 작은 화면·다크/거래 회귀·공개 배포를 검증한다.
-**근거** — docs/product/game-icons-checklist.md.
-
-
 ### WEB-19. 실제 로그인 세션의 운영 권한·로그아웃 최종 확인
 **구현·배포 완료** — GIS 공식 버튼·세션·연결 기기 관리·운영자 메뉴/서버 인증. 사용자가 웹 실제 Google 로그인 성공 확인. 일반/운영/만료/충돌/SDK/로그아웃 실패 fixture 검증 완료.
 **남은 일** — 실제 운영자 세션의 감사로그 접근과 실제 일반 계정 제한, 로그아웃/재로그인 후 계정 기록 보존을 사용자 기기에서 확인.
@@ -71,17 +66,12 @@
 
 ## 열린 과제 — 모바일(APP)
 
-### APP-27. 게임 행동 전용 벡터 적용
-**진행** — 웹과 같은 원본을 시작/턴/주문/선택/결과에 적용하고 타입/lint·Android export를 검증한다. 실제 설치는 APP-21.
-**근거** — docs/product/game-icons-checklist.md.
-
-
 ### APP-21. 최신 Android 설치·실수신·출시 제출 검증
 **구현·설정 완료** — Android OAuth ID·운영 API·Firebase 파일·EAS 프로젝트/preview/production 설정 연결. 사용자 FCM V1 등록 확인. 출시 검사·타입/lint·Android export·CI 통과.
 **진행(2026-10-08)** — 소스9991091·versionCode2의 bf7a706a FINISHED/APK 생성 확인. 이후 마스코트 로비·설명 하단 메뉴·짧은 버튼을 구현해 타입/lint·Android export 성공. Free 사용2/30·비용0 확인 후 소스3855eac·versionCode3의 preview fb0c49b4-39da-4e0a-9b67-328dfa4a8f95 빌드 접수. https://expo.dev/accounts/huni2/projects/mobile/builds/fb0c49b4-39da-4e0a-9b67-328dfa4a8f95
 **남은 일** — 새 APK 완료/설치, Google 서명 SHA-1과 실제 로그인 왕복, 아래 통합 체크리스트, production AAB 테스트 트랙·실제 target SDK·Play 제출 양식 대조.
 **최신 설치본** — 개별 버튼·공통 메뉴 수정은 이전 versionCode3에 포함되지 않는다. Free 사용3/30·비용0 확인 후6cedd8e/versionCode4의 preview3c4b54ea-4233-49ff-af39-feefd05c85f1 접수. https://expo.dev/accounts/huni2/projects/mobile/builds/3c4b54ea-4233-49ff-af39-feefd05c85f1
-**추가 UI** — 전용 FireWatch 메뉴 SVG는 웹/앱 공유 원본으로 구현하고 앱 타입/lint·Android export를 확인했다. 기존6cedd8e/versionCode4 APK에는 포함되지 않아 새 빌드·설치/TalkBack 확인이 필요하다. 앱 구현 APP-26과 실제 설치를 구분한다.
+**추가 UI** — 전용 FireWatch 메뉴 SVG는 웹/앱 공유 원본으로 구현하고 앱 타입/lint·Android export를 확인했다. 기존6cedd8e/versionCode4 APK에는 포함되지 않아 새 빌드·설치/TalkBack 확인이 필요하다. 앱 구현 APP-26/27과 실제 설치를 구분한다.
 **마지막 상태** — versionCode4·소스6cedd8e 빌드 IN_PROGRESS. APK 설치 완료로 처리하지 않는다.
 **빌드 주의** — 과거 cde6e85의 preview3a953867은 현재 소스가 아니며 설치 검증 완료로 사용할 수 없다. 2026-10-08 EAS 조회에서 과거 preview3a953867의 FINISHED·APK 생성 확인. 소스 cde6e85라 최신 설치 확인을 대신하지 않는다.
 **완료 기준** — 설치 기기에서 아래 항목을 확인·기록하고 AAB/테스트 트랙 검증. JS 번들·설정 검사 성공만으로 종료하지 않는다.
@@ -115,6 +105,8 @@
 
 | 과제 | 제목 | 결과 | 근거 |
 |---|---|---|---|
+| WEB-32 | 게임 행동·결과 전용 아이콘 | 6ada301·Cloudflare f4bb3275 공개 배포. 게임9종 추가/총29종 공유 SVG. 공개4조건 커스텀 버튼·선택·대비·실패 안내, 게임5노트북/3모바일 거래·초기화·턴·복기 성공. CI37770230386 웹·앱 성공 확인 | docs/product/game-icons-checklist.md |
+| APP-27 | 게임 행동 전용 벡터 | 시작/턴/픽 매수/주문/초기화/선택/결과·사건 적용. 타입/lint·Android export·CI 모바일 성공. 기존APK 미포함, 새 빌드·실기기 확인은 APP-21 | docs/product/game-icons-checklist.md |
 | WEB-31 | FireWatch 전용 메뉴 아이콘 | 6df743f·Cloudflare3685ce90 운영 배포. 전용 SVG20종 공유 원본·주요 메뉴/도구 적용, 공개5폭/다크·장식 접근성/권한/넘침0·전체36라이트/4다크·게임5노트북/3모바일 성공. main CI37767735481 전체 성공 | docs/product/firewatch-icons.md |
 | APP-26 | 전용 벡터 메뉴 적용 | 웹과 같은 원본·기존 react-native-svg로 홈4탭/상단 설정·도움말/게임 도구 구현. 타입/lint·Android export·main CI37767735481 모바일 성공. 기존versionCode4에는 미포함, 새 빌드/설치/TalkBack은 APP-21로 이관 | docs/product/firewatch-icons.md |
 | WEB-29 | 전체 화면 정보 우선순위·기준 날짜 | 1196e47/671cd60·Cloudflare0c0aa9e9 운영 배포. 지표 날짜·홈 발견·회사 차트/후보 행동·뉴스/브리핑·게임/도움말 정리. 공개 fixture36라이트/4다크·후보 상세/도움말 검색·게임5노트북/3모바일·브리핑 후속4폭/다크·실제 공개 GET6화면 성공, 운영 쓰기0. 최종 main CI37764107701 전체 성공. 실제 이용자/접근성은 WEB-30, Android 설치는 APP-21 | docs/reviews/2026-10-08-whole-ui-design-review.md |

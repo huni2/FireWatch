@@ -25,3 +25,5 @@
 앱 코드는 적용됐지만 기존6cedd8e/versionCode4 APK에는 포함되지 않는다. 새 빌드/기기 설치 및 실제 TalkBack 확인은 APP-21에 남긴다.
 
 6df743f·Cloudflare3685ce90 공개 배포 후 전용 SVG5폭/다크·메뉴 이름/권한·오류/넘침0 성공. 공개 화면 fixture36라이트/4다크·후보 상세/도움말 검색·게임5노트북/3모바일 거래 회귀 성공. 테마 전환이 끝난 실제 메뉴 색도 확인했다. [main CI37767735481](https://github.com/huni2/FireWatch/actions/runs/37767735481)의 서버/H2·PostgreSQL·복원·웹/앱 전체 성공. WEB-31 종료·APP-26 구현 완료/설치 확인 이관. 시험 주문/저장은 fixture 안에서만 수행했다.
+
+게임 후속6ada301·Cloudflare f4bb3275에서 전용9종 추가/총29종 적용. 게임 커스텀 버튼/선택/단색 대비/실패4조건·5노트북/3모바일 거래·초기화·턴·복기 성공. CI37770230386 웹/앱 성공 확인. 상세 계획/검증은 game-icons-checklist.md 참조.
