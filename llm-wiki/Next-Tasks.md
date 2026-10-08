@@ -53,6 +53,11 @@
 
 ## 열린 과제 — 웹(WEB)
 
+### WEB-31. FireWatch 전용 메뉴 아이콘 공개 적용
+**구현 완료·배포 검증 중** — 불꽃 서명을 공유하는20종 SVG·웹/앱 렌더러. 웹 주요4메뉴·계정/설정/도움말/더보기·게임5도구에 적용하고 이름/설명/선택/권한/44px 행동을 유지한다.
+**검증** — 웹 build/lint·로컬5폭/다크·전용 SVG/접근성/운영 메뉴 숨김 성공. 게임 거래5노트북/3모바일 회귀 성공. 공개 배포·CI 검증 후 종료한다.
+**근거** — docs/product/firewatch-icons.md. 앱 설치는 APP-21로 이관한다.
+
 ### WEB-19. 실제 로그인 세션의 운영 권한·로그아웃 최종 확인
 **구현·배포 완료** — GIS 공식 버튼·세션·연결 기기 관리·운영자 메뉴/서버 인증. 사용자가 웹 실제 Google 로그인 성공 확인. 일반/운영/만료/충돌/SDK/로그아웃 실패 fixture 검증 완료.
 **남은 일** — 실제 운영자 세션의 감사로그 접근과 실제 일반 계정 제한, 로그아웃/재로그인 후 계정 기록 보존을 사용자 기기에서 확인.
@@ -71,6 +76,7 @@
 **진행(2026-10-08)** — 소스9991091·versionCode2의 bf7a706a FINISHED/APK 생성 확인. 이후 마스코트 로비·설명 하단 메뉴·짧은 버튼을 구현해 타입/lint·Android export 성공. Free 사용2/30·비용0 확인 후 소스3855eac·versionCode3의 preview fb0c49b4-39da-4e0a-9b67-328dfa4a8f95 빌드 접수. https://expo.dev/accounts/huni2/projects/mobile/builds/fb0c49b4-39da-4e0a-9b67-328dfa4a8f95
 **남은 일** — 새 APK 완료/설치, Google 서명 SHA-1과 실제 로그인 왕복, 아래 통합 체크리스트, production AAB 테스트 트랙·실제 target SDK·Play 제출 양식 대조.
 **최신 설치본** — 개별 버튼·공통 메뉴 수정은 이전 versionCode3에 포함되지 않는다. Free 사용3/30·비용0 확인 후6cedd8e/versionCode4의 preview3c4b54ea-4233-49ff-af39-feefd05c85f1 접수. https://expo.dev/accounts/huni2/projects/mobile/builds/3c4b54ea-4233-49ff-af39-feefd05c85f1
+**추가 UI** — 전용 FireWatch 메뉴 SVG는 웹/앱 공유 원본으로 구현하고 앱 타입/lint·Android export를 확인했다. 기존6cedd8e/versionCode4 APK에는 포함되지 않아 새 빌드·설치/TalkBack 확인이 필요하다. 앱 구현 APP-26과 실제 설치를 구분한다.
 **마지막 상태** — versionCode4·소스6cedd8e 빌드 IN_PROGRESS. APK 설치 완료로 처리하지 않는다.
 **빌드 주의** — 과거 cde6e85의 preview3a953867은 현재 소스가 아니며 설치 검증 완료로 사용할 수 없다. 2026-10-08 EAS 조회에서 과거 preview3a953867의 FINISHED·APK 생성 확인. 소스 cde6e85라 최신 설치 확인을 대신하지 않는다.
 **완료 기준** — 설치 기기에서 아래 항목을 확인·기록하고 AAB/테스트 트랙 검증. JS 번들·설정 검사 성공만으로 종료하지 않는다.

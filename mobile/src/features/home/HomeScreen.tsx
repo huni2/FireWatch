@@ -17,6 +17,8 @@ import { useLatestBriefing } from '../briefing/hooks/useLatestBriefing'
 import { IndicesScreen } from '../indices/IndicesScreen'
 import { NewsScreen } from '../news/NewsScreen'
 import { StocksScreen } from '../stocks/StocksScreen'
+import { FirewatchIcon } from '../../components/FirewatchIcon'
+import type { FirewatchIconName } from '../../../../shared/firewatch-icons'
 
 type HomeTab = 'portfolio' | 'candidates' | 'brief' | 'stocks' | 'indices' | 'news' | 'short-term' | 'practice'
 
@@ -37,11 +39,11 @@ export function HomeScreen() {
   const [newsQuery, setNewsQuery] = useState('')
   const exploration = ['candidates', 'stocks', 'short-term'].includes(activeTab)
   const market = ['news', 'brief', 'indices'].includes(activeTab)
-  const primaryTabs: { key: HomeTab; label: string; selected: boolean }[] = [
-    { key: 'portfolio', label: '내 기록', selected: activeTab === 'portfolio' },
-    { key: 'candidates', label: '기업 탐색', selected: exploration },
-    { key: 'news', label: '시장 소식', selected: market },
-    { key: 'practice', label: '게임', selected: activeTab === 'practice' },
+  const primaryTabs: { key: HomeTab; label: string; icon: FirewatchIconName; selected: boolean }[] = [
+    { key: 'portfolio', label: '내 기록', icon: 'record', selected: activeTab === 'portfolio' },
+    { key: 'candidates', label: '기업 탐색', icon: 'companies', selected: exploration },
+    { key: 'news', label: '시장 소식', icon: 'news', selected: market },
+    { key: 'practice', label: '게임', icon: 'game', selected: activeTab === 'practice' },
   ]
   const discoveryNavigation = {
     onOpenStock: (symbol: string) => { setStockTarget({ symbol }); setActiveTab('stocks') },
@@ -79,8 +81,8 @@ export function HomeScreen() {
           headerTintColor: tokens.light.text,
           headerRight: () => (
             <View style={{ flexDirection: 'row', gap: 6 }}>
-              <Pressable accessibilityRole="button" accessibilityLabel="도움말 열기" accessibilityHint="브라우저에서 서비스 이용 방법을 엽니다." onPress={() => void Linking.openURL('https://firewatch-eqp.pages.dev/guide')} style={{ minHeight: 44, minWidth: 44, justifyContent: 'center' }}><Text style={{ color: tokens.light.muted, fontSize: 13 }}>도움말</Text></Pressable>
-              <Pressable accessibilityRole="button" accessibilityLabel="계정·설정 열기" onPress={() => router.push('/settings')} style={{ minHeight: 44, minWidth: 44, justifyContent: 'center' }}><Text style={{ color: tokens.light.text, fontSize: 13 }}>설정</Text></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="도움말 열기" accessibilityHint="브라우저에서 서비스 이용 방법을 엽니다." onPress={() => void Linking.openURL('https://firewatch-eqp.pages.dev/guide')} style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="help" size={22} color={tokens.light.muted} /></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="계정·설정 열기" onPress={() => router.push('/settings')} style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="settings" size={22} /></Pressable>
             </View>
           ),
         }}
@@ -88,7 +90,8 @@ export function HomeScreen() {
 
       <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: tokens.light.border, backgroundColor: tokens.light.surface }}>
         {primaryTabs.map((tab) => (
-          <Pressable accessibilityRole="tab" accessibilityState={{ selected: tab.selected }} key={tab.key} onPress={() => { if (!tab.selected) setActiveTab(tab.key) }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 48, paddingVertical: 10 }}>
+          <Pressable accessibilityRole="tab" accessibilityLabel={tab.label} accessibilityState={{ selected: tab.selected }} key={tab.key} onPress={() => { if (!tab.selected) setActiveTab(tab.key) }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 60, paddingVertical: 6, gap: 2 }}>
+            <FirewatchIcon name={tab.icon} size={22} color={tab.selected ? tokens.light.accent : tokens.light.muted} />
             <Text className={`text-sm font-semibold ${tab.selected ? 'text-brand' : 'text-muted'}`}>
               {tab.label}
             </Text>

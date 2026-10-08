@@ -274,6 +274,15 @@ button:focus-visible,a:focus-visible { outline: 2px solid var(--ant-color-primar
 .briefing-highlights li { line-height: 1.7; }
 .briefing-excerpt { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .briefing-excerpt p { margin: 0; }
+.firewatch-icon { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+.nav-icon { display: inline-flex; }
+.game-quick-actions button:disabled .firewatch-icon { opacity: .4; }
+@media(max-width:600px) {
+ .site-navigation .nav-link { flex-direction: column; gap: 2px; min-height: 60px; padding-block: 4px; }
+ .site-navigation .nav-icon { display: inline-flex; }
+ .site-navigation .firewatch-icon { width: 22px; height: 22px; }
+ .site-navigation .nav-mobile-label { font-size: 12px; }
+}
 .briefing-full-text { font-size: 15px; line-height: 1.8; }
 .context-navigation a { color: var(--ant-color-text-secondary); background: transparent; border-color: transparent; border-radius: 0; border-bottom: 2px solid transparent; }
 .context-navigation a[aria-current=page] { color: var(--ant-color-primary); border-color: transparent; border-bottom-color: var(--ant-color-primary); }

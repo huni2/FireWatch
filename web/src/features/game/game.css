@@ -152,6 +152,11 @@
 .game-quick-actions button:hover:not(:disabled) { color: var(--ant-color-primary); border-color: var(--ant-color-primary); }
 .game-quick-actions button:focus-visible { outline: 2px solid var(--ant-color-primary); outline-offset: 3px; }
 .game-quick-actions button:disabled { color: var(--ant-color-text-disabled); cursor: default; }
+@media(max-width:599px) {
+ .game-page .game-turn-tools { width: 100%; min-width: 0; }
+ .game-page .game-quick-actions button { padding-inline: 6px; gap: 4px; }
+ .game-quick-actions .firewatch-icon { width: 18px; height: 18px; }
+}
 @media(max-width:599px) { .game-lobby-mascot { width: 164px; height: 164px; }.game-quick-actions button { padding-inline: 10px; } }
 .game-lobby { width: min(100%, 640px); justify-self: center; padding: 32px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--ant-color-border-secondary); border-radius: 28px; background: var(--ant-color-bg-container); }
 .game-lobby h1 { font-size: 30px; margin: 8px 0 0; }

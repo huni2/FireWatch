@@ -3,20 +3,7 @@ import { GuidedTour } from './GuidedTour'
 import { AnnouncementPopup } from './AnnouncementPopup'
 import { showFirstVisitGuide } from './guideEvents'
 import { Button, Drawer, Layout, Switch, Tooltip } from 'antd'
-import {
-  AuditOutlined,
-  FundOutlined,
-  LineChartOutlined,
-  DashboardOutlined,
-  MoonOutlined,
-  MenuOutlined,
-  QuestionCircleOutlined,
-  ReadOutlined,
-  SettingOutlined,
-  SunOutlined,
-  TrophyOutlined,
-  UserOutlined,
-} from '@ant-design/icons'
+import { FirewatchIcon } from './FirewatchIcon'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { setAccountOperator, useIsOperator } from '../lib/operatorAccess'
 import { useLoginSession, watchLoginSession } from '../lib/loginSession'
@@ -37,20 +24,20 @@ interface NavItem {
 
 // Keep four daily destinations visible and every other route discoverable in 전체 메뉴.
 const CONTENT_ITEMS: NavItem[] = [
-  { key: '/', icon: <DashboardOutlined />, label: '내 포트폴리오' },
-  { key: '/candidates', icon: <FundOutlined />, label: '투자 후보' },
-  { key: '/briefing', icon: <ReadOutlined />, label: '브리핑' },
-  { key: '/stocks', icon: <LineChartOutlined />, label: '종목' },
-  { key: '/indices', icon: <FundOutlined />, label: '지수' },
-  { key: '/news', icon: <ReadOutlined />, label: '뉴스' },
-  { key: '/short-term', icon: <LineChartOutlined />, label: '단기 투자' },
-  { key: '/game', icon: <TrophyOutlined />, label: '가상투자 게임' },
-  { key: '/guide', icon: <QuestionCircleOutlined />, label: '도움말' },
+  { key: '/', icon: <FirewatchIcon name="record" />, label: '내 포트폴리오' },
+  { key: '/candidates', icon: <FirewatchIcon name="companies" />, label: '투자 후보' },
+  { key: '/briefing', icon: <FirewatchIcon name="briefing" />, label: '브리핑' },
+  { key: '/stocks', icon: <FirewatchIcon name="stocks" />, label: '종목' },
+  { key: '/indices', icon: <FirewatchIcon name="indices" />, label: '지수' },
+  { key: '/news', icon: <FirewatchIcon name="news" />, label: '뉴스' },
+  { key: '/short-term', icon: <FirewatchIcon name="short-term" />, label: '단기 투자' },
+  { key: '/game', icon: <FirewatchIcon name="game" />, label: '가상투자 게임' },
+  { key: '/guide', icon: <FirewatchIcon name="help" />, label: '도움말' },
 ]
 
 const ADMIN_ITEMS: NavItem[] = [
-  { key: '/audit-log', icon: <AuditOutlined />, label: '감사로그' },
-  { key: '/settings', icon: <SettingOutlined />, label: '설정' },
+  { key: '/audit-log', icon: <FirewatchIcon name="audit" />, label: '감사로그' },
+  { key: '/settings', icon: <FirewatchIcon name="settings" />, label: '설정' },
 ]
 const COMPACT_LABELS: Record<string, string> = { '/': '내 기록', '/candidates': '기업 탐색', '/news': '시장 소식', '/game': '게임' }
 
@@ -101,16 +88,16 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
           </span>
         </Link>
         <nav className="header-tools" aria-label="계정과 이용 도구">
-          {[{ to: '/account', label: '내 계정', description: 'Google 연결과 로그인 기기 관리', icon: <UserOutlined /> }, { to: '/settings', label: '설정', description: '관심 키워드와 알림 수신 설정', icon: <SettingOutlined /> }, { to: '/guide', label: '도움말', description: '서비스와 투자 연습 이용 방법', icon: <QuestionCircleOutlined /> }].map(item => <Tooltip key={item.to} title={item.description} trigger={['hover', 'focus']}><Link to={item.to} aria-label={item.label} aria-current={location.pathname === item.to ? 'page' : undefined}><span aria-hidden="true">{item.icon}</span><span className="header-tool-label">{item.label}</span></Link></Tooltip>)}
-          <Button className="all-menu-button" aria-label="더보기 메뉴" icon={<MenuOutlined />} aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><span className="header-tool-label">더보기</span></Button>
+          {[{ to: '/account', label: '내 계정', description: 'Google 연결과 로그인 기기 관리', icon: <FirewatchIcon name="account" /> }, { to: '/settings', label: '설정', description: '관심 키워드와 알림 수신 설정', icon: <FirewatchIcon name="settings" /> }, { to: '/guide', label: '도움말', description: '서비스와 투자 연습 이용 방법', icon: <FirewatchIcon name="help" /> }].map(item => <Tooltip key={item.to} title={item.description} trigger={['hover', 'focus']}><Link to={item.to} aria-label={item.label} aria-current={location.pathname === item.to ? 'page' : undefined}><span aria-hidden="true">{item.icon}</span><span className="header-tool-label">{item.label}</span></Link></Tooltip>)}
+          <Button className="all-menu-button" aria-label="더보기 메뉴" icon={<FirewatchIcon name="more" />} aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><span className="header-tool-label">더보기</span></Button>
         </nav>
         <Switch
           className="header-theme-switch"
           aria-label="다크 모드"
           checked={darkMode}
           onChange={onToggleDarkMode}
-          checkedChildren={<MoonOutlined />}
-          unCheckedChildren={<SunOutlined />}
+          checkedChildren={<FirewatchIcon name="moon" size={16} />}
+          unCheckedChildren={<FirewatchIcon name="sun" size={16} />}
           style={{ flexShrink: 0, marginInlineStart: 16 }}
         />
         </div>
@@ -121,8 +108,8 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
       <Drawer title="더보기" open={menuOpen} onClose={() => setMenuOpen(false)} width="min(360px, 100vw)">
         <p className="account-note">{session ? 'Google 연결 세션으로 이용 중입니다. 내 계정에서 연결 상태와 기기를 확인하세요.' : '현재 브라우저의 익명 기록으로 이용 중입니다. Google 연결 상태는 내 계정에서 확인하세요.'}</p>
         <nav aria-label="계정 메뉴" className="all-menu-list">
-          <Link to="/account" aria-current={location.pathname === '/account' ? 'page' : undefined} onClick={() => setMenuOpen(false)}><UserOutlined /><span>내 계정<small>Google 연결 · 기기 관리</small></span></Link>
-          <Link to="/community" aria-current={location.pathname === '/community' ? 'page' : undefined} onClick={() => setMenuOpen(false)}><ReadOutlined /><span>공지사항 · 의견 보내기<small>업데이트 확인 · 문제 신고 · 내 문의</small></span></Link>
+          <Link to="/account" aria-current={location.pathname === '/account' ? 'page' : undefined} onClick={() => setMenuOpen(false)}><FirewatchIcon name="account" /><span>내 계정<small>Google 연결 · 기기 관리</small></span></Link>
+          <Link to="/community" aria-current={location.pathname === '/community' ? 'page' : undefined} onClick={() => setMenuOpen(false)}><FirewatchIcon name="news" /><span>공지사항 · 의견 보내기<small>업데이트 확인 · 문제 신고 · 내 문의</small></span></Link>
           {[...CONTENT_ITEMS, ...ADMIN_ITEMS].filter(item => ['/settings', '/guide', ...(isOperator ? ['/audit-log'] : [])].includes(item.key)).map(item => <Link key={item.key} to={item.key} aria-current={active(item) ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{item.icon}<span>{item.label}</span></Link>)}
         </nav>
         <div className="drawer-appearance"><span>다크 모드<small>밝은 화면과 어두운 화면 선택</small></span><Switch aria-label="메뉴 다크 모드" checked={darkMode} onChange={onToggleDarkMode} /></div>
