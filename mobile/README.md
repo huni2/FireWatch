@@ -15,10 +15,18 @@ Expo Go에서 볼 수 있는 화면과 설치 앱 검증을 구분한다. Google
 
 ~~~bash
 npm run release:check
-npx eas-cli build --platform android --profile preview
+npm run build:apk
 ~~~
 
 EAS 프로젝트는 이미 app.json에 연결되어 있다. eas.json은 운영 API·Android 공개 OAuth ID를 공통 설정으로 전달한다. preview는 APK, production은 AAB다. 두 Android 프로필의 post-install 검사는 누락된 Firebase 파일·잘못된 API/OAuth/패키지 설정을 차단한다.
+
+### 웹·서버 배포와 별도 실행
+
+2026-10-09 사용자 결정에 따라 APK 빌드·배포는 과제와 디자인 후속조치를 모두 마친 뒤 진행한다. 그전에는 EAS 추가 빌드를 요청하지 않고 코드·화면·로컬 번들 검증만 수행한다. 이미 접수한 versionCode5는 재요청하지 않는다.
+
+`build:apk`는 사용자가 모바일 설치본을 요청할 때만 수동 실행한다. 웹/서버 배포, Git push, CI 검증에서는 실행하지 않는다. 실행 전 무료 잔여량을 확인하고 모바일 변경을 모아 한 번만 빌드한다. 명령은 APK 생성 요청이며 Play 게시를 실행하지 않는다.
+
+CI의 타입·린트·출시 설정 테스트와 로컬 `expo export`는 EAS APK 빌드 횟수를 쓰지 않는다. 웹만 수정했거나 서버 API만 배포했으면 APK를 다시 만들 필요가 없다. 앱 소스·공유 코드·네이티브 설정이 바뀌어 설치본에 반영해야 할 때 별도로 만든다. 현재 EAS Update를 배포 경로로 설정하지 않았으므로 앱 코드가 기존 APK에 자동 반영된다고 안내하지 않는다.
 
 로컬 google-services.json 또는 EAS 파일 변수 GOOGLE_SERVICES_JSON이 필요하다. app.config.js가 연결한다. EAS FCM V1 자격증명과 Google 서명 SHA-1은 별도로 설정·검증한다. 서버 운영 키·클라이언트 비밀번호는 앱 환경변수에 넣지 않는다.
 

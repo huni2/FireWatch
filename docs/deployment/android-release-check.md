@@ -2,6 +2,8 @@
 
 이번 출시 보강의 타입/린트/Android JS 번들은 검증했다. 실제 APK 설치·Google 로그인·푸시·계정 삭제는 별도이며 검증 완료로 표시하지 않는다.
 
+웹·서버 배포 요청만으로 APK를 생성하지 않는다. 사용자에게 모바일 설치본 요청이 있을 때 `mobile/`에서 `npm run build:apk`를 별도로 실행한다. 기존 진행 중 빌드를 먼저 확인하고 무료 잔여량과 소스 버전을 대조한다. CI 타입/린트·로컬 export는 EAS 빌드가 아니다.
+
 ## 준비
 
 - 사용자 제공 Android OAuth 공개 ID를 로컬 `mobile/.env`와 `eas.json` 공통 프로필에 반영했다. 운영 API도 EAS에 명시했다. ID 설정과 실제 로그인 성공은 구분한다.
@@ -24,8 +26,8 @@
 8. 일반 사용자 문의 접수 → 내 문의 재조회 → 운영자 웹 답변 → 앱 답변 확인. 타인의 문의와 운영 관리가 노출되지 않아야 한다.
 9. Android/ALL 대상 공지가 있을 때 첫 진입 모달·닫기·이동 중 재노출 없음·오늘 숨김·KST 자정 후 다음 실행을 확인한다. 운영 DB에 검증 공지를 자동 생성하지 않는다.
 
-## 최신 설치본 빌드 (2026-10-08)
+## 최신 설치본 빌드 (2026-10-09)
 
-[Preview APK bf7a706a](https://expo.dev/accounts/huni2/projects/mobile/builds/bf7a706a-1e44-497d-af79-068b206e874e)는 source9991091·versionCode2로 접수했고 IN_PROGRESS를 확인했다. Free 잔여 한도 확인 후 한 번만 빌드했다. 완료 여부와 실제 설치·로그인·알림 수신은 아직 미확인이다.
+[이전 versionCode4 빌드](https://expo.dev/accounts/huni2/projects/mobile/builds/3c4b54ea-4233-49ff-af39-feefd05c85f1)는 source6cedd8e로 FINISHED다. 커스텀 메뉴/게임 SVG와 자산 등록 개편은 포함되지 않는다. 최신 소스7594daa·versionCode5로 preview APK 빌드를 요청했다. Free 사용4/30·비용0을 확인했고 타입·린트·출시 검사8개·Android export를 통과했다. 현재 상태와 설치 확인은 `docs/product/android-preview-20261009/checklist.md`에 기록한다.
 
 예전 cde6e85의 preview3a953867은 FINISHED/APK 생성 상태를 확인했지만 최근 모바일 변경을 포함하지 않는다. Expo Go 또는 과거 APK 설치를 최신 기능 검증으로 처리하지 않는다.

@@ -22,15 +22,21 @@
 
 ## 현재 배포와 검증
 
+WEB-36 설정·공지 상태/입력 보존 후속 구현과1366/390px 브라우저 검증 완료. 공개 배포 전이며 GitHub Issue#3·PR#4로 기록했다. 사용자 결정에 따라 앞으로 현재 과제부터 Issue에 완료 기준, PR에 변경/검증/남은 확인을 연결한다. 구현 완료와 실기기/운영 확인을 구분하고 미확인 항목은 자동 종료하지 않는다. docs/product/settings-followup/checklist.md 참조. EAS 추가 빌드0회.
+
+2026-10-09 사용자 결정. APK 빌드·배포는 과제와 디자인 후속조치를 모두 완료한 후 진행한다. 그전에는 코드·타입·린트·화면·로컬 번들 검증만 수행하고 EAS 빌드를 추가 요청하지 않는다. 이미 접수된 versionCode5는 재요청하지 않으며 사용자 대상 배포/설치 안내도 최종 점검 뒤 진행한다.
+
+Android APK는 웹·서버 배포와 별도다. 일반 배포 때 자동/임의 EAS 빌드를 요청하지 않는다. 사용자가 모바일 설치본을 명시적으로 요청했을 때만 무료 잔여량·기존 빌드를 확인한 후 `mobile`의 `npm run build:apk`를 실행한다. CI 타입·린트·출시 설정 검사는 유지하며 EAS 무료 횟수를 소비하지 않는다.
+
 | 영역 | 현재 상태 |
 |---|---|
 | Web | React 18·Vite·Ant Design 5. Cloudflare Pages `https://firewatch-eqp.pages.dev` |
 | Backend | Kotlin 2.3.21·Java21·Spring Boot4.1.0·WebFlux/WebClient+JPA/JDBC. Render `https://firewatch-backend-q3cv.onrender.com` |
 | DB | 운영 Supabase PostgreSQL, 개발 H2. 데이터 초기화 금지 |
 | Mobile | Expo SDK57·React Native0.86·NativeWind·Expo Router. 최신 APK 실기기 검증과 Play 출시 준비 중 |
-| CI | 6df743f의 main37767735481 전체 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·웹/모바일 검사 포함 |
+| CI | b9b9a3c의 main37796805618 전체 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·웹/모바일 검사 포함 |
 
-웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 마지막 공개 기능 배포는3685ce90·웹/앱 메뉴 소스6df743f이며 백엔드 수집/검색은9991091이다. Render에서 새 page 경계400/빈2페이지를 확인했다. 작업 브랜치는 codex/release-hardening이다. Android 설치본은6cedd8e/versionCode4·3c4b54ea 빌드 접수 상태이며 새 아이콘은 미포함·설치 검증은 별도다. 백엔드 변경 없는 작업은 불필요한 Render 재시작을 피한다.
+웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 마지막 공개 기능 배포는fb6c6a7e·웹 소스b9b9a3c이며 서버 nullable 매입가/v3 계약도 확인됐다. 작업 브랜치는 codex/release-hardening이다. Android 이전6cedd8e/versionCode4·3c4b54ea는 FINISHED이며 최신 아이콘/등록 화면은 미포함이다. 최신7594daa/versionCode5 preview APK 빌드 요청과 실제 설치는 APP-21에서 기록한다. 백엔드 변경 없는 작업은 불필요한 Render 재시작을 피한다.
 
 ## 핵심 동작
 

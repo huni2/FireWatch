@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Alert, App, Button, Card, Form, Skeleton, Space, Tag, TimePicker, Typography } from 'antd'
 import { CheckCircleFilled } from '@ant-design/icons'
@@ -27,28 +27,32 @@ const MAX_KEYWORDS = 20
 export function SettingsPage() {
   const isOperator = useIsOperator()
   const { message } = App.useApp()
-  const { data, loading, error, isSlow, reload } = useSettings()
+  const { data, loading, error, isSlow, reload, replaceData } = useSettings()
   const latestBriefing = useLatestBriefing()
   const [pushTime, setPushTime] = useState<string>('08:00')
   const [keywords, setKeywords] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false)
+  const editing = useRef(false)
+  const dirty = Boolean(data && (pushTime !== data.pushTime || JSON.stringify(keywords) !== JSON.stringify(data.interestKeywords)))
 
   // 서버(외부 시스템)에서 비동기로 도착한 값으로 편집 가능한 로컬 상태를 동기화 — 정당한 effect 용례.
   useEffect(() => {
-    if (data) {
+    if (data && !editing.current) {
       setPushTime(data.pushTime)
       setKeywords(data.interestKeywords)
     }
   }, [data])
 
   const handleSave = async () => {
+    if (!data || loading || error || saving || !dirty) return
     setSaving(true)
     try {
       // 관심 종목은 이 화면이 아니라 종목 화면에서 관리 — 여기서는 그대로 넘겨서 덮어쓰지 않는다.
-      await updateSettings({ pushTime, interestKeywords: keywords })
+      const saved = await updateSettings({ pushTime, interestKeywords: keywords })
+      editing.current = false
+      replaceData(saved)
       message.success({ content: '설정을 저장했습니다.', icon: successIcon })
-      reload()
     } catch (err) {
       if (err instanceof ApiRequestError) {
         message.error(err.apiError.message)
@@ -60,7 +64,7 @@ export function SettingsPage() {
     }
   }
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
         <Typography.Title level={4} style={{ margin: 0 }}>
@@ -74,42 +78,44 @@ export function SettingsPage() {
     )
   }
 
-  return (
-    <Space direction="vertical" size={16} style={{ width: '100%' }}>
-      <Link to="/community">공지사항 · 문제 신고·의견 · 내 문의</Link>
-      <Typography.Title level={4} style={{ margin: 0 }}>
-        설정
-      </Typography.Title>
-      <Card {...SECTION_CARD_PROPS} title="알림 설정">
-        <Space direction="vertical" size={16} style={{ width: '100%' }}>
-          {error && <Alert type="error" message="설정을 불러오지 못했습니다" description={error.message} showIcon />}
+  if (!data) return <Card title="설정을 확인하지 못했어요"><p>저장된 설정은 유지돼요. 다시 불러온 뒤 변경해주세요.</p><Button onClick={reload}>설정 다시 불러오기</Button></Card>
 
-          <Form layout="vertical">
-            <Form.Item label="푸시 수신 시간 · 한국 시간(KST)" extra="발송 여부를 15분 간격으로 확인하므로 설정 시각보다 늦게 도착할 수 있습니다. 브리핑은 한국 시간 07시 이후 준비됩니다.">
+  return (
+    <Space className="settings-page" direction="vertical" size={20} style={{ width: '100%', maxWidth: 860, marginInline: 'auto', display: 'flex' }}>
+      <header className="compact-intro"><Typography.Title level={2}>알림과 관심 키워드</Typography.Title><p>브리핑을 받을 시간과 자주 살펴볼 주제를 정해주세요.</p></header>
+      <Card {...SECTION_CARD_PROPS} title="브리핑 설정">
+        <Space direction="vertical" size={16} style={{ width: '100%' }}>
+          {error && <Alert type="error" message="설정을 다시 확인하지 못했어요" description="편집한 내용은 유지했어요. 다시 확인한 뒤 저장해주세요." showIcon action={<Button onClick={reload}>다시 확인</Button>} />}
+          {loading && <p role="status">설정을 다시 확인하고 있어요. 입력한 내용은 유지돼요.</p>}
+
+          <Form layout="vertical" disabled={saving}>
+            <Form.Item label="브리핑 받을 시간" extra="한국 시간(KST) 기준이에요. 브리핑은 오전 7시 이후 준비하며, 발송을 15분마다 확인해 조금 늦게 도착할 수 있어요.">
               <TimePicker
+                aria-label="브리핑 받을 시간"
+                allowClear={false}
                 value={dayjs(pushTime, 'HH:mm')}
                 format="HH:mm"
-                onChange={(value) => setPushTime(value ? value.format('HH:mm') : '08:00')}
+                onChange={(value) => { editing.current = true; setPushTime(value ? value.format('HH:mm') : '08:00') }}
               />
             </Form.Item>
             <Form.Item label="관심 키워드">
-              <KeywordInput value={keywords} onChange={setKeywords} />
+              <KeywordInput value={keywords} disabled={saving} onChange={next => { editing.current = true; setKeywords(next) }} />
               <TrendingKeywordSuggestions
                 trendingKeywords={latestBriefing.data?.trendingKeywords ?? []}
                 current={keywords}
                 onAdd={(keyword) => {
-                  if (keywords.length >= MAX_KEYWORDS) return
+                  if (saving || keywords.length >= MAX_KEYWORDS) return
+                  editing.current = true
                   setKeywords([...keywords, keyword])
                 }}
+                disabled={saving || keywords.length >= MAX_KEYWORDS}
               />
             </Form.Item>
-            <Button type="primary" onClick={handleSave} loading={saving}>
-              저장
-            </Button>
+            <Space wrap><Button type="primary" onClick={handleSave} loading={saving} disabled={loading || Boolean(error) || !dirty}>변경사항 저장</Button><Typography.Text role="status" type="secondary">{dirty ? '아직 저장하지 않은 변경이 있어요.' : '저장된 설정이에요.'}</Typography.Text></Space>
           </Form>
 
           <Typography.Text type="secondary" style={{ display: 'block' }}>
-            관심 종목(주식)은 종목 화면에서 관리합니다.
+            관심 기업은 <Link to="/stocks">기업 탐색</Link>에서 관리할 수 있어요.
           </Typography.Text>
         </Space>
       </Card>
@@ -117,6 +123,7 @@ export function SettingsPage() {
       {data && <WebPushCard settings={data} onSubscribed={reload} />}
       {isOperator && <OperatorPushSetup />}
       {isOperator && <details onToggle={event => setDiagnosticsOpen(event.currentTarget.open)}><summary>운영자 수집 상태 확인</summary>{diagnosticsOpen && <CollectionNotice />}</details>}
+      <Space wrap><Link to="/account">내 계정과 연결 기기</Link><Link to="/community">공지·문의</Link><Link to="/guide">도움말</Link></Space>
     </Space>
   )
 }
@@ -127,10 +134,12 @@ function TrendingKeywordSuggestions({
   trendingKeywords,
   current,
   onAdd,
+  disabled,
 }: {
   trendingKeywords: string[]
   current: string[]
   onAdd: (keyword: string) => void
+  disabled: boolean
 }) {
   const suggestions = trendingKeywords.filter((keyword) => !current.includes(keyword))
   if (suggestions.length === 0) return null
@@ -142,9 +151,9 @@ function TrendingKeywordSuggestions({
       </Typography.Text>
       <Space wrap>
         {suggestions.map((keyword) => (
-          <Tag key={keyword} style={{ cursor: 'pointer' }} onClick={() => onAdd(keyword)}>
+          <Button key={keyword} disabled={disabled} onClick={() => onAdd(keyword)} aria-label={`${keyword} 키워드 추가`}>
             + {keyword}
-          </Tag>
+          </Button>
         ))}
       </Space>
     </Space>

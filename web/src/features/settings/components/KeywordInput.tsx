@@ -11,6 +11,7 @@ interface KeywordInputProps {
   /** false면 입력 필드를 숨기고 태그 목록만 보여준다 — 종목 화면(WEB-11)이 검색/직접입력 탭을 전환할 때 사용. */
   showInput?: boolean
   labelForValue?: (value: string) => string
+  disabled?: boolean
 }
 
 // Design Ref: §5.4 Settings 체크리스트 — 관심 키워드 추가(Enter)/삭제, 최대 20개. 종목 화면(관심 종목)에서도 재사용.
@@ -22,11 +23,13 @@ export function KeywordInput({
   validate,
   showInput = true,
   labelForValue,
+  disabled = false,
 }: KeywordInputProps) {
   const [draft, setDraft] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   const addKeyword = () => {
+    if (disabled) return
     const trimmed = draft.trim()
     if (!trimmed || value.includes(trimmed) || value.length >= maxCount) {
       setDraft('')
@@ -47,7 +50,7 @@ export function KeywordInput({
     <Space direction="vertical" style={{ width: '100%' }}>
       <Space wrap>
         {value.map((keyword) => (
-          <Tag key={keyword} closable onClose={() => onChange(value.filter((k) => k !== keyword))}>
+          <Tag key={keyword} closable={!disabled} onClose={() => onChange(value.filter((k) => k !== keyword))}>
             {labelForValue?.(keyword) ?? keyword}
           </Tag>
         ))}
@@ -55,10 +58,11 @@ export function KeywordInput({
       {showInput && (
         <>
           <Input
+            aria-label="관심 키워드 입력"
             status={error ? 'error' : undefined}
             placeholder={value.length >= maxCount ? `최대 ${maxCount}개까지 등록 가능` : placeholder}
             value={draft}
-            disabled={value.length >= maxCount}
+            disabled={disabled || value.length >= maxCount}
             onChange={(e) => {
               setDraft(e.target.value)
               setError(null)

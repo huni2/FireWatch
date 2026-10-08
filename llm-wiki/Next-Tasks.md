@@ -53,6 +53,13 @@
 
 ## 열린 과제 — 웹(WEB)
 
+### WEB-36. 설정·공지 보조 화면의 상태와 입력 보존
+**구현·로컬 검증 완료(2026-10-09)** — 조회 실패 기본값 저장 차단·재시도, 알림 구독 후 초안 보존, 저장 실패 입력 유지·응답 즉시 반영, 추천 키워드 키보드 버튼, 설정 제목·KST 안내·연결 링크 정리. 공지 로딩/실패/빈 상태 분리와 재시도/의견 보내기.
+**검증** — web build/lint 성공(기존 푸시 훅 경고1개), 1366/390px 브라우저 가상 API에서 실패/재시도/키보드/초안 보존·넘침/JS 오류0 확인. 운영 시험 저장0·EAS 빌드0.
+**GitHub 기록** — [Issue #3](https://github.com/huni2/FireWatch/issues/3)와 [PR #4](https://github.com/huni2/FireWatch/pull/4). 사용자 결정에 따라 현재 과제부터 Issue/PR로 기록한다.
+**남은 일** — PR 검토·CI와 웹 공개 배포 검증. 실제 이용자·스크린리더는 WEB-30. 공개 확인 전 Issue 자동 종료하지 않는다.
+**근거** — docs/product/settings-followup/checklist.md.
+
 ### WEB-19. 실제 로그인 세션의 운영 권한·로그아웃 최종 확인
 **구현·배포 완료** — GIS 공식 버튼·세션·연결 기기 관리·운영자 메뉴/서버 인증. 사용자가 웹 실제 Google 로그인 성공 확인. 일반/운영/만료/충돌/SDK/로그아웃 실패 fixture 검증 완료.
 **남은 일** — 실제 운영자 세션의 감사로그 접근과 실제 일반 계정 제한, 로그아웃/재로그인 후 계정 기록 보존을 사용자 기기에서 확인.
@@ -68,12 +75,14 @@
 ## 열린 과제 — 모바일(APP)
 
 ### APP-21. 최신 Android 설치·실수신·출시 제출 검증
+**사용자 결정(2026-10-09)** — APK 빌드·배포는 과제와 디자인 후속조치 모두 완료 후 진행한다. 그전 EAS 추가 요청·사용자 대상 APK 배포는 보류하고 코드/화면 검증을 진행한다. 이미 접수된 versionCode5를 다시 빌드하지 않는다.
 **구현·설정 완료** — Android OAuth ID·운영 API·Firebase 파일·EAS 프로젝트/preview/production 설정 연결. 사용자 FCM V1 등록 확인. 출시 검사·타입/lint·Android export·CI 통과.
 **진행(2026-10-08)** — 소스9991091·versionCode2의 bf7a706a FINISHED/APK 생성 확인. 이후 마스코트 로비·설명 하단 메뉴·짧은 버튼을 구현해 타입/lint·Android export 성공. Free 사용2/30·비용0 확인 후 소스3855eac·versionCode3의 preview fb0c49b4-39da-4e0a-9b67-328dfa4a8f95 빌드 접수. https://expo.dev/accounts/huni2/projects/mobile/builds/fb0c49b4-39da-4e0a-9b67-328dfa4a8f95
 **남은 일** — 새 APK 완료/설치, Google 서명 SHA-1과 실제 로그인 왕복, 아래 통합 체크리스트, production AAB 테스트 트랙·실제 target SDK·Play 제출 양식 대조.
 **최신 설치본** — 개별 버튼·공통 메뉴 수정은 이전 versionCode3에 포함되지 않는다. Free 사용3/30·비용0 확인 후6cedd8e/versionCode4의 preview3c4b54ea-4233-49ff-af39-feefd05c85f1 접수. https://expo.dev/accounts/huni2/projects/mobile/builds/3c4b54ea-4233-49ff-af39-feefd05c85f1
 **추가 UI** — 전용 FireWatch 메뉴 SVG는 웹/앱 공유 원본으로 구현하고 앱 타입/lint·Android export를 확인했다. 기존6cedd8e/versionCode4 APK에는 포함되지 않아 새 빌드·설치/TalkBack 확인이 필요하다. 앱 구현 APP-26/27/28과 실제 설치를 구분한다.
-**마지막 상태** — versionCode4·소스6cedd8e 빌드 IN_PROGRESS. APK 설치 완료로 처리하지 않는다.
+**마지막 상태(2026-10-09)** — versionCode4·소스6cedd8e의 FINISHED/APK 생성 확인. 최신 아이콘·자산 등록을 포함할 versionCode5를 준비한다. EAS Free4/30·비용0 확인. 실제 설치 확인은 미완료다. docs/product/android-preview-20261009/checklist.md 참조.
+**최신 접수** — 소스7594daa/versionCode5·preview fefb17ae-ce86-417f-9016-c9230010c1b3 업로드 완료. 타입/lint·출시 검사8개·Android export 통과. https://expo.dev/accounts/huni2/projects/mobile/builds/fefb17ae-ce86-417f-9016-c9230010c1b3 . 공식 무료 한도는 월 Android15회+iOS15회이며 총 BUILDS30 조회와 구분한다. APK 완료/설치는 미확인이다.
 **빌드 주의** — 과거 cde6e85의 preview3a953867은 현재 소스가 아니며 설치 검증 완료로 사용할 수 없다. 2026-10-08 EAS 조회에서 과거 preview3a953867의 FINISHED·APK 생성 확인. 소스 cde6e85라 최신 설치 확인을 대신하지 않는다.
 **완료 기준** — 설치 기기에서 아래 항목을 확인·기록하고 AAB/테스트 트랙 검증. JS 번들·설정 검사 성공만으로 종료하지 않는다.
 
@@ -106,6 +115,7 @@
 
 | 과제 | 제목 | 결과 | 근거 |
 |---|---|---|---|
+| APP-29 | APK 별도 수동 실행 | CI EAS 호출 없음 확인, build:apk 명령·웹/서버 배포와 분리 기준 기록. 일반 배포는 APK 요청을 포함하지 않음. 이번 작업 EAS 빌드0회 | docs/product/android-build-separation/plan.md |
 | WEB-35 | 첫 등록·발견·근거 확인과 키보드 동선 | b9b9a3c·Cloudflare fb6c6a7e, CI37796805618 전체 성공. 공개 첫 흐름2폭/키보드/초점/장애·별도200% 텍스트8화면·첫 안내2폭·실제 시장 GET6화면 성공. 운영 시험 기록0, 실제 관찰/스크린리더는 WEB-30 | docs/reviews/2026-10-09-first-use-accessibility.md |
 | WEB-34 | 탐색 바·드롭다운과 필터 정렬 | ab795ae·Cloudflare cd53c728 공개 배포. Select 외곽/내부44px, PC 탭 기준선·팝업 폭/간격, 모바일 필터 줄바꿈, 차트 선택 메뉴·게임 label 범위 수정. 공개4폭/다크 탐색·등록5조건·게임5노트북과 모바일·실제 GET6화면 성공. CI37781276263 전체 성공 | docs/product/control-alignment/plan.md |
 | WEB-33 | 자산 등록 분리와 홈 점검 연결 | b0a4a7a 구현·서버 v3 확인 후 ab795ae 웹과 함께 cd53c728 공개 배포. 공개5조건 선택 매입가/충돌 보존/수정/현금·계획/중복/부분 평가 fixture 성공, 운영 데이터 쓰기0. 설치 앱은 APP-21 | docs/product/portfolio-registration/plan.md |
