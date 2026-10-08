@@ -20,6 +20,7 @@ import com.firewatch.backend.repository.GameTransactionRepository
 import com.firewatch.backend.repository.NewsArticleRepository
 import com.firewatch.backend.web.NotFoundException
 import com.firewatch.backend.web.ValidationException
+import com.firewatch.backend.web.dto.toResponse
 import io.mockk.every
 import io.mockk.clearMocks
 import io.mockk.mockk
@@ -37,12 +38,41 @@ import kotlin.test.assertTrue
 // 실제 Briefing 2건(day1=10/1, day2=10/2)만으로 "턴 덱 셔플 후 매수→다음턴→가격변동 반영→
 // 보유 초과 매도 거부→덱 소진 시 종료"까지 한 번에 검증한다.
 class GameServiceTest {
-    private fun virtualSession(seed: Long, short: Boolean = false): GameSession {
+    private fun virtualSession(seed: Long, short: Boolean = false, version: Int = 1): GameSession {
         stubRepositories("")
-        val session = GameSession(id = 1L, deviceId = "device-a", turnDatesRaw = GameSimulation.dates(seed).joinToString(","), startingCash = BigDecimal("10000000"), allowShortSelling = short, simulationSeed = seed)
+        val session = GameSession(id = 1L, deviceId = "device-a", turnDatesRaw = GameSimulation.dates(seed).joinToString(","), startingCash = BigDecimal("10000000"), allowShortSelling = short, simulationSeed = seed, simulationVersion = version)
         every { gameSessionRepository.findByDeviceIdAndStatus("device-a", GameSessionStatus.ACTIVE) } returns session
         every { gameSessionRepository.save(any()) } answers { firstArg() }
         return session
+    }
+
+    @Test
+    fun `미지원 규칙은 기록을 바꾸거나 가격을 현재 버전으로 대체하지 않는다`() {
+        val session = virtualSession(42L, version = 999)
+        every { gameSessionRepository.findByIdAndDeviceId(1L, "device-a") } returns session
+        assertFailsWith<ValidationException> { service.startGame("device-a", GameDifficulty.NORMAL, false) }
+        assertFailsWith<ValidationException> { service.getCurrentTurn("device-a") }
+        assertFailsWith<ValidationException> { service.nextTurn("device-a") }
+        assertFailsWith<ValidationException> { service.endGame("device-a") }
+        assertFailsWith<ValidationException> { service.trade("device-a", GameInstrumentType.STOCK, "AURA", GameTradeAction.BUY, BigDecimal.ONE) }
+        assertFailsWith<ValidationException> { service.preview("device-a", GameInstrumentType.STOCK, "AURA", GameTradeAction.BUY, BigDecimal.ONE, null) }
+        assertFailsWith<ValidationException> { service.getRankingSnapshot("device-a", 1L) }
+        assertEquals(GameSessionStatus.ACTIVE, session.status)
+        assertEquals(0, session.currentTurnIndex)
+        assertEquals(null, session.endedAt)
+        verify(exactly = 0) { gameSessionRepository.save(any()) }
+        verify(exactly = 0) { gameTransactionRepository.save(any()) }
+        verify(exactly = 0) { stockService.fetchPriceHistory(any(), any()) }
+    }
+
+    @Test
+    fun `버전1 게임은 저장 규칙으로 재조회하고 API에 구분해 반환한다`() {
+        virtualSession(42L)
+        val turn = service.getCurrentTurn("device-a")
+        assertEquals(1, turn.simulationVersion)
+        assertEquals(1, turn.toResponse().simulationVersion)
+        assertEquals(GameSimulation.picks(42L, 0), turn.gamePicks)
+        assertEquals(turn.stockPrices, service.getCurrentTurn("device-a").stockPrices)
     }
 
     @Test
@@ -182,6 +212,7 @@ class GameServiceTest {
         assertEquals(0, turn.turnIndex)
         assertEquals(2030, turn.turnDate.year)
         assertTrue(turn.simulation)
+        assertEquals(1, turn.simulationVersion)
         assertEquals(GameSessionStatus.ACTIVE, turn.status)
         assertEquals(BigDecimal("10000000.00"), turn.portfolioValue)
     }
@@ -351,6 +382,7 @@ class GameServiceTest {
         assertEquals(0, session.currentTurnIndex)
         every { briefingRepository.findByBriefingDate(day1) } returns briefing(day1, 1L, BigDecimal.ZERO)
         val view = service.getCurrentTurn("device-a")
+        assertEquals(null, view.toResponse().simulationVersion)
         assertEquals(null, view.holdings.single().value)
         assertEquals(null, view.portfolioValue)
         assertEquals(BigDecimal("9998000"), view.cash)

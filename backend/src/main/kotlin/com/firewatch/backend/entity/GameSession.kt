@@ -50,6 +50,9 @@ class GameSession(
     var endedAt: Instant? = null,
     @Column(name = "simulation_seed")
     var simulationSeed: Long? = null,
+    // 기존 행은 버전1로 보존한다. 기업/난수 규칙 변경은 새 세션의 버전에서만 적용한다.
+    @Column(name = "simulation_version", nullable = false, updatable = false)
+    val simulationVersion: Int = 1,
 )
 
 fun GameSession.turnDates(): List<LocalDate> = turnDatesRaw.split(",").map { LocalDate.parse(it.trim()) }

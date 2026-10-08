@@ -15,6 +15,15 @@ data class GamePriceDriver(val instrumentType: GameInstrumentType, val symbol: S
 
 /** Deterministic fiction. Never calls a financial, news or generative AI provider. */
 object GameSimulation {
+    const val CURRENT_VERSION = 1
+
+    // 미지원 버전을 현재 규칙으로 대체하면 기존 평가 결과가 바뀔 수 있다.
+    fun forVersion(version: Int): GameSimulation {
+        if (version != 1) throw com.firewatch.backend.web.ValidationException(
+            "이 게임의 규칙 버전을 지원하지 않습니다. 기록을 유지한 채 운영자에게 문의해주세요.", emptyMap())
+        return this
+    }
+
     fun histories(seed: Long, currentTurn: Int): List<GameAssetHistory> {
         val targets = assets.map { Triple(GameInstrumentType.STOCK, it.symbol, it.name) } + listOf(
             Triple(GameInstrumentType.KOSPI, null, "코스피"), Triple(GameInstrumentType.KOSDAQ, null, "코스닥"),
