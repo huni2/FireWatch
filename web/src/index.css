@@ -143,6 +143,13 @@ button:focus-visible,a:focus-visible { outline: 2px solid var(--ant-color-primar
 .nav-mobile-label { display: none; }
 .all-menu-button.ant-btn { min-height: 44px; }
 .all-menu-list { display: grid; gap: 24px; }
+.header-tools { display: flex; gap: 4px; margin-left: auto; align-items: center; }
+.header-tools a { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 44px; min-height: 44px; padding: 0 10px; color: var(--ant-color-text-secondary); border-radius: 12px; }
+.header-tools a:hover,.header-tools a[aria-current=page] { color: var(--ant-color-primary); background: var(--ant-color-fill-tertiary); }
+.header-tools a:focus-visible { outline: 2px solid var(--ant-color-primary); outline-offset: 2px; }
+.all-menu-list small,.drawer-appearance small { display: block; color: var(--ant-color-text-secondary); font-size: 12px; margin-top: 4px; }
+.drawer-appearance { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; padding: 20px 12px; border-top: 1px solid var(--ant-color-border-secondary); }
+@media(max-width:599px) { .header-tool-label,.header-theme-switch { display: none !important; }.header-tools { gap: 0; }.header-tools a { padding: 0; }.header-tools .all-menu-button { width: 44px; padding: 0; }.site-brand-row > a { margin-right: 0 !important; } }
 .all-menu-list h2 { margin: 0 0 8px; font-size: 13px; color: var(--ant-color-text-secondary); }
 .all-menu-list a { display: flex; align-items: center; gap: 12px; padding: 12px; min-height: 48px; color: var(--ant-color-text); border-radius: 10px; }
 .all-menu-list a[aria-current=page] { color: var(--ant-color-primary); font-weight: 700; background: var(--ant-color-fill-tertiary); }

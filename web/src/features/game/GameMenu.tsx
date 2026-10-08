@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { Dropdown } from 'antd'
+import { Tooltip } from 'antd'
 import { BookOutlined, HistoryOutlined, LogoutOutlined, TrophyOutlined, UploadOutlined } from '@ant-design/icons'
 import mascot from '../../../../shared/assets/firewatch-lobby-scout.png'
 
@@ -17,31 +16,23 @@ interface Props {
 }
 
 export function GameMenu({ lobby, busy, canPublish, canReplay, canEnd, onRules, onRanking, onPublish, onReplay, onEnd }: Props) {
-  const [open, setOpen] = useState(false)
-  const label = (title: string, description: string) => <span className="game-menu-label"><strong>{title}</strong><small>{description}</small></span>
-  return <Dropdown overlayClassName="game-scout-dropdown" open={!busy && open} onOpenChange={setOpen}
-    trigger={['hover', 'click']} placement={lobby ? 'bottom' : 'bottomRight'}
-    menu={{ items: [
-      { key: 'ranking', icon: <TrophyOutlined />, label: label('주간 순위', '이번 주 순위와 지난 주 우승자') },
-      { key: 'rules', icon: <BookOutlined />, label: label('게임 규칙', '가상 가격·거래·턴의 작동 방식') },
-      ...(!lobby ? [
-        { key: 'publish', icon: <UploadOutlined />, label: label('이 턴 기록 등록', '동의한 기록만 닉네임으로 공개'), disabled: !canPublish },
-        { key: 'replay', icon: <HistoryOutlined />, label: label('지난 턴 복기', '내 거래와 가격 변화 다시보기'), disabled: !canReplay },
-        { type: 'divider' as const },
-        { key: 'end', icon: <LogoutOutlined />, label: label('게임 종료', '확인 후 현재 기록으로 마무리'), disabled: !canEnd, danger: true },
-      ] : []),
-    ], onClick: ({ key }) => {
-      setOpen(false)
-      if (key === 'ranking') onRanking()
-      if (key === 'rules') onRules()
-      if (key === 'publish') onPublish()
-      if (key === 'replay') onReplay()
-      if (key === 'end') onEnd()
-    } }}>
-    <button type="button" className={`game-scout-launcher ${lobby ? 'lobby' : 'compact'}`} disabled={busy}
-      aria-label="게임 메뉴" aria-haspopup="menu" aria-expanded={!busy && open}
-      onKeyDown={event => { if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true) } }}>
-      <img src={mascot} alt="" /><span>{lobby ? '순위·규칙 보기' : '메뉴'}</span>
-    </button>
-  </Dropdown>
+  const actions = [
+    { name: '주간 순위', label: '순위', description: '이번 주 순위와 지난 주 우승자', icon: <TrophyOutlined />, action: onRanking, disabled: false },
+    { name: '게임 규칙', label: '규칙', description: '가상 가격·거래·턴의 작동 방식', icon: <BookOutlined />, action: onRules, disabled: false },
+    ...(!lobby ? [
+      { name: '이 턴 기록 등록', label: '등록', description: canPublish ? '동의한 기록만 닉네임으로 공개' : '한 턴 이상 진행한 가상 게임 기록을 등록할 수 있습니다.', icon: <UploadOutlined />, action: onPublish, disabled: !canPublish },
+      { name: '지난 턴 복기', label: '복기', description: canReplay ? '내 거래와 가격 변화 다시보기' : '다음 턴을 진행하면 복기를 볼 수 있습니다.', icon: <HistoryOutlined />, action: onReplay, disabled: !canReplay },
+      { name: '게임 종료', label: '종료', description: '확인 후 현재 기록으로 마무리', icon: <LogoutOutlined />, action: onEnd, disabled: !canEnd },
+    ] : []),
+  ]
+  return <div className={`game-quick-menu ${lobby ? 'lobby' : 'compact'}`}>
+    {lobby && <img className="game-lobby-mascot" src={mascot} alt="FireWatch 불꽃 정찰대" />}
+    <nav className="game-quick-actions" aria-label="게임 도구">
+      {actions.map(item => <Tooltip key={item.name} title={item.description} trigger={['hover', 'focus']}>
+        <span><button type="button" aria-label={item.name} disabled={busy || item.disabled} onClick={item.action}>
+          <span aria-hidden="true">{item.icon}</span><span>{item.label}</span>
+        </button></span>
+      </Tooltip>)}
+    </nav>
+  </div>
 }

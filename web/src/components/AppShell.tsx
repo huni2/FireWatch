@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { GuidedTour } from './GuidedTour'
 import { AnnouncementPopup } from './AnnouncementPopup'
 import { showFirstVisitGuide } from './guideEvents'
-import { Button, Drawer, Layout, Switch } from 'antd'
+import { Button, Drawer, Layout, Switch, Tooltip } from 'antd'
 import {
   AuditOutlined,
   FundOutlined,
@@ -15,6 +15,7 @@ import {
   SettingOutlined,
   SunOutlined,
   TrophyOutlined,
+  UserOutlined,
 } from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { setAccountOperator, useIsOperator } from '../lib/operatorAccess'
@@ -99,8 +100,12 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
             FireWatch
           </span>
         </Link>
-        <Button className="all-menu-button" aria-label="계정·설정 메뉴" icon={<MenuOutlined />} aria-expanded={menuOpen} onClick={() => setMenuOpen(true)} style={{ marginInlineStart: 'auto' }}>계정·설정</Button>
+        <nav className="header-tools" aria-label="계정과 이용 도구">
+          {[{ to: '/account', label: '내 계정', description: 'Google 연결과 로그인 기기 관리', icon: <UserOutlined /> }, { to: '/settings', label: '설정', description: '관심 키워드와 알림 수신 설정', icon: <SettingOutlined /> }, { to: '/guide', label: '도움말', description: '서비스와 투자 연습 이용 방법', icon: <QuestionCircleOutlined /> }].map(item => <Tooltip key={item.to} title={item.description} trigger={['hover', 'focus']}><Link to={item.to} aria-label={item.label} aria-current={location.pathname === item.to ? 'page' : undefined}><span aria-hidden="true">{item.icon}</span><span className="header-tool-label">{item.label}</span></Link></Tooltip>)}
+          <Button className="all-menu-button" aria-label="더보기 메뉴" icon={<MenuOutlined />} aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><span className="header-tool-label">더보기</span></Button>
+        </nav>
         <Switch
+          className="header-theme-switch"
           aria-label="다크 모드"
           checked={darkMode}
           onChange={onToggleDarkMode}
@@ -113,13 +118,14 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
           {CONTENT_ITEMS.filter(item => ['/', '/candidates', '/news', '/game'].includes(item.key)).map(item => <TopNavLink key={item.key} item={item} active={active(item) || (item.key === '/candidates' && exploration) || (item.key === '/news' && market)} />)}
         </nav>
       </Header>
-      <Drawer title="계정·설정" open={menuOpen} onClose={() => setMenuOpen(false)} width="min(360px, 100vw)">
+      <Drawer title="더보기" open={menuOpen} onClose={() => setMenuOpen(false)} width="min(360px, 100vw)">
         <p className="account-note">{session ? 'Google 연결 세션으로 이용 중입니다. 내 계정에서 연결 상태와 기기를 확인하세요.' : '현재 브라우저의 익명 기록으로 이용 중입니다. Google 연결 상태는 내 계정에서 확인하세요.'}</p>
         <nav aria-label="계정 메뉴" className="all-menu-list">
-          <Link to="/account" onClick={() => setMenuOpen(false)}>내 계정 · Google 로그인</Link>
-          <Link to="/community" onClick={() => setMenuOpen(false)}>공지사항 · 문제 신고·의견</Link>
+          <Link to="/account" aria-current={location.pathname === '/account' ? 'page' : undefined} onClick={() => setMenuOpen(false)}><UserOutlined /><span>내 계정<small>Google 연결 · 기기 관리</small></span></Link>
+          <Link to="/community" aria-current={location.pathname === '/community' ? 'page' : undefined} onClick={() => setMenuOpen(false)}><ReadOutlined /><span>공지사항 · 의견 보내기<small>업데이트 확인 · 문제 신고 · 내 문의</small></span></Link>
           {[...CONTENT_ITEMS, ...ADMIN_ITEMS].filter(item => ['/settings', '/guide', ...(isOperator ? ['/audit-log'] : [])].includes(item.key)).map(item => <Link key={item.key} to={item.key} aria-current={active(item) ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{item.icon}<span>{item.label}</span></Link>)}
         </nav>
+        <div className="drawer-appearance"><span>다크 모드<small>밝은 화면과 어두운 화면 선택</small></span><Switch aria-label="메뉴 다크 모드" checked={darkMode} onChange={onToggleDarkMode} /></div>
       </Drawer>
       <Content className="app-content" style={{ maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
         {(exploration || market) && <nav className="context-navigation" aria-label={exploration ? '기업 탐색 화면' : '시장 소식 화면'}>{(exploration ? [{ to: '/candidates', label: '추천·분야 탐색' }, { to: '/stocks', label: '회사 검색·시세' }, { to: '/short-term', label: '단기 관찰' }] : [{ to: '/news', label: '뉴스' }, { to: '/briefing', label: '브리핑' }, { to: '/indices', label: '시장 지표' }]).map(item => <Link key={item.to} to={item.to} aria-current={location.pathname === item.to ? 'page' : undefined}>{item.label}</Link>)}</nav>}
