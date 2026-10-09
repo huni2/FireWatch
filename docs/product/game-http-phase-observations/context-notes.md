@@ -1,5 +1,7 @@
 # 결정과 관찰
 
+BE-28 비동기 응답 준비 PR#51 main 검증 완료. 소스055ab81·maina6aa350·push37957493452/PR37957538350/main37958166380 서버/H2·PostgreSQL·복원·웹/앱 전체 성공·로컬207검사 실패0/제외1. 실제 writer/commit·컨트롤러 메타데이터를 시작 단계에서 준비하고 두 가상 샘플은 메모리 폐기한다. 새 DB/서비스/외부 호출0·기존 JPA 준비 조회1회 유지. 세션36 START/PREVIEW 로그 수신/대조 완료·같은 로그 요청 종료. Render 새 코드 적용 확인을 한 번 요청한 상태이며 기존 timing 변수 유지. 첫7.63초/응답 준비3.00초의 새 배포 개선은 아직 미확인이라 기존Issue#45/BE-28은 열어 둔다. 새 과제/APK/EAS0.
+
 BE-28 세션36 START/PREVIEW 로그 수신 완료. START2697.770ms/repository1598.312ms2회/SQL591.314ms3회/연결181.178ms/큐99.275ms·PREVIEW683.556ms/SQL377.154ms2회. 같은 로그 추가 요청 종료. 기존 동기 encodeValue 준비가 실제 HTTP 비동기 writer/commit을 거치지 않는 경로를 확인해 실제 configured writer의 Mono 응답과 컨트롤러 반환형 메타데이터를 시작 단계에서 준비한다. 두 샘플은 메모리 폐기·각30초 유한 대기·새 DB/서비스/네트워크 호출0. 로컬207검사 실패0/제외1·실제 비동기 encode2회 검증. PG/PR/main CI와 새 배포 효과는 아직 미확정·기존Issue#45 유지·APK0.
 
 - 세션36 START/PREVIEW 로그 모두 수신. STARTserver2697.770/큐99.275/연결181.178/prepare87.714/SQL591.314ms3회/repository1598.312ms2회/규칙0.057ms70회·uptime240692ms. PREVIEW683.556/큐0.293/연결0.032/prepare0.180/SQL377.154ms2회/규칙0.013ms. 같은 로그 대기는 종료. 남은 response3초에 대해 동기encodeValue와 실제 EncoderHttpMessageWriter.write(Mono) 경로가 다른 점을 확인했다. 코덱/버퍼/commit의 실제 비동기 경로를 메모리에서 처리하고 MethodParameter로 컨트롤러 반환형을 해석한다. 서버 네트워크/API/새DB/게임 서비스 호출0이며 기존 JPA 조회1회는 그대로 유지한다.

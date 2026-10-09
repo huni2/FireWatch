@@ -1,5 +1,7 @@
 # FireWatch — 현재 맥락
 
+BE-28 비동기 응답 준비 PR#51 main 검증 완료. 소스055ab81·maina6aa350·push37957493452/PR37957538350/main37958166380 서버/H2·PostgreSQL·복원·웹/앱 전체 성공·로컬207검사 실패0/제외1. 실제 writer/commit·컨트롤러 메타데이터를 시작 단계에서 준비하고 두 가상 샘플은 메모리 폐기한다. 새 DB/서비스/외부 호출0·기존 JPA 준비 조회1회 유지. 세션36 START/PREVIEW 로그 수신/대조 완료·같은 로그 요청 종료. Render 새 코드 적용 확인을 한 번 요청한 상태이며 기존 timing 변수 유지. 첫7.63초/응답 준비3.00초의 새 배포 개선은 아직 미확인이라 기존Issue#45/BE-28은 열어 둔다. 새 과제/APK/EAS0.
+
 BE-28 세션36 START/PREVIEW 로그 수신 완료. START2697.770ms/repository1598.312ms2회/SQL591.314ms3회/연결181.178ms/큐99.275ms·PREVIEW683.556ms/SQL377.154ms2회. 같은 로그 추가 요청 종료. 기존 동기 encodeValue 준비가 실제 HTTP 비동기 writer/commit을 거치지 않는 경로를 확인해 실제 configured writer의 Mono 응답과 컨트롤러 반환형 메타데이터를 시작 단계에서 준비한다. 두 샘플은 메모리 폐기·각30초 유한 대기·새 DB/서비스/네트워크 호출0. 로컬207검사 실패0/제외1·실제 비동기 encode2회 검증. PG/PR/main CI와 새 배포 효과는 아직 미확정·기존Issue#45 유지·APK0.
 
 BE-28 최신7551c6c Render 적용 확인 후2026-10-10 00:54:23 KST 격리 세션36·43요청 PASS·ENDED 보관. 첫HTTP7.6305초/controller2.7006초/response2.9987초·PREVIEW1.4679초·다음 턴23개 중앙값1.3929초. 이전15.2초 대비 단일 표본의 감소이며 모든 원인/코드 개선율로 단정하지 않음. 첫7.63초가 남아 기존Issue#45/BE-28 미완료 유지. 해당START 기존repository/SQL/큐 대조를 위해 game_timing1줄만 요청·새배포/변수 불필요. 기존 자료/순위 변경0·공개 JSON만 저장·APK0.
