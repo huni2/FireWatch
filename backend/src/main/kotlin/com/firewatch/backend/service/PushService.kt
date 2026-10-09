@@ -2,7 +2,9 @@ package com.firewatch.backend.service
 
 import com.firewatch.backend.audit.AuditedComponent
 import com.firewatch.backend.client.FcmSender
+import com.firewatch.backend.client.FcmSendResult
 import com.firewatch.backend.client.WebPushSender
+import com.firewatch.backend.client.WebPushSendResult
 import com.firewatch.backend.entity.AuditEventType
 import com.firewatch.backend.entity.Briefing
 import com.firewatch.backend.entity.UserSettings
@@ -12,6 +14,8 @@ import com.firewatch.backend.entity.toJsonString
 import com.firewatch.backend.entity.webPushSubscriptions
 import com.firewatch.backend.repository.UserSettingsRepository
 import com.firewatch.backend.web.SchedulerController
+import com.firewatch.backend.web.ApiException
+import org.springframework.http.HttpStatus
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -27,6 +31,7 @@ data class PushSendResult(
     val successCount: Int,
     val webPushSubscriberCount: Int = 0,
     val webPushSuccessCount: Int = 0,
+    val webPushFailureCodes: Set<String> = emptySet(),
 ) {
     override fun toString(): String =
         "대상 ${recipientCount}명 — FCM ${successCount}/${tokenCount}건, 웹푸시 ${webPushSuccessCount}/${webPushSubscriberCount}건 성공"
@@ -63,7 +68,17 @@ class PushService(
     fun testOperatorNotification(settings: UserSettings): PushSendResult {
         val result = sendToOne(settings, "FireWatch 운영자 알림 테스트", "실제 수집 장애가 아닌 수신 확인용 알림입니다. 앱·브라우저에서 알림이 보이는지 확인해주세요.")
         userSettingsRepository.save(settings)
-        if (result.successCount + result.webPushSuccessCount == 0) throw IllegalStateException("운영자 테스트 알림 발송에 실패했습니다. 알림 등록과 권한을 확인해주세요.")
+        if (result.successCount + result.webPushSuccessCount == 0) {
+            val guidance = when {
+                "CONFIG_MISSING" in result.webPushFailureCodes -> "Render의 VAPID_PUBLIC_KEY·VAPID_PRIVATE_KEY·VAPID_SUBJECT 설정을 확인해주세요."
+                "AUTH_REJECTED" in result.webPushFailureCodes -> "웹의 VITE_VAPID_PUBLIC_KEY와 Render의 VAPID 키가 같은 쌍인지 확인해주세요. 키를 바꿨다면 브라우저 알림을 다시 등록해주세요."
+                "SUBSCRIPTION_EXPIRED" in result.webPushFailureCodes -> "브라우저 알림 구독이 만료됐습니다. 이 브라우저에서 알림을 다시 등록해주세요."
+                "RATE_LIMITED" in result.webPushFailureCodes -> "알림 제공처가 요청을 제한했습니다. 잠시 후 다시 확인해주세요."
+                else -> "알림 제공처 연결과 서버의 푸시 설정을 확인해주세요."
+            }
+            throw ApiException("OPERATOR_PUSH_FAILED", "테스트 알림을 발송하지 못했습니다. $guidance", HttpStatus.SERVICE_UNAVAILABLE,
+                mapOf("webPushFailureCodes" to result.webPushFailureCodes.sorted()))
+        }
         return result
     }
 
@@ -111,7 +126,12 @@ class PushService(
         val fcmResult = if (tokens.isEmpty()) {
             null
         } else {
-            val result = fcmSender.sendMulticast(tokens = tokens, title = title, body = body)
+            val result = try {
+                fcmSender.sendMulticast(tokens = tokens, title = title, body = body)
+            } catch (error: Exception) {
+                log.warn("push_failure channel=APP code=SEND_EXCEPTION exception_type={}", error.javaClass.simpleName)
+                FcmSendResult(0, emptyList())
+            }
             if (result.invalidTokens.isNotEmpty()) {
                 settings.fcmTokensRaw = (tokens - result.invalidTokens.toSet()).toCommaSeparated()
             }
@@ -122,7 +142,12 @@ class PushService(
         val webPushResult = if (subscriptions.isEmpty()) {
             null
         } else {
-            val result = webPushSender.sendToAll(subscriptions, title = title, body = body)
+            val result = try {
+                webPushSender.sendToAll(subscriptions, title = title, body = body)
+            } catch (error: Exception) {
+                log.warn("push_failure channel=WEB code=SEND_EXCEPTION exception_type={}", error.javaClass.simpleName)
+                WebPushSendResult(0, emptyList(), setOf("SEND_EXCEPTION"))
+            }
             if (result.invalidEndpoints.isNotEmpty()) {
                 val invalidSet = result.invalidEndpoints.toSet()
                 settings.webPushSubscriptionsRaw = subscriptions.filterNot { it.endpoint in invalidSet }.toJsonString()
@@ -136,6 +161,7 @@ class PushService(
             successCount = fcmResult?.successCount ?: 0,
             webPushSubscriberCount = subscriptions.size,
             webPushSuccessCount = webPushResult?.successCount ?: 0,
+            webPushFailureCodes = webPushResult?.failureCodes ?: emptySet(),
         )
     }
 

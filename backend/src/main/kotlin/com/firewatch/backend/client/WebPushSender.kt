@@ -14,6 +14,7 @@ import nl.martijndwars.webpush.PushService as VapidPushService
 data class WebPushSendResult(
     val successCount: Int,
     val invalidEndpoints: List<String>,
+    val failureCodes: Set<String> = emptySet(),
 )
 
 /**
@@ -50,10 +51,15 @@ class BrowserWebPushSender(
 
     override fun sendToAll(subscriptions: List<WebPushSubscription>, title: String, body: String): WebPushSendResult {
         if (subscriptions.isEmpty()) return WebPushSendResult(successCount = 0, invalidEndpoints = emptyList())
+        if (publicKey.isBlank() || privateKey.isBlank() || subject.isBlank()) {
+            log.warn("web_push_failure code=CONFIG_MISSING")
+            return WebPushSendResult(0, emptyList(), setOf("CONFIG_MISSING"))
+        }
 
         val payload = payloadMapper.writeValueAsString(mapOf("title" to title, "body" to body))
         var successCount = 0
         val invalidEndpoints = mutableListOf<String>()
+        val failureCodes = mutableSetOf<String>()
 
         for (subscription in subscriptions) {
             try {
@@ -64,13 +70,23 @@ class BrowserWebPushSender(
                 val statusCode = vapidPushService.send(Notification(sub, payload)).statusLine.statusCode
                 when {
                     statusCode in 200..299 -> successCount++
-                    statusCode == 404 || statusCode == 410 -> invalidEndpoints.add(subscription.endpoint)
-                    else -> log.warn("웹 푸시 발송 실패(HTTP $statusCode): ${subscription.endpoint}")
+                    else -> {
+                        val code = when (statusCode) {
+                            404, 410 -> "SUBSCRIPTION_EXPIRED"
+                            401, 403 -> "AUTH_REJECTED"
+                            429 -> "RATE_LIMITED"
+                            else -> "PROVIDER_REJECTED"
+                        }
+                        if (statusCode == 404 || statusCode == 410) invalidEndpoints.add(subscription.endpoint)
+                        failureCodes.add(code)
+                        log.warn("web_push_failure code={} http_status={}", code, statusCode)
+                    }
                 }
             } catch (e: Exception) {
-                log.warn("웹 푸시 발송 중 예외: ${subscription.endpoint}", e)
+                failureCodes.add("SEND_EXCEPTION")
+                log.warn("web_push_failure code=SEND_EXCEPTION exception_type={}", e.javaClass.simpleName)
             }
         }
-        return WebPushSendResult(successCount = successCount, invalidEndpoints = invalidEndpoints)
+        return WebPushSendResult(successCount, invalidEndpoints, failureCodes)
     }
 }
