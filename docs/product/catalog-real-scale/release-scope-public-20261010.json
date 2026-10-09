@@ -1,0 +1,109 @@
+{
+  "checkedAt": "2026-10-09T16:58:33.032Z",
+  "requests": 10,
+  "maxConcurrency": 2,
+  "retries": 0,
+  "productionWrites": 0,
+  "results": [
+    {
+      "params": {},
+      "total": 2669,
+      "rows": 50,
+      "hasMore": true,
+      "pricedRows": 1,
+      "httpMs": 2332
+    },
+    {
+      "params": {
+        "page": "1"
+      },
+      "total": 2669,
+      "rows": 50,
+      "hasMore": true,
+      "pricedRows": 1,
+      "httpMs": 2712
+    },
+    {
+      "params": {
+        "page": "54"
+      },
+      "total": 2669,
+      "rows": 0,
+      "hasMore": false,
+      "pricedRows": 0,
+      "httpMs": 651
+    },
+    {
+      "params": {
+        "page": "53"
+      },
+      "total": 2669,
+      "rows": 19,
+      "hasMore": false,
+      "pricedRows": 0,
+      "httpMs": 824
+    },
+    {
+      "params": {
+        "region": "US"
+      },
+      "total": 16,
+      "rows": 16,
+      "hasMore": false,
+      "pricedRows": 0,
+      "httpMs": 650
+    },
+    {
+      "params": {
+        "assetClass": "ETF"
+      },
+      "total": 5,
+      "rows": 5,
+      "hasMore": false,
+      "pricedRows": 0,
+      "httpMs": 797
+    },
+    {
+      "params": {
+        "q": "ㅅㅅㅈㅈ"
+      },
+      "total": 2,
+      "rows": 2,
+      "hasMore": false,
+      "pricedRows": 1,
+      "httpMs": 498
+    },
+    {
+      "params": {
+        "q": "카카오"
+      },
+      "total": 4,
+      "rows": 4,
+      "hasMore": false,
+      "pricedRows": 1,
+      "httpMs": 512
+    },
+    {
+      "params": {
+        "region": "KR",
+        "sectorId": "chips"
+      },
+      "total": 2,
+      "rows": 2,
+      "hasMore": false,
+      "pricedRows": 1,
+      "httpMs": 475
+    },
+    {
+      "params": {
+        "q": "삼"
+      },
+      "total": 77,
+      "rows": 50,
+      "hasMore": true,
+      "pricedRows": 1,
+      "httpMs": 641
+    }
+  ],
+  "passed": true
+}
