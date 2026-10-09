@@ -1,5 +1,11 @@
 # 결정과 관찰
 
+BE-28 세션36 START/PREVIEW 로그 수신 완료. START2697.770ms/repository1598.312ms2회/SQL591.314ms3회/연결181.178ms/큐99.275ms·PREVIEW683.556ms/SQL377.154ms2회. 같은 로그 추가 요청 종료. 기존 동기 encodeValue 준비가 실제 HTTP 비동기 writer/commit을 거치지 않는 경로를 확인해 실제 configured writer의 Mono 응답과 컨트롤러 반환형 메타데이터를 시작 단계에서 준비한다. 두 샘플은 메모리 폐기·각30초 유한 대기·새 DB/서비스/네트워크 호출0. 로컬207검사 실패0/제외1·실제 비동기 encode2회 검증. PG/PR/main CI와 새 배포 효과는 아직 미확정·기존Issue#45 유지·APK0.
+
+- 세션36 START/PREVIEW 로그 모두 수신. STARTserver2697.770/큐99.275/연결181.178/prepare87.714/SQL591.314ms3회/repository1598.312ms2회/규칙0.057ms70회·uptime240692ms. PREVIEW683.556/큐0.293/연결0.032/prepare0.180/SQL377.154ms2회/규칙0.013ms. 같은 로그 대기는 종료. 남은 response3초에 대해 동기encodeValue와 실제 EncoderHttpMessageWriter.write(Mono) 경로가 다른 점을 확인했다. 코덱/버퍼/commit의 실제 비동기 경로를 메모리에서 처리하고 MethodParameter로 컨트롤러 반환형을 해석한다. 서버 네트워크/API/새DB/게임 서비스 호출0이며 기존 JPA 조회1회는 그대로 유지한다.
+
+- 7551c6c Render 적용 완료 확인 후2026-10-10 00:54:23 KST 격리 세션36·43요청 PASS·ENDED 보관. START HTTP7630.5/application7159/auth382.447/dispatch1019.785/controller2700.558/response2998.712ms·PREVIEW1467.9ms·다음 턴23개 중앙값1392.9ms. 이전15.2초보다 이번 표본은 짧지만 코드별 개선율/모든 원인 확정은 아니다. 컨트롤러2.70초/응답 준비3.00초가 남아 과제 미완료·같은Issue#45 유지. 해당START game_timing1줄만 요청해 repository/SQL/큐를 대조한다. 새배포/변수 불필요·기존 자료/순위 변경0·APK0.
+
 - PR#50 최종 main CI37954397592 전체 성공 확인. 코드/머지 검증 종료·로컬207검사 실패0/제외1·push37953782000/PR37953788738 전체 성공. 다음은 새Render7551c6c 적용 후 한 판의 첫 시작/기능 실측이다. 새 코드 적용 확인 질문은1회만 유지하며 같은 START/PREVIEW 로그는 다시 요구하지 않는다. 기존BE-28/Issue#45는 실제 성능 확인 전 유지·APK0.
 
 - PR#50 최종a82f7bc·main7551c6c 머지. 로컬 최종207검사 실패0/제외1, push37953782000/PR37953788738 전체/H2·PG·복원·웹/앱 성공. main37954397592 확인 중. 이번 JPA 준비는 DB조회1회가 서버 시작 시 추가되지만 저장/삭제/감사/서비스 호출0·기존 잠금/쿼리 유지·6종 건수/보유 상태 불변. 새Render7551c6c 적용 확인을 한 번 요청했다. 이전 배포 로그 대조는 종료됐으며 다음 첫 시작 실측 전 과제 완료는 보류한다.
