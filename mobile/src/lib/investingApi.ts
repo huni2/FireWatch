@@ -25,4 +25,9 @@ export interface PracticeTurn {
 }
 export interface PracticePreview { turnIndex: number; instrumentType: string; symbol: string | null; action: 'BUY' | 'SELL'; quantity: number; unitPrice: number; total: number; cashAfter: number; quantityAfter: number; allowed: boolean; reason: string | null }
 export const previewPractice = async (body: object) => request<PracticePreview>('/api/game/preview', { method: 'POST', headers: { 'X-Device-Id': await getDeviceId() }, body: JSON.stringify(body) })
-export const practice = async (action: 'current' | 'start' | 'trade' | 'next-turn' | 'end', body?: object) => request<PracticeTurn>(`/api/game/${action}`, { method: action === 'current' ? 'GET' : 'POST', headers: { 'X-Device-Id': await getDeviceId() }, body: body ? JSON.stringify(body) : undefined })
+export const practice = async (action: 'current' | 'start' | 'trade' | 'next-turn' | 'end', body?: object) => request<PracticeTurn>(`/api/game/${action}?compact=true`, { method: action === 'current' ? 'GET' : 'POST', headers: { 'X-Device-Id': await getDeviceId() }, body: body ? JSON.stringify(body) : undefined })
+
+export async function fetchGameAssetHistory(query: import('../../../shared/game-history').GameHistoryQuery) {
+  const { gameHistoryPath, checkedGameHistory } = await import('../../../shared/game-history')
+  return checkedGameHistory(query, await request<import('../../../shared/game-history').GameHistoryResponse>(gameHistoryPath(query), { headers: { 'X-Device-Id': await getDeviceId() } }))
+}
