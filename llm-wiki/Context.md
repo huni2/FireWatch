@@ -1,6 +1,6 @@
 # FireWatch — 현재 맥락
 
-최신화: 2026-10-09. 게임 운영 검증 Issue#19 종료·소스d80b3e2·PR#20 main1f818ea·CI37890731426/37890763678/main37891156616 전체 성공. 격리 한 게임26기업·픽 주문·24턴·원장/평가·compact/상세·종료 보존을 실제 서버에서 확인했다. 웹/앱 기능 소스5f77550·Cloudflare83abd689는 유지한다. DB 왕복/잠금·첫 시작 지연 계측은 BE-28, 전 시장 수입은 BE-22, 최종 Android 설치는 APP-21에 남긴다. APK/EAS 추가 요청은 최종 과제·디자인 완료까지 보류한다. 이력은 [[log]] 참조.
+최신화: 2026-10-09. BE-36 게임 서버/JDBC 계측 개발 완료·소스7cb6865·PR#22 maind980cc7·Issue#21 종료·CI37892862048/37892900448/main37893278103(재실행2) 전체 성공. 기본 꺼짐 비식별 로그와 실제 H2/전용 PostgreSQL 이벤트를 검증했다. Render 배포/플래그true 적용은 사용자 답변 설정·배포 중이며 운영 완료로 간주하지 않는다. 실제 로그 대조는 BE-28에 남긴다. 최신 웹/앱 기능5f77550·Cloudflare83abd689 유지, 추가 APK/EAS 요청은 최종 과제·디자인 완료까지 보류한다. 이력은 [[log]] 참조.
 
 ## 제품 정체성과 범위
 
@@ -36,7 +36,7 @@ Android APK는 웹·서버 배포와 별도다. 일반 배포 때 자동/임의 
 | Backend | Kotlin 2.3.21·Java21·Spring Boot4.1.0·WebFlux/WebClient+JPA/JDBC. Render `https://firewatch-backend-q3cv.onrender.com` |
 | DB | 운영 Supabase PostgreSQL, 개발 H2. 데이터 초기화 금지 |
 | Mobile | Expo SDK57·React Native0.86·NativeWind·Expo Router. 최신 APK 실기기 검증과 Play 출시 준비 중 |
-| CI | 검증 도구 소스/PR CI37890731426/37890763678/main37891156616 전체 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·웹/모바일 검사 포함 |
+| CI | 계측 소스/PR37892862048/37892900448·main37893278103 재실행2 전체 성공. 첫 기존 권한 HTTP timeout은 기록 보존. 전체/H2·PostgreSQL·검색 규모/복원·웹/앱 검사 포함 |
 
 웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 최신 공개 배포83abd689·소스5f77550이며 기능 머지는 main313696e다. 최신7594daa/versionCode5 preview APK는 FINISHED지만 이후 변경은 포함하지 않으며 실기기 확인은 APP-21이다. 최종 과제/디자인 후속 완료까지 APK 추가 요청을 보류한다. 이번 서버 운영 코드 변경은 없으며 Render 재배포가 필요하지 않다.
 
@@ -86,3 +86,5 @@ BE-33 완료. 게임 규칙 버전 고정 b851696·PR#8 main d8331b7 머지·Iss
 BE-35 서버 선행 구현 완료. ae38501·PR#16 maina954514·Issue#15 종료·CI37881821700/37881830823 전체 성공. 기본 전체 그래프 계약을 유지하고 compact=true는 직전 최대2점, 선택 전체 그래프는 기기 소유 세션/진행 턴/자산으로 조회한다. 로컬185검사 실패0·제외1. 상세 읽기는 게임 변경/외부 요청/감사 DB 삽입을 하지 않는다. 이후 Render 경로와 WEB-40/APP-32 클라이언트 연결·실제 운영 한 게임을 확인했다. BE-28의 남은 단계는 DB 왕복/잠금·첫 요청 원인 계측과 필요한 최적화다. 웹 배포/추가 APK 요청0.
 
 게임 운영 검증 Issue#19. 테스트 전용 기기 한 게임·43요청 PASS, ENDED/원장 보관·순위0·기존 사용자 변경0. 다음 턴23회 중앙값1,293ms, 첫 시작13,960.8ms, 현재compact/전체 각5회791.6/801.2ms·본문23,425/49,815B. DB 처리와 첫 요청 기동 원인은 미확인이다. BE-28은 계측 후 최적화, 전 시장은 BE-22로 이어간다. docs/product/game-live-verification/result.md 참조. 앱/웹/서버 배포 코드와 EAS 요청은 변경하지 않는다.
+
+BE-36 계측은 FIREWATCH_GAME_TIMING_ENABLED 기본false, 켤 때만 고정 행동/결과·큐/서버·JDBC 연결/준비/실행·횟수·uptime을 로그로 남긴다. SQL/기기/세션/가격/예외 내용 기록과 DB 스키마/잠금/원장 변경 없음. 실제 Render 로그/HTTP 대조 전에는 콜드 스타트/DB 병목을 확정하지 않는다. 사용자 답변은 설정·배포 중이며 운영 적용 완료 확인은 대기다.

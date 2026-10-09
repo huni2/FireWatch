@@ -11,7 +11,7 @@ game_timing op=CURRENT outcome=success server_ms=5.696 io_queue_ms=0.180 connect
 | 필드 | 의미 | 해석 경계 |
 |---|---|---|
 | op/outcome | 고정 게임 행동/컨트롤러 정상 반환 또는 예외 | 입력·개별 사용자·예외 내용 없음 |
-| server_ms | 컨트롤러 진입 뒤 IO 대기~동기 서비스/트랜잭션/DTO 반환 | 시작 전 기동·요청 검증·응답 직렬화/전송 제외 |
+| server_ms | 컨트롤러 진입 뒤 IO 대기~동기 서비스/트랜잭션/DTO 반환 | 시작 전 기동·컨트롤러 이전 인증/필터/요청 검증·응답 직렬화/전송 제외 |
 | io_queue_ms | Dispatchers.IO 구간에 진입하기까지 | 네트워크 시간 아님 |
 | connection_ms/count | Hibernate의 JDBC 연결 획득 관측/횟수 | 풀 대기·연결 생성을 포함할 수 있으나 분리하지 못함 |
 | prepare_ms | JDBC statement 준비 구간 | 연결 획득과 겹칠 수 있음 |
