@@ -38,6 +38,8 @@
 **근거** — docs/product/portfolio-mvp.md, docs/product/investment-information-boundary.md, docs/reviews/2026-10-07-release-hardening.md.
 
 ### BE-30. 금융 수집 실제 복구와 운영자 장애 푸시 확인
+**최종 CI(2026-10-10)** — PR#55 main9b9511d의 CI37994939959 최종success(전체 백엔드/PG/백업복구/웹/모바일). e560a10 push37994439548·PR37994446239도 success. CI Docker Hub 익명 pull 한도 오류는 공식 PostgreSQL17 ECR Public 미러 경로 변경 후 실제 준비/검사 통과로 해결 확인. 표준VAPID/키쌍 검증 소스 반영·키 값/운영 환경변수 변경0. Render 배포·실제 기기 수신은 미확인으로 기존BE-30/Issue#53 유지·APK0.
+**PR#55 반영(2026-10-10)** — BE-30 PR#55 main9b9511d 머지 완료·소스e560a10의 push37994439548/PR37994446239 전체CI 성공. 최초 CI는 Docker Hub 익명 pull 한도에서 테스트 전 실패했고 동일 Docker Official PostgreSQL17 ECR Public 미러로 컨테이너 준비/전체/PG/복구 검증을 통과했다. 로컬211검사 실패0·skip1. 표준 AES128GCM/VAPID·서버 키쌍 검증 반영·키 값/환경변수 변경0. main CI37994939959 및 Render 배포/실수신 확인은 별도. 기존Issue#53/BE-30 유지·새 과제/APK0.
 **403 후속(2026-10-10)** — BE-30 재구독 후403 지속에 대해 send 기본AESGCM 확인·AES128GCM/표준VAPID 명시·서버 키쌍 검증 추가. 로컬 수신기에서 실제 JWT서명/헤더·잘못된 키 외부요청 차단 검증 통과. 운영403 원인 확정·기기 수신으로 확대하지 않고 기존Issue#53 유지. 별도 의존성/새 과제/키 요청/자동 회전/재시도 증가/APK0.
 **PR 반영(2026-10-10)** — PR#54 main 3ba2e3b 머지·main CI37986551175 attempt2 최종success(계정 통합검사 시간초과·1회 재검증에서 미재현). 소스 b2255bc push/PR 전체 CI 성공·앱 예외의 웹 발송 차단 수정·발송 실패503/안전한 원인 코드 안내. Render 배포 뒤 실제 실패 코드/기기 수신을 사용자에게 요청. 실제 운영 원인과 수신 확인 전 Issue#53 유지.
 **진행(2026-10-10)** — Issue#53. 운영 DB JSON 수신·뉴스139/시세11/주식SUCCESS40/금융SUCCESS3/미해결 장애0으로 복구 확인. 과거PAUSED 기록 보존. 사용자 운영자 테스트 알림 미수신·HTTP500 확인. 발송 실패의 일반 오류 은폐를503/안전한 원인 코드/조치 안내로 수정·전체 검증 진행. 실제 제공처 원인·실수신·일반계정403/감사 대조는 미확인. 새 과제/강제 수집/실패 한도 초기화/APK0.

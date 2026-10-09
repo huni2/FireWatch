@@ -13,3 +13,5 @@ APK 빌드 보류 중이므로 먼저 배포된 웹의 브라우저 알림으로
 운영 수집 SQL은 [읽기 전용 JSON 집계](operator-summary.sql)다. 이번 집계는 이미 수신했으며 같은 SQL의 반복 실행은 필요 없다. 감사로그에서는 collection.financial의 과거 FAILURE 이후 성공 작업의 시각을 대조한다. 원문 URL이나 사용자 정보를 공유할 필요 없이 작업 종류·상태·시각만 기록한다.
 
 테스트가503/OPERATOR_PUSH_FAILED로 실패하면 화면 안내를 따른다. CONFIG_MISSING은 Render의 VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY/VAPID_SUBJECT 설정을 확인한다. AUTH_REJECTED는 웹 VITE_VAPID_PUBLIC_KEY와 서버 VAPID 키의 같은 쌍 여부를 확인한다. SUBSCRIPTION_EXPIRED는 브라우저 알림을 다시 등록한다. 다른 실패는 Render의 web_push_failure 코드/HTTP상태/exception_type만 확인하고 원문 로그·구독 주소·키를 공유하지 않는다. 실제 원인이 확정되기 전에 새 키를 생성하거나 구독을 일괄 삭제하지 않는다.
+
+PR#55 이후 서버는 키 쌍을 직접 검증한다. KEY_PAIR_MISMATCH면 해당 공개키와 함께 생성한 비밀키를 Render에 설정한다. KEY_FORMAT_INVALID면 공백/따옴표/누락을 확인한다. AUTH_REJECTED는 서버 키쌍 검증을 통과한 뒤 제공처가 거절한 결과이며 배포된 웹/구독의 공개키와 VAPID_SUBJECT를 대조한다. 인증 거절만으로 구독 초기화를 반복하지 않는다. 실제 수신 확인 전 과제는 종료하지 않는다.

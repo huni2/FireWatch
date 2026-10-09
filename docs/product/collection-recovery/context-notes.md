@@ -35,3 +35,7 @@ main 3ba2e3b CI37986551175 attempt2 최종success·백엔드 전체/PG/백업복
 최종 로컬 전체211검사 BUILD SUCCESSFUL(1분27초). 실제 라이브러리/로컬 수신기/JDK JWT서명 회귀와 키불일치503 안내를 포함했다. 최종 소스 CI·운영 배포/실수신을 다음 단계로 남긴다.
 
 CI37991730490/37991723843은 Initialize containers 단계 Docker Hub 익명 pull 한도 실패. 백엔드 테스트는 실행되지 않았고 웹/모바일은 성공했다. 실패 작업 무한 재시도 대신 동일 공식 PostgreSQL17 공개미러로 변경해 검증한다.
+
+BE-30 PR#55 main9b9511d 머지 완료·소스e560a10의 push37994439548/PR37994446239 전체CI 성공. 최초 CI는 Docker Hub 익명 pull 한도에서 테스트 전 실패했고 동일 Docker Official PostgreSQL17 ECR Public 미러로 컨테이너 준비/전체/PG/복구 검증을 통과했다. 로컬211검사 실패0·skip1. 표준 AES128GCM/VAPID·서버 키쌍 검증 반영·키 값/환경변수 변경0. main CI37994939959 및 Render 배포/실수신 확인은 별도. 기존Issue#53/BE-30 유지·새 과제/APK0.
+
+PR#55 main9b9511d의 CI37994939959 최종success(전체 백엔드/PG/백업복구/웹/모바일). e560a10 push37994439548·PR37994446239도 success. CI Docker Hub 익명 pull 한도 오류는 공식 PostgreSQL17 ECR Public 미러 경로 변경 후 실제 준비/검사 통과로 해결 확인. 표준VAPID/키쌍 검증 소스 반영·키 값/운영 환경변수 변경0. Render 배포·실제 기기 수신은 미확인으로 기존BE-30/Issue#53 유지·APK0.

@@ -38,3 +38,7 @@ main 3ba2e3b CI37986551175 attempt2 최종success·백엔드 전체/PG/백업복
 배포 후 실제 테스트 결과: 제공처 인증 거절(AUTH_REJECTED) 안내. 알림 실수신은 실패 상태로 유지한다. 웹/서버 공개키 일치와 서버 비밀키 쌍 확인이 다음 단계이며 키 원문은 요청하지 않는다.
 
 후속 소스 검사: 라이브러리 send(Notification) 기본 AESGCM 사용 확인. AES128GCM을 명시하고 서버 키쌍 검증을 추가했다. 로컬 실제 수신기에서 표준 인증 헤더/암호화 인코딩/JWT서명·키불일치 차단을 확인했다. 운영 환경의 키 원문은 요청하지 않았으며 실제 제공처403 해소와 기기 수신은 배포 후 별도 검증이다.
+
+BE-30 PR#55 main9b9511d 머지 완료·소스e560a10의 push37994439548/PR37994446239 전체CI 성공. 최초 CI는 Docker Hub 익명 pull 한도에서 테스트 전 실패했고 동일 Docker Official PostgreSQL17 ECR Public 미러로 컨테이너 준비/전체/PG/복구 검증을 통과했다. 로컬211검사 실패0·skip1. 표준 AES128GCM/VAPID·서버 키쌍 검증 반영·키 값/환경변수 변경0. main CI37994939959 및 Render 배포/실수신 확인은 별도. 기존Issue#53/BE-30 유지·새 과제/APK0.
+
+PR#55 main9b9511d의 CI37994939959 최종success(전체 백엔드/PG/백업복구/웹/모바일). e560a10 push37994439548·PR37994446239도 success. CI Docker Hub 익명 pull 한도 오류는 공식 PostgreSQL17 ECR Public 미러 경로 변경 후 실제 준비/검사 통과로 해결 확인. 표준VAPID/키쌍 검증 소스 반영·키 값/운영 환경변수 변경0. Render 배포·실제 기기 수신은 미확인으로 기존BE-30/Issue#53 유지·APK0.

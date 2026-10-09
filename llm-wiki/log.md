@@ -11,6 +11,10 @@
 
 ## 2026-10-10
 
+- **[PROJ] CI Docker Hub 한도 해결·PR#55/main 전체검사 통과**: PR#55 main9b9511d의 CI37994939959 최종success(전체 백엔드/PG/백업복구/웹/모바일). e560a10 push37994439548·PR37994446239도 success. CI Docker Hub 익명 pull 한도 오류는 공식 PostgreSQL17 ECR Public 미러 경로 변경 후 실제 준비/검사 통과로 해결 확인. 표준VAPID/키쌍 검증 소스 반영·키 값/운영 환경변수 변경0. Render 배포·실제 기기 수신은 미확인으로 기존BE-30/Issue#53 유지·APK0.
+
+- **[BE] BE-30 PR#55 머지·Docker Hub 한도 해결·전체CI 통과**: BE-30 PR#55 main9b9511d 머지 완료·소스e560a10의 push37994439548/PR37994446239 전체CI 성공. 최초 CI는 Docker Hub 익명 pull 한도에서 테스트 전 실패했고 동일 Docker Official PostgreSQL17 ECR Public 미러로 컨테이너 준비/전체/PG/복구 검증을 통과했다. 로컬211검사 실패0·skip1. 표준 AES128GCM/VAPID·서버 키쌍 검증 반영·키 값/환경변수 변경0. main CI37994939959 및 Render 배포/실수신 확인은 별도. 기존Issue#53/BE-30 유지·새 과제/APK0.
+
 - **[BE] BE-30 재구독 후403·표준VAPID/서버 키쌍 검증**: BE-30 재구독 후403 지속에 대해 send 기본AESGCM 확인·AES128GCM/표준VAPID 명시·서버 키쌍 검증 추가. 로컬 수신기에서 실제 JWT서명/헤더·잘못된 키 외부요청 차단 검증 통과. 운영403 원인 확정·기기 수신으로 확대하지 않고 기존Issue#53 유지. 별도 의존성/새 과제/키 요청/자동 회전/재시도 증가/APK0.
 
 - **[BE] BE-30 main CI 최종통과·배포/실수신 대기**: main 3ba2e3b CI37986551175 attempt2 최종success·백엔드 전체/PG/백업복구/웹/모바일 완료. 최초 계정 통합검사20초 응답 대기 초과는 로컬/CI 1회 재검증에서 재현되지 않았으며 테스트 삭제·시간 제한 변경0. PR#54 반영 완료, Render 배포·실제 푸시 실패 코드/기기 수신 대기. 기존 BE-30/Issue#53은 열어 둔다. APK0.
