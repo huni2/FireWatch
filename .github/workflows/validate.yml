@@ -32,7 +32,7 @@ jobs:
         working-directory: backend
         env:
           FIREWATCH_TEST_POSTGRES_URL: jdbc:postgresql://localhost:5432/firewatch_test
-        run: bash gradlew test --tests '*SettingsCreationConcurrencyTest' --tests '*CatalogIntegrationTest' --tests '*CatalogScaleIntegrationTest' --tests '*CommunityIntegrationTest' --tests '*GameRankingIntegrationTest' --tests '*GameSimulationVersionMigrationTest' --rerun-tasks
+        run: bash gradlew test --tests '*SettingsCreationConcurrencyTest' --tests '*CatalogIntegrationTest' --tests '*CatalogScaleIntegrationTest' --tests '*CommunityIntegrationTest' --tests '*GameRankingIntegrationTest' --tests '*GameSimulationVersionMigrationTest' --tests '*GameTimingIntegrationTest' --rerun-tasks
       - name: PostgreSQL backup and restore drill
         run: bash scripts/verify-postgres-restore.sh "${{ job.services.postgres.id }}"
   clients:
