@@ -24,6 +24,9 @@
 .discovery-search .ant-select { max-width: 680px !important; }
 .discovery-filters { display: grid; grid-template-columns: minmax(0,1fr) max-content max-content; align-items: center; gap: 12px; }
 .catalog-filters { display: grid; grid-template-columns: minmax(220px,1fr) max-content max-content; align-items: center; gap: 12px; margin-bottom: 16px; }
+.catalog-results { scroll-margin-top: 90px; }
+.catalog-pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 16px 0; }
+.catalog-pagination .ant-btn { min-height: 44px; }
 .catalog-filters > *, .discovery-filters > * { min-width: 0; }
 @media(max-width:950px) { .catalog-filters { grid-template-columns: max-content minmax(0,1fr); }.catalog-filters > .ant-input-group-wrapper { grid-column: 1 / -1; }.catalog-filters > .ant-segmented { width: fit-content; max-width: 100%; } }
 @media(max-width:599px) { .discovery-search { grid-template-columns: minmax(0,1fr); }.discovery-search > .ant-segmented { width: fit-content; }.discovery-filters { grid-template-columns: minmax(0,1fr) max-content; }.discovery-filters > .ant-input-affix-wrapper { grid-column: 1 / -1; }.catalog-filters { grid-template-columns: minmax(0,1fr); }.catalog-filters > .ant-input-group-wrapper { grid-column: auto; } }
