@@ -59,6 +59,7 @@ data class GameTurnSnapshot(
     val turnChange: BigDecimal? = null,
     val simulation: Boolean = false,
     val simulationVersion: Int? = null,
+    val gameAssets: List<GameAssetMetadata> = emptyList(),
     val stockPrices: Map<String, BigDecimal> = emptyMap(),
     val marketEvents: List<GameMarketEvent> = emptyList(),
     val turnContributions: List<GameTurnContribution> = emptyList(),
@@ -92,7 +93,8 @@ class GameService(
         // 둘 다 "게임 시작 시점에만 고르는 값"이라 중간에 바꾸려면 새 게임을 시작해야 한다(ENDED
         // 상태가 되면 findByDeviceIdAndStatus(ACTIVE)가 null을 반환해 자연스럽게 새 게임이 된다).
         val existing = gameSessionRepository.findByDeviceIdAndStatus(deviceId, GameSessionStatus.ACTIVE)
-        if (existing?.simulationSeed != null) return buildTurnSnapshot(existing)
+        if (existing?.simulationSeed != null && existing.simulationVersion !in listOf(1, GameSimulation.CURRENT_VERSION)) simulationFor(existing)
+        if (existing?.simulationSeed != null && existing.simulationVersion == GameSimulation.CURRENT_VERSION) return buildTurnSnapshot(existing)
         if (existing != null) {
             // Preserve historical records; start a separate fully fictional session.
             existing.status = GameSessionStatus.ENDED
@@ -122,7 +124,7 @@ class GameService(
     fun getRankingSnapshot(deviceId: String, sessionId: Long): GameTurnSnapshot {
         val session = gameSessionRepository.findByIdAndDeviceId(sessionId, deviceId)
             ?: throw NotFoundException("이 기기의 게임 기록을 찾을 수 없습니다.")
-        if (session.simulationSeed == null) throw ValidationException("완전 가상 게임 기록만 순위에 등록할 수 있습니다.", emptyMap())
+        if (session.simulationSeed == null || session.simulationVersion != GameSimulation.CURRENT_VERSION) throw ValidationException("완전 가상 게임 기록만 순위에 등록할 수 있습니다.", emptyMap())
         return buildTurnSnapshot(session)
     }
 
@@ -236,10 +238,13 @@ class GameService(
 
     private fun activeSessionOrThrow(deviceId: String): GameSession =
         gameSessionRepository.findByDeviceIdAndStatus(deviceId, GameSessionStatus.ACTIVE)
-            ?.also { if (it.simulationSeed != null) simulationFor(it) }
+            ?.also {
+                if (it.simulationSeed != null && it.simulationVersion == 1) throw NotFoundException("출시 전 시험 게임은 보관됩니다. 새 게임을 시작해주세요.")
+                if (it.simulationSeed != null) simulationFor(it)
+            }
             ?: throw NotFoundException("진행 중인 게임이 없습니다. 먼저 시작해주세요.")
 
-    private fun simulationFor(session: GameSession): GameSimulation = GameSimulation.forVersion(session.simulationVersion)
+    private fun simulationFor(session: GameSession): GameSimulationRules = GameSimulation.forVersion(session.simulationVersion)
 
     private fun resolvePrice(
         instrumentType: GameInstrumentType,
@@ -396,6 +401,7 @@ class GameService(
             review = review,
             simulation = session.simulationSeed != null,
             simulationVersion = if (session.simulationSeed != null) session.simulationVersion else null,
+            gameAssets = if (session.simulationSeed != null) simulationFor(session).metadata else emptyList(),
             marketEvents = session.simulationSeed?.let { simulationFor(session).events(it, session.currentTurnIndex) } ?: emptyList(),
             turnContributions = contributions,
             assetHistories = session.simulationSeed?.let { simulationFor(session).histories(it, session.currentTurnIndex) } ?: emptyList(),

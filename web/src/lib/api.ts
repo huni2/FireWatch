@@ -234,6 +234,8 @@ export interface GameHolding {
 }
 
 export interface GameTurn {
+  simulationVersion?: number | null
+  gameAssets?: Omit<import('../../../shared/game-assets').GameCompany, 'exchange'>[]
   gamePicks?: import('../../../shared/game-turn').GamePick[]
   priceDrivers?: import('../../../shared/game-turn').GamePriceDriver[]
   assetHistories?: import('../../../shared/game-turn').GameAssetHistory[]

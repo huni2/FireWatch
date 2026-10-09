@@ -8,6 +8,54 @@ import kotlin.test.assertTrue
 
 class GameSimulationHistoryTest {
     @Test
+    fun `expanded companies keep their own fictional history pick and sector rules`() {
+        val frozen = javaClass.getResource("/game-universe-v2.json")!!.readText().replace("\r\n", "\n")
+        val digest = java.security.MessageDigest.getInstance("SHA-256").digest(frozen.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+        assertEquals("44e70aae03971d5bb89a6d3e1b7a0d6e61485cc7b08ca11e45e6f90b826f81a4", digest)
+        val simulation = GameSimulation.forVersion(2)
+        assertEquals(26, simulation.assets.size)
+        assertEquals(26, simulation.metadata.map { it.symbol }.distinct().size)
+        assertTrue(simulation.metadata.all { it.source?.startsWith("https://") == true && !it.verifiedAt.isNullOrBlank() })
+        for (seed in listOf(0L, 42L, -991L)) {
+            for (history in simulation.histories(seed, 23)) for (point in history.points) {
+                assertEquals(simulation.price(seed, point.turnIndex, history.instrumentType, history.symbol), point.price)
+            }
+            for (turn in 0..23) {
+                val picks = simulation.picks(seed, turn)
+                assertEquals(picks.map { it.name }, simulation.briefing(seed, turn, simulation.dates(seed)[turn]).recommendedStocks())
+                assertTrue(picks.all { simulation.price(seed, turn, GameInstrumentType.STOCK, it.symbol) != null })
+                for (asset in simulation.assets) {
+                    if (turn > 0) {
+                        val driver = simulation.driver(seed, turn, GameInstrumentType.STOCK, asset.symbol)
+                        val previous = simulation.price(seed, turn - 1, GameInstrumentType.STOCK, asset.symbol)!!.toDouble()
+                        val current = simulation.price(seed, turn, GameInstrumentType.STOCK, asset.symbol)!!.toDouble()
+                        assertTrue(kotlin.math.abs((current / previous - 1) * 100 - driver.marketPercent - driver.sectorPercent - driver.assetPercent) < .001)
+                    }
+                }
+            }
+        }
+        assertEquals(null, simulation.price(42L, 0, GameInstrumentType.STOCK, "AURA"))
+        assertEquals(null, GameSimulation.price(42L, 0, GameInstrumentType.STOCK, "035720.KS"))
+    }
+
+    @Test
+    fun `expanded maximum history payload and calculation are bounded and measured`() {
+        val simulation = GameSimulation.forVersion(2)
+        repeat(30) { simulation.histories(42L, 23) }
+        val timings = (0 until 100).map {
+            val start = System.nanoTime()
+            simulation.histories(42L, 23)
+            (System.nanoTime() - start) / 1_000_000.0
+        }.sorted()
+        val histories = simulation.histories(42L, 23)
+        val bytes = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build().writeValueAsBytes(histories).size
+        assertEquals(34, histories.size)
+        assertTrue(histories.all { it.points.size == 24 })
+        assertTrue(bytes < 50000)
+        println("26-company history local calculation median=${timings[50]}ms p95=${timings[95]}ms JSON=$bytes bytes; not Render HTTP latency")
+    }
+    @Test
     fun `version one output matches the frozen pre expansion rules`() {
         val output = buildString {
             appendLine(GameSimulation.assets)

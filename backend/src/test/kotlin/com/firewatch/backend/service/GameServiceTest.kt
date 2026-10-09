@@ -38,9 +38,10 @@ import kotlin.test.assertTrue
 // 실제 Briefing 2건(day1=10/1, day2=10/2)만으로 "턴 덱 셔플 후 매수→다음턴→가격변동 반영→
 // 보유 초과 매도 거부→덱 소진 시 종료"까지 한 번에 검증한다.
 class GameServiceTest {
-    private fun virtualSession(seed: Long, short: Boolean = false, version: Int = 1): GameSession {
+    private val simulation = GameSimulation.forVersion(GameSimulation.CURRENT_VERSION)
+    private fun virtualSession(seed: Long, short: Boolean = false, version: Int = GameSimulation.CURRENT_VERSION): GameSession {
         stubRepositories("")
-        val session = GameSession(id = 1L, deviceId = "device-a", turnDatesRaw = GameSimulation.dates(seed).joinToString(","), startingCash = BigDecimal("10000000"), allowShortSelling = short, simulationSeed = seed, simulationVersion = version)
+        val session = GameSession(id = 1L, deviceId = "device-a", turnDatesRaw = simulation.dates(seed).joinToString(","), startingCash = BigDecimal("10000000"), allowShortSelling = short, simulationSeed = seed, simulationVersion = version)
         every { gameSessionRepository.findByDeviceIdAndStatus("device-a", GameSessionStatus.ACTIVE) } returns session
         every { gameSessionRepository.save(any()) } answers { firstArg() }
         return session
@@ -54,8 +55,8 @@ class GameServiceTest {
         assertFailsWith<ValidationException> { service.getCurrentTurn("device-a") }
         assertFailsWith<ValidationException> { service.nextTurn("device-a") }
         assertFailsWith<ValidationException> { service.endGame("device-a") }
-        assertFailsWith<ValidationException> { service.trade("device-a", GameInstrumentType.STOCK, "AURA", GameTradeAction.BUY, BigDecimal.ONE) }
-        assertFailsWith<ValidationException> { service.preview("device-a", GameInstrumentType.STOCK, "AURA", GameTradeAction.BUY, BigDecimal.ONE, null) }
+        assertFailsWith<ValidationException> { service.trade("device-a", GameInstrumentType.STOCK, "005930.KS", GameTradeAction.BUY, BigDecimal.ONE) }
+        assertFailsWith<ValidationException> { service.preview("device-a", GameInstrumentType.STOCK, "005930.KS", GameTradeAction.BUY, BigDecimal.ONE, null) }
         assertFailsWith<ValidationException> { service.getRankingSnapshot("device-a", 1L) }
         assertEquals(GameSessionStatus.ACTIVE, session.status)
         assertEquals(0, session.currentTurnIndex)
@@ -66,20 +67,57 @@ class GameServiceTest {
     }
 
     @Test
-    fun `버전1 게임은 저장 규칙으로 재조회하고 API에 구분해 반환한다`() {
+    fun `현재 게임은 저장 규칙으로 재조회하고 같은 기업 목록을 반환한다`() {
         virtualSession(42L)
         val turn = service.getCurrentTurn("device-a")
-        assertEquals(1, turn.simulationVersion)
-        assertEquals(1, turn.toResponse().simulationVersion)
-        assertEquals(GameSimulation.picks(42L, 0), turn.gamePicks)
+        assertEquals(2, turn.simulationVersion)
+        assertEquals(2, turn.toResponse().simulationVersion)
+        assertEquals(simulation.picks(42L, 0), turn.gamePicks)
         assertEquals(turn.stockPrices, service.getCurrentTurn("device-a").stockPrices)
     }
 
     @Test
+    fun `출시 전 시험 게임은 기록을 보관하고 단일 새 게임으로 시작한다`() {
+        val previous = virtualSession(42L, version = 1)
+        every { gameSessionRepository.saveAndFlush(any()) } answers { firstArg() }
+        every { gameSessionRepository.save(any()) } answers { firstArg<GameSession>().apply { id = 2L } }
+        assertFailsWith<NotFoundException> { service.getCurrentTurn("device-a") }
+        val current = service.startGame("device-a", GameDifficulty.NORMAL, false)
+        assertEquals(GameSessionStatus.ENDED, previous.status)
+        assertTrue(previous.endedAt != null)
+        assertEquals(1, previous.simulationVersion)
+        assertEquals(42L, previous.simulationSeed)
+        assertEquals(2L, current.sessionId)
+        assertEquals(26, current.gameAssets.size)
+        verify(exactly = 0) { gameTransactionRepository.save(any()) }
+    }
+
+    @Test
+    fun `버전2의 픽과 임의 기업을 직접 매수하고 최대 턴 응답 크기를 확인한다`() {
+        val session = virtualSession(42L, version = 2)
+        val initial = service.getCurrentTurn("device-a")
+        assertEquals(26, initial.gameAssets.size)
+        for (symbol in (initial.gamePicks.map { it.symbol } + "035720.KS").distinct()) {
+            val bought = service.trade("device-a", GameInstrumentType.STOCK, symbol, GameTradeAction.BUY, BigDecimal.ONE)
+            assertTrue(bought.holdings.any { it.symbol == symbol && it.currentPrice != null })
+        }
+        val next = service.nextTurn("device-a", 0)
+        assertTrue(next.portfolioValue!! > BigDecimal.ZERO)
+        session.currentTurnIndex = 23
+        val end = service.getCurrentTurn("device-a")
+        val json = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build().writeValueAsBytes(end.toResponse())
+        assertTrue(json.size < 100000)
+        println("26-company maximum turn JSON=${json.size} bytes; includes all34 histories and current test ledger")
+        java.io.File("build/test-fixtures").mkdirs()
+        java.io.File("build/test-fixtures/game-v2-turn.json").writeBytes(json)
+        verify(exactly = 0) { stockService.fetchPriceHistory(any(), any()) }
+    }
+
+    @Test
     fun `거래정지는 평가 가격을 유지하고 주문을 막으며 다음 턴 재개된다`() {
-        val seed = (0L..1000L).first { GameSimulation.events(it, 1).any { e -> e.code == "TRADING_HALT" } && GameSimulation.events(it, 2).isEmpty() }
+        val seed = (0L..1000L).first { simulation.events(it, 1).any { e -> e.code == "TRADING_HALT" } && simulation.events(it, 2).isEmpty() }
         virtualSession(seed)
-        val symbol = GameSimulation.events(seed, 1).single().blockedAssets.single().substringAfter(":")
+        val symbol = simulation.events(seed, 1).single().blockedAssets.single().substringAfter(":")
         val bought = service.trade("device-a", GameInstrumentType.STOCK, symbol, GameTradeAction.BUY, BigDecimal.TEN)
         val halted = service.nextTurn("device-a", 0)
         assertEquals(bought.holdings.single().currentPrice, halted.holdings.single().currentPrice)
@@ -95,13 +133,13 @@ class GameServiceTest {
 
     @Test
     fun `사이드카는 지수 주문만 막고 현물과 다음 턴 진행을 허용한다`() {
-        val seed = (0L..1000L).first { GameSimulation.events(it, 1).any { e -> e.code == "SIDECAR" } && GameSimulation.events(it, 2).isEmpty() }
+        val seed = (0L..1000L).first { simulation.events(it, 1).any { e -> e.code == "SIDECAR" } && simulation.events(it, 2).isEmpty() }
         virtualSession(seed)
         service.trade("device-a", GameInstrumentType.KOSPI, null, GameTradeAction.BUY, BigDecimal.ONE)
         val paused = service.nextTurn("device-a", 0)
         assertEquals("SIDECAR", paused.marketEvents.single().code)
         assertFailsWith<ValidationException> { service.trade("device-a", GameInstrumentType.KOSPI, null, GameTradeAction.BUY, BigDecimal.ONE) }
-        service.trade("device-a", GameInstrumentType.STOCK, "AURA", GameTradeAction.BUY, BigDecimal.ONE)
+        service.trade("device-a", GameInstrumentType.STOCK, "005930.KS", GameTradeAction.BUY, BigDecimal.ONE)
         service.trade("device-a", GameInstrumentType.GOLD, null, GameTradeAction.BUY, BigDecimal.ONE)
         service.nextTurn("device-a", 1)
         assertTrue(service.preview("device-a", GameInstrumentType.KOSPI, null, GameTradeAction.BUY, BigDecimal.ONE, 2).allowed)
@@ -109,13 +147,13 @@ class GameServiceTest {
 
     @Test
     fun `손익 기여는 공매도와 이번 턴 전량 매도 후에도 직전 수량으로 계산한다`() {
-        val seed = (0L..1000L).first { GameSimulation.events(it, 1).isEmpty() }
+        val seed = (0L..1000L).first { simulation.events(it, 1).isEmpty() }
         virtualSession(seed, true)
-        service.trade("device-a", GameInstrumentType.STOCK, "AURA", GameTradeAction.BUY, BigDecimal("1.0000"))
+        service.trade("device-a", GameInstrumentType.STOCK, "005930.KS", GameTradeAction.BUY, BigDecimal("1.0000"))
         service.trade("device-a", GameInstrumentType.GOLD, null, GameTradeAction.SELL, BigDecimal.TEN)
         val next = service.nextTurn("device-a", 0)
-        val sold = service.trade("device-a", GameInstrumentType.STOCK, "AURA", GameTradeAction.SELL, BigDecimal.ONE)
-        assertTrue(sold.holdings.none { it.symbol == "AURA" })
+        val sold = service.trade("device-a", GameInstrumentType.STOCK, "005930.KS", GameTradeAction.SELL, BigDecimal.ONE)
+        assertTrue(sold.holdings.none { it.symbol == "005930.KS" })
         assertEquals(next.turnContributions, sold.turnContributions)
         val profit = sold.turnContributions.fold(BigDecimal.ZERO) { sum, c -> sum + c.profit!! }
         assertEquals(0, profit.compareTo(sold.turnChange))
@@ -212,7 +250,8 @@ class GameServiceTest {
         assertEquals(0, turn.turnIndex)
         assertEquals(2030, turn.turnDate.year)
         assertTrue(turn.simulation)
-        assertEquals(1, turn.simulationVersion)
+        assertEquals(2, turn.simulationVersion)
+        assertEquals(26, turn.gameAssets.size)
         assertEquals(GameSessionStatus.ACTIVE, turn.status)
         assertEquals(BigDecimal("10000000.00"), turn.portfolioValue)
     }
@@ -432,8 +471,9 @@ class GameServiceTest {
     fun `가상 게임 거래와 다음 턴은 외부 시세와 브리핑 조회를 호출하지 않는다`() {
         stubRepositories("")
         val started = service.startGame("device-a", GameDifficulty.NORMAL, false)
-        val price = started.stockPrices.getValue("AURA")
-        val bought = service.trade("device-a", GameInstrumentType.STOCK, "AURA", GameTradeAction.BUY, BigDecimal.TEN, "virtual-order", 0, price)
+        val symbol = started.gamePicks.first().symbol
+        val price = started.stockPrices.getValue(symbol)
+        val bought = service.trade("device-a", GameInstrumentType.STOCK, symbol, GameTradeAction.BUY, BigDecimal.TEN, "virtual-order", 0, price)
         assertEquals(BigDecimal("10000000.00"), bought.portfolioValue)
         clearMocks(gameTransactionRepository, answers = false)
         val next = service.nextTurn("device-a", 0)

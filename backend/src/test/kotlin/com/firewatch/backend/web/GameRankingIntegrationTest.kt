@@ -41,7 +41,7 @@ class GameRankingIntegrationTest {
     }
     private fun game(p: Player, turn: Int=23, ended: Boolean=true, cash: String="10000000", short: Boolean=false) = games.save(GameSession(deviceId=p.device,
         status=if(ended) GameSessionStatus.ENDED else GameSessionStatus.ACTIVE, turnDatesRaw=GameSimulation.dates(42L).joinToString(","),
-        currentTurnIndex=turn, startingCash=BigDecimal(cash),allowShortSelling=short,simulationSeed=42L))
+        currentTurnIndex=turn, startingCash=BigDecimal(cash),allowShortSelling=short,simulationSeed=42L,simulationVersion=GameSimulation.CURRENT_VERSION))
     private fun publish(p: Player, g: GameSession, nickname: String) = client().post().uri("/api/game/rankings").header("X-Device-Id",p.device).header("Authorization",p.auth)
         .bodyValue(RankingSubmission(g.id!!,g.currentTurnIndex,nickname)).exchange().expectStatus().isOk.expectBody(RankingEntry::class.java).returnResult().responseBody!!
     @BeforeEach fun reset() {
@@ -72,14 +72,14 @@ class GameRankingIntegrationTest {
         val p = login()
         val g = game(p, 0, false)
         fun current() = client().get().uri("/api/game/current").header("X-Device-Id", p.device).header("Authorization", p.auth).exchange()
-        current().expectStatus().isOk.expectBody().jsonPath("$.simulationVersion").isEqualTo(1)
-            .jsonPath("$.stockPrices.AURA").isEqualTo(24000.0)
+        current().expectStatus().isOk.expectBody().jsonPath("$.simulationVersion").isEqualTo(2)
+            .jsonPath("$.stockPrices['005930.KS']").isEqualTo(32400.0)
         client().post().uri("/api/game/trade").header("X-Device-Id", p.device).header("Authorization", p.auth)
-            .bodyValue(mapOf("instrumentType" to "STOCK", "symbol" to "AURA", "action" to "BUY", "quantity" to 10))
-            .exchange().expectStatus().isOk.expectBody().jsonPath("$.simulationVersion").isEqualTo(1)
+            .bodyValue(mapOf("instrumentType" to "STOCK", "symbol" to "005930.KS", "action" to "BUY", "quantity" to 10))
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.simulationVersion").isEqualTo(2)
         client().post().uri("/api/game/next-turn").header("X-Device-Id", p.device).header("Authorization", p.auth)
-            .exchange().expectStatus().isOk.expectBody().jsonPath("$.simulationVersion").isEqualTo(1)
-            .jsonPath("$.holdings[0].currentPrice").isEqualTo(GameSimulation.price(42L, 1, GameInstrumentType.STOCK, "AURA")!!.toDouble())
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.simulationVersion").isEqualTo(2)
+            .jsonPath("$.holdings[0].currentPrice").isEqualTo(GameSimulation.forVersion(2).price(42L, 1, GameInstrumentType.STOCK, "005930.KS")!!.toDouble())
         // DB의 미지원 저장 버전을 현재 규칙으로 읽거나 종료하면서 덮어쓰지 않는다.
         jdbc.update("UPDATE game_sessions SET simulation_version=999 WHERE id=?", g.id!!)
         current().expectStatus().isBadRequest
@@ -92,8 +92,9 @@ class GameRankingIntegrationTest {
         assertNull(saved.endedAt)
         val ledger = transactions.findBySessionIdAndTurnIndexLessThanEqual(g.id!!, 23)
         assertEquals(1, ledger.size)
-        assertEquals(0, ledger.single().price.compareTo(BigDecimal("24000")))
+        assertEquals(0, ledger.single().price.compareTo(BigDecimal("32400")))
     }
+
     @Test fun `leagues separate completion turn difficulty and short mode with one best place per account`() {
         val p=login();publish(p,game(p),"플레이어하나");publish(p,game(p),"플레이어하나")
         val early=login();assertEquals("PROGRESS",publish(early,game(early,4),"중도종료").board)
@@ -135,9 +136,9 @@ class GameRankingIntegrationTest {
     }
     @Test fun `score is derived from persisted fills and concurrent retries create one record`() {
         val p=login();val g=game(p)
-        val initial=GameSimulation.price(42L,0,GameInstrumentType.STOCK,"AURA")!!
-        val current=GameSimulation.price(42L,23,GameInstrumentType.STOCK,"AURA")!!
-        transactions.saveAndFlush(GameTransaction(sessionId=g.id!!,turnIndex=0,instrumentType=GameInstrumentType.STOCK,symbol="AURA",action=GameTradeAction.BUY,quantity=BigDecimal.TEN,price=initial))
+        val initial=GameSimulation.forVersion(2).price(42L,0,GameInstrumentType.STOCK,"005930.KS")!!
+        val current=GameSimulation.forVersion(2).price(42L,23,GameInstrumentType.STOCK,"005930.KS")!!
+        transactions.saveAndFlush(GameTransaction(sessionId=g.id!!,turnIndex=0,instrumentType=GameInstrumentType.STOCK,symbol="005930.KS",action=GameTradeAction.BUY,quantity=BigDecimal.TEN,price=initial))
         val pool=java.util.concurrent.Executors.newFixedThreadPool(2)
         try {
             val tasks=(1..2).map { pool.submit<RankingEntry> { publish(p,g,"동시등록") } }

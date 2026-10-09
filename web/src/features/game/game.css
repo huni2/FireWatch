@@ -181,5 +181,9 @@
 .game-page .order-total-summary { width: 100%; }
 .game-page .game-desktop-next { justify-content: flex-end; }
 @media(min-width:900px) { .has-session .game-desktop-next { display: flex; padding: 8px 16px; }.has-session .game-workspace { height: max(300px, calc(100dvh - 320px)); }.has-session .order-actions { gap: 0; padding: 4px 16px 8px; }.has-session .order-total-summary { padding: 4px 0; } }
-@media(max-width:899px) { .game-page .game-bottom-bar { gap: 10px; justify-content: space-between; padding: 10px 12px; border-radius: 16px; }.game-page .game-bottom-bar > div { display: block; }.game-page .game-bottom-bar strong { font-size: 13px; }.game-page .game-bottom-bar span { display: none; }.game-page .game-bottom-bar .ant-btn { width: auto; flex-shrink: 0; } }
+@media(max-width:899px) { .game-page .game-bottom-bar { gap: 10px; justify-content: space-between; padding: 10px 12px; border-radius: 16px; }.game-page .game-bottom-bar > div { display: block; }.game-page .game-bottom-bar strong { font-size: 13px; }.game-page .game-bottom-bar > div > span { display: none; }.game-page .game-bottom-bar .ant-btn { width: auto; flex-shrink: 0; } }
 @media(max-width:599px) { .game-lobby { padding: 24px 18px; }.game-lobby h1 { font-size: 26px; }.game-lobby .game-lobby-summary { max-width: 260px; line-height: 1.7; }.game-page .game-turn-tools { width: auto; }.game-turn-context { flex-basis: 200px; }.game-lobby .difficulty { padding: 10px 8px; }.game-lobby .difficulty > .firewatch-icon { right: 5px; top: 5px; font-size: 11px; } }
+
+.game-company-filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, .7fr); gap: 12px; }
+.game-company-filters .ant-select { min-width: 0; }
+@media (max-width: 520px) { .game-company-filters { grid-template-columns: minmax(0, 1fr); } }
