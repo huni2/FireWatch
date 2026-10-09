@@ -23,6 +23,46 @@ class AccountSessionIntegrationTest {
     private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").responseTimeout(java.time.Duration.ofSeconds(20)).build()
 
     @Test
+    fun `인증된 계정 삭제는 공유 보유와 문의 및 모든 세션을 지우고 다른 계정은 보존한다`() {
+        val account = users.save(AppUser(googleSub = "deletion-owner", email = "delete@example.test"))
+        val other = users.save(AppUser(googleSub = "deletion-other"))
+        val shared = settings.save(UserSettings(userId = account.id, interestKeywordsRaw = "반도체"))
+        settings.save(UserSettings(userId = other.id, interestKeywordsRaw = "보존"))
+        links.save(DeviceLink("deletion-first", account.id!!))
+        links.save(DeviceLink("deletion-second", account.id!!))
+        links.save(DeviceLink("deletion-other-device", other.id!!))
+        val first = sessions.issue("deletion-first")
+        val second = sessions.issue("deletion-second")
+        val otherSession = sessions.issue("deletion-other-device")
+        client().put().uri("/api/portfolio").header("X-Device-Id", "deletion-first").header("Authorization", "Bearer ${first.token}")
+            .bodyValue(com.firewatch.backend.web.dto.PortfolioUpdateRequest(0, "삭제 검사", 60, "BALANCED", "GENERAL", java.math.BigDecimal.ZERO, java.math.BigDecimal("1000"), emptyList()))
+            .exchange().expectStatus().isOk
+        client().post().uri("/api/community/feedback").header("X-Device-Id", "deletion-first").header("Authorization", "Bearer ${first.token}")
+            .bodyValue(FeedbackInput(java.util.UUID.randomUUID().toString(), "BUG", "삭제 전 문의 기록 검사", "WEB"))
+            .exchange().expectStatus().isOk
+        jdbc.update("INSERT INTO notice_preferences(user_id,hidden_until) VALUES (?,?)", account.id, java.sql.Timestamp.from(Instant.now().plusSeconds(3600)))
+        assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM portfolios WHERE owner_id=?", Int::class.java, shared.id))
+        assertTrue(jdbc.queryForObject("SELECT COUNT(*) FROM portfolio_revisions WHERE owner_id=?", Int::class.java, shared.id)!! > 0)
+        assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM user_feedback WHERE user_id=?", Int::class.java, account.id))
+        client().delete().uri("/api/auth/account").header("X-Device-Id", "deletion-first").header("Authorization", "Bearer ${otherSession.token}")
+            .exchange().expectStatus().isUnauthorized
+        assertTrue(users.existsById(account.id!!))
+        client().delete().uri("/api/auth/account").header("X-Device-Id", "deletion-first").header("Authorization", "Bearer ${first.token}")
+            .exchange().expectStatus().isNoContent
+        assertFalse(users.existsById(account.id!!))
+        assertNull(settings.findByUserId(account.id!!))
+        for (table in listOf("portfolios", "portfolio_revisions")) {
+            assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM $table WHERE owner_id=?", Int::class.java, shared.id))
+        }
+        for (table in listOf("user_feedback", "notice_preferences", "device_links", "auth_sessions")) {
+            assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM $table WHERE user_id=?", Int::class.java, account.id))
+        }
+        assertFailsWith<UnauthorizedException> { sessions.authenticate("deletion-second", "Bearer ${second.token}") }
+        assertEquals(other.id, sessions.authenticate("deletion-other-device", "Bearer ${otherSession.token}"))
+        assertEquals("보존", settings.findByUserId(other.id!!)?.interestKeywordsRaw)
+    }
+
+    @Test
     fun `모든 운영 API는 공개 설정 키와 일반 계정 및 위조 이메일을 거절한다`() {
         val device = "ordinary-operations"
         val user = users.save(AppUser(googleSub = device, email = "ordinary@example.com", emailVerified = true))
