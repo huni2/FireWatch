@@ -61,6 +61,21 @@ class PushServiceTest {
         UserSettings(pushTime = "08:00", fcmTokensRaw = fcmTokensRaw, webPushSubscriptionsRaw = webPushSubscriptionsRaw)
 
     @Test
+    fun `앱 발송 예외가 웹 발송을 막지 않고 둘 다 실패하면 안전한503을 반환한다`() {
+        val row = dueRow(fcmTokensRaw = "private-token", webPushSubscriptionsRaw = listOf(subscriptionA).toJsonString())
+        every { userSettingsRepository.save(any<UserSettings>()) } answers { firstArg() }
+        every { fcmSender.sendMulticast(any(), any(), any()) } throws IllegalStateException("private-provider-url")
+        every { webPushSender.sendToAll(any(), any(), any()) } returns WebPushSendResult(1, emptyList())
+        assertEquals(1, pushService.testOperatorNotification(row).webPushSuccessCount)
+        every { webPushSender.sendToAll(any(), any(), any()) } throws IllegalStateException("private-endpoint")
+        val error = kotlin.test.assertFailsWith<com.firewatch.backend.web.ApiException> { pushService.testOperatorNotification(row) }
+        assertEquals(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, error.httpStatus)
+        kotlin.test.assertFalse(error.message!!.contains("private-"))
+        assertEquals("private-token", row.fcmTokensRaw)
+        assertEquals(null, row.lastNotifiedDate)
+    }
+
+    @Test
     fun `운영자 웹 푸시 실패는 안전한 원인과 조치 안내를 반환한다`() {
         val row = dueRow(webPushSubscriptionsRaw = listOf(subscriptionA).toJsonString())
         every { userSettingsRepository.save(any<UserSettings>()) } answers { firstArg() }

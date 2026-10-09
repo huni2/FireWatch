@@ -2,7 +2,9 @@ package com.firewatch.backend.service
 
 import com.firewatch.backend.audit.AuditedComponent
 import com.firewatch.backend.client.FcmSender
+import com.firewatch.backend.client.FcmSendResult
 import com.firewatch.backend.client.WebPushSender
+import com.firewatch.backend.client.WebPushSendResult
 import com.firewatch.backend.entity.AuditEventType
 import com.firewatch.backend.entity.Briefing
 import com.firewatch.backend.entity.UserSettings
@@ -124,7 +126,12 @@ class PushService(
         val fcmResult = if (tokens.isEmpty()) {
             null
         } else {
-            val result = fcmSender.sendMulticast(tokens = tokens, title = title, body = body)
+            val result = try {
+                fcmSender.sendMulticast(tokens = tokens, title = title, body = body)
+            } catch (error: Exception) {
+                log.warn("push_failure channel=APP code=SEND_EXCEPTION exception_type={}", error.javaClass.simpleName)
+                FcmSendResult(0, emptyList())
+            }
             if (result.invalidTokens.isNotEmpty()) {
                 settings.fcmTokensRaw = (tokens - result.invalidTokens.toSet()).toCommaSeparated()
             }
@@ -135,7 +142,12 @@ class PushService(
         val webPushResult = if (subscriptions.isEmpty()) {
             null
         } else {
-            val result = webPushSender.sendToAll(subscriptions, title = title, body = body)
+            val result = try {
+                webPushSender.sendToAll(subscriptions, title = title, body = body)
+            } catch (error: Exception) {
+                log.warn("push_failure channel=WEB code=SEND_EXCEPTION exception_type={}", error.javaClass.simpleName)
+                WebPushSendResult(0, emptyList(), setOf("SEND_EXCEPTION"))
+            }
             if (result.invalidEndpoints.isNotEmpty()) {
                 val invalidSet = result.invalidEndpoints.toSet()
                 settings.webPushSubscriptionsRaw = subscriptions.filterNot { it.endpoint in invalidSet }.toJsonString()
