@@ -219,9 +219,9 @@ class GameServiceTest {
             val turnIndex = secondArg<Int>()
             transactions.filter { it.turnIndex <= turnIndex }
         }
-        every { gameTransactionRepository.findBySessionIdAndRequestId(any(), any()) } answers {
-            val requestId = secondArg<String>()
-            transactions.find { it.requestId == requestId }
+        every { gameTransactionRepository.findBySessionId(any()) } answers {
+            val sessionId = firstArg<Long>()
+            transactions.filter { it.sessionId == sessionId }
         }
     }
 
@@ -485,5 +485,27 @@ class GameServiceTest {
         assertTrue(next.briefing.recommendedStocksRaw!!.isNotBlank())
         verify(exactly = 0) { stockService.fetchPriceHistory(any(), any()) }
         verify(exactly = 0) { briefingRepository.findByBriefingDate(any()) }
+    }
+
+    @Test
+    fun `미래 원장도 중복 요청 검사에 포함하지만 현재 평가에는 포함하지 않는다`() {
+        stubRepositories("")
+        val started = service.startGame("device-a", GameDifficulty.NORMAL, false)
+        val future = GameTransaction(id = 99L, sessionId = started.sessionId, turnIndex = 10,
+            instrumentType = GameInstrumentType.GOLD, action = GameTradeAction.BUY,
+            quantity = BigDecimal.ONE, price = BigDecimal("100"), requestId = "future-order")
+        transactions.add(future)
+        val replay = service.trade("device-a", GameInstrumentType.GOLD, null, GameTradeAction.BUY, BigDecimal.ONE, "future-order", 0)
+        assertEquals(0, started.cash.compareTo(replay.cash))
+        assertTrue(replay.holdings.isEmpty())
+        assertTrue(replay.transactions.isEmpty())
+        assertFailsWith<com.firewatch.backend.web.ConflictException> {
+            service.trade("device-a", GameInstrumentType.GOLD, null, GameTradeAction.BUY, BigDecimal.TEN, "future-order", 0)
+        }
+        val bought = service.trade("device-a", GameInstrumentType.GOLD, null, GameTradeAction.BUY, BigDecimal.ONE, "current-order", 0)
+        assertEquals(1, bought.transactions.size)
+        assertEquals("current-order", bought.transactions.single().requestId)
+        assertEquals(0, BigDecimal.ONE.compareTo(bought.holdings.single().quantity))
+        assertEquals(0, started.cash.subtract(bought.transactions.single().price).compareTo(bought.cash))
     }
 }

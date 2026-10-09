@@ -116,7 +116,7 @@ class GameService(
                 simulationVersion = version,
             ),
         )
-        return buildTurnSnapshot(session, historyPoints = historyPoints)
+        return buildTurnSnapshot(session, emptyList(), historyPoints)
     }
 
     fun getCurrentTurn(deviceId: String, historyPoints: Int = 24): GameTurnSnapshot = buildTurnSnapshot(activeSessionOrThrow(deviceId), historyPoints = historyPoints)
@@ -163,12 +163,17 @@ class GameService(
         validateSymbol(instrumentType, symbol)
 
         val session = activeSessionOrThrow(deviceId)
+        if (requestId != null && !Regex("^[A-Za-z0-9-]{1,64}$").matches(requestId)) throw ValidationException("요청 ID 형식이 올바르지 않습니다.", emptyMap())
+        // Share the locked session's ledger for idempotency and valuation. Future entries
+        // remain visible to request-ID checks but never contribute to this turn's balance.
+        val records = if (requestId == null) gameTransactionRepository.findBySessionIdAndTurnIndexLessThanEqual(session.id!!, session.currentTurnIndex)
+            else gameTransactionRepository.findBySessionId(session.id!!)
+        val ledger = records.filter { it.turnIndex <= session.currentTurnIndex }
         if (requestId != null) {
-            if (!Regex("^[A-Za-z0-9-]{1,64}$").matches(requestId)) throw ValidationException("요청 ID 형식이 올바르지 않습니다.", emptyMap())
-            val previous = gameTransactionRepository.findBySessionIdAndRequestId(session.id!!, requestId)
+            val previous = records.firstOrNull { it.requestId == requestId }
             if (previous != null) {
                 if (previous.instrumentType != instrumentType || previous.symbol != symbol || previous.action != action || previous.quantity.compareTo(quantity) != 0) throw com.firewatch.backend.web.ConflictException("동일 요청 ID에 다른 거래를 보낼 수 없습니다.")
-                return buildTurnSnapshot(session, historyPoints = historyPoints)
+                return buildTurnSnapshot(session, ledger, historyPoints)
             }
         }
         if (expectedTurnIndex != null && session.currentTurnIndex != expectedTurnIndex) throw com.firewatch.backend.web.ConflictException("연습 날짜가 변경되었습니다. 현재 턴을 확인해주세요.")
@@ -183,7 +188,6 @@ class GameService(
         if (expectedPrice != null && expectedPrice.compareTo(price) != 0) throw com.firewatch.backend.web.ConflictException("주문 미리보기 가격과 다릅니다. 금액을 다시 확인해주세요.")
 
         val key = GameHoldingKey(instrumentType, symbol)
-        val ledger = gameTransactionRepository.findBySessionIdAndTurnIndexLessThanEqual(session.id!!, session.currentTurnIndex)
         when (action) {
             GameTradeAction.BUY -> {
                 val cost = price.multiply(quantity)

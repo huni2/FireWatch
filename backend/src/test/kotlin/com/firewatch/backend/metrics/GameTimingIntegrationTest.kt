@@ -40,7 +40,8 @@ class GameTimingIntegrationTest {
         val started = start(device)
         val first = messages().last()
         assertTrue(first.contains("op=START outcome=success"))
-        assertTrue(sqlCount(first) > 0)
+        // Session lock lookup + new session INSERT + durable audit INSERT; no empty ledger SELECT.
+        assertEquals(3, sqlCount(first))
         assertTrue(Regex("connection_count=([1-9][0-9]*)").containsMatchIn(first))
         val current = client().get().uri("/api/game/current?compact=true").header("X-Device-Id", device)
             .exchange().expectStatus().isOk.expectBody(GameTurnResponse::class.java).returnResult().responseBody!!
@@ -80,5 +81,40 @@ class GameTimingIntegrationTest {
         assertTrue(next.contains("op=CURRENT outcome=failure"))
         assertEquals(0, sqlCount(next))
         assertFalse(messages().any { it.contains(device) || it.contains("진행한 턴") })
+    }
+
+    @Test fun `trade shares one ledger read and retries preserve holdings cash and conflict checks`() {
+        val device = UUID.randomUUID().toString()
+        val initial = start(device)
+        val request = com.firewatch.backend.web.dto.GameTradeRequest(
+            com.firewatch.backend.entity.GameInstrumentType.GOLD, action = com.firewatch.backend.entity.GameTradeAction.BUY,
+            quantity = java.math.BigDecimal.ONE, requestId = "shared-ledger", expectedTurnIndex = 0,
+        )
+        fun trade(body: com.firewatch.backend.web.dto.GameTradeRequest) = client().post().uri("/api/game/trade?compact=true")
+            .header("X-Device-Id", device).bodyValue(body).exchange()
+        fun assertBalances(expected: GameTurnResponse, actual: GameTurnResponse) {
+            fun ledger(turn: GameTurnResponse) = turn.transactions.map {
+                it.copy(quantity = it.quantity.stripTrailingZeros(), price = it.price.stripTrailingZeros(), total = it.total.stripTrailingZeros())
+            }
+            fun holdings(turn: GameTurnResponse) = turn.holdings.map {
+                it.copy(quantity = it.quantity.stripTrailingZeros(), currentPrice = it.currentPrice?.stripTrailingZeros(), value = it.value?.stripTrailingZeros())
+            }
+            assertEquals(ledger(expected), ledger(actual))
+            assertEquals(holdings(expected), holdings(actual))
+            assertEquals(0, expected.cash.compareTo(actual.cash))
+        }
+        val bought = trade(request).expectStatus().isOk.expectBody(GameTurnResponse::class.java).returnResult().responseBody!!
+        assertEquals(4, sqlCount(messages().last()))
+        assertEquals(1, bought.transactions.size)
+        assertEquals(0, java.math.BigDecimal.ONE.compareTo(bought.holdings.single().quantity))
+        assertTrue(bought.cash < initial.cash)
+        val replay = trade(request.copy(expectedTurnIndex = 23)).expectStatus().isOk
+            .expectBody(GameTurnResponse::class.java).returnResult().responseBody!!
+        assertEquals(3, sqlCount(messages().last()))
+        assertBalances(bought, replay)
+        trade(request.copy(quantity = java.math.BigDecimal.TEN)).expectStatus().isEqualTo(409)
+        val resumed = start(device)
+        assertEquals(initial.sessionId, resumed.sessionId)
+        assertBalances(bought, resumed)
     }
 }
