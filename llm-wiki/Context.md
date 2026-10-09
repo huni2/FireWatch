@@ -1,6 +1,6 @@
 # FireWatch — 현재 맥락
 
-최신화: 2026-10-09. 계정 삭제/개인정보 처리 대조 소스9747a8d·PR#14 main4fe4d6e·Cloudflaredeb8ae64 완료. 웹 삭제4폭/계정6시나리오·서버182검사(실패0·제외1), CI37878074949/37878173437/main37878483284 전체 성공. WEB-39/APP-31 종료, 실제 운영 삭제 이행·보관기간·국외 처리·법률 검토는 BE-21이다. Android 설치는 APP-21이며 APK 빌드는 과제/디자인 후속 완료까지 보류한다. 이력은 [[log]] 참조.
+최신화: 2026-10-09. 게임 그래프 API 선행 BE-35 소스ae38501·PR#16 maina954514·Issue#15 종료. 로컬185검사 실패0·기존 제외1·CI37881821700/37881830823/main37886538428 전체 성공. Render 반영 확인과 웹/앱 compact·상세 API 연결은 BE-28에 남는다. 최신 웹은 계정 삭제/개인정보 대조9747a8d·Cloudflaredeb8ae64이며 Android 설치/추가 APK는 최종 과제·디자인 완료까지 보류한다. 이력은 [[log]] 참조.
 
 ## 제품 정체성과 범위
 
@@ -36,7 +36,7 @@ Android APK는 웹·서버 배포와 별도다. 일반 배포 때 자동/임의 
 | Backend | Kotlin 2.3.21·Java21·Spring Boot4.1.0·WebFlux/WebClient+JPA/JDBC. Render `https://firewatch-backend-q3cv.onrender.com` |
 | DB | 운영 Supabase PostgreSQL, 개발 H2. 데이터 초기화 금지 |
 | Mobile | Expo SDK57·React Native0.86·NativeWind·Expo Router. 최신 APK 실기기 검증과 Play 출시 준비 중 |
-| CI | main37878483284 전체 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·웹/모바일 검사 포함 |
+| CI | main37886538428 전체 성공. 전체/H2·PostgreSQL·3,000건 검색·별도 DB 복원/행 서명/시퀀스 대조·웹/모바일 검사 포함 |
 
 웹은 Cloudflare 직접 업로드이고 GitHub push만으로 반영되지 않는다. 최신 공개 배포deb8ae64·소스9747a8d이며 현재 main4fe4d6e다. 최신7594daa/versionCode5 preview APK는 FINISHED지만 이후 변경은 포함하지 않으며 실기기 확인은 APP-21이다. 최종 과제/디자인 후속 완료까지 APK 추가 요청을 보류한다. 이번 서버 운영 코드 변경은 없으며 Render 재배포가 필요하지 않다.
 
@@ -82,3 +82,5 @@ BE-33 완료. 게임 규칙 버전 고정 b851696·PR#8 main d8331b7 머지·Iss
 2026-10-09 사용자 확정. 출시 전 게임/순위는 하나로 통합하며 출시 후 시즌을 기획한다.26기업 시작 목록·서버 메타데이터 기반 픽/주문/복기·분야/검색/6개씩 탐색을 구현 중이다. 이전5기업 시험 세션은 새 시작 시 종료 상태로 보관한다. APK 빌드 보류 유지.
 
 계정 삭제는 웹 내 계정에서도 직접 실행할 수 있으며 공개 요청 경로는 /privacy#delete-account다. 공유 보유/이력·설정·문의/숨김·순위·모든 연결/세션을 삭제하고 기기별 게임·감사로그·기존 백업은 자동 삭제하지 않는다. docs/product/privacy-deletion-review/data-processing.md의 실제 범위와 남은 운영 확인을 따른다. 삭제 경로 구현을 전체 Play/법률 검토 완료로 표시하지 않는다.
+
+BE-35 서버 선행 구현 완료. ae38501·PR#16 maina954514·Issue#15 종료·CI37881821700/37881830823 전체 성공. 기본 전체 그래프 계약을 유지하고 compact=true는 직전 최대2점, 선택 전체 그래프는 기기 소유 세션/진행 턴/자산으로 조회한다. 로컬185검사 실패0·제외1. 상세 읽기는 게임 변경/외부 요청/감사 DB 삽입을 하지 않는다. Render 새 경로는 아직 미확인이며 웹/앱도 기본 계약을 사용한다. BE-28의 다음 단계는 서버 반영 확인→클라이언트 compact/상세 로딩·재시도/캐시 연결→실제 운영 지연 측정이다. 웹 배포/추가 APK 요청0.
