@@ -2,6 +2,8 @@ package com.firewatch.backend.service
 
 import com.firewatch.backend.audit.AuditedComponent
 import com.firewatch.backend.client.StockRange
+import com.firewatch.backend.metrics.GameTimingPhase
+import com.firewatch.backend.metrics.GameTimingScope
 import com.firewatch.backend.entity.AuditEventType
 import com.firewatch.backend.entity.Briefing
 import com.firewatch.backend.entity.GameDifficulty
@@ -103,7 +105,7 @@ class GameService(
         }
         val seed = java.util.concurrent.ThreadLocalRandom.current().nextLong()
         val version = GameSimulation.CURRENT_VERSION
-        val allDates = GameSimulation.forVersion(version).dates(seed)
+        val allDates = GameTimingScope.phase(GameTimingPhase.RULES) { GameSimulation.forVersion(version) }.dates(seed)
         val session = gameSessionRepository.save(
             GameSession(
                 deviceId = deviceId,
@@ -121,11 +123,14 @@ class GameService(
 
     @Transactional(readOnly = true)
     fun getAssetHistory(deviceId: String, sessionId: Long, turnIndex: Int, type: GameInstrumentType, symbol: String?): GameAssetHistory {
-        val session = gameSessionRepository.findByDeviceIdAndId(deviceId, sessionId)
+        val session = GameTimingScope.phase(GameTimingPhase.REPOSITORY) {
+            gameSessionRepository.findByDeviceIdAndId(deviceId, sessionId)
+        }
             ?: throw NotFoundException("이 기기의 게임 기록을 찾을 수 없습니다.")
         if (turnIndex !in 0..session.currentTurnIndex) throw ValidationException("진행한 턴까지만 조회할 수 있습니다.", emptyMap())
         val seed = session.simulationSeed ?: throw NotFoundException("이 게임에는 가상 가격 그래프가 없습니다.")
-        return simulationFor(session).history(seed, turnIndex, type, symbol)
+        val rules = simulationFor(session)
+        return GameTimingScope.phase(GameTimingPhase.HISTORY) { rules.history(seed, turnIndex, type, symbol) }
             ?: throw NotFoundException("이 게임에 없는 자산입니다.")
     }
 
@@ -255,7 +260,8 @@ class GameService(
             }
             ?: throw NotFoundException("진행 중인 게임이 없습니다. 먼저 시작해주세요.")
 
-    private fun simulationFor(session: GameSession): GameSimulationRules = GameSimulation.forVersion(session.simulationVersion)
+    private fun simulationFor(session: GameSession): GameSimulationRules =
+        GameTimingScope.phase(GameTimingPhase.RULES) { GameSimulation.forVersion(session.simulationVersion) }
 
     private fun resolvePrice(
         instrumentType: GameInstrumentType,

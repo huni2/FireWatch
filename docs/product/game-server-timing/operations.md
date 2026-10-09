@@ -17,6 +17,9 @@ game_timing op=CURRENT outcome=success server_ms=5.696 io_queue_ms=0.180 connect
 | prepare_ms | JDBC statement 준비 구간 | 연결 획득과 겹칠 수 있음 |
 | sql_ms/count | Hibernate의 JDBC 실행 구간/statement·batch 횟수 | DB CPU 단독 시간 아님. 통신·SQL 잠금 대기 포함 가능, COMMIT/결과 탐색 전부를 재현하지 않음 |
 | uptime_ms | JVM 가동 시간 | 작은 값만으로 Render 콜드 스타트 원인을 확정하지 않음 |
+| repository_ms/count | HISTORY 저장 세션 조회 메서드의 반환까지/호출 횟수 | JDBC·ORM 결과 처리가 포함됨. 서비스 바깥 트랜잭션 진입/종료 제외 |
+| rules_ms/count | 게임 규칙 선택·첫 lazy 로딩/호출 횟수 | 여러 선택의 누적 시간이며 첫 요청뿐 아니라 모든 요청에 기록. lazy 잠금 대기도 포함 가능 |
+| history_ms/count | HISTORY 단일 자산 그래프 계산/호출 횟수 | 규칙 선택 뒤 계산만. 현재 턴 응답의 전체 그래프 계산은 이 필드에 포함되지 않음 |
 
 각 이벤트 시간이 겹칠 수 있어 총합을 server_ms에서 빼서 CPU/COMMIT 시간으로 계산하지 않는다. 남은 시간에는 계산·엔티티 매핑·트랜잭션 정리·감사로그 처리와 초기화 등이 섞인다. 기존 감사로그와 별개로 서버 표준 로그에만 기록하며 새로운 DB 감사 행을 추가하지 않는다. 원래 게임 변경의 감사 기록은 유지한다.
 

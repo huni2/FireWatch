@@ -25,10 +25,25 @@ internal class GameTimingRecord {
     val connection = JdbcSpan()
     val prepare = JdbcSpan()
     val execute = JdbcSpan()
+    val repository = JdbcSpan()
+    val rules = JdbcSpan()
+    val history = JdbcSpan()
 }
+
+internal enum class GameTimingPhase { REPOSITORY, RULES, HISTORY }
 
 internal object GameTimingScope {
     val current = ThreadLocal<GameTimingRecord>()
+    fun <T> phase(phase: GameTimingPhase, block: () -> T): T {
+        val record = current.get() ?: return block()
+        val span = when (phase) {
+            GameTimingPhase.REPOSITORY -> record.repository
+            GameTimingPhase.RULES -> record.rules
+            GameTimingPhase.HISTORY -> record.history
+        }
+        val started = System.nanoTime()
+        try { return block() } finally { span.add(started) }
+    }
 }
 
 @Component
@@ -44,10 +59,12 @@ class GameRequestTiming(@Value("\${firewatch.game-timing.enabled:false}") privat
         } finally {
             GameTimingScope.current.remove()
             log.info(
-                "game_timing op={} outcome={} server_ms={} io_queue_ms={} connection_ms={} connection_count={} prepare_ms={} sql_ms={} sql_count={} uptime_ms={}",
+                "game_timing op={} outcome={} server_ms={} io_queue_ms={} connection_ms={} connection_count={} prepare_ms={} sql_ms={} sql_count={} uptime_ms={} repository_ms={} repository_count={} rules_ms={} rules_count={} history_ms={} history_count={}",
                 operation.name, outcome, millis(System.nanoTime() - queuedAt), millis(enteredAt - queuedAt),
                 record.connection.millis(), record.connection.count, record.prepare.millis(),
                 record.execute.millis(), record.execute.count, ManagementFactory.getRuntimeMXBean().uptime,
+                record.repository.millis(), record.repository.count, record.rules.millis(), record.rules.count,
+                record.history.millis(), record.history.count,
             )
         }
     }
