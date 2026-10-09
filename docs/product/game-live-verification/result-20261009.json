@@ -1,0 +1,618 @@
+{
+  "startedAt": "2026-10-09T05:49:57.142Z",
+  "baseUrl": "https://firewatch-backend-q3cv.onrender.com",
+  "status": "PASS",
+  "observations": [
+    {
+      "label": "start",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 13960.8,
+      "decodedJsonBytes": 20351
+    },
+    {
+      "label": "preview",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 2767.9,
+      "decodedJsonBytes": 198
+    },
+    {
+      "label": "buy",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1519.1,
+      "decodedJsonBytes": 20588
+    },
+    {
+      "label": "buy-idempotent",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1140.6,
+      "decodedJsonBytes": 20610
+    },
+    {
+      "label": "sell",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1310.3,
+      "decodedJsonBytes": 20742
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1499.5,
+      "decodedJsonBytes": 23764
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1470.3,
+      "decodedJsonBytes": 24181
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1433.6,
+      "decodedJsonBytes": 22818
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1308.5,
+      "decodedJsonBytes": 22768
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1448.9,
+      "decodedJsonBytes": 24335
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1299.2,
+      "decodedJsonBytes": 23759
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1292.4,
+      "decodedJsonBytes": 24750
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1282.6,
+      "decodedJsonBytes": 22763
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1287.7,
+      "decodedJsonBytes": 22845
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1283.6,
+      "decodedJsonBytes": 24243
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1325.5,
+      "decodedJsonBytes": 23414
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1291,
+      "decodedJsonBytes": 24817
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1284.2,
+      "decodedJsonBytes": 22641
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1284.3,
+      "decodedJsonBytes": 22621
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1320.4,
+      "decodedJsonBytes": 22830
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1297,
+      "decodedJsonBytes": 23473
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1288.9,
+      "decodedJsonBytes": 22902
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1294.3,
+      "decodedJsonBytes": 22653
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1291.7,
+      "decodedJsonBytes": 24266
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1293,
+      "decodedJsonBytes": 23177
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1292.7,
+      "decodedJsonBytes": 23831
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1296.2,
+      "decodedJsonBytes": 23267
+    },
+    {
+      "label": "next-turn",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1290,
+      "decodedJsonBytes": 23425
+    },
+    {
+      "label": "current-compact",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 794.8,
+      "decodedJsonBytes": 23425
+    },
+    {
+      "label": "current-full",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 801.2,
+      "decodedJsonBytes": 49815
+    },
+    {
+      "label": "current-compact",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 788.2,
+      "decodedJsonBytes": 23425
+    },
+    {
+      "label": "current-full",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 796.3,
+      "decodedJsonBytes": 49815
+    },
+    {
+      "label": "current-compact",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 772.4,
+      "decodedJsonBytes": 23425
+    },
+    {
+      "label": "current-full",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 787.9,
+      "decodedJsonBytes": 49815
+    },
+    {
+      "label": "current-compact",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 795.4,
+      "decodedJsonBytes": 23425
+    },
+    {
+      "label": "current-full",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 849.3,
+      "decodedJsonBytes": 49815
+    },
+    {
+      "label": "current-compact",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 791.6,
+      "decodedJsonBytes": 23425
+    },
+    {
+      "label": "current-full",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 841,
+      "decodedJsonBytes": 49815
+    },
+    {
+      "label": "history",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 602.9,
+      "decodedJsonBytes": 971
+    },
+    {
+      "label": "future-rejected",
+      "method": "GET",
+      "status": 400,
+      "elapsedMs": 603.2,
+      "decodedJsonBytes": 129
+    },
+    {
+      "label": "other-device-rejected",
+      "method": "GET",
+      "status": 404,
+      "elapsedMs": 596.3,
+      "decodedJsonBytes": 111
+    },
+    {
+      "label": "end",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1449.3,
+      "decodedJsonBytes": 23424
+    },
+    {
+      "label": "ended-history",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 614.3,
+      "decodedJsonBytes": 971
+    }
+  ],
+  "checks": [
+    "26기업/출처/가상 픽·직접 매수/매도/멱등 체결",
+    "24턴 compact/전체 계약·선택 그래프/미래 턴/타기기 차단",
+    "종료 후 원장·상세 보존/순위 요청 없음"
+  ],
+  "sessionId": 28,
+  "companies": [
+    {
+      "name": "카카오",
+      "symbol": "035720.KS",
+      "sector": "플랫폼·소프트웨어",
+      "source": "https://www.kakaocorp.com/ir/stockInformation?lang=ko",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "SK하이닉스",
+      "symbol": "000660.KS",
+      "sector": "반도체·AI 인프라",
+      "source": "https://m.skhynix.com/ir/UI-FR-IR03/",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "기아",
+      "symbol": "000270.KS",
+      "sector": "자동차·모빌리티",
+      "source": "https://worldwide.kia.com/ko/company/investor-relations",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "현대모비스",
+      "symbol": "012330.KS",
+      "sector": "자동차·모빌리티",
+      "source": "https://www.mobis.com/en/index.do",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "AMD",
+      "symbol": "AMD",
+      "sector": "반도체·AI 인프라",
+      "source": "https://ir.amd.com/",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "브로드컴",
+      "symbol": "AVGO",
+      "sector": "반도체·AI 인프라",
+      "source": "https://investors.broadcom.com/",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "알파벳 Class A",
+      "symbol": "GOOGL",
+      "sector": "플랫폼·소프트웨어",
+      "source": "https://abc.xyz/",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "아마존",
+      "symbol": "AMZN",
+      "sector": "플랫폼·소프트웨어",
+      "source": "https://ir.aboutamazon.com/overview/default.aspx",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "어도비",
+      "symbol": "ADBE",
+      "sector": "플랫폼·소프트웨어",
+      "source": "https://www.adobe.com/investor-relations.html",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "제너럴모터스",
+      "symbol": "GM",
+      "sector": "자동차·모빌리티",
+      "source": "https://investor.gm.com/",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "뱅크오브아메리카",
+      "symbol": "BAC",
+      "sector": "금융",
+      "source": "https://investor.bankofamerica.com/",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "화이자",
+      "symbol": "PFE",
+      "sector": "바이오·헬스케어",
+      "source": "https://investors.pfizer.com/overview/default.aspx",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "삼성전자",
+      "symbol": "005930.KS",
+      "sector": "반도체·AI 인프라",
+      "source": "https://semiconductor.samsung.com/about-us/business-area/",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "엔비디아",
+      "symbol": "NVDA",
+      "sector": "반도체·AI 인프라",
+      "source": "https://www.nvidia.com/en-us/about-nvidia/",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "NAVER",
+      "symbol": "035420.KS",
+      "sector": "플랫폼·소프트웨어",
+      "source": "https://www.navercorp.com/company/about",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "마이크로소프트",
+      "symbol": "MSFT",
+      "sector": "플랫폼·소프트웨어",
+      "source": "https://www.microsoft.com/en-us/investor/default",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "현대차",
+      "symbol": "005380.KS",
+      "sector": "자동차·모빌리티",
+      "source": "https://www.hyundai.com/worldwide/en",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "테슬라",
+      "symbol": "TSLA",
+      "sector": "자동차·모빌리티",
+      "source": "https://www.tesla.com/about",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "LG에너지솔루션",
+      "symbol": "373220.KS",
+      "sector": "배터리·에너지 저장",
+      "source": "https://www.lgensol.com/kr/company/info-outline",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "삼성SDI",
+      "symbol": "006400.KS",
+      "sector": "배터리·에너지 저장",
+      "source": "https://www.samsungsdi.com/business/index.html",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "삼성바이오로직스",
+      "symbol": "207940.KS",
+      "sector": "바이오·헬스케어",
+      "source": "https://samsungbiologics.com/about/our-dna",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "셀트리온",
+      "symbol": "068270.KS",
+      "sector": "바이오·헬스케어",
+      "source": "https://celltrion.com/en-us/company/celltrion/about",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "KB금융",
+      "symbol": "105560.KS",
+      "sector": "금융",
+      "source": "https://www.kbfg.com/eng/ir/investor/list.jsp",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "JP모건체이스",
+      "symbol": "JPM",
+      "sector": "금융",
+      "source": "https://www.jpmorganchase.com/about",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "한화에어로스페이스",
+      "symbol": "012450.KS",
+      "sector": "방산·항공우주",
+      "source": "https://www.hanwhaaerospace.com/eng/media/newsroom/view.do?seq=260",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "록히드마틴",
+      "symbol": "LMT",
+      "sector": "방산·항공우주",
+      "source": "https://www.lockheedmartin.com/en-us/who-we-are.html",
+      "verifiedAt": "2026-10-07"
+    }
+  ],
+  "finishedAt": "2026-10-09T05:51:04.872Z",
+  "timings": [
+    {
+      "label": "start",
+      "count": 1,
+      "medianMs": 13960.8,
+      "minMs": 13960.8,
+      "maxMs": 13960.8,
+      "minDecodedJsonBytes": 20351,
+      "maxDecodedJsonBytes": 20351
+    },
+    {
+      "label": "preview",
+      "count": 1,
+      "medianMs": 2767.9,
+      "minMs": 2767.9,
+      "maxMs": 2767.9,
+      "minDecodedJsonBytes": 198,
+      "maxDecodedJsonBytes": 198
+    },
+    {
+      "label": "buy",
+      "count": 1,
+      "medianMs": 1519.1,
+      "minMs": 1519.1,
+      "maxMs": 1519.1,
+      "minDecodedJsonBytes": 20588,
+      "maxDecodedJsonBytes": 20588
+    },
+    {
+      "label": "buy-idempotent",
+      "count": 1,
+      "medianMs": 1140.6,
+      "minMs": 1140.6,
+      "maxMs": 1140.6,
+      "minDecodedJsonBytes": 20610,
+      "maxDecodedJsonBytes": 20610
+    },
+    {
+      "label": "sell",
+      "count": 1,
+      "medianMs": 1310.3,
+      "minMs": 1310.3,
+      "maxMs": 1310.3,
+      "minDecodedJsonBytes": 20742,
+      "maxDecodedJsonBytes": 20742
+    },
+    {
+      "label": "next-turn",
+      "count": 23,
+      "medianMs": 1293,
+      "minMs": 1282.6,
+      "maxMs": 1499.5,
+      "minDecodedJsonBytes": 22621,
+      "maxDecodedJsonBytes": 24817
+    },
+    {
+      "label": "current-compact",
+      "count": 5,
+      "medianMs": 791.6,
+      "minMs": 772.4,
+      "maxMs": 795.4,
+      "minDecodedJsonBytes": 23425,
+      "maxDecodedJsonBytes": 23425
+    },
+    {
+      "label": "current-full",
+      "count": 5,
+      "medianMs": 801.2,
+      "minMs": 787.9,
+      "maxMs": 849.3,
+      "minDecodedJsonBytes": 49815,
+      "maxDecodedJsonBytes": 49815
+    },
+    {
+      "label": "history",
+      "count": 1,
+      "medianMs": 602.9,
+      "minMs": 602.9,
+      "maxMs": 602.9,
+      "minDecodedJsonBytes": 971,
+      "maxDecodedJsonBytes": 971
+    },
+    {
+      "label": "future-rejected",
+      "count": 1,
+      "medianMs": 603.2,
+      "minMs": 603.2,
+      "maxMs": 603.2,
+      "minDecodedJsonBytes": 129,
+      "maxDecodedJsonBytes": 129
+    },
+    {
+      "label": "other-device-rejected",
+      "count": 1,
+      "medianMs": 596.3,
+      "minMs": 596.3,
+      "maxMs": 596.3,
+      "minDecodedJsonBytes": 111,
+      "maxDecodedJsonBytes": 111
+    },
+    {
+      "label": "end",
+      "count": 1,
+      "medianMs": 1449.3,
+      "minMs": 1449.3,
+      "maxMs": 1449.3,
+      "minDecodedJsonBytes": 23424,
+      "maxDecodedJsonBytes": 23424
+    },
+    {
+      "label": "ended-history",
+      "count": 1,
+      "medianMs": 614.3,
+      "minMs": 614.3,
+      "maxMs": 614.3,
+      "minDecodedJsonBytes": 971,
+      "maxDecodedJsonBytes": 971
+    }
+  ]
+}
