@@ -1,5 +1,7 @@
 # 관찰과 결정
 
+사용자 START/TRADE/NEXT_TURN 로그 수신. START server1168.127/connection182.265/SQL736.534ms4회·rules0.947ms70회, TRADE1620.570/queue92.607/connection182.332/SQL914.137ms5회·rules0.052ms74회, NEXT_TURN1485.291/connection182.472/SQL929.484ms4회·rules0.059ms78회. 모두success. rules_count는 같은 규칙 선택의 호출 횟수이며 매번26기업을 초기화하거나 SQL을 실행한다는 뜻이 아니다. repository/history 필드는 HISTORY 전용 구간이라 다른 행동0이 DB/계산이 없다는 뜻은 아니다. BE-38·Issue#25에서 코드로 확인한 불필요 원장 조회만 줄인다. 특정 쿼리·네트워크/리전·잠금 단독 원인은 아직 미확정이다.
+
 사용자 새 단계 로그 수신·운영 반영 확인. 07:31:34.669Z HISTORY success server1392.013/queue193.421/connection197.040/SQL171.051ms·repository597.274/rules203.791/history2.174ms·각횟수1·uptime425292ms. 07:32:23.889Z success server337.691/queue0.203/connection0.026/SQL167.509ms·repository169.294/rules0.003/history0.361ms·각1·uptime474512ms.
 
 규칙 로딩203.791ms·그래프2.174ms는 이번 첫 요청 전체1.392초의 대부분을 설명하지 못한다. 따뜻한 요청에서는 repository169.294ms 안의 SQL167.509ms가 거의 전부다. queue/repository/rules/history는 이 경로에서 순서대로 측정돼 그 밖에 약394.353/167.830ms가 남지만, 이 값은 트랜잭션 진입/종료·프레임워크·응답 객체 구성 등을 분리하지 않는 미계측 구간이다. COMMIT/CPU/잠금으로 확정하지 않는다. connection과SQL은 repository에 포함되므로 다시 더하지 않는다. 이전 JVM에서8.665초가 걸린 원인은 이번 다른 시점 결과로 소급 확정할 수 없다. 변화는 계측뿐이므로 속도 개선 효과도 주장하지 않는다.
