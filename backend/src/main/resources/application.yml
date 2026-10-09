@@ -34,6 +34,9 @@ spring:
         size: 2
 
 firewatch:
+  game-timing:
+    # 운영 장애 분석 시에만 활성화하며 SQL/사용자 식별자는 로그에 포함하지 않는다.
+    enabled: ${FIREWATCH_GAME_TIMING_ENABLED:false}
   # 로컬 dev(Vite 5173) + 배포 후 Cloudflare Pages 도메인(BE-8/WEB-5에서 추가). Design 문서가 놓쳐 module-7에서 발견.
   allowed-origins: ${FIREWATCH_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:4173}
   scheduler:
