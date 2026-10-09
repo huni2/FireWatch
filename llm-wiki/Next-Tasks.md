@@ -70,6 +70,11 @@
 **근거** — docs/deployment/operator-access.md, CollectionJobRunnerIntegrationTest, CollectionAlertAccessIntegrationTest. 기존 BE-23/25/27의 미확인 운영 항목을 이관했다.
 
 
+### BE-44. 실제 카탈로그 PostgreSQL 검색과 인덱스 비용 검증
+**진행** — Issue#39·codex/catalog-real-scale. 서비스 COUNT/목록 SQL을 공유해 실제2669상품의 이름/초성/짧은 검색/필터/페이지와 반복 시간을 검증한다. PostgreSQL 전용 CI에서만 pg_trgm 후보 계획·공간을 비교한다.
+**검증** — 로컬199검사 실패0/제외1·최신 측정 재검사 성공. H2 단일7회 서비스 중앙값0.95~6.89ms, 운영/PG 지연과 구분. PostgreSQL·복원 검사와 결과 보고서 준비. 운영 인덱스/실제 회사 자료/APK/EAS 변경0.
+**근거** — docs/product/catalog-real-scale/plan.md.
+
 ## 열린 과제 — 웹(WEB)
 
 
