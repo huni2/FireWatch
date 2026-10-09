@@ -13,6 +13,10 @@ export async function logoutAccount() {
   await request('/api/auth/logout', { method: 'POST' })
   clearLoginSession(); setOperatorKey(''); setAccountOperator('')
 }
+export async function deleteAccount() {
+  await request('/api/auth/account', { method: 'DELETE' })
+  clearLoginSession(); setOperatorKey(''); setAccountOperator('')
+}
 export type LinkedDevice = { id: string; linkedAt: string; current: boolean }
 export const fetchLinkedDevices = () => request<LinkedDevice[]>('/api/auth/devices')
 export const revokeLinkedDevice = (id: string) => request<void>(`/api/auth/devices/${encodeURIComponent(id)}`, { method: 'DELETE' })

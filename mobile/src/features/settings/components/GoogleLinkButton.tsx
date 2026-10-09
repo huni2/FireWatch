@@ -75,7 +75,7 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
 
   // Play 스토어 계정 삭제 요건(2026-10-06) — 연동 해제가 아니라 서버 쪽 계정 자체를 완전히 삭제.
   function handleDeletePress() {
-    Alert.alert('계정을 삭제할까요?', '연동된 Google 계정과 공유 설정이 서버에서 완전히 삭제됩니다. 이 작업은 되돌릴 수 없어요.', [
+    Alert.alert('FireWatch 계정을 삭제할까요?', 'FireWatch 계정·공유 설정·보유 기록과 이력·문의·공개 순위를 삭제하고 연결된 기기의 로그인을 해제해요. 되돌릴 수 없어요. Google 계정 자체는 삭제하지 않아요. 기기별 가상게임·보안 로그·백업은 자동 삭제되지 않으며 개인정보 안내에서 별도 삭제를 요청할 수 있어요.', [
       { text: '취소', style: 'cancel' },
       {
         text: '삭제',
