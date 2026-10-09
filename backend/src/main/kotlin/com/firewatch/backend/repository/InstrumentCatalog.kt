@@ -16,6 +16,7 @@ data class CatalogItem(val symbol: String, val name: String, val aliases: List<S
     val issuer: String, val assetClass: String, val currency: String, val verifiedAt: String)
 data class CatalogView(val instrument: CatalogItem, val price: BigDecimal?, val quoteAt: Instant?)
 data class CatalogPage(val items: List<CatalogView>, val total: Int, val hasMore: Boolean)
+internal data class CatalogQueries(val countSql: String, val countArgs: Array<Any>, val rowSql: String, val rowArgs: Array<Any>, val size: Int)
 
 /** Curated, versioned metadata; startup never removes older catalog rows or investment records. */
 @Component
@@ -72,6 +73,13 @@ class InstrumentCatalog(private val jdbc: JdbcTemplate, private val transactions
     }
 
     fun search(query: String = "", assetClass: String = "", region: String = "", sectorId: String = "", limit: Int = 20, page: Int = 0): CatalogPage {
+        val sql = searchQueries(query, assetClass, region, sectorId, limit, page)
+        val total = jdbc.queryForObject(sql.countSql, Int::class.java, *sql.countArgs) ?: 0
+        val rows = jdbc.query(sql.rowSql, { row, _ -> CatalogView(mapper.readValue(row.getString("metadata_json"), CatalogItem::class.java), row.getBigDecimal("price"), row.getTimestamp("as_of")?.toInstant()) }, *sql.rowArgs)
+        return CatalogPage(rows, total, total > page * sql.size + rows.size)
+    }
+
+    internal fun searchQueries(query: String, assetClass: String = "", region: String = "", sectorId: String = "", limit: Int = 50, page: Int = 0): CatalogQueries {
         require(page in 0..10000) { "카탈로그 페이지 범위를 확인해주세요." }
         val size = limit.coerceIn(1, 50)
         val term = normalize(query.take(100))
@@ -81,9 +89,9 @@ class InstrumentCatalog(private val jdbc: JdbcTemplate, private val transactions
         val exactColumn = if (initialQuery) "c.name_initials" else "c.normalized_name"
         val where = "WHERE $searchColumn LIKE ? ESCAPE '!' AND (?='' OR c.asset_class=?) AND (?='' OR c.region=?) AND (?='' OR c.sector_id=?)"
         val args = arrayOf<Any>(pattern, assetClass, assetClass, region, region, sectorId, sectorId)
-        val total = jdbc.queryForObject("SELECT COUNT(*) FROM instrument_catalog c $where", Int::class.java, *args) ?: 0
-        val rows = jdbc.query("SELECT c.metadata_json, q.price, q.as_of FROM instrument_catalog c LEFT JOIN market_quotes q ON c.symbol=q.symbol $where ORDER BY CASE WHEN $exactColumn=? THEN 0 WHEN c.symbol=? THEN 0 ELSE 1 END, c.name, c.symbol LIMIT ? OFFSET ?", { row, _ -> CatalogView(mapper.readValue(row.getString("metadata_json"), CatalogItem::class.java), row.getBigDecimal("price"), row.getTimestamp("as_of")?.toInstant()) }, *args, term, query.trim().uppercase(), size, page * size)
-        return CatalogPage(rows, total, total > page * size + rows.size)
+        return CatalogQueries("SELECT COUNT(*) FROM instrument_catalog c $where", args,
+            "SELECT c.metadata_json, q.price, q.as_of FROM instrument_catalog c LEFT JOIN market_quotes q ON c.symbol=q.symbol $where ORDER BY CASE WHEN $exactColumn=? THEN 0 WHEN c.symbol=? THEN 0 ELSE 1 END, c.name, c.symbol LIMIT ? OFFSET ?",
+            (args.toList() + listOf<Any>(term, query.trim().uppercase(), size, page * size)).toTypedArray(), size)
     }
 
     companion object {
