@@ -75,13 +75,18 @@ test('한 격리 게임의24턴/멱등 주문/조회 경계/종료 보존만 요
       else if (Number(url.searchParams.get('turnIndex')) > turnIndex) status = 400
       result = { sessionId: 1, turnIndex: 23, history: history('S0', 24) }
     } else result = snapshot(url.searchParams.get('compact') === 'true')
-    return new Response(JSON.stringify(result), { status, headers: { 'Server-Timing': 'cdn;dur=2, application;dur=12.5' } })
+    return new Response(JSON.stringify(result), { status, headers: { 'Server-Timing': 'cdn;dur=2, application;dur=12.5, auth_queue;dur=0.5, auth;dur=2, dispatch;dur=3, controller;dur=5, response;dur=1' } })
   })
   const report = await verifyGame({ baseUrl: 'https://example.com', reportPath, writeIsolatedGame: true, pauseMs: 0 })
   assert.equal(report.status, 'PASS')
   assert.equal(report.observations.length, 43)
   for (const sample of report.observations) {
     assert.equal(sample.applicationMs, 12.5)
+    assert.equal(sample.authQueueMs, 0.5)
+    assert.equal(sample.authMs, 2)
+    assert.equal(sample.dispatchMs, 3)
+    assert.equal(sample.controllerMs, 5)
+    assert.equal(sample.responseMs, 1)
     assert.ok(Number.isFinite(Date.parse(sample.startedAt)))
     assert.ok(sample.headersMs >= 0 && sample.bodyReadMs >= 0)
     assert.ok(Math.abs(sample.elapsedMs - sample.headersMs - sample.bodyReadMs) <= 0.2)
@@ -109,3 +114,15 @@ for (const header of ['application;dur=-1', 'application;dur=NaN', 'application;
     assert.equal(JSON.stringify(report).includes('private-token'), false)
   })
 }
+
+test('단계별 잘못된 숫자와 헤더 원문은 보고서에 남기지 않는다', async t => {
+  const reportPath = reportFile(t)
+  mockFetch(t, async () => new Response('{}', { status: 503, headers: {
+    'Server-Timing': 'application;dur=9, auth_queue;dur=-1, auth;dur=NaN, dispatch;dur=Infinity, controller;dur=1e309, response;dur=1;desc="private-token"',
+  } }))
+  await assert.rejects(verifyGame({ baseUrl: 'https://example.com', reportPath, writeIsolatedGame: true, pauseMs: 0 }), /503/)
+  const report = JSON.parse(fs.readFileSync(reportPath))
+  assert.equal(report.observations[0].applicationMs, 9)
+  for (const field of ['authQueueMs', 'authMs', 'dispatchMs', 'controllerMs', 'responseMs']) assert.equal(report.observations[0][field], null)
+  assert.equal(JSON.stringify(report).includes('private-token'), false)
+})

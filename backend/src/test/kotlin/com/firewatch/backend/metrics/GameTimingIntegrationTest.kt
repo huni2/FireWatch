@@ -27,11 +27,20 @@ class GameTimingIntegrationTest {
     @LocalServerPort var port = 0
     private val logger = LoggerFactory.getLogger(GameRequestTiming::class.java) as Logger
     private lateinit var appender: ListAppender<ILoggingEvent>
-    @BeforeEach fun attach() { appender = ListAppender<ILoggingEvent>().apply { start() }; logger.addAppender(appender) }
-    @AfterEach fun detach() { logger.detachAppender(appender); appender.stop() }
+    private val httpLogger = LoggerFactory.getLogger(com.firewatch.backend.web.RequestLatency::class.java) as Logger
+    private lateinit var httpAppender: ListAppender<ILoggingEvent>
+    @BeforeEach fun attach() {
+        appender = ListAppender<ILoggingEvent>().apply { start() }; logger.addAppender(appender)
+        httpAppender = ListAppender<ILoggingEvent>().apply { start() }; httpLogger.addAppender(httpAppender)
+    }
+    @AfterEach fun detach() {
+        logger.detachAppender(appender); appender.stop()
+        httpLogger.detachAppender(httpAppender); httpAppender.stop()
+    }
     private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
     private fun start(device: String) = client().post().uri("/api/game/start?compact=true").header("X-Device-Id", device)
-        .exchange().expectStatus().isOk.expectBody(GameTurnResponse::class.java).returnResult().responseBody!!
+        .exchange().expectStatus().isOk.expectHeader().valueMatches("Server-Timing", "application;dur=\\d+, auth_queue;dur=.+")
+        .expectBody(GameTurnResponse::class.java).returnResult().responseBody!!
     private fun messages() = appender.list.map { it.formattedMessage }
     private fun sqlCount(message: String) = Regex("sql_count=(\\d+)").find(message)!!.groupValues[1].toInt()
 
@@ -63,6 +72,12 @@ class GameTimingIntegrationTest {
         assertTrue(historyLog.contains("history_count=1"))
         assertEquals(1, sqlCount(historyLog))
         assertFalse(messages().any { it.contains(device) || it.contains("select ", true) || it.contains("insert ", true) })
+        val httpMessages = httpAppender.list.map { it.formattedMessage }
+        val startHttp = httpMessages.first { it.contains("op=START") }
+        for (field in listOf("auth_queue_ms", "auth_ms", "dispatch_ms", "controller_ms", "response_ms")) {
+            assertTrue(Regex("$field=\\d+\\.\\d+").containsMatchIn(startHttp), startHttp)
+        }
+        assertFalse(httpMessages.any { it.contains(device) || it.contains("select ", true) || it.contains("token", true) })
     }
 
     @Test fun `failed history request is timed without leaking identifiers or contaminating next request`() {

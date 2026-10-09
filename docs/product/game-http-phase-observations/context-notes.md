@@ -1,5 +1,7 @@
 # 결정과 관찰
 
+기존 BE-28에서 계측 경계만 보완한다. RequestLatency(-200)·AccountSessionFilter(-100)의 순서를 명시해 인증 큐/DB까지 request/application 경계 안에 포함한다. GameHttpPhases는 ServerWebExchange에만 저장하며 ThreadLocal/공유 캐시/DB 기록이 없다. 인증 실패는401을 유지하고 컨트롤러 미진입 값은0으로 만들지 않고 unavailable로 남긴다. 기존 game-timing true 옵션일 때만 game_http_timing 로그를 응답 준비 시1줄 기록한다. controller_ms는 IO 진입/서비스/코루틴 복귀를 포함하고 dispatch_ms는 인증 종료 후 요청 바인딩/검증/호출 전까지라 순수 스케줄 대기라고 해석하지 않는다. response_ms는 controller 반환 후 beforeCommit까지이며 전체 전송 시간은 아니다. 기존 숫자와 새로운 request/application 경계는 필터 순서가 달라 직접 개선율로 비교하지 않는다.
+
 2026-10-09 재개 게임의 PREVIEW 사용자 로그를 수신했다. server1776.824ms·SQL455.840ms2회·연결180.907ms·큐0.179ms·규칙0.019ms를 application5244ms/HTTP5723.2ms와 대조했다. 약3467ms의 application/service 경계 차이를 특정 원인으로 단정하지 않는다. 코드의 AccountSessionFilter JdbcTemplate 연결 사용자 확인은 game_timing 밖이다. 사용자 로그2줄 요청은 완료됐으며 원인 확인과 실제 수정은 미완료다. 인증 생략/잠금 제거/풀 변경/새 과제 생성 없음.
 
 실제17:34:57 KST 세션32/43요청 PASS·종료 원장 보관. 기존Server-Timing 숫자39개, 필터 대상 아닌4개는null. 첫HTTP2277.6/headers2273.7/body4.0/application698ms, 다음 턴23개 중앙값HTTP1298.4/headers1295.9/body1.7/application1018ms. 현재전체5개 본문0.8~3.6ms. 본문 읽기는 이번 요청들의 큰 비용이 아니며 인증·응답 준비·DNS/TLS 중 원인 구분은 아직 불가하다. 앞선15.9초는 재현되지 않았지만 서버 기동/조건이 달라 해결된 것으로 주장하지 않는다. backend/배포/원래 사용자/순위/삭제/수집/EAS0.

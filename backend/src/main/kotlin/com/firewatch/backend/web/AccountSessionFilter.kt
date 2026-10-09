@@ -9,9 +9,11 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import org.springframework.core.annotation.Order
 
 /** Anonymous devices remain usable; linked private data requires proof beyond a device UUID. */
 @Component
+@Order(-100)
 class AccountSessionFilter(private val sessions: AuthSessions) : WebFilter {
     override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
         val path = exchange.request.path.value()
@@ -20,10 +22,15 @@ class AccountSessionFilter(private val sessions: AuthSessions) : WebFilter {
             (path.startsWith("/api/auth/") && path != "/api/auth/google/link")
         val deviceId = exchange.request.headers.getFirst("X-Device-Id")
         if (!protected || deviceId == null || exchange.request.method.name() == "OPTIONS") return chain.filter(exchange)
+        val phases = GameHttpPhases.from(exchange)
+        phases?.authQueuedAt = System.nanoTime()
         return Mono.fromCallable {
-            if (path.startsWith("/api/auth/") || sessions.linkedUser(deviceId) != null)
-                sessions.authenticate(deviceId, exchange.request.headers.getFirst("Authorization"))
-            true
+            phases?.authEnteredAt = System.nanoTime()
+            try {
+                if (path.startsWith("/api/auth/") || sessions.linkedUser(deviceId) != null)
+                    sessions.authenticate(deviceId, exchange.request.headers.getFirst("Authorization"))
+                true
+            } finally { phases?.authFinishedAt = System.nanoTime() }
         }.subscribeOn(Schedulers.boundedElastic()).flatMap { chain.filter(exchange) }
             .onErrorResume(UnauthorizedException::class.java) {
                 exchange.response.statusCode = HttpStatus.UNAUTHORIZED
