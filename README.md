@@ -12,6 +12,8 @@
 
 2026-10-08 기준, 기능 코드 `18cb55d`을 바탕으로 정리했습니다.
 
+2026-10-09 후속으로 [BE-40 PR](https://github.com/huni2/FireWatch/pull/30)에서 KIND 공식 한국 상장법인2,651개의 회사명·업종 검색을 추가했습니다. 기존 편집 목록과 시세는 보존하며 가격을 생성하지 않습니다. [출처·범위·갱신 문서](docs/product/krx-company-directory/data-source.md)를 참고하세요. 서버·PostgreSQL·복원·웹/앱 CI는 통과했고 Render 운영 반영은 별도 확인합니다.
+
 | 영역 | 상태 |
 |---|---|
 | 웹·백엔드 | Cloudflare Pages·Render에 배포. 운영 데이터는 Supabase PostgreSQL에 저장 |
