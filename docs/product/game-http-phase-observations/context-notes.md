@@ -1,5 +1,11 @@
 # 결정과 관찰
 
+- 감사 메타데이터 준비 보완 로컬 전체206검사 실패0/제외1 통과. 실제 shared 해석기의 startGame 매개변수 이름/deviceId 마스킹 계약·감사 성공/실패/중첩 fallback·첫 SQL3회·repository_count2·게임 원장/권한 회귀 유지. 전체 성능 효과는 새 배포 실측 전 미확정. 기존Issue#45의 PR/전체PG/main CI를 확인한다.
+
+- 사용자 START/PREVIEW 로그 수신 완료. START server9077.947/큐99.052/연결181.306/SQL573.095ms3회/규칙90.424ms70회·uptime327280ms. PREVIEW server777.550/큐93.610/연결0.028/SQL378.801ms2회/규칙0.015ms. 첫 시작 지연 대부분은 SQL 실행으로 설명되지 않는다. Spring7.0.8 AOP MethodSignatureImpl.getParameterNames는 DefaultParameterNameDiscoverer.getSharedInstance를 호출하며 KotlinReflection을 먼저 사용한다(javap 확인). 감사로그 summarizeArgs가 이 경로를 호출하므로 동일 해석기를 GameService 메서드에 대해 시작 시 준비한다. 전체8초의 원인으로 단정하지 않고 기존 REPOSITORY 단계로 첫 조회/저장을 측정해 다음 대조를 보완한다.
+
+- 2026-10-10 사용자 Render 반영 완료 확인 후00:23:15 KST 시작·격리 세션35·43요청 PASS·ENDED 보관. START HTTP15204.9/application14729/auth1600.036/dispatch905.541/controller9097.298/response3099.997ms. PREVIEW1483.8ms·다음 턴23개 중앙값1391.4ms. 이전 표본보다 응답 준비가 작지만 인과/개선율을 일반화하지 않는다. 여전히15.2초로 성능 완료 미충족·기존BE-28/Issue#45 유지. 해당 START game_timing1줄만 요청해 SQL/연결/큐를 대조한다. 도구 보고서 private 소유 파일은 제외하고 공개 숫자 JSON만 저장, 기존 기록/순위 변경 없음·APK0.
+
 - 초기화 이전 수정 검증 종료. PR#49·소스aa3e5bd·mainf631544, PR37948978627 전체 성공·push37948913952 실패job1회 재검증 성공·main37950391498 전체 성공. 로컬206검사 실패0/제외1·관련 권한/게임 재검증 성공. Render 최신 서버 적용 확인 요청1회 대기이며 새 첫 시작 측정 전 지연 해소/BE-28 완료는 미확정이다.
 
 - PR#49 CI37948978627 전체 성공. push37948913952의 AccountSessionIntegrationTest.kt117은20초 응답 대기 TimeoutException으로 실패·보존 XML 확인. 잘못된 기기 토큰의401 assertion 실패로 단정하지 않는다. 운영 인증/timeout/검사 계약을 변경하지 않고 관련 로컬 및 실패 job1회만 재검증한다. 최초 실패 기록은 보존하며 반복 성공까지 재시도하지 않는다.

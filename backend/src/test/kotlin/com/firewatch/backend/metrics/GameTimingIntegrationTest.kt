@@ -73,6 +73,7 @@ class GameTimingIntegrationTest {
         val started = start(device)
         val first = messages().last()
         assertTrue(first.contains("op=START outcome=success"))
+        assertTrue(first.contains("repository_count=2"), first)
         // Session lock lookup + new session INSERT + durable audit INSERT; no empty ledger SELECT.
         assertEquals(3, sqlCount(first))
         assertTrue(Regex("connection_count=([1-9][0-9]*)").containsMatchIn(first))

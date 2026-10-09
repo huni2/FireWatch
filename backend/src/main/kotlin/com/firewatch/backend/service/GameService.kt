@@ -94,7 +94,9 @@ class GameService(
         // 이미 진행 중인 게임이 있으면 난이도·공매도 설정은 무시하고 그대로 이어서 반환한다 —
         // 둘 다 "게임 시작 시점에만 고르는 값"이라 중간에 바꾸려면 새 게임을 시작해야 한다(ENDED
         // 상태가 되면 findByDeviceIdAndStatus(ACTIVE)가 null을 반환해 자연스럽게 새 게임이 된다).
-        val existing = gameSessionRepository.findByDeviceIdAndStatus(deviceId, GameSessionStatus.ACTIVE)
+        val existing = GameTimingScope.phase(GameTimingPhase.REPOSITORY) {
+            gameSessionRepository.findByDeviceIdAndStatus(deviceId, GameSessionStatus.ACTIVE)
+        }
         if (existing?.simulationSeed != null && existing.simulationVersion !in listOf(1, GameSimulation.CURRENT_VERSION)) simulationFor(existing)
         if (existing?.simulationSeed != null && existing.simulationVersion == GameSimulation.CURRENT_VERSION) return buildTurnSnapshot(existing, historyPoints = historyPoints)
         if (existing != null) {
@@ -106,7 +108,7 @@ class GameService(
         val seed = java.util.concurrent.ThreadLocalRandom.current().nextLong()
         val version = GameSimulation.CURRENT_VERSION
         val allDates = GameTimingScope.phase(GameTimingPhase.RULES) { GameSimulation.forVersion(version) }.dates(seed)
-        val session = gameSessionRepository.save(
+        val session = GameTimingScope.phase(GameTimingPhase.REPOSITORY) { gameSessionRepository.save(
             GameSession(
                 deviceId = deviceId,
                 turnDatesRaw = allDates.joinToString(",") { it.toString() },
@@ -115,7 +117,7 @@ class GameService(
                 simulationSeed = seed,
                 simulationVersion = version,
             ),
-        )
+        ) }
         return buildTurnSnapshot(session, emptyList(), historyPoints)
     }
 

@@ -10,6 +10,7 @@ import jakarta.validation.Validator
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.SmartInitializingSingleton
 import org.springframework.core.ResolvableType
+import org.springframework.core.DefaultParameterNameDiscoverer
 import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.core.io.buffer.DefaultDataBufferFactory
 import org.springframework.http.MediaType
@@ -31,6 +32,12 @@ class GameRuntimePreparation(
 
     override fun afterSingletonsInstantiated() {
         val started = System.nanoTime()
+        // Spring AOP MethodSignature uses this same shared discoverer for audit redaction.
+        val metadataStarted = System.nanoTime()
+        val names = DefaultParameterNameDiscoverer.getSharedInstance()
+        GameService::class.java.declaredMethods.filter { java.lang.reflect.Modifier.isPublic(it.modifiers) && !it.isSynthetic }
+            .forEach { names.getParameterNames(it) }
+        val metadataMillis = (System.nanoTime() - metadataStarted) / 1_000_000
         // Prepare the actual HTTP codec instances, not a separate mapper cache.
         val encoder = codecs.writers.filterIsInstance<EncoderHttpMessageWriter<*>>()
             .map { it.encoder }.filterIsInstance<JacksonJsonEncoder>().first()
@@ -55,8 +62,8 @@ class GameRuntimePreparation(
             check(validator.validate(decoded).isEmpty())
         }
         prepared = true
-        LoggerFactory.getLogger(javaClass).info("game_runtime_ready preparation_ms={}",
-            (System.nanoTime() - started) / 1_000_000)
+        LoggerFactory.getLogger(javaClass).info("game_runtime_ready preparation_ms={} metadata_ms={}",
+            (System.nanoTime() - started) / 1_000_000, metadataMillis)
     }
 
     // A fixed, disposable fiction: no service, repository, request, or external provider call.
