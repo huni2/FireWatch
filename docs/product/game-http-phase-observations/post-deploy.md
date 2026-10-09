@@ -2,6 +2,10 @@
 
 ## 기존 BE-28 재개 관측 (2026-10-09 23:08 KST)
 
+PREVIEW 로그도 수신했다. 종료14:08:16.648Z·server1776.824ms·io_queue0.179ms·connection180.907ms/1회·prepare0.160ms·SQL455.840ms/2회·uptime1669384ms·rules0.019ms/4회다. 같은 요청 application5244ms와 service의 경계 차이는3467.176ms다. 큐/규칙은 작으며 SQL2회는 컨트롤러 안 Hibernate 관측만 포함한다. AccountSessionFilter는 게임 요청 전에 boundedElastic에서 JdbcTemplate linkedUser를 조회하며 이 조회는 game_timing에 포함되지 않는다. 익명 시험 기기는 연결된 사용자 행이 없어 authenticate 조회는 수행하지 않는 경로다. 필터 순서는 명시되지 않아3467.176ms 전체를 인증 SQL 시간이라고 해석하지 않는다. 요청 바인딩/검증·응답 생성·서버 스케줄링 등도 계측 밖 후보이며 현재 자료로 원인은 확정하지 못했다.
+
+START/PREVIEW 로그 대조 요청은 완료했다. 기능 계약은43요청 PASS지만 성능 원인 확인/필요한 수정은 미완료다. 원인을 추측해 인증을 생략하거나 풀·게임 잠금을 변경하지 않았고, 추가 계측 과제 번호도 만들지 않는다. 아래의 로그 미수신 표기는 수신 전 이력이다.
+
 사용자가 같은 시각의 START 서버 로그를 제공했다. 로그 종료14:08:10.934Z·server955.812ms·io_queue0.410ms·connection0.032ms/1회·prepare0.303ms·SQL552.943ms/3회·uptime1663670ms·rules0.045ms/70회다. HTTP2696.2ms와 application992ms를 대조하면 application 경계 밖 차이는1704.2ms, application과 service 차이는36.188ms다. 각 타이머의 범위가 달라 잔여 시간을 특정 CPU/COMMIT/네트워크 구간으로 단정하지 않는다. 연결·큐·규칙 로딩은 이 요청의 큰 지연을 설명하지 않는다. JVM uptime 약27분43.7초이므로 기동 직후 요청이라고 판단하지 않는다. PREVIEW 로그는 아직 미수신이며 서버 내부5244ms 원인은 미확정이다.
 
 새 과제 번호 없이 Issue#45에서 기존 BE-28을 이어갔다. 기존 검증 도구로 격리 세션33·한 판·43요청 PASS. 실제26기업/공식 출처·가상 픽 이유·픽 매수/매도/멱등 체결·24턴 평가/원장·compact/전체/상세·미래/타기기 거절·종료 후 보존을 재확인했다. 시험 게임은 ENDED로 보관했고 기존 사용자/순위/수집 자료는 변경하지 않았다. 서버 코드/설정/배포·APK/EAS 변경0.

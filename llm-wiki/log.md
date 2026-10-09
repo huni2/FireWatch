@@ -11,6 +11,8 @@
 
 ## 2026-10-09
 
+- **[BE] BE-28 PREVIEW 로그 대조 완료와 미계측 경계 확인**: 사용자 server1776.824/SQL455.840ms2회·연결180.907/큐0.179/규칙0.019ms·uptime1669384ms 확인. application5244ms와 service 경계 차이3467.176ms는 특정 원인 미확정. 컨트롤러 전 AccountSessionFilter JdbcTemplate 조회는 게임 SQL 관측 밖이며 인증을 우회하지 않는다. 로그2줄 요청 완료·기능43요청 PASS·성능 원인/수정 미완료 유지·과제 파생/APK0.
+
 - **[BE] BE-28 START 사용자 서버 로그 대조**: 같은 시각 server955.812ms/application992ms/HTTP2696.2ms·SQL552.943ms3회·연결0.032/큐0.410/규칙0.045ms·uptime1663670ms 확인. application 경계 밖1704.2ms 상세 원인은 미확정·기동 직후로 해석하지 않는다. PREVIEW 내부5244ms의 해당 로그1줄만 추가 요청했다. 수정 근거 없이 풀/잠금/캐시 변경 없음.
 
 - **[BE] 기존 BE-28 운영 게임 재확인과 서버 내부 지연 관측**: Issue#45·격리 세션33·43요청 PASS·픽 주문/멱등/24턴 평가·원장/상세·종료 보존. 시작HTTP2696.2/application992ms, 미리보기5723.2/application5244ms·본문1.4ms로 해당 application 경계 내부 지연 관측. 다음 턴 중앙값1379ms. 이전 첫 지연 해소/SQL 원인으로 단정하지 않고23:08 KST START/PREVIEW 로그2줄 요청 대기. 서버/설정/순위/기존 사용자/수집 자료 변경0·과제 파생/APK/EAS0.

@@ -1,5 +1,7 @@
 # FireWatch — 현재 맥락
 
+BE-28 PREVIEW 로그까지 수신·2줄 대조 완료. server1776.824/SQL455.840ms2회·연결180.907/큐0.179/규칙0.019ms·uptime1669384ms. application5244ms와 service 경계 차이3467.176ms의 원인은 미확정. AccountSessionFilter의 JdbcTemplate 조회는 기존 게임 SQL 계측 밖이다. 로그 요청 대기는 종료됐으며 기능43요청 PASS와 성능 원인/수정 미완료를 구분한다. 새 과제/진단 배포/풀·잠금·인증 변경 없음.
+
 BE-28 START 로그 수신. 14:08:10.934Z server955.812/SQL552.943ms(3회)·연결0.032/큐0.410/규칙0.045ms·uptime1663670ms. application992/HTTP2696.2ms와 대조 완료·연결/큐/규칙 큰 지연 없음·기동 직후 아님. PREVIEW 서버 내부5244ms의 로그1줄 추가 요청 대기다. START 정상 관측을 PREVIEW 지연 해소로 확대하지 않는다.
 
 현재 BE-28 재개·Issue#45. 23:08 KST 격리 세션33·43요청 게임 계약 PASS·ENDED 보존. 시작HTTP2696.2/application992ms·PREVIEW5723.2/application5244ms·다음 턴23개 중앙값1379ms. 서버 내부 지연은 보이지만 원인 미확정으로 같은 시간대 START/PREVIEW 로그2줄 요청 대기다. 기존 기업 확대/그래프 계약과 성능 원인 확인을 구분하고 새 과제 번호를 만들지 않는다. BE-22는 사용자 인덱스 부분 집계만 확인·나머지 운영 집계 대기. APK/EAS0.

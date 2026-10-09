@@ -12,3 +12,4 @@
 - [x] 첫 요청 원인에 대한 확인 가능/불가능 경계 기록 — 미리보기 application5244ms·로그 대조 전 원인 미확정
 - [x] 기존 BE-28과 GitHub 기록 갱신·새 과제 번호 없음 — Issue#45 기존 과제 추적
 - [ ] 해당 시간대 START/PREVIEW 서버 로그 대조·필요한 수정 검증
+- [x] 해당 시간대 START/PREVIEW 로그 모두 수신·HTTP와 대조 — PREVIEW server1776.824/application5244ms, 원인/수정 검증은 미완료

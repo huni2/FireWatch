@@ -1,5 +1,7 @@
 # 결정과 관찰
 
+2026-10-09 재개 게임의 PREVIEW 사용자 로그를 수신했다. server1776.824ms·SQL455.840ms2회·연결180.907ms·큐0.179ms·규칙0.019ms를 application5244ms/HTTP5723.2ms와 대조했다. 약3467ms의 application/service 경계 차이를 특정 원인으로 단정하지 않는다. 코드의 AccountSessionFilter JdbcTemplate 연결 사용자 확인은 game_timing 밖이다. 사용자 로그2줄 요청은 완료됐으며 원인 확인과 실제 수정은 미완료다. 인증 생략/잠금 제거/풀 변경/새 과제 생성 없음.
+
 실제17:34:57 KST 세션32/43요청 PASS·종료 원장 보관. 기존Server-Timing 숫자39개, 필터 대상 아닌4개는null. 첫HTTP2277.6/headers2273.7/body4.0/application698ms, 다음 턴23개 중앙값HTTP1298.4/headers1295.9/body1.7/application1018ms. 현재전체5개 본문0.8~3.6ms. 본문 읽기는 이번 요청들의 큰 비용이 아니며 인증·응답 준비·DNS/TLS 중 원인 구분은 아직 불가하다. 앞선15.9초는 재현되지 않았지만 서버 기동/조건이 달라 해결된 것으로 주장하지 않는다. backend/배포/원래 사용자/순위/삭제/수집/EAS0.
 
 소스50f1cb4·CI37905207583/PR CI37905212865 서버/H2·전용 PostgreSQL·복원·웹/앱 모두 성공·PR#28은075c7a7로 머지·Issue#27 종료. backend/Render 설정·배포를 변경하지 않는다. 소유 ID 없는 관측 숫자만 저장한다. 실제 첫 큰 지연 확인은 BE-28에 유지한다.
