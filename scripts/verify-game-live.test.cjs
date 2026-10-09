@@ -37,6 +37,7 @@ test('첫 서버 실패를 반복하지 않고 부분 보고서를 보존한다'
   const report = JSON.parse(fs.readFileSync(reportPath))
   assert.equal(report.status, 'FAIL')
   assert.equal(report.observations.length, 1)
+  assert.equal(report.observations[0].applicationMs, null)
   assert.equal(report.deviceId, undefined)
 })
 
@@ -74,11 +75,18 @@ test('한 격리 게임의24턴/멱등 주문/조회 경계/종료 보존만 요
       else if (Number(url.searchParams.get('turnIndex')) > turnIndex) status = 400
       result = { sessionId: 1, turnIndex: 23, history: history('S0', 24) }
     } else result = snapshot(url.searchParams.get('compact') === 'true')
-    return new Response(JSON.stringify(result), { status })
+    return new Response(JSON.stringify(result), { status, headers: { 'Server-Timing': 'cdn;dur=2, application;dur=12.5' } })
   })
   const report = await verifyGame({ baseUrl: 'https://example.com', reportPath, writeIsolatedGame: true, pauseMs: 0 })
   assert.equal(report.status, 'PASS')
   assert.equal(report.observations.length, 43)
+  for (const sample of report.observations) {
+    assert.equal(sample.applicationMs, 12.5)
+    assert.ok(Number.isFinite(Date.parse(sample.startedAt)))
+    assert.ok(sample.headersMs >= 0 && sample.bodyReadMs >= 0)
+    assert.ok(Math.abs(sample.elapsedMs - sample.headersMs - sample.bodyReadMs) <= 0.2)
+  }
+  assert.equal(JSON.stringify(report).includes('cdn;dur'), false)
   assert.equal(requests.filter(request => request.path.endsWith('/start')).length, 1)
   assert.equal(requests.filter(request => request.path.endsWith('/next-turn')).length, 23)
   assert.ok(requests.every(request => !request.path.includes('rank') && request.method !== 'DELETE'))
@@ -89,3 +97,15 @@ test('한 격리 게임의24턴/멱등 주문/조회 경계/종료 보존만 요
   assert.equal(ended, true)
   assert.equal(quantity, 1)
 })
+
+for (const header of ['application;dur=-1', 'application;dur=NaN', 'application;dur=Infinity', 'application;dur=1e309', 'other;dur=12;desc="private-token"']) {
+  test(`잘못된 Server-Timing 값은 원문 없이 null로 보관한다 (${header.split(';')[0]})`, async t => {
+    const reportPath = reportFile(t)
+    mockFetch(t, async () => new Response('{}', { status: 503, headers: { 'Server-Timing': header } }))
+    await assert.rejects(verifyGame({ baseUrl: 'https://example.com', reportPath, writeIsolatedGame: true, pauseMs: 0 }), /503/)
+    const report = JSON.parse(fs.readFileSync(reportPath))
+    assert.equal(report.observations[0].applicationMs, null)
+    assert.equal(JSON.stringify(report).includes(header), false)
+    assert.equal(JSON.stringify(report).includes('private-token'), false)
+  })
+}
