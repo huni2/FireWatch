@@ -25,6 +25,8 @@ class GameTimingIntegrationTest {
         fun database(registry: org.springframework.test.context.DynamicPropertyRegistry) = TestDatabase.configure(registry)
     }
     @LocalServerPort var port = 0
+    @org.springframework.beans.factory.annotation.Autowired
+    lateinit var preparation: com.firewatch.backend.web.GameRuntimePreparation
     private val logger = LoggerFactory.getLogger(GameRequestTiming::class.java) as Logger
     private lateinit var appender: ListAppender<ILoggingEvent>
     private val httpLogger = LoggerFactory.getLogger(com.firewatch.backend.web.RequestLatency::class.java) as Logger
@@ -45,6 +47,7 @@ class GameTimingIntegrationTest {
     private fun sqlCount(message: String) = Regex("sql_count=(\\d+)").find(message)!!.groupValues[1].toInt()
 
     @Test fun `preview measures binding boundary and rejects invalid quantity before controller`() {
+        assertTrue(preparation.prepared, "HTTP must start after game runtime preparation")
         val device = UUID.randomUUID().toString()
         val turn = start(device)
         val body = com.firewatch.backend.web.dto.GameTradeRequest(
