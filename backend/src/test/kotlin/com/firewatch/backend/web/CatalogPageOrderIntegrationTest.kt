@@ -25,8 +25,9 @@ class CatalogPageOrderIntegrationTest {
 
     private fun legacy(q: String, type: String = "", region: String = "", sector: String = "", page: Int = 0): Pair<String, Array<Any>> {
         val sql = catalog.searchQueries(q, type, region, sector, 50, page)
-        if (q.isNotBlank()) return sql.rowSql to sql.rowArgs
-        return sql.rowSql.replace("ORDER BY c.name, c.symbol", "ORDER BY CASE WHEN c.normalized_name=? THEN 0 WHEN c.symbol=? THEN 0 ELSE 1 END, c.name, c.symbol") to
+        if (q.isNotBlank() || InstrumentCatalog.normalize(q.take(100)).isNotEmpty()) return sql.rowSql to sql.rowArgs
+        val where = "WHERE c.search_text LIKE ? ESCAPE '!' AND (?='' OR c.asset_class=?) AND (?='' OR c.region=?) AND (?='' OR c.sector_id=?)"
+        return "SELECT c.metadata_json,q.price,q.as_of FROM instrument_catalog c LEFT JOIN market_quotes q ON c.symbol=q.symbol $where ORDER BY CASE WHEN c.normalized_name=? THEN 0 WHEN c.symbol=? THEN 0 ELSE 1 END,c.name,c.symbol LIMIT ? OFFSET ?" to
             (sql.countArgs.toList() + listOf<Any>(InstrumentCatalog.normalize(q), q.trim().uppercase(), 50, page * 50)).toTypedArray()
     }
 
@@ -41,7 +42,7 @@ class CatalogPageOrderIntegrationTest {
         jdbc.update("INSERT INTO market_quotes(symbol,price,as_of,collected_at) VALUES('TEST-TIE-A',12345,'2026-10-09 08:00:00','2026-10-09 08:00:00')")
         val saved = jdbc.queryForList("SELECT * FROM instrument_catalog ORDER BY symbol")
         val quotes = jdbc.queryForList("SELECT * FROM market_quotes ORDER BY symbol")
-        for (q in listOf("", "  \t", "삼성전자", "ㅅㅅㅈㅈ", "005930.KS", " &._- ")) {
+        for (q in listOf("", "  \t", "\u00A0", "\u2002", "삼성전자", "ㅅㅅㅈㅈ", "005930.KS", " &._- ")) {
             for (page in listOf(0, 1, 53, 54, 10000)) {
                 val (old, args) = legacy(q, page = page)
                 val new = catalog.searchQueries(q, page = page)
@@ -54,6 +55,8 @@ class CatalogPageOrderIntegrationTest {
             assertEquals(jdbc.queryForList(old, *args), jdbc.queryForList(sql.rowSql, *sql.rowArgs))
         }
         val tied = catalog.search(sectorId = "test-page")
+        assertEquals(0, catalog.search("\u00A0").total)
+        assertTrue(catalog.search("\u00A0").items.isEmpty())
         assertEquals(listOf("TEST-TIE-A", "TEST-TIE-B"), tied.items.map { it.instrument.symbol })
         assertEquals(0, tied.items[0].price!!.compareTo(java.math.BigDecimal("12345")))
         assertNotNull(tied.items[0].quoteAt)
