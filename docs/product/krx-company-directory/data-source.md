@@ -28,4 +28,11 @@ node --test scripts/build-krx-directory.test.cjs
 node scripts/build-krx-directory.cjs
 ```
 
-현재 서버의 directory 입력은 추가만 수행한다. 회사명 변경·상장폐지·새 별칭은 별도 정책과 업데이트 경로가 필요하다. 사라진 원본 행을 DB에서 지우는 방식으로 처리하지 않는다. BE-22에 해외/ETF 확대·갱신 정책·운영 규모 측정 및 배포 확인을 유지한다.
+생성 명령은 기존 스냅샷과 새 자료의 추가·회사명/업종 변경·원본 누락을 JSON 보고서로 출력한 후 파일을 저장한다. 기존보다 이전 날짜는 저장 전에 거절한다. 날짜만 다른 같은 회사는 unchanged로 집계한다. 변경된 다음 파일을 이미 보관하고 있다면 읽기 전용으로도 비교할 수 있다.
+
+```powershell
+node scripts/build-krx-directory.cjs --diff <이전-스냅샷.json> <다음-스냅샷.json>
+node --test scripts/compare-krx-directory.test.cjs
+```
+
+보고서의 renamed/industryChanged는 현재 DB의 변경을 의미하지 않는다. missing은 원본에서 빠졌다는 뜻이며 상장폐지 판정이 아니다. 현재 서버의 directory 입력은 추가만 수행하므로 기존 회사 정보/시세/투자 기록은 자동 수정·삭제하지 않는다. 회사명 변경·상장폐지·새 별칭의 DB 반영은 별도 정책과 업데이트 경로가 필요하다. BE-22에 해외/ETF 확대·갱신 반영 정책·운영 규모 측정을 유지한다.

@@ -75,9 +75,37 @@ function generate() {
   fs.writeFileSync(path.join(root, 'backend/src/main/resources/catalog-directory.json'), JSON.stringify(rows, null, 2) + '\n')
   console.log(`KRX directory: ${rows.length} source-linked companies`)
 }
-module.exports = { parseKrxHtml, buildDirectory, sourceUrl, generate }
-if (require.main === module) {
-  const args = process.argv.slice(2)
+function compareSnapshots(previous, next) {
+  const before = new Map(buildDirectory(previous).map(row => [row.symbol, row]))
+  const after = new Map(buildDirectory(next).map(row => [row.symbol, row]))
+  assert.ok(next.verifiedAt >= previous.verifiedAt, '이전 날짜 자료로 목록을 되돌릴 수 없습니다.')
+  const industries = snapshot => new Map(snapshot.companies.map(row => [`${row.code}.${markets[row.market].suffix}`, row.industry]))
+  const beforeIndustry = industries(previous), afterIndustry = industries(next)
+  const added = [], renamed = [], industryChanged = [], missing = []
+  let unchanged = 0
+  for (const [symbol, item] of after) {
+    const old = before.get(symbol)
+    if (!old) { added.push({ symbol, name: item.name }); continue }
+    const nameChanged = old.name !== item.name
+    const industryDiffers = beforeIndustry.get(symbol) !== afterIndustry.get(symbol)
+    if (nameChanged) renamed.push({ symbol, before: old.name, after: item.name })
+    if (industryDiffers) industryChanged.push({ symbol, name: item.name, before: beforeIndustry.get(symbol), after: afterIndustry.get(symbol) })
+    if (!nameChanged && !industryDiffers) unchanged++
+  }
+  for (const [symbol, item] of before) if (!after.has(symbol)) missing.push({ symbol, name: item.name })
+  return { previousVerifiedAt: previous.verifiedAt, nextVerifiedAt: next.verifiedAt,
+    counts: { previous: before.size, next: after.size, added: added.length, renamed: renamed.length, industryChanged: industryChanged.length, missing: missing.length, unchanged },
+    databasePolicy: { existingRowsAutoUpdated: false, missingRowsAutoDeleted: false, missingMeansDelisted: false },
+    added, renamed, industryChanged, missing }
+}
+module.exports = { parseKrxHtml, buildDirectory, sourceUrl, generate, compareSnapshots }
+function runCli(args) {
+  if (args[0] === '--diff') {
+    assert.equal(args.length, 3, '비교할 이전·다음 스냅샷 경로가 필요합니다.')
+    const read = file => JSON.parse(fs.readFileSync(file, 'utf8'))
+    console.log(JSON.stringify(compareSnapshots(read(args[1]), read(args[2])), null, 2))
+    return
+  }
   if (args.length) {
     assert.equal(args.length, 3, '원본 KOSPI/KOSDAQ 경로와 확인 날짜가 필요합니다.')
     const sources = []
@@ -91,7 +119,10 @@ if (require.main === module) {
     })
     const snapshot = { schemaVersion: 1, verifiedAt: args[2], sources, companies }
     buildDirectory(snapshot)
+    const previousPath = path.join(root, 'shared/krx-companies.json')
+    if (fs.existsSync(previousPath)) console.log(JSON.stringify(compareSnapshots(JSON.parse(fs.readFileSync(previousPath, 'utf8')), snapshot), null, 2))
     fs.writeFileSync(path.join(root, 'shared/krx-companies.json'), JSON.stringify(snapshot, null, 2) + '\n')
   }
   generate()
 }
+if (require.main === module) runCli(process.argv.slice(2))

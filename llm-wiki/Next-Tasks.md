@@ -66,6 +66,11 @@
 **완료 기준** — 정상 관측/수집 작업/감사로그를 대조하고 장애 해결 상태 확인, 실제 기기 수신 기록. 제공처 발송 수락·triggered:true·진단 숨김을 복구로 처리하지 않는다. 기록 삭제나 재시도 한도 우회 없음.
 **근거** — docs/deployment/operator-access.md, CollectionJobRunnerIntegrationTest, CollectionAlertAccessIntegrationTest. 기존 BE-23/25/27의 미확인 운영 항목을 이관했다.
 
+### BE-41. KRX 기업 목록 갱신 차이 비교와 과거 입력 차단
+**진행** — Issue#33·codex/catalog-refresh-diff. 공식 스냅샷 비교 CLI와 새 원본 생성 시 추가/회사명·업종 변경/누락 보고서를 제공한다. 이전 확인 날짜는 저장 전에 거절하고 원본 누락을 DB 삭제나 상장폐지로 해석하지 않는다. 현재 서버의 기존 행 자동 수정 없음 정책을 명시한다.
+**검증** — 로컬 생성/비교11검사 성공·읽기 전용 CLI·격리 생성 CLI의 역행 실패/파일 보존·정상 재확인·실제 리소스 재생성 차이0. CI·PR 확인 중이며 서버/실제 목록/DB/웹/앱/APK/EAS 변경0. 실제 정보 변경의 DB 반영 정책은 BE-22 후속이다.
+**근거** — docs/product/catalog-refresh-diff/plan.md.
+
 ## 열린 과제 — 웹(WEB)
 
 
