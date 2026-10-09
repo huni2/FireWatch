@@ -13,6 +13,7 @@ import { CollectionNotice } from '../../components/CollectionNotice'
 import { useIsOperator } from '../../lib/operatorAccess'
 import { useLatestBriefing } from '../dashboard/hooks/useLatestBriefing'
 import { BRAND_GREEN, SECTION_CARD_PROPS } from '../../lib/theme'
+import '../support-pages.css'
 
 // AntD 정적 message는 ConfigProvider 테마를 못 받는 v5 known limitation이 있어, App.useApp()으로
 // 받은 인스턴스에만 브랜드 그린 성공 아이콘을 지정한다(에러는 AntD 기본 색 그대로 — 감사로그 고정 4색과
@@ -81,15 +82,17 @@ export function SettingsPage() {
   if (!data) return <Card title="설정을 확인하지 못했어요"><p>저장된 설정은 유지돼요. 다시 불러온 뒤 변경해주세요.</p><Button onClick={reload}>설정 다시 불러오기</Button></Card>
 
   return (
-    <Space className="settings-page" direction="vertical" size={20} style={{ width: '100%', maxWidth: 860, marginInline: 'auto', display: 'flex' }}>
+    <Space className="settings-page support-page" direction="vertical" size={16}>
       <header className="compact-intro"><Typography.Title level={2}>알림과 관심 키워드</Typography.Title><p>브리핑을 받을 시간과 자주 살펴볼 주제를 정해주세요.</p></header>
+      <div className="settings-layout">
+      <WebPushCard settings={data} onSubscribed={reload} />
       <Card {...SECTION_CARD_PROPS} title="브리핑 설정">
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
           {error && <Alert type="error" message="설정을 다시 확인하지 못했어요" description="편집한 내용은 유지했어요. 다시 확인한 뒤 저장해주세요." showIcon action={<Button onClick={reload}>다시 확인</Button>} />}
           {loading && <p role="status">설정을 다시 확인하고 있어요. 입력한 내용은 유지돼요.</p>}
 
           <Form layout="vertical" disabled={saving}>
-            <Form.Item label="브리핑 받을 시간" extra="한국 시간(KST) 기준이에요. 브리핑은 오전 7시 이후 준비하며, 발송을 15분마다 확인해 조금 늦게 도착할 수 있어요.">
+            <Form.Item label="브리핑 받을 시간" extra="한국 시간(KST) 기준이에요.">
               <TimePicker
                 aria-label="브리핑 받을 시간"
                 allowClear={false}
@@ -98,6 +101,7 @@ export function SettingsPage() {
                 onChange={(value) => { editing.current = true; setPushTime(value ? value.format('HH:mm') : '08:00') }}
               />
             </Form.Item>
+            <details className="support-details"><summary>알림이 도착하는 시간 안내</summary><p>브리핑은 오전 7시 이후 준비해요. 발송을 15분마다 확인하므로 설정한 시간보다 늦게 도착할 수 있어요. 설정한 시각에 정확히 도착하는 알림은 아니에요.</p></details>
             <Form.Item label="관심 키워드">
               <KeywordInput value={keywords} disabled={saving} onChange={next => { editing.current = true; setKeywords(next) }} />
               <TrendingKeywordSuggestions
@@ -111,7 +115,7 @@ export function SettingsPage() {
                 disabled={saving || keywords.length >= MAX_KEYWORDS}
               />
             </Form.Item>
-            <Space wrap><Button type="primary" onClick={handleSave} loading={saving} disabled={loading || Boolean(error) || !dirty}>변경사항 저장</Button><Typography.Text role="status" type="secondary">{dirty ? '아직 저장하지 않은 변경이 있어요.' : '저장된 설정이에요.'}</Typography.Text></Space>
+            <div className="settings-save-status"><Button type="primary" onClick={handleSave} loading={saving} disabled={loading || Boolean(error) || !dirty}>변경사항 저장</Button><Typography.Text role="status" type="secondary">{dirty ? '아직 저장하지 않은 변경이 있어요.' : '저장된 설정이에요.'}</Typography.Text></div>
           </Form>
 
           <Typography.Text type="secondary" style={{ display: 'block' }}>
@@ -119,8 +123,7 @@ export function SettingsPage() {
           </Typography.Text>
         </Space>
       </Card>
-
-      {data && <WebPushCard settings={data} onSubscribed={reload} />}
+      </div>
       {isOperator && <OperatorPushSetup />}
       {isOperator && <details onToggle={event => setDiagnosticsOpen(event.currentTarget.open)}><summary>운영자 수집 상태 확인</summary>{diagnosticsOpen && <CollectionNotice />}</details>}
       <Space wrap><Link to="/account">내 계정과 연결 기기</Link><Link to="/community">공지·문의</Link><Link to="/guide">도움말</Link></Space>
@@ -185,11 +188,9 @@ function WebPushCard({ settings, onSubscribed }: { settings: Settings; onSubscri
   }
 
   return (
-    <Card {...SECTION_CARD_PROPS} title="브라우저 알림">
+    <Card {...SECTION_CARD_PROPS} title="이 브라우저의 알림">
       <Space direction="vertical" size={12} style={{ width: '100%' }}>
-        <Typography.Text type="secondary">
-          앱 설치 없이 이 브라우저로 오늘의 브리핑 알림을 받습니다.
-        </Typography.Text>
+        {status === 'ready' && <p className="support-push-state">알림을 켜면 브리핑을 받을 수 있어요</p>}
 
         {status === 'unsupported' && <Alert type="warning" showIcon message="이 브라우저는 웹 푸시를 지원하지 않습니다." />}
         {status === 'denied' && (
@@ -200,11 +201,12 @@ function WebPushCard({ settings, onSubscribed }: { settings: Settings; onSubscri
           />
         )}
 
-        {settings.webPushSubscribed && <Tag color="success">이 서버에 구독된 브라우저가 있습니다</Tag>}
+        {settings.webPushSubscribed && <Tag color="success">등록된 브라우저가 있어요</Tag>}
 
-        <Button onClick={handleSubscribe} loading={subscribing} disabled={status === 'unsupported'}>
-          {settings.webPushSubscribed ? '이 브라우저도 구독하기' : '브라우저 알림 켜기'}
+        <Button onClick={handleSubscribe} loading={subscribing} disabled={status !== 'ready'}>
+          {settings.webPushSubscribed ? '이 브라우저도 알림 받기' : '브라우저 알림 켜기'}
         </Button>
+        <details className="support-details"><summary>다른 기기에서도 알림이 오나요?</summary><p>알림을 받을 브라우저마다 등록해주세요. 등록된 브라우저가 있다는 표시만으로 현재 기기의 수신을 확인할 수는 없어요. Android 앱의 알림 권한은 앱에서 설정해요.</p></details>
       </Space>
     </Card>
   )
