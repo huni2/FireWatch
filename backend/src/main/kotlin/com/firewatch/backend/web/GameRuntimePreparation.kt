@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.SmartInitializingSingleton
 import org.springframework.core.ResolvableType
 import org.springframework.core.DefaultParameterNameDiscoverer
+import org.springframework.core.MethodParameter
+import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.core.io.buffer.DefaultDataBufferFactory
 import org.springframework.http.MediaType
@@ -20,6 +22,11 @@ import org.springframework.http.codec.ServerCodecConfigurer
 import org.springframework.http.codec.json.JacksonJsonDecoder
 import org.springframework.http.codec.json.JacksonJsonEncoder
 import org.springframework.stereotype.Component
+import org.springframework.http.server.reactive.AbstractServerHttpResponse
+import org.reactivestreams.Publisher
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
+import java.time.Duration
 import java.math.BigDecimal
 
 @Component
@@ -37,10 +44,17 @@ class GameRuntimePreparation(
         val names = DefaultParameterNameDiscoverer.getSharedInstance()
         GameService::class.java.declaredMethods.filter { java.lang.reflect.Modifier.isPublic(it.modifiers) && !it.isSynthetic }
             .forEach { names.getParameterNames(it) }
+        GameController::class.java.declaredMethods.filter { java.lang.reflect.Modifier.isPublic(it.modifiers) && !it.isSynthetic }
+            .forEach {
+                names.getParameterNames(it)
+                MethodParameter(it, -1).apply { parameterType; genericParameterType }
+            }
         val metadataMillis = (System.nanoTime() - metadataStarted) / 1_000_000
         // Prepare the actual HTTP codec instances, not a separate mapper cache.
-        val encoder = codecs.writers.filterIsInstance<EncoderHttpMessageWriter<*>>()
-            .map { it.encoder }.filterIsInstance<JacksonJsonEncoder>().first()
+        @Suppress("UNCHECKED_CAST")
+        val writer = codecs.writers.filterIsInstance<EncoderHttpMessageWriter<*>>()
+            .first { it.encoder is JacksonJsonEncoder } as EncoderHttpMessageWriter<Any>
+        val encoder = writer.encoder as JacksonJsonEncoder
         val decoder = codecs.readers.filterIsInstance<DecoderHttpMessageReader<*>>()
             .map { it.decoder }.filterIsInstance<JacksonJsonDecoder>().first()
         val response = sampleResponse()
@@ -48,9 +62,8 @@ class GameRuntimePreparation(
         for (value in listOf(response, GameOrderPreview(response.turnIndex, GameInstrumentType.STOCK,
             response.gameAssets.first().symbol, GameTradeAction.BUY, BigDecimal.ONE, price, price,
             response.cash.subtract(price), BigDecimal.ONE, true, null))) {
-            val buffer = encoder.encodeValue(value, DefaultDataBufferFactory.sharedInstance,
-                ResolvableType.forClass(value.javaClass), MediaType.APPLICATION_JSON, emptyMap())
-            DataBufferUtils.release(buffer)
+            writer.write(Mono.just(value), ResolvableType.forClass(value.javaClass), MediaType.APPLICATION_JSON,
+                PreparationResponse(), emptyMap()).block(Duration.ofSeconds(30))
         }
         for (request in listOf(GameStartRequest(), GameTradeRequest(
             GameInstrumentType.STOCK, response.gameAssets.first().symbol, GameTradeAction.BUY, BigDecimal.ONE,
@@ -90,4 +103,16 @@ class GameRuntimePreparation(
         ).toResponse().copy(transactions = listOf(GameTransactionResponse(-1, turn,
             GameInstrumentType.STOCK, asset.symbol, GameTradeAction.BUY, BigDecimal.ONE, price, price)))
     }
+}
+
+// 포트를 열거나 결과를 보관하지 않고 실제 비동기 응답 작성·커밋 경로를 준비한다.
+private class PreparationResponse : AbstractServerHttpResponse(DefaultDataBufferFactory.sharedInstance) {
+    override fun <T : Any> getNativeResponse(): T = error("메모리 준비 응답에는 네이티브 응답이 없습니다")
+    override fun writeWithInternal(body: Publisher<out DataBuffer>): Mono<Void> =
+        Flux.from(body).doOnNext { DataBufferUtils.release(it) }.then()
+    override fun writeAndFlushWithInternal(body: Publisher<out Publisher<out DataBuffer>>): Mono<Void> =
+        Flux.from(body).concatMap { writeWithInternal(it) }.then()
+    override fun applyStatusCode() = Unit
+    override fun applyHeaders() = Unit
+    override fun applyCookies() = Unit
 }

@@ -6,6 +6,8 @@ import com.firewatch.backend.entity.GameTradeAction
 import com.firewatch.backend.web.dto.GameTradeRequest
 import com.firewatch.backend.web.dto.GameTurnResponse
 import jakarta.validation.Validation
+import io.mockk.spyk
+import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.springframework.http.codec.ServerCodecConfigurer
 import org.springframework.http.codec.json.JacksonJsonDecoder
@@ -17,8 +19,9 @@ import kotlin.test.*
 class GameRuntimePreparationTest {
     @Test fun `preparation uses configured codec and keeps invalid quantities rejected`() {
         val mapper = JsonMapper.builder().findAndAddModules().build()
+        val encoder = spyk(JacksonJsonEncoder(mapper))
         val codecs = ServerCodecConfigurer.create().apply {
-            defaultCodecs().jacksonJsonEncoder(JacksonJsonEncoder(mapper))
+            defaultCodecs().jacksonJsonEncoder(encoder)
             defaultCodecs().jacksonJsonDecoder(JacksonJsonDecoder(mapper))
         }
         Validation.buildDefaultValidatorFactory().use { factory ->
@@ -26,6 +29,7 @@ class GameRuntimePreparationTest {
             assertFalse(preparation.prepared)
             preparation.afterSingletonsInstantiated()
             assertTrue(preparation.prepared)
+            verify(exactly = 2) { encoder.encode(any(), any(), any(), any(), any()) }
             val startMethod = com.firewatch.backend.service.GameService::class.java.declaredMethods.single { it.name == "startGame" }
             assertEquals(listOf("deviceId", "difficulty", "allowShortSelling", "historyPoints"),
                 org.springframework.core.DefaultParameterNameDiscoverer.getSharedInstance().getParameterNames(startMethod)!!.toList())
