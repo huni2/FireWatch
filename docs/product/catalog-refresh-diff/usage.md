@@ -4,7 +4,7 @@
 2. KIND의 KOSPI/KOSDAQ 상장법인 파일을 내려받고 실제 확인한 날짜로 생성한다. 원본 링크와 필드 범위는 [출처 문서](../krx-company-directory/data-source.md)를 따른다.
 3. 출력된 추가/변경/누락을 확인하고 원본을 대조한다. 출처·행수·인코딩·코드 충돌이나 날짜 역행 오류가 나면 기존 파일을 보존한 채 입력을 바로잡는다.
 4. 이전 스냅샷과 현재 파일을 --diff로 비교해 보고서를 따로 저장한다.
-5. 생성 검사와 리소스 차이를 검토한 뒤 커밋/PR을 만든다. 기존 DB 회사명 변경의 반영은 BE-22의 별도 정책을 따른다.
+5. 생성 검사와 리소스 차이를 검토한 뒤 커밋/PR을 만든다. 기존 DB 회사명 변경은 BE-43의 [공식 갱신 정책](../catalog-safe-refresh/usage.md)을 따른다.
 
 ```powershell
 node scripts/build-krx-directory.cjs <KOSPI-원본> <KOSDAQ-원본> YYYY-MM-DD
@@ -17,11 +17,13 @@ node --test scripts/build-krx-directory.test.cjs scripts/compare-krx-directory.t
 | 보고 항목 | 의미 | 현재 서버의 처리 |
 |---|---|---|
 | added | 이전 원본에 없던 시장별 종목코드 | 기존 DB에 없는 코드만 추가 가능 |
-| renamed | 같은 코드의 회사명 변경 | 검토 대상, 기존 행 자동 변경 없음 |
-| industryChanged | 같은 코드의 공식 업종 변경 | 검토 대상, 기존 행 자동 변경 없음 |
+| renamed | 같은 코드의 회사명 변경 | 검토·배포 후 공식 기준과 현재 행이 같을 때만 다음 날짜로 갱신 |
+| industryChanged | 같은 코드의 공식 업종 변경 | 검토·배포 후 공식 기준과 현재 행이 같을 때만 다음 날짜로 갱신 |
 | missing | 다음 원본에서 빠진 코드 | 기존 DB 기록 보존, 상장폐지 단정 없음 |
 | unchanged | 회사명·업종이 그대로인 코드 | 확인 날짜만 달라져도 여기에 포함 |
 
 동일 회사의 이름과 업종이 함께 바뀌면 renamed와 industryChanged에 각각 포함한다. 두 수를 더한 값은 변경 회사 수와 같지 않을 수 있다. 두 목록에서 같은 symbol을 묶어 확인한다. 시장 이동으로 suffix가 바뀐 코드는 현재 비교에서 missing과 added로 나타나며 기존 보유 기록을 자동 이전하지 않는다.
 
 이 보고서는 두 공식 스냅샷의 차이다. DB에 이미 있는 편집 자료·시세·개인 투자 기록과 대조한 결과가 아니며 실제 수집 장애나 가격 변화도 판단하지 않는다.
+
+보고서의 existingRowsAutoUpdated=true는 검토·배포 후 서버의 조건부 갱신을 뜻한다. requiresMatchingOfficialBaseline과 requiresNewerVerifiedAt도 함께 true로 명시한다. 공식 기준값 대조 갱신은 서버에서 수행하며, CLI 비교나 생성 명령이 DB를 변경하지 않는다.

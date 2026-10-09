@@ -23,7 +23,7 @@ test('같은 목록과 확인 날짜만 달라진 재확인은 회사 변경이 
     assert.deepEqual(result.counts, { previous:2651,next:2651,added:0,renamed:0,industryChanged:0,missing:0,unchanged:2651 })
   }
 })
-test('추가·이름과 업종 변경·누락을 구분하며 자동 수정/삭제/상장폐지를 주장하지 않는다', () => {
+test('추가·이름과 업종 변경·누락을 구분하고 조건부 갱신과 삭제 금지를 명시한다', () => {
   const next = structuredClone(snapshot); next.verifiedAt = '2026-10-10'
   next.companies = next.companies.filter(row => row.code !== '0001A0')
   for (const row of next.companies) if (row.code === '0220W0') { row.name = '변경 법인'; row.industry = '변경 업종' }
@@ -34,7 +34,7 @@ test('추가·이름과 업종 변경·누락을 구분하며 자동 수정/삭�
   assert.equal(result.renamed[0].symbol,'0220W0.KS')
   assert.equal(result.industryChanged[0].after,'변경 업종')
   assert.equal(result.missing[0].symbol,'0001A0.KQ')
-  assert.deepEqual(result.databasePolicy,{existingRowsAutoUpdated:false,missingRowsAutoDeleted:false,missingMeansDelisted:false})
+  assert.deepEqual(result.databasePolicy,{existingRowsAutoUpdated:true,requiresMatchingOfficialBaseline:true,requiresNewerVerifiedAt:true,missingRowsAutoDeleted:false,missingMeansDelisted:false})
 })
 test('역행 날짜·손상된 다음 자료·충돌하는 반복 행은 보고서 생성 전에 거절한다', () => {
   for (const corrupt of [

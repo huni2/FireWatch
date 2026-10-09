@@ -21,6 +21,55 @@ class CatalogIntegrationTest {
     @Autowired lateinit var jdbc: JdbcTemplate
     @LocalServerPort var port: Int = 0
     @Test @Transactional
+    fun `공식 다음 날짜 갱신은 이름과 업종 검색을 바꾸고 편집 시세 누락과 과거 자료는 보존한다`() {
+        val refresh = com.firewatch.backend.repository.DirectoryCatalogRefresh(jdbc)
+        val mapper = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build()
+        val official = catalog.search("0001A0.KQ").items.single().instrument
+        val editedSource = catalog.search("0220W0.KS").items.single().instrument
+        val edited = editedSource.copy(description = "운영자 편집", sectorId = "software")
+        jdbc.update("UPDATE instrument_catalog SET metadata_json=?, sector_id=? WHERE symbol=?", mapper.writeValueAsString(edited), edited.sectorId, edited.symbol)
+        val editedRow = jdbc.queryForList("SELECT * FROM instrument_catalog WHERE symbol=?", edited.symbol)
+        val quoteRows = jdbc.queryForList("SELECT * FROM market_quotes ORDER BY symbol")
+        val portfolios = jdbc.queryForList("SELECT * FROM portfolios ORDER BY owner_id")
+        val next = official.copy(name = "새이름 검증 법인", description = "변경 업종의 KRX 상장법인", verifiedAt = "2026-10-10")
+        val curated = catalog.search("005930.KS").items.single().instrument
+        val curatedRow = jdbc.queryForList("SELECT * FROM instrument_catalog WHERE symbol=?", curated.symbol)
+        val result = refresh.apply(listOf(next, editedSource.copy(name = "덮어쓰면 안됨", verifiedAt = "2026-10-10"), curated.copy(name = "공식 이름", verifiedAt = "2026-10-10")), setOf(curated.symbol))
+        assertEquals(1, result.updated)
+        assertEquals(1, result.preserved)
+        assertEquals(next, catalog.search(next.name).items.single().instrument)
+        assertEquals(next.symbol, catalog.search("변경업종").items.single().instrument.symbol)
+        assertEquals(editedRow, jdbc.queryForList("SELECT * FROM instrument_catalog WHERE symbol=?", edited.symbol))
+        assertEquals(curatedRow, jdbc.queryForList("SELECT * FROM instrument_catalog WHERE symbol=?", curated.symbol))
+        val changedRow = jdbc.queryForList("SELECT * FROM instrument_catalog WHERE symbol=?", official.symbol)
+        assertEquals(0, refresh.apply(listOf(next), emptySet()).updated)
+        assertEquals(0, refresh.apply(listOf(official), emptySet()).updated)
+        assertEquals(1, refresh.apply(listOf(next.copy(name = "같은 날짜 다른 정보")), emptySet()).preserved)
+        assertEquals(0, refresh.apply(emptyList(), emptySet()).updated)
+        assertEquals(changedRow, jdbc.queryForList("SELECT * FROM instrument_catalog WHERE symbol=?", official.symbol))
+        // The startup initials pass must follow the refresh; old embedded data cannot revert newer rows.
+        catalog.run(DefaultApplicationArguments())
+        assertEquals(next.symbol, catalog.search("ㅅㅇㄹㄱㅈㅂㅇ").items.single().instrument.symbol)
+        assertEquals(next, catalog.search(next.name).items.single().instrument)
+        assertEquals(quoteRows, jdbc.queryForList("SELECT * FROM market_quotes ORDER BY symbol"))
+        assertEquals(portfolios, jdbc.queryForList("SELECT * FROM portfolios ORDER BY owner_id"))
+    }
+    @Test @Transactional
+    fun `기존 공식 기준은 현재 행이 같을 때만 설정하며 출처 불명 편집과 검색 필드 편집을 보존한다`() {
+        val refresh = com.firewatch.backend.repository.DirectoryCatalogRefresh(jdbc)
+        val original = catalog.search("0001A0.KQ").items.single().instrument
+        jdbc.update("UPDATE instrument_catalog SET directory_baseline_json=NULL WHERE symbol=?", original.symbol)
+        assertEquals(1, refresh.apply(listOf(original), emptySet()).baselined)
+        jdbc.update("UPDATE instrument_catalog SET search_text='운영자검색' WHERE symbol=?", original.symbol)
+        val editedRows = jdbc.queryForList("SELECT * FROM instrument_catalog WHERE symbol=?", original.symbol)
+        assertEquals(1, refresh.apply(listOf(original.copy(name = "변경 이름", verifiedAt = "2026-10-10")), emptySet()).preserved)
+        assertEquals(editedRows, jdbc.queryForList("SELECT * FROM instrument_catalog WHERE symbol=?", original.symbol))
+        jdbc.update("UPDATE instrument_catalog SET directory_baseline_json=NULL WHERE symbol=?", original.symbol)
+        val unknownRows = jdbc.queryForList("SELECT * FROM instrument_catalog WHERE symbol=?", original.symbol)
+        assertEquals(1, refresh.apply(listOf(original), emptySet()).preserved)
+        assertEquals(unknownRows, jdbc.queryForList("SELECT * FROM instrument_catalog WHERE symbol=?", original.symbol))
+    }
+    @Test @Transactional
     fun `한글 초성 검색은 정확한 이름을 먼저 보여주고 필터와 기존 자료를 보존한다`() {
         assertEquals("005930.KS", catalog.search("ㅅㅅㅈㅈ").items.first().instrument.symbol)
         assertEquals("035720.KS", catalog.search("ㅋㅋㅇ").items.first().instrument.symbol)

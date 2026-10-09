@@ -18,7 +18,8 @@ class CatalogInitialsTest {
         } }
         val migrated = jdbc.queryForList("SELECT * FROM instrument_catalog").single()
         assertEquals("", migrated["name_initials"])
-        assertEquals(original, migrated.filterKeys { !it.equals("name_initials", ignoreCase = true) })
+        assertEquals(null, migrated["directory_baseline_json"])
+        assertEquals(original, migrated.filterKeys { !it.equals("name_initials", ignoreCase = true) && !it.equals("directory_baseline_json", ignoreCase = true) })
     }
     @Test fun `실제 회사명과 복합 자음 및 한글 양끝을 변환한다`() {
         assertEquals("ㅅㅅㅈㅈ", InstrumentCatalog.initials("삼성전자"))

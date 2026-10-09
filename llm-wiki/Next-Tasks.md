@@ -69,6 +69,11 @@
 **근거** — docs/deployment/operator-access.md, CollectionJobRunnerIntegrationTest, CollectionAlertAccessIntegrationTest. 기존 BE-23/25/27의 미확인 운영 항목을 이관했다.
 
 
+### BE-43. 공식 회사 정보의 안전한 갱신과 편집 보존
+**진행** — Issue#37·codex/catalog-safe-refresh. 마지막 공식 적용값을 저장하고 현재 행이 그 값과 같을 때만 다음 날짜의 이름/업종을 갱신한다. 기존 편집/큐레이션·동일/과거 날짜·원본 누락은 보존한다.
+**검증** — 로컬198검사 실패0/제외1·생성/비교11검사 성공. 기존 스키마 반복 적용·변경/반복/역행/동일 날짜/편집/시세/포트폴리오 보존 확인. PostgreSQL CI·PR 준비, 실제 스냅샷 변경/APK/EAS0.
+**근거** — docs/product/catalog-safe-refresh/plan.md.
+
 ## 열린 과제 — 웹(WEB)
 
 
