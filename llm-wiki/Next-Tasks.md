@@ -71,6 +71,11 @@
 **근거** — docs/deployment/operator-access.md, CollectionJobRunnerIntegrationTest, CollectionAlertAccessIntegrationTest. 기존 BE-23/25/27의 미확인 운영 항목을 이관했다.
 
 
+### BE-45. 전체 목록의 깊은 페이지 정렬 최적화
+**진행** — Issue#41·codex/catalog-page-order. 빈 입력의 이름/코드 정렬과 B-tree를 추가하고 입력 검색의 정확 일치 순서를 유지한다. 기존 SQL 결과·동일 이름/시세/공백/필터/경계와 전용 PG 전후 계획·시간/크기를 검증한다.
+**검증** — 로컬201검사 실패0/제외1, PostgreSQL/복원 CI 준비. 실제 자료/데이터 삭제/APK/EAS0.
+**근거** — docs/product/catalog-page-order/plan.md.
+
 ## 열린 과제 — 웹(WEB)
 
 

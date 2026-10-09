@@ -89,9 +89,12 @@ class InstrumentCatalog(private val jdbc: JdbcTemplate, private val transactions
         val exactColumn = if (initialQuery) "c.name_initials" else "c.normalized_name"
         val where = "WHERE $searchColumn LIKE ? ESCAPE '!' AND (?='' OR c.asset_class=?) AND (?='' OR c.region=?) AND (?='' OR c.sector_id=?)"
         val args = arrayOf<Any>(pattern, assetClass, assetClass, region, region, sectorId, sectorId)
+        val emptyInput = query.isBlank()
+        val order = if (emptyInput) "c.name, c.symbol" else "CASE WHEN $exactColumn=? THEN 0 WHEN c.symbol=? THEN 0 ELSE 1 END, c.name, c.symbol"
+        val orderArgs = if (emptyInput) emptyList() else listOf<Any>(term, query.trim().uppercase())
         return CatalogQueries("SELECT COUNT(*) FROM instrument_catalog c $where", args,
-            "SELECT c.metadata_json, q.price, q.as_of FROM instrument_catalog c LEFT JOIN market_quotes q ON c.symbol=q.symbol $where ORDER BY CASE WHEN $exactColumn=? THEN 0 WHEN c.symbol=? THEN 0 ELSE 1 END, c.name, c.symbol LIMIT ? OFFSET ?",
-            (args.toList() + listOf<Any>(term, query.trim().uppercase(), size, page * size)).toTypedArray(), size)
+            "SELECT c.metadata_json, q.price, q.as_of FROM instrument_catalog c LEFT JOIN market_quotes q ON c.symbol=q.symbol $where ORDER BY $order LIMIT ? OFFSET ?",
+            (args.toList() + orderArgs + listOf<Any>(size, page * size)).toTypedArray(), size)
     }
 
     companion object {
