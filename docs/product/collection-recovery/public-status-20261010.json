@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-10-09T17:11:36.430Z",
+  "requests": 3,
+  "retries": 0,
+  "productionWrites": 0,
+  "results": [
+    {
+      "route": "/api/collection/alerts",
+      "status": 401
+    },
+    {
+      "route": "/api/news",
+      "status": 200,
+      "newsRows": 50,
+      "updatedAt": "2026-10-09T16:30:00.011735Z",
+      "latestPublishedAt": "2026-10-09T07:29:00Z"
+    },
+    {
+      "route": "/api/briefings/latest",
+      "status": 200,
+      "briefingDate": "2026-10-09",
+      "createdAt": "2026-10-08T23:00:41.947333Z",
+      "sourceStatus": "NORMAL",
+      "financialFields": [
+        "goldPrice",
+        "silverPrice",
+        "usdKrw",
+        "jpy100Krw",
+        "cnyKrw",
+        "kospi",
+        "kosdaq",
+        "sp500",
+        "nasdaq",
+        "dow",
+        "usBondYield10y",
+        "krBondYield10y"
+      ],
+      "newsRows": 20
+    }
+  ],
+  "passed": true
+}

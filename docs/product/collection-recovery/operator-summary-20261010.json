@@ -1,0 +1,36 @@
+{
+  "jobs": [
+    {"status":"SUCCESS","category":"briefing","job_count":4,"last_attempt_at":"2026-10-09T06:00:03.980002","last_success_at":"2026-10-09T06:00:03.980002","latest_next_attempt_at":null,"last_attempt_collected_rows":44},
+    {"status":"PAUSED","category":"financial","job_count":1,"last_attempt_at":"2026-10-08T09:30:00.00037","last_success_at":null,"latest_next_attempt_at":"2026-10-08T10:30:00.00037","last_attempt_collected_rows":0},
+    {"status":"SUCCESS","category":"financial","job_count":3,"last_attempt_at":"2026-10-09T07:30:00.27133","last_success_at":"2026-10-09T07:30:00.27133","latest_next_attempt_at":null,"last_attempt_collected_rows":18},
+    {"status":"SUCCESS","category":"news","job_count":3,"last_attempt_at":"2026-10-09T16:30:00.011735","last_success_at":"2026-10-09T16:30:00.011735","latest_next_attempt_at":"2026-10-09T17:00:00.011735","last_attempt_collected_rows":0},
+    {"status":"SUCCESS","category":"stock","job_count":40,"last_attempt_at":"2026-10-09T07:30:00.27133","last_success_at":"2026-10-09T07:30:00.27133","latest_next_attempt_at":null,"last_attempt_collected_rows":109}
+  ],
+  "errors": [{"category":"financial","job_count":1,"error_code":"INCOMPLETE_DATA:USD_KRW,JPY100_KRW,CNY_KRW","last_attempt_at":"2026-10-08T09:30:00.00037"}],
+  "stored": {"news_rows":139,"quote_rows":11,"latest_news_run_at":"2026-10-09T16:30:00.011735","latest_news_collected_at":"2026-10-09T07:30:00.27133","latest_quote_collected_at":"2026-10-09T07:30:00.27133"},
+  "circuits": [
+    {"category":"briefing","kst_date":"2026-10-09","lease_active":null,"failure_count":1,"next_attempt_at":"2026-10-09T00:25:54.41664"},
+    {"category":"financial","kst_date":"2026-10-09","lease_active":null,"failure_count":2,"next_attempt_at":"2026-10-09T07:30:00.033274"},
+    {"category":"news","kst_date":"2026-10-09","lease_active":null,"failure_count":0,"next_attempt_at":null},
+    {"category":"news","kst_date":"2026-10-10","lease_active":null,"failure_count":0,"next_attempt_at":null},
+    {"category":"stock","kst_date":"2026-10-09","lease_active":null,"failure_count":0,"next_attempt_at":null}
+  ],
+  "checked_at_utc":"2026-10-09T17:11:32.165478",
+  "unresolved_alerts":[],
+  "recent_observations": [
+    {"row_count":3,"asset_group":"CNY_KRW","latest_collected_at":"2026-10-09T07:30:00.27133","latest_source_as_of":null},
+    {"row_count":4,"asset_group":"DOW","latest_collected_at":"2026-10-09T07:00:00.033274","latest_source_as_of":null},
+    {"row_count":4,"asset_group":"GOLD","latest_collected_at":"2026-10-09T07:00:00.033274","latest_source_as_of":null},
+    {"row_count":3,"asset_group":"JPY100_KRW","latest_collected_at":"2026-10-09T07:30:00.27133","latest_source_as_of":null},
+    {"row_count":4,"asset_group":"KOSDAQ","latest_collected_at":"2026-10-09T07:00:00.033274","latest_source_as_of":null},
+    {"row_count":4,"asset_group":"KOSPI","latest_collected_at":"2026-10-09T07:00:00.033274","latest_source_as_of":null},
+    {"row_count":4,"asset_group":"KR_BOND_10Y","latest_collected_at":"2026-10-09T07:00:00.033274","latest_source_as_of":null},
+    {"row_count":4,"asset_group":"NASDAQ","latest_collected_at":"2026-10-09T07:00:00.033274","latest_source_as_of":null},
+    {"row_count":4,"asset_group":"SILVER","latest_collected_at":"2026-10-09T07:00:00.033274","latest_source_as_of":null},
+    {"row_count":4,"asset_group":"SP500","latest_collected_at":"2026-10-09T07:00:00.033274","latest_source_as_of":null},
+    {"row_count":109,"asset_group":"STOCK","latest_collected_at":"2026-10-08T23:30:00.00033","latest_source_as_of":"2026-10-08T00:00:00"},
+    {"row_count":4,"asset_group":"US_BOND_10Y","latest_collected_at":"2026-10-09T07:00:00.033274","latest_source_as_of":null},
+    {"row_count":3,"asset_group":"USD_KRW","latest_collected_at":"2026-10-09T07:30:00.27133","latest_source_as_of":null}
+  ],
+  "operator_registration":{"registered_rows":0,"fcm_configured_rows":0,"existing_settings_rows":0,"web_push_configured_rows":0}
+}

@@ -51,12 +51,35 @@ class PushServiceTest {
         assertEquals(null, row.lastNotifiedDate)
         verify(exactly = 1) { fcmSender.sendMulticast(listOf("test-token"), "FireWatch 운영자 알림 테스트", any()) }
         every { fcmSender.sendMulticast(any(), any(), any()) } returns FcmSendResult(0, emptyList())
-        kotlin.test.assertFailsWith<IllegalStateException> { pushService.testOperatorNotification(row) }
+        val error = kotlin.test.assertFailsWith<com.firewatch.backend.web.ApiException> { pushService.testOperatorNotification(row) }
+        assertEquals("OPERATOR_PUSH_FAILED", error.code)
+        assertEquals(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, error.httpStatus)
         assertEquals(null, row.lastNotifiedDate)
     }
 
     private fun dueRow(fcmTokensRaw: String? = null, webPushSubscriptionsRaw: String? = null) =
         UserSettings(pushTime = "08:00", fcmTokensRaw = fcmTokensRaw, webPushSubscriptionsRaw = webPushSubscriptionsRaw)
+
+    @Test
+    fun `운영자 웹 푸시 실패는 안전한 원인과 조치 안내를 반환한다`() {
+        val row = dueRow(webPushSubscriptionsRaw = listOf(subscriptionA).toJsonString())
+        every { userSettingsRepository.save(any<UserSettings>()) } answers { firstArg() }
+        val cases = mapOf("CONFIG_MISSING" to "Render", "AUTH_REJECTED" to "같은 쌍", "SUBSCRIPTION_EXPIRED" to "만료", "RATE_LIMITED" to "제한", "SEND_EXCEPTION" to "제공처 연결")
+        for ((code, guidance) in cases) {
+            every { webPushSender.sendToAll(any(), any(), any()) } returns WebPushSendResult(0, emptyList(), setOf(code))
+            val error = kotlin.test.assertFailsWith<com.firewatch.backend.web.ApiException> { pushService.testOperatorNotification(row) }
+            assertEquals(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, error.httpStatus)
+            kotlin.test.assertTrue(error.message!!.contains(guidance))
+            assertEquals(listOf(code), error.details["webPushFailureCodes"])
+            val response = com.firewatch.backend.web.ApiExceptionHandler().handleApiException(error)
+            assertEquals(503, response.statusCode.value())
+            assertEquals("OPERATOR_PUSH_FAILED", response.body!!.error.code)
+            kotlin.test.assertFalse(error.message!!.contains(subscriptionA.endpoint))
+            assertEquals(null, row.lastNotifiedDate)
+        }
+        every { webPushSender.sendToAll(any(), any(), any()) } returns WebPushSendResult(1, emptyList())
+        assertEquals(1, pushService.testOperatorNotification(row).webPushSuccessCount)
+    }
 
     @Test
     fun `모든 발송이 실패하면 오늘 발송으로 기록하지 않는다`() {
