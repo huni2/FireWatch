@@ -44,23 +44,34 @@ private data class GameUniverseDefinition(val symbol: String, val name: String, 
 data class GameAssetMetadata(val symbol: String, val name: String, val sector: String, val aliases: List<String> = emptyList(), val source: String? = null, val verifiedAt: String? = null)
 
 open class GameSimulationRules(val version: Int, val assets: List<VirtualGameAsset>, val metadata: List<GameAssetMetadata> = assets.map { GameAssetMetadata(it.symbol,it.name,it.sector) }) {
-    fun histories(seed: Long, currentTurn: Int): List<GameAssetHistory> {
+    fun histories(seed: Long, currentTurn: Int, pointLimit: Int = 24): List<GameAssetHistory> {
         val targets = assets.map { Triple(GameInstrumentType.STOCK, it.symbol, it.name) } + listOf(
             Triple(GameInstrumentType.KOSPI, null, "코스피"), Triple(GameInstrumentType.KOSDAQ, null, "코스닥"),
             Triple(GameInstrumentType.SP500, null, "S&P 500"), Triple(GameInstrumentType.NASDAQ, null, "나스닥"),
             Triple(GameInstrumentType.DOW, null, "다우"), Triple(GameInstrumentType.GOLD, null, "금"),
             Triple(GameInstrumentType.SILVER, null, "은"), Triple(GameInstrumentType.USD, null, "달러"),
         )
-        return targets.map { (type, symbol, name) ->
-            // Accumulate the unrounded path once. Rounding each displayed point must not
-            // change subsequent prices or the value of an existing saved game.
-            var value = basePrice(type, symbol)!!.toDouble()
-            val points = (0..currentTurn.coerceIn(0, 23)).map { index ->
-                if (index > 0) value = advancePrice(seed, index, type, symbol, value)
-                GamePriceHistoryPoint(index, roundedPrice(value))
-            }
-            GameAssetHistory(type, symbol, name, points)
+        return targets.map { (type, symbol, _) -> history(seed, currentTurn, type, symbol, pointLimit)!! }
+    }
+
+    fun history(seed: Long, currentTurn: Int, type: GameInstrumentType, symbol: String?, pointLimit: Int = 24): GameAssetHistory? {
+        require(pointLimit in 1..24)
+        val base = basePrice(type, symbol) ?: return null
+        if (type != GameInstrumentType.STOCK && symbol != null) return null
+        val name = when (type) {
+            GameInstrumentType.STOCK -> assetsBySymbol[symbol]!!.name
+            GameInstrumentType.KOSPI -> "코스피"; GameInstrumentType.KOSDAQ -> "코스닥"
+            GameInstrumentType.SP500 -> "S&P 500"; GameInstrumentType.NASDAQ -> "나스닥"
+            GameInstrumentType.DOW -> "다우"; GameInstrumentType.GOLD -> "금"
+            GameInstrumentType.SILVER -> "은"; GameInstrumentType.USD -> "달러"
         }
+        // Preserve the unrounded path even when only the last two displayed points are requested.
+        var value = base.toDouble()
+        val points = (0..currentTurn.coerceIn(0, 23)).map { index ->
+            if (index > 0) value = advancePrice(seed, index, type, symbol, value)
+            GamePriceHistoryPoint(index, roundedPrice(value))
+        }
+        return GameAssetHistory(type, symbol, name, points.takeLast(pointLimit))
     }
     private val assetsBySymbol = assets.associateBy { it.symbol }
     private val scenarios = listOf(

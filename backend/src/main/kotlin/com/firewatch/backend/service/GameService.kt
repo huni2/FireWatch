@@ -88,13 +88,13 @@ class GameService(
 ) : AuditedComponent {
     override val auditEventType = AuditEventType.GAME
 
-    fun startGame(deviceId: String, difficulty: GameDifficulty, allowShortSelling: Boolean): GameTurnSnapshot {
+    fun startGame(deviceId: String, difficulty: GameDifficulty, allowShortSelling: Boolean, historyPoints: Int = 24): GameTurnSnapshot {
         // 이미 진행 중인 게임이 있으면 난이도·공매도 설정은 무시하고 그대로 이어서 반환한다 —
         // 둘 다 "게임 시작 시점에만 고르는 값"이라 중간에 바꾸려면 새 게임을 시작해야 한다(ENDED
         // 상태가 되면 findByDeviceIdAndStatus(ACTIVE)가 null을 반환해 자연스럽게 새 게임이 된다).
         val existing = gameSessionRepository.findByDeviceIdAndStatus(deviceId, GameSessionStatus.ACTIVE)
         if (existing?.simulationSeed != null && existing.simulationVersion !in listOf(1, GameSimulation.CURRENT_VERSION)) simulationFor(existing)
-        if (existing?.simulationSeed != null && existing.simulationVersion == GameSimulation.CURRENT_VERSION) return buildTurnSnapshot(existing)
+        if (existing?.simulationSeed != null && existing.simulationVersion == GameSimulation.CURRENT_VERSION) return buildTurnSnapshot(existing, historyPoints = historyPoints)
         if (existing != null) {
             // Preserve historical records; start a separate fully fictional session.
             existing.status = GameSessionStatus.ENDED
@@ -114,10 +114,20 @@ class GameService(
                 simulationVersion = version,
             ),
         )
-        return buildTurnSnapshot(session)
+        return buildTurnSnapshot(session, historyPoints = historyPoints)
     }
 
-    fun getCurrentTurn(deviceId: String): GameTurnSnapshot = buildTurnSnapshot(activeSessionOrThrow(deviceId))
+    fun getCurrentTurn(deviceId: String, historyPoints: Int = 24): GameTurnSnapshot = buildTurnSnapshot(activeSessionOrThrow(deviceId), historyPoints = historyPoints)
+
+    @Transactional(readOnly = true)
+    fun getAssetHistory(deviceId: String, sessionId: Long, turnIndex: Int, type: GameInstrumentType, symbol: String?): GameAssetHistory {
+        val session = gameSessionRepository.findByDeviceIdAndId(deviceId, sessionId)
+            ?: throw NotFoundException("이 기기의 게임 기록을 찾을 수 없습니다.")
+        if (turnIndex !in 0..session.currentTurnIndex) throw ValidationException("진행한 턴까지만 조회할 수 있습니다.", emptyMap())
+        val seed = session.simulationSeed ?: throw NotFoundException("이 게임에는 가상 가격 그래프가 없습니다.")
+        return simulationFor(session).history(seed, turnIndex, type, symbol)
+            ?: throw NotFoundException("이 게임에 없는 자산입니다.")
+    }
 
     // Ranking submissions lock the same game row as trades/turn advances and derive
     // the score from the persisted ledger, never from a client-supplied balance.
@@ -137,6 +147,7 @@ class GameService(
         requestId: String? = null,
         expectedTurnIndex: Int? = null,
         expectedPrice: BigDecimal? = null,
+        historyPoints: Int = 24,
     ): GameTurnSnapshot {
         if (quantity <= BigDecimal.ZERO || quantity.scale() > 4 || quantity > BigDecimal("1000000000")) {
             throw ValidationException("수량은 0보다 커야 합니다.", mapOf("quantity" to quantity.toPlainString()))
@@ -152,7 +163,7 @@ class GameService(
             val previous = gameTransactionRepository.findBySessionIdAndRequestId(session.id!!, requestId)
             if (previous != null) {
                 if (previous.instrumentType != instrumentType || previous.symbol != symbol || previous.action != action || previous.quantity.compareTo(quantity) != 0) throw com.firewatch.backend.web.ConflictException("동일 요청 ID에 다른 거래를 보낼 수 없습니다.")
-                return buildTurnSnapshot(session)
+                return buildTurnSnapshot(session, historyPoints = historyPoints)
             }
         }
         if (expectedTurnIndex != null && session.currentTurnIndex != expectedTurnIndex) throw com.firewatch.backend.web.ConflictException("연습 날짜가 변경되었습니다. 현재 턴을 확인해주세요.")
@@ -202,21 +213,21 @@ class GameService(
                 requestId = requestId,
             ),
         )
-        return buildTurnSnapshot(session, ledger + executed)
+        return buildTurnSnapshot(session, ledger + executed, historyPoints)
     }
 
     // 2026-10-06 사용자 요청 — 덱(최대 43턴)을 끝까지 안 돌아도 중간에 그만둘 수 있어야 함.
     // nextTurn()의 "덱 소진" 분기와 동일하게 상태만 ENDED로 바꾸고, 지금 턴 인덱스는 그대로 둔다
     // (마지막으로 보던 턴 기준 최종 결과를 보여주기 위함).
-    fun endGame(deviceId: String): GameTurnSnapshot {
+    fun endGame(deviceId: String, historyPoints: Int = 24): GameTurnSnapshot {
         val session = activeSessionOrThrow(deviceId)
         session.status = GameSessionStatus.ENDED
         session.endedAt = Instant.now()
         gameSessionRepository.save(session)
-        return buildTurnSnapshot(session)
+        return buildTurnSnapshot(session, historyPoints = historyPoints)
     }
 
-    fun nextTurn(deviceId: String, expectedTurnIndex: Int? = null): GameTurnSnapshot {
+    fun nextTurn(deviceId: String, expectedTurnIndex: Int? = null, historyPoints: Int = 24): GameTurnSnapshot {
         val session = activeSessionOrThrow(deviceId)
         if (expectedTurnIndex != null && session.currentTurnIndex != expectedTurnIndex) throw com.firewatch.backend.web.ConflictException("이미 다음 날짜로 진행했습니다. 현재 턴을 확인해주세요.")
         val ledger = gameTransactionRepository.findBySessionIdAndTurnIndexLessThanEqual(session.id!!, session.currentTurnIndex)
@@ -233,7 +244,7 @@ class GameService(
             session.currentTurnIndex = nextIndex
         }
         gameSessionRepository.save(session)
-        return buildTurnSnapshot(session, ledger)
+        return buildTurnSnapshot(session, ledger, historyPoints)
     }
 
     private fun activeSessionOrThrow(deviceId: String): GameSession =
@@ -342,7 +353,7 @@ class GameService(
             ?: briefingRepository.findByBriefingDate(date) ?: throw ValidationException("턴 자료가 없습니다.", emptyMap())
     }
 
-    private fun buildTurnSnapshot(session: GameSession, ledger: List<GameTransaction> = gameTransactionRepository.findBySessionIdAndTurnIndexLessThanEqual(session.id!!, session.currentTurnIndex)): GameTurnSnapshot {
+    private fun buildTurnSnapshot(session: GameSession, ledger: List<GameTransaction> = gameTransactionRepository.findBySessionIdAndTurnIndexLessThanEqual(session.id!!, session.currentTurnIndex), historyPoints: Int = 24): GameTurnSnapshot {
         val turnDates = session.turnDates()
         val turnDate = turnDates[session.currentTurnIndex]
         val briefing = briefingFor(session, session.currentTurnIndex)
@@ -404,7 +415,7 @@ class GameService(
             gameAssets = if (session.simulationSeed != null) simulationFor(session).metadata else emptyList(),
             marketEvents = session.simulationSeed?.let { simulationFor(session).events(it, session.currentTurnIndex) } ?: emptyList(),
             turnContributions = contributions,
-            assetHistories = session.simulationSeed?.let { simulationFor(session).histories(it, session.currentTurnIndex) } ?: emptyList(),
+            assetHistories = session.simulationSeed?.let { simulationFor(session).histories(it, session.currentTurnIndex, historyPoints) } ?: emptyList(),
             gamePicks = session.simulationSeed?.let { simulationFor(session).picks(it, session.currentTurnIndex) } ?: emptyList(),
             priceDrivers = session.simulationSeed?.let { seed -> simulationFor(session).histories(seed, 0).map { simulationFor(session).driver(seed, session.currentTurnIndex, it.instrumentType, it.symbol) } } ?: emptyList(),
             stockPrices = session.simulationSeed?.let { seed -> simulationFor(session).assets.associate { it.symbol to simulationFor(session).price(seed, session.currentTurnIndex, GameInstrumentType.STOCK, it.symbol)!! } } ?: emptyMap(),

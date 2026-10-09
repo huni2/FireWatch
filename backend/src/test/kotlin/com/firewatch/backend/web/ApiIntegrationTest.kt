@@ -41,6 +41,7 @@ class ApiIntegrationTest @Autowired constructor(
     private var port: Int = 0
     @Autowired private lateinit var settings: com.firewatch.backend.repository.UserSettingsRepository
     @Autowired private lateinit var jdbc: org.springframework.jdbc.core.JdbcTemplate
+    @Autowired private lateinit var games: com.firewatch.backend.repository.GameSessionRepository
 
     @Test
     fun `DB 연결 풀 상태는 관리 키가 있어야 조회하며 연결 정보는 공개하지 않는다`() {
@@ -72,6 +73,81 @@ class ApiIntegrationTest @Autowired constructor(
 
     private val webTestClient: WebTestClient by lazy {
         WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
+    }
+
+    @Test
+    fun `compact game responses preserve ledger and detail history rejects other devices and future turns`() {
+        val device = "history-${java.util.UUID.randomUUID()}"
+        val mapper = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build()
+        fun get(path: String, owner: String = device) = webTestClient.get().uri(path).header("X-Device-Id", owner)
+        fun post(path: String, body: String = "{}") = webTestClient.post().uri(path).header("X-Device-Id", device)
+            .contentType(MediaType.APPLICATION_JSON).bodyValue(body)
+        fun bytes(spec: WebTestClient.RequestHeadersSpec<*>) = spec.exchange().expectStatus().isOk.expectBody().returnResult().responseBody!!
+        val start = mapper.readTree(bytes(post("/api/game/start?compact=true")))
+        val sessionId = start["sessionId"].asLong()
+        kotlin.test.assertEquals(34, start["assetHistories"].size())
+        post("/api/game/trade?compact=true", """{"instrumentType":"GOLD","action":"BUY","quantity":1,"requestId":"history-trade"}""")
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.transactions.length()").isEqualTo(1)
+        for (turn in 0..22) post("/api/game/next-turn?compact=true", """{"expectedTurnIndex":$turn}""")
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.turnIndex").isEqualTo(turn + 1)
+        val fullBytes = bytes(get("/api/game/current"))
+        val compactBytes = bytes(get("/api/game/current?compact=true"))
+        val full = mapper.readTree(fullBytes)
+        val compact = mapper.readTree(compactBytes)
+        kotlin.test.assertEquals(24, full["assetHistories"][0]["points"].size())
+        kotlin.test.assertEquals(2, compact["assetHistories"][0]["points"].size())
+        kotlin.test.assertTrue(compactBytes.size < fullBytes.size * .6)
+        val detailPath = "/api/game/sessions/$sessionId/assets/history?turnIndex=23&instrumentType=STOCK&symbol=005930.KS"
+        val detailBytes = bytes(get(detailPath))
+        val detail = mapper.readTree(detailBytes)
+        kotlin.test.assertEquals(full["assetHistories"].first { it["symbol"].asString() == "005930.KS" }, detail["history"])
+        kotlin.test.assertEquals(sessionId, detail["sessionId"].asLong())
+        kotlin.test.assertEquals(23, detail["turnIndex"].asInt())
+        val past = mapper.readTree(bytes(get(detailPath.replace("turnIndex=23", "turnIndex=0"))))
+        kotlin.test.assertEquals(1, past["history"]["points"].size())
+        get(detailPath, "another-device").exchange().expectStatus().isNotFound
+        get(detailPath.replace("turnIndex=23", "turnIndex=24")).exchange().expectStatus().isBadRequest
+        get(detailPath.replace("turnIndex=23", "turnIndex=-1")).exchange().expectStatus().isBadRequest
+        get(detailPath.replace("005930.KS", "UNKNOWN")).exchange().expectStatus().isNotFound
+        get(detailPath.replace("STOCK", "GOLD")).exchange().expectStatus().isNotFound
+        get(detailPath.replace("STOCK", "INVALID")).exchange().expectStatus().isBadRequest
+        webTestClient.get().uri(detailPath).exchange().expectStatus().isBadRequest
+        post("/api/game/next-turn?compact=invalid").exchange().expectStatus().isBadRequest
+        val current = mapper.readTree(bytes(get("/api/game/current")))
+        // Fictional Briefing.createdAt is generated per response and is not a saved game field.
+        for (node in listOf(full, compact, current)) (node["briefing"] as tools.jackson.databind.node.ObjectNode).remove("createdAt")
+        kotlin.test.assertEquals(full, current)
+        (full as tools.jackson.databind.node.ObjectNode).remove("assetHistories")
+        (compact as tools.jackson.databind.node.ObjectNode).remove("assetHistories")
+        kotlin.test.assertEquals(full, compact)
+        post("/api/game/end?compact=true").exchange().expectStatus().isOk.expectBody()
+            .jsonPath("$.status").isEqualTo("ENDED").jsonPath("$.assetHistories[0].points.length()").isEqualTo(2)
+        kotlin.test.assertEquals(detail, mapper.readTree(bytes(get(detailPath))))
+        kotlin.test.assertTrue(auditLogRepository.findAll().none { it.actionName.endsWith("getAssetHistory") })
+        println("game history API uncompressed JSON full=${fullBytes.size} compact=${compactBytes.size} detail=${detailBytes.size}; not Render latency")
+    }
+
+    @Test
+    fun `ended legacy simulation history uses saved rules and never rewrites the game`() {
+        val device = "past-${java.util.UUID.randomUUID()}"
+        val rules = com.firewatch.backend.service.GameSimulation.forVersion(1)
+        val session = games.save(com.firewatch.backend.entity.GameSession(
+            deviceId = device, simulationSeed = 42L, simulationVersion = 1, currentTurnIndex = 2,
+            turnDatesRaw = rules.dates(42L).joinToString(","), startingCash = java.math.BigDecimal("10000000"),
+            status = com.firewatch.backend.entity.GameSessionStatus.ENDED,
+        ))
+        val path = "/api/game/sessions/${session.id}/assets/history?turnIndex=2&instrumentType=STOCK&symbol=AURA"
+        val result = webTestClient.get().uri(path).header("X-Device-Id", device).exchange().expectStatus().isOk.expectBody().returnResult().responseBody!!
+        val mapper = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build()
+        kotlin.test.assertEquals(mapper.readTree(mapper.writeValueAsBytes(rules.history(42L, 2, com.firewatch.backend.entity.GameInstrumentType.STOCK, "AURA"))), mapper.readTree(result)["history"])
+        val preserved = games.findById(session.id!!).orElseThrow()
+        kotlin.test.assertEquals(1, preserved.simulationVersion)
+        kotlin.test.assertEquals(2, preserved.currentTurnIndex)
+        kotlin.test.assertEquals(com.firewatch.backend.entity.GameSessionStatus.ENDED, preserved.status)
+        webTestClient.get().uri(path.replace("AURA", "005930.KS")).header("X-Device-Id", device).exchange().expectStatus().isNotFound
+        jdbc.update("UPDATE game_sessions SET simulation_version=999 WHERE id=?", session.id)
+        webTestClient.get().uri(path).header("X-Device-Id", device).exchange().expectStatus().isBadRequest
+        kotlin.test.assertEquals(999, games.findById(session.id!!).orElseThrow().simulationVersion)
     }
 
     @BeforeEach
