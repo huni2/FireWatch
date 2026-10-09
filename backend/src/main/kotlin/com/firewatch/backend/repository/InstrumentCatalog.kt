@@ -24,6 +24,7 @@ class InstrumentCatalog(private val jdbc: JdbcTemplate, private val transactions
     private val mapper = JsonMapper.builder().findAndAddModules().build()
     override fun run(args: ApplicationArguments) {
         val seed = ClassPathResource("catalog-seed.json").inputStream.use { mapper.readValue(it, Array<CatalogItem>::class.java) }
+        val directory = ClassPathResource("catalog-directory.json").inputStream.use { mapper.readValue(it, Array<CatalogItem>::class.java) }
         transactions.executeWithoutResult {
             for (item in seed) {
                 val existing = jdbc.queryForList("SELECT verified_at FROM instrument_catalog WHERE symbol=?", item.symbol).singleOrNull()
@@ -32,6 +33,25 @@ class InstrumentCatalog(private val jdbc: JdbcTemplate, private val transactions
                 val values = arrayOf<Any>(item.name, normalize(item.name), listOf(item.name, item.symbol, item.description, item.underlyingIndex, *item.aliases.toTypedArray()).joinToString(" ") { normalize(it) }, mapper.writeValueAsString(item), item.assetClass, item.region, item.sectorId, item.underlyingIndex, java.sql.Date.valueOf(item.verifiedAt), item.symbol)
                 if (existing == null) jdbc.update("INSERT INTO instrument_catalog (name, normalized_name, search_text, metadata_json, asset_class, region, sector_id, underlying_index, verified_at, symbol) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" + if (databasePlatform == "postgresql") " ON CONFLICT (symbol) DO NOTHING" else "", *values)
                 else jdbc.update("UPDATE instrument_catalog SET name=?, normalized_name=?, search_text=?, metadata_json=?, asset_class=?, region=?, sector_id=?, underlying_index=?, verified_at=? WHERE symbol=? AND verified_at<?", *values, java.sql.Date.valueOf(item.verifiedAt))
+            }
+            // Official company names extend search only; curated metadata and all quotes remain untouched.
+            val existingSymbols = jdbc.queryForList("SELECT symbol FROM instrument_catalog", String::class.java).toHashSet()
+            val missing = directory.filter { it.symbol !in existingSymbols }
+            if (missing.isNotEmpty()) jdbc.batchUpdate(
+                "INSERT INTO instrument_catalog (name, normalized_name, search_text, metadata_json, asset_class, region, sector_id, underlying_index, verified_at, symbol) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                    if (databasePlatform == "postgresql") " ON CONFLICT (symbol) DO NOTHING" else "",
+                missing, 250
+            ) { statement, item ->
+                statement.setString(1, item.name)
+                statement.setString(2, normalize(item.name))
+                statement.setString(3, listOf(item.name, item.symbol, item.description).joinToString(" ") { normalize(it) })
+                statement.setString(4, mapper.writeValueAsString(item))
+                statement.setString(5, item.assetClass)
+                statement.setString(6, item.region)
+                statement.setString(7, item.sectorId)
+                statement.setString(8, item.underlyingIndex)
+                statement.setDate(9, java.sql.Date.valueOf(item.verifiedAt))
+                statement.setString(10, item.symbol)
             }
         }
     }

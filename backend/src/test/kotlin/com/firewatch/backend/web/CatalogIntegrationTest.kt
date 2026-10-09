@@ -24,7 +24,7 @@ class CatalogIntegrationTest {
     fun `한국어 별칭 지수 검색과 상장국 필터를 지원하고 추정 시세를 만들지 않는다`() {
         assertEquals("NVDA", catalog.search("엔비디아").items.first().instrument.symbol)
         assertEquals("NVDA", catalog.search("NVIDIA").items.first().instrument.symbol)
-        assertEquals("360750.KS", catalog.search("타이거").items.single().instrument.symbol)
+        assertEquals("360750.KS", catalog.search("타이거", assetClass = "ETF").items.single().instrument.symbol)
         val us = catalog.search("S&P500", "ETF", "US")
         assertEquals(3, us.total)
         assertTrue(us.items.all { it.price == null && it.quoteAt == null && it.instrument.currency == "USD" })
@@ -40,10 +40,10 @@ class CatalogIntegrationTest {
         assertEquals("035720.KS", catalog.search("Kakao").items.single().instrument.symbol)
         assertEquals("000660.KS", catalog.search("하이닉스").items.single().instrument.symbol)
         assertEquals("GOOGL", catalog.search("구글").items.single().instrument.symbol)
-        assertEquals("2026-10-09", catalog.search("카카오").items.single().instrument.verifiedAt)
+        assertEquals("2026-10-09", catalog.search("카카오").items.first().instrument.verifiedAt)
         assertEquals("2026-10-07", catalog.search("삼성전자").items.single().instrument.verifiedAt)
         val before = catalog.search().total
-        val item = catalog.search("카카오").items.single().instrument
+        val item = catalog.search("카카오").items.first().instrument
         val mapper = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build()
         val newer = item.copy(description = "최신 외부 확인 자료", verifiedAt = "2026-10-10")
         jdbc.update("UPDATE instrument_catalog SET metadata_json=?, verified_at=? WHERE symbol=?", mapper.writeValueAsString(newer), java.sql.Date.valueOf(newer.verifiedAt), item.symbol)
@@ -55,9 +55,41 @@ class CatalogIntegrationTest {
         catalog.run(DefaultApplicationArguments())
         catalog.run(DefaultApplicationArguments())
         assertEquals(before, catalog.search().total)
-        assertEquals(newer, catalog.search("카카오").items.single().instrument)
-        assertEquals(0, catalog.search("카카오").items.single().price!!.compareTo(java.math.BigDecimal("50000")))
-        assertNotNull(catalog.search("카카오").items.single().quoteAt)
+        assertEquals(newer, catalog.search("카카오").items.first().instrument)
+        assertEquals(0, catalog.search("카카오").items.first().price!!.compareTo(java.math.BigDecimal("50000")))
+        assertNotNull(catalog.search("카카오").items.first().quoteAt)
         assertEquals(quoteRows, jdbc.queryForList("SELECT * FROM market_quotes ORDER BY symbol"))
+    }
+
+    @Test @Transactional
+    fun `공식 법인은 시세 없이 검색되고 반복 시작은 기존 분류와 편집 및 외부 행을 보존한다`() {
+        val directory = org.springframework.core.io.ClassPathResource("catalog-directory.json").inputStream.use {
+            tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build()
+                .readValue(it, Array<com.firewatch.backend.repository.CatalogItem>::class.java)
+        }
+        assertEquals(2651, directory.size)
+        val storedSymbols = jdbc.queryForList("SELECT symbol FROM instrument_catalog", String::class.java).toSet()
+        assertTrue(storedSymbols.containsAll(directory.map { it.symbol }))
+        for (symbol in listOf("0001A0.KQ", "0220W0.KS")) {
+            val result = catalog.search(symbol).items.single()
+            assertEquals(symbol, result.instrument.symbol)
+            assertEquals("unclassified", result.instrument.sectorId)
+            assertNull(result.price)
+            assertNull(result.quoteAt)
+            assertEquals(symbol, catalog.search(result.instrument.name).items.first().instrument.symbol)
+        }
+        assertEquals("chips", catalog.search("삼성전자").items.first().instrument.sectorId)
+        val allRows = jdbc.queryForList("SELECT * FROM instrument_catalog ORDER BY symbol")
+        val official = catalog.search("0001A0.KQ").items.single().instrument
+        val mapper = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build()
+        val edited = official.copy(description = "운영자 편집 보존", verifiedAt = "2026-10-01")
+        jdbc.update("UPDATE instrument_catalog SET metadata_json=?, verified_at=? WHERE symbol=?", mapper.writeValueAsString(edited), java.sql.Date.valueOf(edited.verifiedAt), official.symbol)
+        jdbc.update("INSERT INTO instrument_catalog (symbol,name,normalized_name,search_text,metadata_json,asset_class,region,sector_id,underlying_index,verified_at) VALUES (?,?,?,?,?,'STOCK','KR','unclassified','','2026-10-01')", "EXTERNAL", "외부 보존", "외부보존", "외부보존", mapper.writeValueAsString(edited.copy(symbol = "EXTERNAL", name = "외부 보존")))
+        catalog.run(DefaultApplicationArguments())
+        catalog.run(DefaultApplicationArguments())
+        assertEquals(allRows.size + 1, catalog.search().total)
+        assertEquals(edited, catalog.search(official.symbol).items.single().instrument)
+        assertEquals("EXTERNAL", catalog.search("외부 보존").items.single().instrument.symbol)
+        assertEquals(allRows.filter { it["symbol"] != official.symbol }, jdbc.queryForList("SELECT * FROM instrument_catalog WHERE symbol<>? AND symbol<>'EXTERNAL' ORDER BY symbol", official.symbol))
     }
 }

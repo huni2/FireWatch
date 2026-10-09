@@ -22,7 +22,7 @@ export function CatalogExplorer() {
       <Space wrap><Tag>{item.region === 'KR' ? '한국 상장' : '미국 상장'}</Tag><Tag>{item.currency} 거래</Tag><Tag>{item.assetClass === 'ETF' ? item.underlyingIndex : sectors.find(s => s.id === item.sectorId)?.name ?? '분야 확인 필요'}</Tag></Space>
       <p>{item.description}</p>{item.issuer && <p>운용사 · {item.issuer}</p>}
       <p>{price != null ? `${price.toLocaleString()} ${item.currency}` : '저장된 시세가 없습니다. 상세 차트에서 확인하세요.'}</p>{quoteAt && <p>시세 기준 · {new Date(quoteAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} KST</p>}
-      <p><a href={item.source} target="_blank" rel="noopener noreferrer">{item.assetClass === 'ETF' ? '공식 상품 설명·비용 확인' : '공식 기업 소개'} ↗</a></p><small>상품 정보 확인 · {item.verifiedAt}</small><p><Link onClick={() => rememberName(item.symbol, item.name)} to={`/stocks?symbol=${encodeURIComponent(item.symbol)}`}>가격·차트 보기 →</Link></p>
+      <p><a href={item.source} target="_blank" rel="noopener noreferrer">{item.assetClass === 'ETF' ? '공식 상품 설명·비용 확인' : item.sectorId === 'unclassified' ? 'KRX 상장법인 원본 다운로드' : '공식 기업 소개'} ↗</a></p><small>상품 정보 확인 · {item.verifiedAt}</small><p><Link onClick={() => rememberName(item.symbol, item.name)} to={`/stocks?symbol=${encodeURIComponent(item.symbol)}`}>가격·차트 보기 →</Link></p>
     </Card>)}</div>{!catalog.data.items.length && <Empty description="저장된 목록에 해당 상품이 없습니다. 회사 검색에서 더 찾아보세요." />}</>}
     <Typography.Paragraph type="secondary" style={{ marginTop: 16 }}>공식 출처를 확인한 시작 목록이며 추천 순위가 아닙니다. 최신 총비용·환헤지·분배 방식·ISA 및 연금 매수 가능 여부는 금융회사와 운용사에서 확인하세요. 거래 통화만으로 환율 위험을 판단할 수 없습니다.</Typography.Paragraph>
   </Card>
