@@ -1,0 +1,37 @@
+/* 계정·설정·공지의 행동과 설명을 구분하는 반응형 보조 화면 스타일. */
+.support-page { width: 100%; max-width: 960px; margin-inline: auto; display: flex; }
+.support-page .ant-card-head-title { white-space: normal; overflow-wrap: anywhere; }
+.support-page .ant-card-body { padding: 24px; }
+.support-page p { line-height: 1.65; }
+.support-page p, .support-page .compact-intro h2, .support-page summary { word-break: keep-all; overflow-wrap: anywhere; }
+.support-page .ant-btn { min-height: 44px; height: auto; max-width: 100%; white-space: normal; line-height: 1.5; padding-block: 9px; }
+.support-page .ant-alert-message { word-break: keep-all; overflow-wrap: anywhere; }
+.settings-layout .ant-tag { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.support-page .account-email { font-size: 20px; overflow-wrap: anywhere; margin-bottom: 8px; }
+.support-records { padding-inline: 4px; }
+.support-records > p { margin: 0 0 4px; color: var(--ant-color-text-secondary); }
+.support-details { color: var(--ant-color-text-secondary); font-size: 14px; }
+.support-details summary { min-height: 44px; padding-block: 10px; cursor: pointer; color: var(--ant-color-text); line-height: 1.6; }
+.support-details summary:focus-visible { outline: 2px solid var(--ant-color-primary); outline-offset: 3px; border-radius: 4px; }
+.support-details p { margin-block: 0 12px; }
+.support-details ul { padding-left: 20px; line-height: 1.8; }
+.settings-layout { display: grid; grid-template-columns: minmax(260px, .75fr) minmax(0, 1.25fr); align-items: start; gap: 16px; }
+.settings-layout .ant-space { min-width: 0; }
+.settings-layout .ant-form-item { margin-bottom: 16px; }
+.settings-layout .ant-picker { width: 100%; min-height: 44px; }
+.settings-save-status { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-top: 8px; border-top: 1px solid var(--ant-color-border-secondary); }
+.settings-save-status .ant-btn { flex-shrink: 0; }
+.settings-layout .support-details { margin-top: -8px; margin-bottom: 12px; }
+.support-push-state { margin: 0; font-weight: 600; }
+.support-empty { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.support-empty h3 { font-size: 18px; margin: 0 0 8px; }
+.support-empty p { color: var(--ant-color-text-secondary); margin: 0 0 16px; }
+.support-empty .ant-btn { flex-shrink: 0; }
+.support-notice-meta { display: flex; flex-wrap: wrap; gap: 8px; color: var(--ant-color-text-secondary); font-size: 13px; }
+.support-notice-meta .ant-tag { margin: 0; }
+@media(max-width: 700px) {
+  .settings-layout { grid-template-columns: minmax(0, 1fr); }
+  .support-page .ant-card-body { padding: 18px; }
+  .support-page .account-email { font-size: 18px; }
+  .support-empty { flex-direction: column; gap: 4px; }
+}
