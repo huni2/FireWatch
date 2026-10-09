@@ -8,6 +8,20 @@ import kotlin.test.assertTrue
 
 class GameSimulationHistoryTest {
     @Test
+    fun `single asset and compact histories preserve both frozen versions and every past price`() {
+        for (version in listOf(1, 2)) for (seed in listOf(0L, 42L, -991L)) {
+            val simulation = GameSimulation.forVersion(version)
+            for (turn in 0..23) {
+                val full = simulation.histories(seed, turn)
+                assertEquals(full.map { it.copy(points = it.points.takeLast(2)) }, simulation.histories(seed, turn, 2))
+                for (expected in full) assertEquals(expected, simulation.history(seed, turn, expected.instrumentType, expected.symbol))
+            }
+            assertEquals(null, simulation.history(seed, 23, GameInstrumentType.STOCK, "NOT-IN-GAME"))
+            assertEquals(null, simulation.history(seed, 23, GameInstrumentType.GOLD, "unexpected"))
+        }
+    }
+
+    @Test
     fun `expanded companies keep their own fictional history pick and sector rules`() {
         val frozen = javaClass.getResource("/game-universe-v2.json")!!.readText().replace("\r\n", "\n")
         val digest = java.security.MessageDigest.getInstance("SHA-256").digest(frozen.toByteArray(Charsets.UTF_8))

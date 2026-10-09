@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Lock
 import jakarta.persistence.LockModeType
 
 interface GameSessionRepository : JpaRepository<GameSession, Long> {
+    fun findByDeviceIdAndId(deviceId: String, id: Long): GameSession?
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     fun findByIdAndDeviceId(id: Long, deviceId: String): GameSession?
     @Lock(LockModeType.PESSIMISTIC_WRITE)
