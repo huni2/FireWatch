@@ -33,6 +33,16 @@ jobs:
         env:
           FIREWATCH_TEST_POSTGRES_URL: jdbc:postgresql://localhost:5432/firewatch_test
         run: bash gradlew test --tests '*SettingsCreationConcurrencyTest' --tests '*CatalogIntegrationTest' --tests '*CatalogScaleIntegrationTest' --tests '*CatalogRealScaleIntegrationTest' --tests '*CatalogPageOrderIntegrationTest' --tests '*CommunityIntegrationTest' --tests '*GameRankingIntegrationTest' --tests '*GameSimulationVersionMigrationTest' --tests '*GameTimingIntegrationTest' --rerun-tasks
+      - name: Preserve failed test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-failed-tests
+          path: |
+            backend/build/test-results/test/TEST-*.xml
+            backend/build/reports/tests/test/
+          if-no-files-found: warn
+          retention-days: 7
       - name: Preserve catalog search measurement
         if: always()
         uses: actions/upload-artifact@v4
