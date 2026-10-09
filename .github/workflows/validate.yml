@@ -56,7 +56,9 @@ jobs:
         run: |
           node --test ../scripts/build-catalog-seed.test.cjs
           node ../scripts/build-catalog-seed.cjs
-          git diff --exit-code -- ../backend/src/main/resources/catalog-seed.json
+          node --test ../scripts/build-krx-directory.test.cjs
+          node ../scripts/build-krx-directory.cjs
+          git diff --exit-code -- ../backend/src/main/resources/catalog-seed.json ../backend/src/main/resources/catalog-directory.json
       - name: Isolated game verifier safety tests
         if: matrix.client == 'web'
         run: node --test ../scripts/verify-game-live.test.cjs
