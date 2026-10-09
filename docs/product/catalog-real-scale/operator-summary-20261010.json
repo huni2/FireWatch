@@ -1,0 +1,22 @@
+{
+  "sizes": {
+    "database_bytes": 21269651,
+    "quotes_total_bytes": 24576,
+    "catalog_index_bytes": 647168,
+    "catalog_table_bytes": 4276224
+  },
+  "groups": [
+    {"region":"KR","asset_class":"ETF","priced_rows":0,"catalog_rows":2,"newest_quote_at":null,"oldest_quote_at":null,"last_quote_collection_at":null},
+    {"region":"US","asset_class":"ETF","priced_rows":0,"catalog_rows":3,"newest_quote_at":null,"oldest_quote_at":null,"last_quote_collection_at":null},
+    {"region":"KR","asset_class":"STOCK","priced_rows":11,"catalog_rows":2651,"newest_quote_at":"2026-10-08T00:00:00","oldest_quote_at":"2026-10-08T00:00:00","last_quote_collection_at":"2026-10-09T07:30:00.27133"},
+    {"region":"US","asset_class":"STOCK","priced_rows":0,"catalog_rows":13,"newest_quote_at":null,"oldest_quote_at":null,"last_quote_collection_at":null}
+  ],
+  "quotes": {"quote_rows":11,"nonpositive_quote_rows":0,"quotes_outside_catalog":0},
+  "catalog": {"catalog_rows":2669,"missing_initial_rows":0,"official_baseline_rows":2638},
+  "indexes": [
+    {"index_bytes":90112,"indexrelname":"idx_catalog_filters"},
+    {"index_bytes":204800,"indexrelname":"idx_catalog_name"},
+    {"index_bytes":139264,"indexrelname":"idx_catalog_page_order"},
+    {"index_bytes":188416,"indexrelname":"instrument_catalog_pkey"}
+  ]
+}
