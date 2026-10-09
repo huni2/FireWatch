@@ -66,10 +66,11 @@ class PortfolioApiIntegrationTest {
     @Test
     fun `완전 가상 게임은 실제 데이터 없이 시작하고 체결과 다음 턴을 처리한다`() {
         client.post().uri("/api/game/start").header("X-Device-Id", "virtual-api-a").exchange().expectStatus().isOk.expectBody()
-            .jsonPath("$.simulation").isEqualTo(true).jsonPath("$.totalTurns").isEqualTo(24).jsonPath("$.stockPrices.AURA").isEqualTo(24000)
+            .jsonPath("$.simulation").isEqualTo(true).jsonPath("$.totalTurns").isEqualTo(24)
+            .jsonPath("$.gameAssets.length()").isEqualTo(26).jsonPath("$.stockPrices['035720.KS']").isEqualTo(12000)
         client.post().uri("/api/game/trade").header("X-Device-Id", "virtual-api-a").contentType(MediaType.APPLICATION_JSON)
-            .bodyValue("""{"instrumentType":"STOCK","symbol":"AURA","action":"BUY","quantity":10,"expectedPrice":24000,"expectedTurnIndex":0,"requestId":"virtual-api-order"}""")
-            .exchange().expectStatus().isOk.expectBody().jsonPath("$.transactions[0].total").isEqualTo(240000).jsonPath("$.cash").isEqualTo(9760000)
+            .bodyValue("""{"instrumentType":"STOCK","symbol":"035720.KS","action":"BUY","quantity":10,"expectedPrice":12000,"expectedTurnIndex":0,"requestId":"virtual-api-order"}""")
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.transactions[0].total").isEqualTo(120000).jsonPath("$.cash").isEqualTo(9880000)
         client.post().uri("/api/game/next-turn").header("X-Device-Id", "virtual-api-a").contentType(MediaType.APPLICATION_JSON).bodyValue("""{"expectedTurnIndex":0}""")
             .exchange().expectStatus().isOk.expectBody().jsonPath("$.turnIndex").isEqualTo(1).jsonPath("$.holdings[0].quantity").isEqualTo(10).jsonPath("$.briefing.news[0].link").isEqualTo("")
     }

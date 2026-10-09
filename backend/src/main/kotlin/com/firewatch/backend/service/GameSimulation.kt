@@ -14,16 +14,36 @@ data class GamePick(val symbol: String, val name: String, val reason: String, va
 data class GamePriceDriver(val instrumentType: GameInstrumentType, val symbol: String?, val scenario: String, val newsTitle: String, val marketPercent: Double, val sectorPercent: Double, val assetPercent: Double, val halted: Boolean)
 
 /** Deterministic fiction. Never calls a financial, news or generative AI provider. */
-object GameSimulation {
-    const val CURRENT_VERSION = 1
+private val legacyGameAssets = listOf(
+        VirtualGameAsset("AURA", "오로라 반도체", "반도체", 24000),
+        VirtualGameAsset("NEO", "네오 모빌리티", "모빌리티", 18000),
+        VirtualGameAsset("SOLAR", "솔라 에너지", "에너지", 12000),
+        VirtualGameAsset("LUMEN", "루멘 헬스", "헬스케어", 32000),
+        VirtualGameAsset("NEXUS", "넥서스 클라우드", "클라우드", 46000),
+    )
 
-    // 미지원 버전을 현재 규칙으로 대체하면 기존 평가 결과가 바뀔 수 있다.
-    fun forVersion(version: Int): GameSimulation {
-        if (version != 1) throw com.firewatch.backend.web.ValidationException(
-            "이 게임의 규칙 버전을 지원하지 않습니다. 기록을 유지한 채 운영자에게 문의해주세요.", emptyMap())
-        return this
+object GameSimulation : GameSimulationRules(1, legacyGameAssets) {
+    const val CURRENT_VERSION = 2
+    private val expanded by lazy {
+        val root = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build()
+            .readValue(GameSimulation::class.java.getResourceAsStream("/game-universe-v2.json")!!, Array<GameUniverseDefinition>::class.java).toList()
+        val metadata = root.map { GameAssetMetadata(it.symbol,it.name,it.sector,it.aliases,it.source,it.verifiedAt) }
+        val assets = root.map { VirtualGameAsset(it.symbol,it.name,it.sector,it.basePrice) }
+        require(assets.size == 26 && assets.map { it.symbol }.distinct().size == 26 && assets.all { it.basePrice > 0 })
+        GameSimulationRules(2, assets, metadata)
     }
+    fun forVersion(version: Int): GameSimulationRules = when(version) {
+        1 -> this
+        2 -> expanded
+        else -> throw com.firewatch.backend.web.ValidationException("이 게임의 규칙 버전을 지원하지 않습니다. 기록을 유지한 채 운영자에게 문의해주세요.", emptyMap())
+    }
+}
 
+private data class GameUniverseDefinition(val symbol: String, val name: String, val sector: String, val sectorId: String, val aliases: List<String>, val source: String, val verifiedAt: String, val basePrice: Int)
+
+data class GameAssetMetadata(val symbol: String, val name: String, val sector: String, val aliases: List<String> = emptyList(), val source: String? = null, val verifiedAt: String? = null)
+
+open class GameSimulationRules(val version: Int, val assets: List<VirtualGameAsset>, val metadata: List<GameAssetMetadata> = assets.map { GameAssetMetadata(it.symbol,it.name,it.sector) }) {
     fun histories(seed: Long, currentTurn: Int): List<GameAssetHistory> {
         val targets = assets.map { Triple(GameInstrumentType.STOCK, it.symbol, it.name) } + listOf(
             Triple(GameInstrumentType.KOSPI, null, "코스피"), Triple(GameInstrumentType.KOSDAQ, null, "코스닥"),
@@ -42,22 +62,17 @@ object GameSimulation {
             GameAssetHistory(type, symbol, name, points)
         }
     }
-    val assets = listOf(
-        VirtualGameAsset("AURA", "오로라 반도체", "반도체", 24000),
-        VirtualGameAsset("NEO", "네오 모빌리티", "모빌리티", 18000),
-        VirtualGameAsset("SOLAR", "솔라 에너지", "에너지", 12000),
-        VirtualGameAsset("LUMEN", "루멘 헬스", "헬스케어", 32000),
-        VirtualGameAsset("NEXUS", "넥서스 클라우드", "클라우드", 46000),
-    )
     private val assetsBySymbol = assets.associateBy { it.symbol }
     private val scenarios = listOf(
         Triple("성장 기대", "가상 중앙은행, 금리 인하 검토…성장주에 기대감", 0.025),
         Triple("위험 회피", "가상 물가 지표 예상 상회…투자자들은 방어 자산으로 이동", -0.035),
-        Triple("기술주 강세", "오로라 반도체와 넥서스 클라우드, 가상 대형 계약 발표", 0.018),
-        Triple("에너지 전환", "솔라 에너지, 가상 차세대 발전 프로젝트 수주", 0.008),
+        Triple("기술주 강세", if (version == 1) "오로라 반도체와 넥서스 클라우드, 가상 대형 계약 발표" else "게임 속 기술 업종의 가상 수요 증가…반도체·소프트웨어에 기대감", 0.018),
+        Triple("에너지 전환", if (version == 1) "솔라 에너지, 가상 차세대 발전 프로젝트 수주" else "게임 속 에너지 저장 투자 확대…가상 배터리 수요 증가", 0.008),
         Triple("실적 경계", "가상 기업 실적 발표를 앞두고 시장의 관망세 확대", -0.012),
         Triple("회복 신호", "가상 소비·고용 지표 개선…경기 회복에 무게", 0.015),
     )
+    private fun isTechnology(symbol: String?) = if (version == 1) symbol in listOf("AURA", "NEXUS") else assetsBySymbol[symbol]?.sector in listOf("반도체·AI 인프라", "플랫폼·소프트웨어")
+    private fun isEnergy(symbol: String?) = if (version == 1) symbol == "SOLAR" else assetsBySymbol[symbol]?.sector == "배터리·에너지 저장"
     private fun random(seed: Long, turn: Int) = Random(seed xor (turn.toLong() * 7919L + 104729L))
     private fun scenario(seed: Long, turn: Int) = scenarios[random(seed, turn).nextInt(scenarios.size)]
     fun dates(seed: Long): List<LocalDate> = (0 until 24).map { LocalDate.of(2030, 1, 1).plusDays(random(seed, it).nextInt(365).toLong()) }
@@ -81,7 +96,7 @@ object GameSimulation {
         val event = scenario(seed, turn)
         val halted = type == GameInstrumentType.STOCK && blockedReason(seed, turn, type, symbol) != null
         val exposure = when (type) { GameInstrumentType.GOLD -> -.6; GameInstrumentType.USD -> -.25; GameInstrumentType.SILVER -> -.2; else -> 1.0 }
-        val sector = if (type == GameInstrumentType.STOCK && ((event.first == "기술주 강세" && symbol in listOf("AURA", "NEXUS")) || (event.first == "에너지 전환" && symbol == "SOLAR"))) .04 else 0.0
+        val sector = if (type == GameInstrumentType.STOCK && ((event.first == "기술주 강세" && isTechnology(symbol)) || (event.first == "에너지 전환" && isEnergy(symbol)))) .04 else 0.0
         val noise = Random(seed xor (turn.toLong() * 65537L) xor (symbol ?: type.name).hashCode().toLong()).nextDouble() * .04 - .02
         return GamePriceDriver(type, symbol, event.first, "[가상 뉴스] ${event.second}", if (halted || turn == 0) 0.0 else event.third * exposure * 100, if (halted || turn == 0) 0.0 else sector * 100, if (halted || turn == 0) 0.0 else noise * 100, halted)
     }
@@ -91,14 +106,14 @@ object GameSimulation {
         else "${d.scenario}: 시장 ${"%.2f".format(java.util.Locale.ROOT, d.marketPercent)}%, 업종 ${"%.2f".format(java.util.Locale.ROOT, d.sectorPercent)}%, 자산별 변동 ${"%.2f".format(java.util.Locale.ROOT, d.assetPercent)}%를 반영했습니다."
     }
     private fun pickSymbols(seed: Long, turn: Int): List<String> = when (scenario(seed, turn).first) {
-        "기술주 강세" -> listOf("AURA", "NEXUS"); "에너지 전환" -> listOf("SOLAR", "LUMEN")
+        "기술주 강세" -> if (version == 1) listOf("AURA", "NEXUS") else assets.filter { isTechnology(it.symbol) }.shuffled(kotlin.random.Random(seed xor turn.toLong())).take(2).map { it.symbol }; "에너지 전환" -> if (version == 1) listOf("SOLAR", "LUMEN") else assets.filter { isEnergy(it.symbol) }.map { it.symbol }
         else -> assets.shuffled(kotlin.random.Random(seed xor turn.toLong())).take(2).map { it.symbol }
     }
     fun picks(seed: Long, turn: Int): List<GamePick> = pickSymbols(seed, turn).map { symbol ->
         val asset = assets.first { it.symbol == symbol }; val event = scenario(seed, turn)
         val reason = when {
-            event.first == "기술주 강세" -> "가상 대형 계약 뉴스의 당사자이며 이번 시나리오의 업종 영향을 받는 관찰 후보입니다."
-            event.first == "에너지 전환" && symbol == "SOLAR" -> "가상 발전 프로젝트 수주 뉴스의 당사자로 에너지 업종 영향을 확인하는 후보입니다."
+            event.first == "기술주 강세" -> if (version == 1) "가상 대형 계약 뉴스의 당사자이며 이번 시나리오의 업종 영향을 받는 관찰 후보입니다." else "게임 속 기술 업종 수요 시나리오의 영향을 받는 비교 후보입니다. 실제 기업 소식이나 상승 예측이 아닙니다."
+            event.first == "에너지 전환" && isEnergy(symbol) -> if (version == 1) "가상 발전 프로젝트 수주 뉴스의 당사자로 에너지 업종 영향을 확인하는 후보입니다." else "게임 속 배터리 수요 시나리오의 영향을 확인하는 후보입니다. 실제 기업 계약이나 투자 추천이 아닙니다."
             event.first == "에너지 전환" -> "에너지 뉴스의 직접 수혜 기업은 아닙니다. 다른 업종과 가격 흐름을 비교하도록 함께 선택한 후보입니다."
             else -> "${event.first} 뉴스 속에서 ${asset.sector} 업종을 비교하도록 시드 기반으로 선택한 관찰 후보입니다. 상승 확률 순위는 아닙니다."
         }
@@ -117,7 +132,7 @@ object GameSimulation {
         val event = scenario(seed, turn)
         val noise = Random(seed xor (turn.toLong() * 65537L) xor (symbol ?: type.name).hashCode().toLong()).nextDouble() * .04 - .02
         val exposure = when (type) { GameInstrumentType.GOLD -> -.6; GameInstrumentType.USD -> -.25; GameInstrumentType.SILVER -> -.2; else -> 1.0 }
-        val sector = if (type == GameInstrumentType.STOCK && ((event.first == "기술주 강세" && symbol in listOf("AURA", "NEXUS")) || (event.first == "에너지 전환" && symbol == "SOLAR"))) .04 else 0.0
+        val sector = if (type == GameInstrumentType.STOCK && ((event.first == "기술주 강세" && isTechnology(symbol)) || (event.first == "에너지 전환" && isEnergy(symbol)))) .04 else 0.0
         return value * (1 + event.third * exposure + noise + sector)
     }
     fun price(seed: Long, turn: Int, type: GameInstrumentType, symbol: String?): BigDecimal? {

@@ -6,6 +6,7 @@ import { historyChange, positionStats } from '../../../../shared/game-turn'
 
 export interface GameDetailTarget { instrumentType: GameInstrumentType; symbol: string | null; name: string }
 export function GameAssetDetail({ target, turn, close, order }: { target: GameDetailTarget | null; turn: GameTurn; close: () => void; order: (target: GameDetailTarget, side: 'BUY' | 'SELL') => void }) {
+  const company = turn.gameAssets?.find(a => a.symbol === target?.symbol)
   const history = turn.assetHistories?.find(h => h.instrumentType === target?.instrumentType && h.symbol === target?.symbol)
   const holding = turn.holdings.find(h => h.instrumentType === target?.instrumentType && h.symbol === target?.symbol)
   const trades = turn.transactions.filter(t => t.instrumentType === target?.instrumentType && t.symbol === target?.symbol)
@@ -13,6 +14,7 @@ export function GameAssetDetail({ target, turn, close, order }: { target: GameDe
   const change = historyChange(history)
   const money = (v: number | null | undefined) => v == null ? '미확정' : v.toLocaleString('ko-KR', { maximumFractionDigits: 2 })
   return <Modal title={target?.name} open={!!target} onCancel={close} width={720} footer={target && turn.status === 'ACTIVE' ? <Space><Button onClick={() => order(target, 'SELL')}>매도 주문에 담기</Button><Button type="primary" onClick={() => order(target, 'BUY')}>매수 주문에 담기</Button></Space> : null}>
+    {company?.source && <p>기업 정보 확인 {company.verifiedAt} · <a href={company.source} target="_blank" rel="noopener noreferrer">회사 공식 자료</a><br />회사 이름과 분야만 실제 자료입니다. 가격·뉴스·픽은 게임용이며 실제 기업 소식이 아닙니다.</p>}
     <h2>{money(history?.points.at(-1)?.price ?? holding?.currentPrice ?? (target?.symbol ? turn.stockPrices[target.symbol] : null))} 게임머니</h2>
     <p>직전 턴 가격 {change ? `${change.percent >= 0 ? '+' : ''}${change.percent.toFixed(2)}%` : '첫 턴 또는 이전 기록 없음'}</p>
     {holding && <p>보유 {holding.quantity}개 · 평균 진입 단가 {money(stats?.averagePrice)} · 평가손익 {money(stats?.profit)} 게임머니{stats?.returnPercent != null ? ` (${stats.returnPercent.toFixed(2)}%)` : ''}</p>}

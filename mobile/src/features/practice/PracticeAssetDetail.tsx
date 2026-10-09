@@ -1,4 +1,4 @@
-import { Modal, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native'
+import { Linking, Modal, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { LineChart } from 'react-native-gifted-charts'
 import type { PracticeTurn } from '@/lib/investingApi'
@@ -7,6 +7,7 @@ import { historyChange, positionStats } from '../../../../shared/game-turn'
 export interface PracticeTarget { instrumentType: string; symbol: string | null; name: string }
 export function PracticeAssetDetail({ target, turn, close, order }: { target: PracticeTarget | null; turn: PracticeTurn; close: () => void; order: (target: PracticeTarget, side: 'BUY' | 'SELL') => void }) {
   const { width } = useWindowDimensions()
+  const company = turn.gameAssets?.find(a => a.symbol === target?.symbol)
   const history = turn.assetHistories?.find(h => h.instrumentType === target?.instrumentType && h.symbol === target?.symbol)
   const holding = turn.holdings.find(h => h.instrumentType === target?.instrumentType && h.symbol === target?.symbol)
   const trades = turn.transactions.filter(t => t.instrumentType === target?.instrumentType && t.symbol === target?.symbol)
@@ -16,6 +17,7 @@ export function PracticeAssetDetail({ target, turn, close, order }: { target: Pr
   return <Modal visible={!!target} animationType="slide" presentationStyle="pageSheet" onRequestClose={close}><SafeAreaView className="flex-1 bg-canvas"><ScrollView contentContainerClassName="gap-4 p-5 pb-10">
     <Pressable accessibilityRole="button" onPress={close} className="min-h-11 justify-center"><Text className="text-brand">닫기</Text></Pressable>
     <Text className="text-2xl font-bold text-ink">{target?.name}</Text><Text className="text-xl font-bold text-ink">{money(history?.points.at(-1)?.price ?? holding?.currentPrice ?? (target?.symbol ? turn.stockPrices[target.symbol] : null))} 게임머니</Text>
+    {company?.source && <><Text className="text-muted">기업 정보 확인 {company.verifiedAt} · 회사 이름과 분야만 실제 자료이며 가격·뉴스·픽은 가상입니다.</Text><Pressable accessibilityRole="link" onPress={() => void Linking.openURL(company.source!)} style={{ minHeight: 44, justifyContent: 'center' }}><Text className="text-brand">회사 공식 자료 보기</Text></Pressable></>}
     <Text className="text-muted">직전 턴 가격 {change ? `${change.percent >= 0 ? '+' : ''}${change.percent.toFixed(2)}%` : '첫 턴 또는 이전 기록 없음'}</Text>
     {holding && <Text className="text-ink">보유 {holding.quantity}개 · 평균 진입 단가 {money(stats?.averagePrice)} · 평가손익 {money(stats?.profit)}{stats?.returnPercent != null ? ` (${stats.returnPercent.toFixed(2)}%)` : ''}</Text>}
     <Text className="text-sm text-muted">가상 날짜가 아닌 턴 순서입니다. 현재 턴까지의 가격만 표시합니다.</Text>

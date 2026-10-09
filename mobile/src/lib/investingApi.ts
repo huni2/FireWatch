@@ -9,6 +9,8 @@ export const fetchRecommendations = () => request<RecommendationReport>('/api/re
 export const fetchRecommendationHistory = (from?: string, to?: string) => request<RecommendationReport[]>(`/api/recommendations?${new URLSearchParams({ ...(from ? { from } : {}), ...(to ? { to } : {}) })}`)
 
 export interface PracticeTurn {
+  simulationVersion?: number | null
+  gameAssets?: Omit<import('../../../shared/game-assets').GameCompany, 'exchange'>[]
   gamePicks?: import('../../../shared/game-turn').GamePick[]
   priceDrivers?: import('../../../shared/game-turn').GamePriceDriver[]
   assetHistories?: import('../../../shared/game-turn').GameAssetHistory[]
