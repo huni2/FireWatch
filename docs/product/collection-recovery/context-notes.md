@@ -25,3 +25,5 @@ main CI37986551175 첫 시도는 AccountSessionIntegrationTest.kt158(로그아�
 main 3ba2e3b CI37986551175 attempt2 최종success·백엔드 전체/PG/백업복구/웹/모바일 완료. 최초 계정 통합검사20초 응답 대기 초과는 로컬/CI 1회 재검증에서 재현되지 않았으며 테스트 삭제·시간 제한 변경0. PR#54 반영 완료, Render 배포·실제 푸시 실패 코드/기기 수신 대기. 기존 BE-30/Issue#53은 열어 둔다. APK0.
 
 사용자 Render 배포 완료 확인 수신(2026-10-10). 실제 기기에서 수신 확인용 테스트를1회 실행하고 도착 여부/새 안전한 오류 안내를 요청했다. 배포 완료를 제공처 발송 성공이나 실수신으로 간주하지 않는다. 기존BE-30/Issue#53 유지.
+
+사용자 배포 후 테스트에서 AUTH_REJECTED 안내를 수신했다. BrowserWebPushSender의 HTTP401/403 분기와 대응하므로 제공처 인증 거절로 범위를 좁힌다. 키 불일치 확정으로 확대하지 않는다. Cloudflare VITE_VAPID_PUBLIC_KEY와 Render VAPID_PUBLIC_KEY 동일 여부, Render private-key의 원래 쌍 여부를 값 공유 없이 비교 요청했다. Firebase 키와 별개이며 새 키 생성/구독 일괄 삭제/제한 초기화는 하지 않았다.
