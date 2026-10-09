@@ -18,14 +18,18 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ServerWebExchange
 
 // Design Ref: 가상투자 게임(2026-10-05) — 기기당 활성 세션 1개, Settings와 동일하게 X-Device-Id로만 식별.
 @RestController
 @RequestMapping("/api/game")
 class GameController(private val gameService: GameService, private val timing: GameRequestTiming) {
-    private suspend fun <T> measured(operation: GameTimingOperation, block: () -> T): T {
+    private suspend fun <T> measured(exchange: ServerWebExchange, operation: GameTimingOperation, block: () -> T): T {
+        val phases = GameHttpPhases.from(exchange)
+        phases?.controllerEnteredAt = System.nanoTime()
         val queuedAt = System.nanoTime()
-        return withContext(Dispatchers.IO) { timing.measure(operation, queuedAt, block) }
+        try { return withContext(Dispatchers.IO) { timing.measure(operation, queuedAt, block) } }
+        finally { phases?.controllerFinishedAt = System.nanoTime() }
     }
     @PostMapping("/start")
     suspend fun start(
@@ -34,14 +38,15 @@ class GameController(private val gameService: GameService, private val timing: G
         // "게임이 있으면 이어하기" 목적으로 매번 부를 때 난이도를 안 보내도 되게 한다.
         @RequestBody(required = false) request: GameStartRequest?,
         @RequestParam(defaultValue = "false") compact: Boolean,
-    ): GameTurnResponse = measured(GameTimingOperation.START) {
+        exchange: ServerWebExchange,
+    ): GameTurnResponse = measured(exchange, GameTimingOperation.START) {
         val effective = request ?: GameStartRequest()
         gameService.startGame(deviceId.requireDeviceId(), effective.difficulty, effective.allowShortSelling, if (compact) 2 else 24).toResponse()
     }
 
     @GetMapping("/current")
-    suspend fun current(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @RequestParam(defaultValue = "false") compact: Boolean): GameTurnResponse =
-        measured(GameTimingOperation.CURRENT) { gameService.getCurrentTurn(deviceId.requireDeviceId(), if (compact) 2 else 24).toResponse() }
+    suspend fun current(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @RequestParam(defaultValue = "false") compact: Boolean, exchange: ServerWebExchange): GameTurnResponse =
+        measured(exchange, GameTimingOperation.CURRENT) { gameService.getCurrentTurn(deviceId.requireDeviceId(), if (compact) 2 else 24).toResponse() }
 
     @GetMapping("/sessions/{sessionId}/assets/history")
     suspend fun history(
@@ -50,7 +55,8 @@ class GameController(private val gameService: GameService, private val timing: G
         @RequestParam turnIndex: Int,
         @RequestParam instrumentType: com.firewatch.backend.entity.GameInstrumentType,
         @RequestParam(required = false) symbol: String?,
-    ): GameAssetHistoryResponse = measured(GameTimingOperation.HISTORY) {
+        exchange: ServerWebExchange,
+    ): GameAssetHistoryResponse = measured(exchange, GameTimingOperation.HISTORY) {
         GameAssetHistoryResponse(sessionId, turnIndex, gameService.getAssetHistory(deviceId.requireDeviceId(), sessionId, turnIndex, instrumentType, symbol))
     }
 
@@ -59,7 +65,8 @@ class GameController(private val gameService: GameService, private val timing: G
         @RequestHeader("X-Device-Id", required = false) deviceId: String?,
         @Valid @RequestBody request: GameTradeRequest,
         @RequestParam(defaultValue = "false") compact: Boolean,
-    ): GameTurnResponse = measured(GameTimingOperation.TRADE) {
+        exchange: ServerWebExchange,
+    ): GameTurnResponse = measured(exchange, GameTimingOperation.TRADE) {
         gameService.trade(
             deviceId = deviceId.requireDeviceId(),
             instrumentType = request.instrumentType,
@@ -74,17 +81,17 @@ class GameController(private val gameService: GameService, private val timing: G
     }
 
     @PostMapping("/preview")
-    suspend fun preview(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @Valid @RequestBody request: GameTradeRequest): com.firewatch.backend.service.GameOrderPreview = measured(GameTimingOperation.PREVIEW) {
+    suspend fun preview(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @Valid @RequestBody request: GameTradeRequest, exchange: ServerWebExchange): com.firewatch.backend.service.GameOrderPreview = measured(exchange, GameTimingOperation.PREVIEW) {
         gameService.preview(deviceId.requireDeviceId(), request.instrumentType, request.symbol, request.action, request.quantity, request.expectedTurnIndex)
     }
 
     @PostMapping("/next-turn")
-    suspend fun nextTurn(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @RequestBody(required = false) body: Map<String, Int>?, @RequestParam(defaultValue = "false") compact: Boolean): GameTurnResponse =
-        measured(GameTimingOperation.NEXT_TURN) { gameService.nextTurn(deviceId.requireDeviceId(), body?.get("expectedTurnIndex"), if (compact) 2 else 24).toResponse() }
+    suspend fun nextTurn(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @RequestBody(required = false) body: Map<String, Int>?, @RequestParam(defaultValue = "false") compact: Boolean, exchange: ServerWebExchange): GameTurnResponse =
+        measured(exchange, GameTimingOperation.NEXT_TURN) { gameService.nextTurn(deviceId.requireDeviceId(), body?.get("expectedTurnIndex"), if (compact) 2 else 24).toResponse() }
 
     @PostMapping("/end")
-    suspend fun end(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @RequestParam(defaultValue = "false") compact: Boolean): GameTurnResponse =
-        measured(GameTimingOperation.END) { gameService.endGame(deviceId.requireDeviceId(), if (compact) 2 else 24).toResponse() }
+    suspend fun end(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @RequestParam(defaultValue = "false") compact: Boolean, exchange: ServerWebExchange): GameTurnResponse =
+        measured(exchange, GameTimingOperation.END) { gameService.endGame(deviceId.requireDeviceId(), if (compact) 2 else 24).toResponse() }
 }
 
 data class GameAssetHistoryResponse(val sessionId: Long, val turnIndex: Int, val history: com.firewatch.backend.service.GameAssetHistory)

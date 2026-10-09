@@ -12,12 +12,16 @@ import reactor.core.publisher.Mono
 import java.util.ArrayDeque
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.ceil
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.annotation.Order
+import org.slf4j.LoggerFactory
 
 data class LatencySummary(val operation: String, val samples: Int, val p50Ms: Long, val p95Ms: Long, val failures: Int)
 
 /** Bounded timings only: never record device IDs, symbols, query strings or response bodies. */
 @Component
-class RequestLatency : WebFilter {
+@Order(-200)
+class RequestLatency(@Value("\${firewatch.game-timing.enabled:false}") private val gameTimingEnabled: Boolean = false) : WebFilter {
     private data class Sample(val millis: Long, val failed: Boolean)
     private val samples = ConcurrentHashMap<String, ArrayDeque<Sample>>()
     override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
@@ -34,8 +38,15 @@ class RequestLatency : WebFilter {
         } ?: return chain.filter(exchange)
         val key = "${exchange.request.method.name()} $operation"
         val start = System.nanoTime()
+        val phases = if (gameTimingEnabled && operation.startsWith("game.")) GameHttpPhases(start).also {
+            exchange.attributes[GameHttpPhases.ATTRIBUTE] = it
+        } else null
         exchange.response.beforeCommit {
-            exchange.response.headers.set("Server-Timing", "application;dur=${(System.nanoTime() - start) / 1_000_000}")
+            val finished = System.nanoTime()
+            val extra = phases?.header(finished).orEmpty()
+            exchange.response.headers.set("Server-Timing", "application;dur=${(finished - start) / 1_000_000}" + if (extra.isEmpty()) "" else ", $extra")
+            phases?.let { log.info("game_http_timing op={} status={} {}", operation.substringAfter('.').uppercase(java.util.Locale.ROOT),
+                exchange.response.statusCode?.value() ?: 200, it.fields(finished)) }
             Mono.empty()
         }
         return chain.filter(exchange).doFinally {
@@ -52,6 +63,7 @@ class RequestLatency : WebFilter {
         fun percentile(p: Double) = times.getOrElse((ceil(times.size * p).toInt() - 1).coerceAtLeast(0)) { 0 }
         LatencySummary(key, rows.size, percentile(.5), percentile(.95), rows.count { it.failed })
     }.sortedBy { it.operation }
+    private val log = LoggerFactory.getLogger(RequestLatency::class.java)
 }
 
 @RestController

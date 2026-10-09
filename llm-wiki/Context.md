@@ -1,5 +1,7 @@
 # FireWatch — 현재 맥락
 
+BE-28 실제 미계측 구간 보완 구현 중. RequestLatency가 인증 필터보다 먼저 실행되도록 명시하고 요청별 GameHttpPhases에 인증 큐/조회·진입 전·컨트롤러/응답 준비를 분리한다. timing true일 때만 비식별 로그·허용숫자 헤더를 기록, 검증 도구가 직접 보존. 계정/게임 계측 선택 검사·도구9검사 통과·최종 전체/PG CI 확인 중. 기존 Issue#45 사용·새 과제 번호 없음. 성능 원인/해결은 운영 재관측 전 미확정이다.
+
 BE-28 PREVIEW 로그까지 수신·2줄 대조 완료. server1776.824/SQL455.840ms2회·연결180.907/큐0.179/규칙0.019ms·uptime1669384ms. application5244ms와 service 경계 차이3467.176ms의 원인은 미확정. AccountSessionFilter의 JdbcTemplate 조회는 기존 게임 SQL 계측 밖이다. 로그 요청 대기는 종료됐으며 기능43요청 PASS와 성능 원인/수정 미완료를 구분한다. 새 과제/진단 배포/풀·잠금·인증 변경 없음.
 
 BE-28 START 로그 수신. 14:08:10.934Z server955.812/SQL552.943ms(3회)·연결0.032/큐0.410/규칙0.045ms·uptime1663670ms. application992/HTTP2696.2ms와 대조 완료·연결/큐/규칙 큰 지연 없음·기동 직후 아님. PREVIEW 서버 내부5244ms의 로그1줄 추가 요청 대기다. START 정상 관측을 PREVIEW 지연 해소로 확대하지 않는다.

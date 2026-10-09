@@ -3,8 +3,8 @@ const assert = require('node:assert/strict')
 const { randomUUID } = require('node:crypto')
 const fs = require('node:fs')
 
-function applicationTiming(header) {
-  const match = /(?:^|,)\s*application;dur=(\d+(?:\.\d+)?)\s*(?:,|$)/.exec(header || '')
+function phaseTiming(header, phase) {
+  const match = new RegExp(`(?:^|,)\\s*${phase};dur=(\\d+(?:\\.\\d+)?)\\s*(?:,|$)`).exec(header || '')
   const value = match ? Number(match[1]) : NaN
   return Number.isFinite(value) ? value : null
 }
@@ -40,7 +40,13 @@ async function verifyGame({ baseUrl, reportPath, writeIsolatedGame, pauseMs = 10
     const rounded = value => Math.round(value * 10) / 10
     report.observations.push({ label, startedAt, method: body === undefined ? 'GET' : 'POST', status: response.status,
       elapsedMs: rounded(finished - started), headersMs: rounded(headersAt - started), bodyReadMs: rounded(finished - headersAt),
-      applicationMs: applicationTiming(response.headers.get('Server-Timing')), decodedJsonBytes: Buffer.byteLength(text) })
+      applicationMs: phaseTiming(response.headers.get('Server-Timing'), 'application'),
+      authQueueMs: phaseTiming(response.headers.get('Server-Timing'), 'auth_queue'),
+      authMs: phaseTiming(response.headers.get('Server-Timing'), 'auth'),
+      dispatchMs: phaseTiming(response.headers.get('Server-Timing'), 'dispatch'),
+      controllerMs: phaseTiming(response.headers.get('Server-Timing'), 'controller'),
+      responseMs: phaseTiming(response.headers.get('Server-Timing'), 'response'),
+      decodedJsonBytes: Buffer.byteLength(text) })
     save()
     assert.equal(response.status, expectedStatus, `${label}: 예상 HTTP ${expectedStatus}, 실제 ${response.status}`)
     return JSON.parse(text)

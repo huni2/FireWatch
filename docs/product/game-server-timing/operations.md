@@ -1,5 +1,24 @@
 # 운영 계측 사용과 해석
 
+## BE-28 HTTP 경계 보완
+
+기존 FIREWATCH_GAME_TIMING_ENABLED=true를 유지하면 `game_timing`과 별도로 응답 준비 시 `game_http_timing` 로그를 남긴다. 새 옵션/운영 키/DB 스키마는 필요 없다. 이 보완 이후 HTTP 타이머가 인증 필터보다 먼저 실행되므로 application은 인증을 포함하는 새 경계다. 이전 application 숫자와의 차이를 개선 효과로 계산하지 않는다.
+
+| 필드 | 관측 범위 |
+|---|---|
+| request_ms | HTTP 타이밍 필터 진입~응답 beforeCommit |
+| auth_queue_ms | 인증 작업 예약~boundedElastic 실행 시작 |
+| auth_ms | 기기 연결 조회와 필요한 세션 인증의 반환/예외까지, JDBC 연결·결과 처리 포함 |
+| dispatch_ms | 인증 종료~컨트롤러 메서드 진입, 바인딩·검증·프레임워크 호출 포함 |
+| controller_ms | 컨트롤러 메서드 진입~IO 서비스/DTO·코루틴 복귀 후 반환/예외 |
+| response_ms | 컨트롤러 반환~beforeCommit, 전체 본문 전송 제외 |
+
+호출되지 않은 구간은 unavailable이다. auth_ms가 크면 기기 연결 조회/인증 JDBC의 연결·SQL을 조사하고, dispatch_ms가 크면 첫 바인딩/검증·프레임워크 구간을 조사한다. controller_ms가 크면 기존 game_timing을 대조하고 response_ms가 크면 응답 생성/직렬화 구간을 조사한다. 기동·무료 서버 리소스·GC 등의 원인은 해당 단계만으로 단정하지 않는다. 무작정 인증을 캐시하거나 검증을 제거하지 않는다.
+
+한 요청의 정합한 단계 비교를 위해 START/PREVIEW 요청을 같은 시각의 두 로그와 대조한다. 로그에는 op/status/시간만 포함되며 기기 ID·세션 토큰·본문·SQL 원문을 기록하지 않는다. 옵션false에서는 새 요청별 측정 객체와 game_http_timing 로그를 만들지 않는다.
+
+같은 숫자는 Server-Timing 헤더의 auth_queue/auth/dispatch/controller/response에도 기록한다. 미측정 단계는 헤더에서 생략한다. 기존 application 항목과 CORS 노출은 유지한다. scripts/verify-game-live.cjs는 이5개 허용 항목의 유한 양수/0 숫자만 보고서에 보관하고 원시 헤더/다른 항목/desc는 기록하지 않는다. 배포 후 HTTP 보고서만으로 단계 구분이 가능하므로 먼저 이 도구로 한 판을 관측하고, controller가 지배하는 요청만 기존 JDBC 로그와 추가 대조한다.
+
 Render 환경변수 `FIREWATCH_GAME_TIMING_ENABLED=true`를 설정하고 BE-36 소스를 배포하면 게임 컨트롤러가 반환할 때 `game_timing` 로그를1줄 남긴다. 기본은false이며 DB 스키마/원장/게임 시드·잠금을 바꾸지 않는다. 진단이 끝나면false로 되돌리고 환경 적용을 배포한다. CI의 실제 PostgreSQL 검사는 전용 로컬 DB만 허용한다.
 
 ```text

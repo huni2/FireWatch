@@ -11,6 +11,8 @@
 
 ## 2026-10-09
 
+- **[BE] 기존 BE-28 HTTP 인증·호출 전후 구간 보완**: 서비스 밖3467.176ms를 좁히기 위해 기존 timing 옵션의 요청별 인증 큐/조회·컨트롤러 진입 전/내부·응답 준비 로그 및 허용 숫자 Server-Timing을 구현했다. 필터 순서 명시·미측정 unavailable·401 유지·인증/잠금/DB 스키마 보존. 기존 계정/게임 선택 회귀·도구9검사 통과·최종 전체/PG CI 확인 중. 기존 Issue#45의 PR로 진행·새 과제/성능 해결 주장/APK0.
+
 - **[BE] BE-28 PREVIEW 로그 대조 완료와 미계측 경계 확인**: 사용자 server1776.824/SQL455.840ms2회·연결180.907/큐0.179/규칙0.019ms·uptime1669384ms 확인. application5244ms와 service 경계 차이3467.176ms는 특정 원인 미확정. 컨트롤러 전 AccountSessionFilter JdbcTemplate 조회는 게임 SQL 관측 밖이며 인증을 우회하지 않는다. 로그2줄 요청 완료·기능43요청 PASS·성능 원인/수정 미완료 유지·과제 파생/APK0.
 
 - **[BE] BE-28 START 사용자 서버 로그 대조**: 같은 시각 server955.812ms/application992ms/HTTP2696.2ms·SQL552.943ms3회·연결0.032/큐0.410/규칙0.045ms·uptime1663670ms 확인. application 경계 밖1704.2ms 상세 원인은 미확정·기동 직후로 해석하지 않는다. PREVIEW 내부5244ms의 해당 로그1줄만 추가 요청했다. 수정 근거 없이 풀/잠금/캐시 변경 없음.
