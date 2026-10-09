@@ -1,5 +1,7 @@
 # FireWatch — 현재 맥락
 
+BE-28 경계 보완 머지 완료. 소스b58aa71·PR#47 maind26683e·push37944028989/PR37944039538 전체 CI 성공. 로컬204검사 실패0/제외1·최종 PREVIEW 추가 검사 성공·도구9검사 통과. 기존 FIREWATCH_GAME_TIMING_ENABLED=true 유지·Render 최신 코드 반영 확인 필요. 다음 운영 검증 도구는 auth_queue/auth/dispatch/controller/response 숫자를 직접 읽으므로 먼저 한 판 관측 후 지배 구간만 수정한다. 원인/지연 해결은 아직 미확정·기존 BE-28/Issue#45만 사용·APK0.
+
 BE-28 실제 미계측 구간 보완 구현 중. RequestLatency가 인증 필터보다 먼저 실행되도록 명시하고 요청별 GameHttpPhases에 인증 큐/조회·진입 전·컨트롤러/응답 준비를 분리한다. timing true일 때만 비식별 로그·허용숫자 헤더를 기록, 검증 도구가 직접 보존. 계정/게임 계측 선택 검사·도구9검사 통과·최종 전체/PG CI 확인 중. 기존 Issue#45 사용·새 과제 번호 없음. 성능 원인/해결은 운영 재관측 전 미확정이다.
 
 BE-28 PREVIEW 로그까지 수신·2줄 대조 완료. server1776.824/SQL455.840ms2회·연결180.907/큐0.179/규칙0.019ms·uptime1669384ms. application5244ms와 service 경계 차이3467.176ms의 원인은 미확정. AccountSessionFilter의 JdbcTemplate 조회는 기존 게임 SQL 계측 밖이다. 로그 요청 대기는 종료됐으며 기능43요청 PASS와 성능 원인/수정 미완료를 구분한다. 새 과제/진단 배포/풀·잠금·인증 변경 없음.
