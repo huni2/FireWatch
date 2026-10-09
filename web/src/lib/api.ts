@@ -264,7 +264,7 @@ export interface GameTurn {
 // 이미 활성 게임이 있으면 difficulty/allowShortSelling은 무시되고 그 게임이 그대로 이어진다
 // (GameService.startGame 참고) — 인자 없이 불러도 "이어하기" 용도로 그대로 쓸 수 있다.
 export function startGame(input?: { difficulty: GameDifficulty; allowShortSelling: boolean }): Promise<GameTurn> {
-  return request<GameTurn>('/api/game/start', {
+  return request<GameTurn>('/api/game/start?compact=true', {
     method: 'POST',
     headers: { 'X-Device-Id': getDeviceId() },
     body: input ? JSON.stringify(input) : undefined,
@@ -272,7 +272,7 @@ export function startGame(input?: { difficulty: GameDifficulty; allowShortSellin
 }
 
 export function fetchCurrentTurn(): Promise<GameTurn> {
-  return request<GameTurn>('/api/game/current', { headers: { 'X-Device-Id': getDeviceId() } })
+  return request<GameTurn>('/api/game/current?compact=true', { headers: { 'X-Device-Id': getDeviceId() } })
 }
 
 export function tradeGame(input: {
@@ -284,7 +284,7 @@ export function tradeGame(input: {
   expectedPrice?: number
   requestId?: string
 }): Promise<GameTurn> {
-  return request<GameTurn>('/api/game/trade', {
+  return request<GameTurn>('/api/game/trade?compact=true', {
     method: 'POST',
     headers: { 'X-Device-Id': getDeviceId() },
     body: JSON.stringify({ ...input, requestId: input.requestId ?? crypto.randomUUID() }),
@@ -300,9 +300,14 @@ export function previewGame(input: { instrumentType: GameInstrumentType; symbol?
 }
 
 export function nextGameTurn(expectedTurnIndex?: number): Promise<GameTurn> {
-  return request<GameTurn>('/api/game/next-turn', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() }, body: JSON.stringify({ expectedTurnIndex }) })
+  return request<GameTurn>('/api/game/next-turn?compact=true', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() }, body: JSON.stringify({ expectedTurnIndex }) })
 }
 
 export function endGame(): Promise<GameTurn> {
-  return request<GameTurn>('/api/game/end', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() } })
+  return request<GameTurn>('/api/game/end?compact=true', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() } })
+}
+
+export async function fetchGameAssetHistory(query: import('../../../shared/game-history').GameHistoryQuery) {
+  const { gameHistoryPath, checkedGameHistory } = await import('../../../shared/game-history')
+  return checkedGameHistory(query, await request<import('../../../shared/game-history').GameHistoryResponse>(gameHistoryPath(query), { headers: { 'X-Device-Id': getDeviceId() } }))
 }
