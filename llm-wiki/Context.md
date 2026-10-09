@@ -1,5 +1,7 @@
 # FireWatch — 현재 맥락
 
+BE-28 main CI37944617074 실패 대응 중. PortfolioApiIntegrationTest의 통화400 검사 HTTP 대기 TimeoutException,205개1실패/1제외·웹/앱 성공. 기능 검사 클라이언트20초 명시(기존 계정 통합 검사와 동일)·보유 저장 불변 assertion·실패 JUnit 보고서 보존 추가. 관련3클래스 로컬 성공·전체/새 CI 검증 중. 같은 Issue#45에서 진행·서버 동작/성능 해결과 구분한다.
+
 BE-28 경계 보완 머지 완료. 소스b58aa71·PR#47 maind26683e·push37944028989/PR37944039538 전체 CI 성공. 로컬204검사 실패0/제외1·최종 PREVIEW 추가 검사 성공·도구9검사 통과. 기존 FIREWATCH_GAME_TIMING_ENABLED=true 유지·Render 최신 코드 반영 확인 필요. 다음 운영 검증 도구는 auth_queue/auth/dispatch/controller/response 숫자를 직접 읽으므로 먼저 한 판 관측 후 지배 구간만 수정한다. 원인/지연 해결은 아직 미확정·기존 BE-28/Issue#45만 사용·APK0.
 
 BE-28 실제 미계측 구간 보완 구현 중. RequestLatency가 인증 필터보다 먼저 실행되도록 명시하고 요청별 GameHttpPhases에 인증 큐/조회·진입 전·컨트롤러/응답 준비를 분리한다. timing true일 때만 비식별 로그·허용숫자 헤더를 기록, 검증 도구가 직접 보존. 계정/게임 계측 선택 검사·도구9검사 통과·최종 전체/PG CI 확인 중. 기존 Issue#45 사용·새 과제 번호 없음. 성능 원인/해결은 운영 재관측 전 미확정이다.

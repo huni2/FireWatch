@@ -19,8 +19,11 @@ class PortfolioApiIntegrationTest {
     @Autowired private lateinit var feed: com.firewatch.backend.repository.NewsFeedRepository
     @Autowired private lateinit var briefingNews: com.firewatch.backend.repository.NewsArticleRepository
     @Autowired private lateinit var quotes: com.firewatch.backend.repository.MarketQuoteRepository
+    @Autowired private lateinit var portfolios: com.firewatch.backend.repository.PortfolioRepository
     @LocalServerPort private var port: Int = 0
-    private val client get() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
+    // 기능 통합 검사는 CI 첫 초기화 대기를 허용하며 운영 응답 속도 검사는 별도로 유지한다.
+    private val client get() = WebTestClient.bindToServer().baseUrl("http://localhost:$port")
+        .responseTimeout(java.time.Duration.ofSeconds(20)).build()
 
     @Test
     fun `운영자 감사 로그도 이전에 저장한 개인 포트폴리오 내용을 노출하지 않는다`() {
@@ -157,7 +160,9 @@ class PortfolioApiIntegrationTest {
 
     @Test
     fun `통화가 다른 자산은 합산 전에 거부한다`() {
+        val before = portfolios.count()
         client.put().uri("/api/portfolio").header("X-Device-Id", "portfolio-invalid").contentType(MediaType.APPLICATION_JSON).bodyValue(input(0, "AAPL", "KRW")).exchange().expectStatus().isBadRequest
+        kotlin.test.assertEquals(before, portfolios.count(), "잘못된 통화 입력으로 보유 기록을 저장하면 안 됩니다.")
     }
 
     @Test
