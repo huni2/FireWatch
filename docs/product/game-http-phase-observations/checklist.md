@@ -39,3 +39,7 @@
 - [x] 기존 BE-28과 GitHub 기록 갱신·새 과제 번호 없음 — Issue#45 기존 과제 추적
 - [ ] 해당 시간대 START/PREVIEW 서버 로그 대조·필요한 수정 검증
 - [x] 해당 시간대 START/PREVIEW 로그 모두 수신·HTTP와 대조 — PREVIEW server1776.824/application5244ms, 원인/수정 검증은 미완료
+
+- [x] 현재 코드·격리 H2·예약 작업 비활성으로 로컬 JVM 시작 — bootJar 성공·비교 후 종료
+- [x] 로컬 첫/후속 및 켜진 Render43요청 비교·공개 결과 보관 — 총129요청 PASS·Render 세션38 ENDED
+- [x] 코드/절전/운영 환경의 근거와 한계 기록·기존Issue#45 갱신 — 후속 response0.975ms·무료CPU 단독 원인은 미확정
