@@ -1,5 +1,9 @@
 # 결정과 관찰
 
+- 로컬 전체 Gradle 검사 통과(2026-10-10). 준비 완료 후 Netty 시작 순서·준비된 HTTP 미리보기 정상/수량0 거절400·26기업/뉴스/픽/34자산 그래프/거래 JSON round-trip 확인. 준비 클래스는 codec/validator에만 의존한다. 실제 게임 호출·저장소 의존 없이 샘플 폐기. 로컬 준비 비용을 운영 개선 수치로 사용하지 않는다.
+
+- BE-28 재개. 첫 시작 controller9.99초/response8.41초가 후속 응답과 크게 달라 첫 초기화 비용을 시작 단계로 이전한다. ServerCodecConfigurer 실제 encoder/decoder를 사용해 캐시가 다른 mapper를 준비하는 실수를 피한다. SmartInitializingSingleton에서 유한한 한 번의 메모리 작업만 수행한다. 게임 서비스/저장소/외부 제공처 의존 없음, 인증/주문/DB 변경 없음. 운영 지연 전체 원인이 확정된 것은 아니다.
+
 사용자가 main CI 실패를 알렸다. CI37944617074 backend Test에서205개 중1개 실패/1개제외, PortfolioApiIntegrationTest.kt160의 TimeoutException이다. 웹/앱은 성공했다. default5초 기능 통합 클라이언트에 기존 AccountSession/Community 검사와 동일한20초 제한을 명시한다. 서버 운영 지연을 숨기는 timeout 변경이나 테스트 생략/자동 재시도는 하지 않는다. 이 검사는 응답 성능 SLA 검사가 아니므로400 거절·보유 저장 불변을 검증한다. 실제 운영 지연은 기존 BE-28의 미완료 기준으로 계속 유지한다.
 
 기존 BE-28에서 계측 경계만 보완한다. RequestLatency(-200)·AccountSessionFilter(-100)의 순서를 명시해 인증 큐/DB까지 request/application 경계 안에 포함한다. GameHttpPhases는 ServerWebExchange에만 저장하며 ThreadLocal/공유 캐시/DB 기록이 없다. 인증 실패는401을 유지하고 컨트롤러 미진입 값은0으로 만들지 않고 unavailable로 남긴다. 기존 game-timing true 옵션일 때만 game_http_timing 로그를 응답 준비 시1줄 기록한다. controller_ms는 IO 진입/서비스/코루틴 복귀를 포함하고 dispatch_ms는 인증 종료 후 요청 바인딩/검증/호출 전까지라 순수 스케줄 대기라고 해석하지 않는다. response_ms는 controller 반환 후 beforeCommit까지이며 전체 전송 시간은 아니다. 기존 숫자와 새로운 request/application 경계는 필터 순서가 달라 직접 개선율로 비교하지 않는다.
