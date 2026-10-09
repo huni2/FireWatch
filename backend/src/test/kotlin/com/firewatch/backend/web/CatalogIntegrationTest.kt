@@ -20,6 +20,39 @@ class CatalogIntegrationTest {
     @Autowired lateinit var catalog: InstrumentCatalog
     @Autowired lateinit var jdbc: JdbcTemplate
     @LocalServerPort var port: Int = 0
+    @Test @Transactional
+    fun `한글 초성 검색은 정확한 이름을 먼저 보여주고 필터와 기존 자료를 보존한다`() {
+        assertEquals("005930.KS", catalog.search("ㅅㅅㅈㅈ").items.first().instrument.symbol)
+        assertEquals("035720.KS", catalog.search("ㅋㅋㅇ").items.first().instrument.symbol)
+        val filtered = catalog.search("ㅅㅅ", assetClass = "STOCK", region = "KR", sectorId = "chips")
+        assertEquals("005930.KS", filtered.items.single().instrument.symbol)
+        assertEquals(0, catalog.search("ㅅㅅㅈㅈ", region = "US").total)
+        assertEquals(0, catalog.search("ㅅㅅㅈㅈ%'").total)
+        val first = catalog.search("ㅅ", limit = 50)
+        val second = catalog.search("ㅅ", limit = 50, page = 1)
+        assertTrue(first.total > 50)
+        assertEquals(50, first.items.size)
+        assertTrue(first.hasMore)
+        assertTrue(first.items.map { it.instrument.symbol }.intersect(second.items.map { it.instrument.symbol }.toSet()).isEmpty())
+        val metadata = jdbc.queryForList("SELECT symbol, name, normalized_name, search_text, metadata_json, verified_at FROM instrument_catalog ORDER BY symbol")
+        val quotes = jdbc.queryForList("SELECT * FROM market_quotes ORDER BY symbol")
+        jdbc.update("UPDATE instrument_catalog SET name_initials='' WHERE symbol='005930.KS'")
+        catalog.run(DefaultApplicationArguments())
+        catalog.run(DefaultApplicationArguments())
+        assertEquals(metadata, jdbc.queryForList("SELECT symbol, name, normalized_name, search_text, metadata_json, verified_at FROM instrument_catalog ORDER BY symbol"))
+        assertEquals(quotes, jdbc.queryForList("SELECT * FROM market_quotes ORDER BY symbol"))
+        assertEquals("ㅅㅅㅈㅈ", jdbc.queryForObject("SELECT name_initials FROM instrument_catalog WHERE symbol='005930.KS'", String::class.java))
+        val official = catalog.search("0001A0.KQ").items.single().instrument
+        val edited = official.copy(name = "검증 편집 법인", description = "편집 설명 보존")
+        val mapper = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build()
+        jdbc.update("UPDATE instrument_catalog SET name=?, normalized_name=?, search_text=?, metadata_json=?, name_initials='' WHERE symbol=?",
+            edited.name, InstrumentCatalog.normalize(edited.name), "편집검색문자열", mapper.writeValueAsString(edited), edited.symbol)
+        val editedRows = jdbc.queryForList("SELECT symbol, name, normalized_name, search_text, metadata_json, verified_at FROM instrument_catalog ORDER BY symbol")
+        catalog.run(DefaultApplicationArguments())
+        assertEquals(edited, catalog.search("ㄱㅈㅍㅈㅂㅇ").items.single().instrument)
+        assertEquals(editedRows, jdbc.queryForList("SELECT symbol, name, normalized_name, search_text, metadata_json, verified_at FROM instrument_catalog ORDER BY symbol"))
+        WebTestClient.bindToServer().baseUrl("http://localhost:$port").build().get().uri { it.path("/api/stocks/search").queryParam("q", "ㅅㅅㅈㅈ").build() }.exchange().expectStatus().isOk.expectBody().jsonPath("$[0].name").isEqualTo("삼성전자")
+    }
     @Test
     fun `한국어 별칭 지수 검색과 상장국 필터를 지원하고 추정 시세를 만들지 않는다`() {
         assertEquals("NVDA", catalog.search("엔비디아").items.first().instrument.symbol)
