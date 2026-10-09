@@ -51,6 +51,16 @@ class GameTimingIntegrationTest {
         val read = messages().last()
         assertTrue(read.contains("op=CURRENT outcome=success"))
         assertTrue(sqlCount(read) > 0)
+        val history = client().get().uri("/api/game/sessions/${started.sessionId}/assets/history?turnIndex=0&instrumentType=GOLD")
+            .header("X-Device-Id", device).exchange().expectStatus().isOk
+            .expectBody(com.firewatch.backend.web.GameAssetHistoryResponse::class.java).returnResult().responseBody!!
+        assertEquals(1, history.history.points.size)
+        val historyLog = messages().last()
+        assertTrue(historyLog.contains("op=HISTORY outcome=success"))
+        assertTrue(historyLog.contains("repository_count=1"))
+        assertTrue(historyLog.contains("rules_count=1"))
+        assertTrue(historyLog.contains("history_count=1"))
+        assertEquals(1, sqlCount(historyLog))
         assertFalse(messages().any { it.contains(device) || it.contains("select ", true) || it.contains("insert ", true) })
     }
 
@@ -62,6 +72,9 @@ class GameTimingIntegrationTest {
         val failure = messages().last()
         assertTrue(failure.contains("op=HISTORY outcome=failure"))
         assertTrue(sqlCount(failure) > 0)
+        assertTrue(failure.contains("repository_count=1"))
+        assertTrue(failure.contains("rules_count=0"))
+        assertTrue(failure.contains("history_count=0"))
         client().get().uri("/api/game/current?compact=true").exchange().expectStatus().isBadRequest
         val next = messages().last()
         assertTrue(next.contains("op=CURRENT outcome=failure"))

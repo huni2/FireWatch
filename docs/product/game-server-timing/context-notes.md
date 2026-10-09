@@ -1,5 +1,7 @@
 # 결정과 관찰
 
+실제 HISTORY 로그 두 줄 수신. 07:05:56.658Z server8665.392/queue102.139/connection169.520/prepare0.233/SQL176.611ms·연결1/SQL1·uptime285565ms. 07:07:09.523Z server338.617/queue0.179/connection0.023/prepare0.064/SQL167.377ms·연결1/SQL1·uptime358429ms. 위 읽기2회와 대응한다. SQL·연결 지연이 첫 server 시간의 대부분을 설명하지 않으며 JVM은 이미4분46초 가동 중이었다. 초기화로 단정하지 않고 BE-37에서 조회/규칙/그래프 단계를 추가 측정한다. BE-28은 운영 원인/최적화 확인 전까지 유지한다.
+
 새 DataSource 프록시나 추정 기반 잠금 제거보다 이미 사용하는 Hibernate7.4.1의 SessionEventListener를 사용한다. 설치된 JAR의 공개 인터페이스와 Boot4.1 HibernatePropertiesCustomizer를 javap로 확인했다. 개인정보가 담긴 입력/SQL 원문은 이벤트 집계에 필요하지 않다. 기본 비활성이며 운영 로그를 볼 도구는 이 환경에 없어 실제 병목 확정은 배포 후 로그 대조가 필요하다.
 
 getCurrentTurn/preview는 PESSIMISTIC_WRITE 조회를 사용하지만 과거 자료 게임은 가격 snapshot을 쓸 수 있다. 단순 readOnly/무잠금 변경은 기존 정합성 검사 없이 하지 않는다. 이번 단계에서는 잠금/평가/원장·시드·규칙을 바꾸지 않는다.

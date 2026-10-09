@@ -13,7 +13,7 @@ class GameRequestTimingTest {
     @Test fun `disabled scope passes through without creating metrics`() {
         assertEquals("result", GameRequestTiming(false).measure(GameTimingOperation.CURRENT) {
             assertNull(GameTimingScope.current.get())
-            "result"
+            GameTimingScope.phase(GameTimingPhase.RULES) { "result" }
         })
         assertNull(GameTimingScope.current.get())
     }
@@ -25,7 +25,9 @@ class GameRequestTimingTest {
         try {
             val timing = GameRequestTiming(true)
             assertFailsWith<IllegalStateException> {
-                timing.measure(GameTimingOperation.TRADE) { throw IllegalStateException("private-device-token-and-SQL") }
+                timing.measure(GameTimingOperation.TRADE) {
+                    GameTimingScope.phase(GameTimingPhase.RULES) { throw IllegalStateException("private-device-token-and-SQL") }
+                }
             }
             assertNull(GameTimingScope.current.get())
             timing.measure(GameTimingOperation.CURRENT) {
@@ -37,8 +39,10 @@ class GameRequestTimingTest {
             val messages = appender.list.map { it.formattedMessage }
             assertEquals(2, messages.size)
             assertTrue(messages[0].contains("op=TRADE outcome=failure"))
+            assertTrue(messages[0].contains("rules_count=1"))
             assertTrue(messages[1].contains("op=CURRENT outcome=success"))
             assertTrue(messages[1].contains("sql_count=2"))
+            assertTrue(messages[1].contains("rules_count=0"))
             assertFalse(messages.any { it.contains("private-device") || it.contains("token-and-SQL") })
         } finally { logger.detachAppender(appender); appender.stop() }
     }
