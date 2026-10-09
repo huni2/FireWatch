@@ -5,4 +5,4 @@
 - [x] 픽 직접 주문·멱등 체결·평가 보존
 - [x] 24턴 compact·현재 전체 대조·선택 그래프·소유/턴 경계
 - [x] 종료 후 상세 보존·순위 미등록·측정 결과 기록
-- [ ] CI·PR 머지·Next-Tasks/Context/log 최신화
+- [x] CI37890731426/37890763678/main37891156616 전체 성공·PR#20 main1f818ea 머지·Issue#19 종료·Next-Tasks/Context/log 최신화
