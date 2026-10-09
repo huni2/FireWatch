@@ -53,6 +53,18 @@ class InstrumentCatalog(private val jdbc: JdbcTemplate, private val transactions
                 statement.setDate(9, java.sql.Date.valueOf(item.verifiedAt))
                 statement.setString(10, item.symbol)
             }
+            // Derive only the search field from current DB names, preserving edited metadata.
+            val names = jdbc.query("SELECT symbol, name, name_initials FROM instrument_catalog", { row, _ ->
+                Triple(row.getString("symbol"), row.getString("name"), row.getString("name_initials"))
+            }).filter { (_, name, stored) -> initials(name) != stored }
+            if (names.isNotEmpty()) jdbc.batchUpdate(
+                "UPDATE instrument_catalog SET name_initials=? WHERE symbol=? AND name=? AND name_initials=?", names, 250
+            ) { statement, row ->
+                statement.setString(1, initials(row.second))
+                statement.setString(2, row.first)
+                statement.setString(3, row.second)
+                statement.setString(4, row.third)
+            }
         }
     }
 
@@ -60,13 +72,22 @@ class InstrumentCatalog(private val jdbc: JdbcTemplate, private val transactions
         require(page in 0..10000) { "카탈로그 페이지 범위를 확인해주세요." }
         val size = limit.coerceIn(1, 50)
         val term = normalize(query.take(100))
+        val initialQuery = term.isNotEmpty() && term.all { it in INITIALS }
         val pattern = "%${term.replace("!", "!!").replace("%", "!%").replace("_", "!_")}%"
-        val where = "WHERE c.search_text LIKE ? ESCAPE '!' AND (?='' OR c.asset_class=?) AND (?='' OR c.region=?) AND (?='' OR c.sector_id=?)"
+        val searchColumn = if (initialQuery) "c.name_initials" else "c.search_text"
+        val exactColumn = if (initialQuery) "c.name_initials" else "c.normalized_name"
+        val where = "WHERE $searchColumn LIKE ? ESCAPE '!' AND (?='' OR c.asset_class=?) AND (?='' OR c.region=?) AND (?='' OR c.sector_id=?)"
         val args = arrayOf<Any>(pattern, assetClass, assetClass, region, region, sectorId, sectorId)
         val total = jdbc.queryForObject("SELECT COUNT(*) FROM instrument_catalog c $where", Int::class.java, *args) ?: 0
-        val rows = jdbc.query("SELECT c.metadata_json, q.price, q.as_of FROM instrument_catalog c LEFT JOIN market_quotes q ON c.symbol=q.symbol $where ORDER BY CASE WHEN c.normalized_name=? THEN 0 WHEN c.symbol=? THEN 0 ELSE 1 END, c.name, c.symbol LIMIT ? OFFSET ?", { row, _ -> CatalogView(mapper.readValue(row.getString("metadata_json"), CatalogItem::class.java), row.getBigDecimal("price"), row.getTimestamp("as_of")?.toInstant()) }, *args, term, query.trim().uppercase(), size, page * size)
+        val rows = jdbc.query("SELECT c.metadata_json, q.price, q.as_of FROM instrument_catalog c LEFT JOIN market_quotes q ON c.symbol=q.symbol $where ORDER BY CASE WHEN $exactColumn=? THEN 0 WHEN c.symbol=? THEN 0 ELSE 1 END, c.name, c.symbol LIMIT ? OFFSET ?", { row, _ -> CatalogView(mapper.readValue(row.getString("metadata_json"), CatalogItem::class.java), row.getBigDecimal("price"), row.getTimestamp("as_of")?.toInstant()) }, *args, term, query.trim().uppercase(), size, page * size)
         return CatalogPage(rows, total, total > page * size + rows.size)
     }
 
-    companion object { fun normalize(value: String) = value.lowercase().replace(Regex("[\\s&._-]"), "") }
+    companion object {
+        private const val INITIALS = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ"
+        fun normalize(value: String) = value.lowercase().replace(Regex("[\\s&._-]"), "")
+        fun initials(value: String) = normalize(value).map { character ->
+            if (character in '\uAC00'..'\uD7A3') INITIALS[(character.code - 0xAC00) / 588] else character
+        }.joinToString("")
+    }
 }

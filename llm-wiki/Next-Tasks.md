@@ -68,6 +68,11 @@
 **근거** — docs/deployment/operator-access.md, CollectionJobRunnerIntegrationTest, CollectionAlertAccessIntegrationTest. 기존 BE-23/25/27의 미확인 운영 항목을 이관했다.
 
 
+### BE-42. 한글 초성 기업 검색과 기존 DB 검색 값 보완
+**진행** — Issue#35·codex/catalog-korean-initials. 현재 DB 이름에서 검색용 초성만 묶음 보완하고 순수 초성 입력을 지원한다. 기존 회사 정보/검색 문자열·분류·시세와 페이지 계약을 보존한다. 웹/앱 공통 검색 API에서 제공한다.
+**검증** — 로컬196검사 실패0/제외1. 기존 H2 스키마 반복 적용·한글 양끝/복합 자음·삼성전자/카카오·국가/분야 필터·페이지 중복 없음·편집 이름/설명·시세 보존 확인. PostgreSQL/CI·PR·Render 반영 확인 중이며 APK/EAS0.
+**근거** — docs/product/catalog-korean-initials/plan.md.
+
 ## 열린 과제 — 웹(WEB)
 
 
