@@ -3,6 +3,12 @@ const assert = require('node:assert/strict')
 const { randomUUID } = require('node:crypto')
 const fs = require('node:fs')
 
+function applicationTiming(header) {
+  const match = /(?:^|,)\s*application;dur=(\d+(?:\.\d+)?)\s*(?:,|$)/.exec(header || '')
+  const value = match ? Number(match[1]) : NaN
+  return Number.isFinite(value) ? value : null
+}
+
 async function verifyGame({ baseUrl, reportPath, writeIsolatedGame, pauseMs = 100 }) {
   assert.equal(writeIsolatedGame, true, '--write-isolated-game 명시가 필요합니다.')
   const url = new URL(baseUrl)
@@ -19,6 +25,7 @@ async function verifyGame({ baseUrl, reportPath, writeIsolatedGame, pauseMs = 10
   async function request(label, path, { body, expectedStatus = 200, device = deviceId } = {}) {
     assert.ok(report.observations.length < 60, '요청 한도60회 초과')
     if (pauseMs > 0) await new Promise(resolve => setTimeout(resolve, pauseMs))
+    const startedAt = new Date().toISOString()
     const started = performance.now()
     const response = await fetch(`${url.origin}${path}`, {
       method: body === undefined ? 'GET' : 'POST',
@@ -27,9 +34,13 @@ async function verifyGame({ baseUrl, reportPath, writeIsolatedGame, pauseMs = 10
       signal: AbortSignal.timeout(30_000),
       redirect: 'error',
     })
+    const headersAt = performance.now()
     const text = await response.text()
-    report.observations.push({ label, method: body === undefined ? 'GET' : 'POST', status: response.status,
-      elapsedMs: Math.round((performance.now() - started) * 10) / 10, decodedJsonBytes: Buffer.byteLength(text) })
+    const finished = performance.now()
+    const rounded = value => Math.round(value * 10) / 10
+    report.observations.push({ label, startedAt, method: body === undefined ? 'GET' : 'POST', status: response.status,
+      elapsedMs: rounded(finished - started), headersMs: rounded(headersAt - started), bodyReadMs: rounded(finished - headersAt),
+      applicationMs: applicationTiming(response.headers.get('Server-Timing')), decodedJsonBytes: Buffer.byteLength(text) })
     save()
     assert.equal(response.status, expectedStatus, `${label}: 예상 HTTP ${expectedStatus}, 실제 ${response.status}`)
     return JSON.parse(text)
