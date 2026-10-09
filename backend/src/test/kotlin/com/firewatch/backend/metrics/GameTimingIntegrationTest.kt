@@ -44,6 +44,27 @@ class GameTimingIntegrationTest {
     private fun messages() = appender.list.map { it.formattedMessage }
     private fun sqlCount(message: String) = Regex("sql_count=(\\d+)").find(message)!!.groupValues[1].toInt()
 
+    @Test fun `preview measures binding boundary and rejects invalid quantity before controller`() {
+        val device = UUID.randomUUID().toString()
+        val turn = start(device)
+        val body = com.firewatch.backend.web.dto.GameTradeRequest(
+            instrumentType = com.firewatch.backend.entity.GameInstrumentType.GOLD,
+            action = com.firewatch.backend.entity.GameTradeAction.BUY,
+            quantity = java.math.BigDecimal.ONE, expectedTurnIndex = turn.turnIndex,
+        )
+        client().post().uri("/api/game/preview").header("X-Device-Id", device).bodyValue(body)
+            .exchange().expectStatus().isOk.expectHeader().valueMatches("Server-Timing", ".*dispatch;dur=.+controller;dur=.+response;dur=.+")
+        val success = httpAppender.list.map { it.formattedMessage }.last { it.contains("op=PREVIEW") }
+        assertTrue(success.contains("status=200"))
+        assertTrue(Regex("dispatch_ms=\\d+\\.\\d+").containsMatchIn(success))
+        client().post().uri("/api/game/preview").header("X-Device-Id", device).bodyValue(body.copy(quantity = java.math.BigDecimal.ZERO))
+            .exchange().expectStatus().isBadRequest
+        val failure = httpAppender.list.map { it.formattedMessage }.last { it.contains("op=PREVIEW") }
+        assertTrue(failure.contains("status=400"))
+        assertTrue(failure.contains("controller_ms=unavailable"), failure)
+        assertFalse(failure.contains(device))
+    }
+
     @Test fun `Hibernate events report actual JDBC work and game reads preserve saved state`() {
         val device = UUID.randomUUID().toString()
         val started = start(device)
