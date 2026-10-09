@@ -71,7 +71,9 @@ class PushService(
         if (result.successCount + result.webPushSuccessCount == 0) {
             val guidance = when {
                 "CONFIG_MISSING" in result.webPushFailureCodes -> "Render의 VAPID_PUBLIC_KEY·VAPID_PRIVATE_KEY·VAPID_SUBJECT 설정을 확인해주세요."
-                "AUTH_REJECTED" in result.webPushFailureCodes -> "웹의 VITE_VAPID_PUBLIC_KEY와 Render의 VAPID 키가 같은 쌍인지 확인해주세요. 키를 바꿨다면 브라우저 알림을 다시 등록해주세요."
+                "KEY_PAIR_MISMATCH" in result.webPushFailureCodes -> "Render의 VAPID_PRIVATE_KEY가 VAPID_PUBLIC_KEY와 짝이 아닙니다. 해당 공개키와 함께 생성한 비밀키를 설정해주세요."
+                "KEY_FORMAT_INVALID" in result.webPushFailureCodes -> "Render의 VAPID 공개키·비밀키 형식이 올바르지 않습니다. 키 값의 공백·따옴표·누락을 확인해주세요."
+                "AUTH_REJECTED" in result.webPushFailureCodes -> "서버 키 쌍은 확인됐지만 알림 제공처가 인증을 거절했습니다. 배포된 웹과 구독의 공개키·Render의 VAPID_SUBJECT를 확인해주세요."
                 "SUBSCRIPTION_EXPIRED" in result.webPushFailureCodes -> "브라우저 알림 구독이 만료됐습니다. 이 브라우저에서 알림을 다시 등록해주세요."
                 "RATE_LIMITED" in result.webPushFailureCodes -> "알림 제공처가 요청을 제한했습니다. 잠시 후 다시 확인해주세요."
                 else -> "알림 제공처 연결과 서버의 푸시 설정을 확인해주세요."

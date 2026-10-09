@@ -79,7 +79,7 @@ class PushServiceTest {
     fun `운영자 웹 푸시 실패는 안전한 원인과 조치 안내를 반환한다`() {
         val row = dueRow(webPushSubscriptionsRaw = listOf(subscriptionA).toJsonString())
         every { userSettingsRepository.save(any<UserSettings>()) } answers { firstArg() }
-        val cases = mapOf("CONFIG_MISSING" to "Render", "AUTH_REJECTED" to "같은 쌍", "SUBSCRIPTION_EXPIRED" to "만료", "RATE_LIMITED" to "제한", "SEND_EXCEPTION" to "제공처 연결")
+        val cases = mapOf("CONFIG_MISSING" to "Render", "KEY_PAIR_MISMATCH" to "짝이 아닙니다", "KEY_FORMAT_INVALID" to "형식", "AUTH_REJECTED" to "서버 키 쌍", "SUBSCRIPTION_EXPIRED" to "만료", "RATE_LIMITED" to "제한", "SEND_EXCEPTION" to "제공처 연결")
         for ((code, guidance) in cases) {
             every { webPushSender.sendToAll(any(), any(), any()) } returns WebPushSendResult(0, emptyList(), setOf(code))
             val error = kotlin.test.assertFailsWith<com.firewatch.backend.web.ApiException> { pushService.testOperatorNotification(row) }

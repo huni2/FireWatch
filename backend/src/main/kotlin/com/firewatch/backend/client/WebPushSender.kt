@@ -3,6 +3,8 @@ package com.firewatch.backend.client
 import com.firewatch.backend.entity.WebPushSubscription
 import nl.martijndwars.webpush.Notification
 import nl.martijndwars.webpush.Subscription
+import nl.martijndwars.webpush.Encoding
+import nl.martijndwars.webpush.Utils
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -49,11 +51,24 @@ class BrowserWebPushSender(
         VapidPushService(publicKey, privateKey, subject)
     }
 
+    // 설정 값은 출력하지 않고 실제 공개키로 서명을 검증해 같은 쌍인지 확인한다.
+    private val keyFailure by lazy {
+        try {
+            if (Utils.verifyKeyPair(vapidPushService.privateKey, vapidPushService.publicKey)) null else "KEY_PAIR_MISMATCH"
+        } catch (_: Exception) {
+            "KEY_FORMAT_INVALID"
+        }
+    }
+
     override fun sendToAll(subscriptions: List<WebPushSubscription>, title: String, body: String): WebPushSendResult {
         if (subscriptions.isEmpty()) return WebPushSendResult(successCount = 0, invalidEndpoints = emptyList())
         if (publicKey.isBlank() || privateKey.isBlank() || subject.isBlank()) {
             log.warn("web_push_failure code=CONFIG_MISSING")
             return WebPushSendResult(0, emptyList(), setOf("CONFIG_MISSING"))
+        }
+        keyFailure?.let { code ->
+            log.warn("web_push_failure code={}", code)
+            return WebPushSendResult(0, emptyList(), setOf(code))
         }
 
         val payload = payloadMapper.writeValueAsString(mapOf("title" to title, "body" to body))
@@ -67,7 +82,8 @@ class BrowserWebPushSender(
                     subscription.endpoint,
                     Subscription.Keys(subscription.keys.p256dh, subscription.keys.auth),
                 )
-                val statusCode = vapidPushService.send(Notification(sub, payload)).statusLine.statusCode
+                // 기본 send()는 구형 aesgcm/WebPush 헤더를 사용하므로 표준 VAPID 형식을 명시한다.
+                val statusCode = vapidPushService.send(Notification(sub, payload), Encoding.AES128GCM).statusLine.statusCode
                 when {
                     statusCode in 200..299 -> successCount++
                     else -> {
