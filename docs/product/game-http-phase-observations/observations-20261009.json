@@ -1,0 +1,790 @@
+{
+  "startedAt": "2026-10-09T08:34:57.029Z",
+  "baseUrl": "https://firewatch-backend-q3cv.onrender.com",
+  "status": "PASS",
+  "observations": [
+    {
+      "label": "start",
+      "startedAt": "2026-10-09T08:34:57.136Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 2277.6,
+      "headersMs": 2273.7,
+      "bodyReadMs": 4,
+      "applicationMs": 698,
+      "decodedJsonBytes": 20353
+    },
+    {
+      "label": "preview",
+      "startedAt": "2026-10-09T08:34:59.520Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 982,
+      "headersMs": 980.5,
+      "bodyReadMs": 1.5,
+      "applicationMs": 516,
+      "decodedJsonBytes": 198
+    },
+    {
+      "label": "buy",
+      "startedAt": "2026-10-09T08:35:00.605Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1120.9,
+      "headersMs": 1118.7,
+      "bodyReadMs": 2.2,
+      "applicationMs": 854,
+      "decodedJsonBytes": 20590
+    },
+    {
+      "label": "buy-idempotent",
+      "startedAt": "2026-10-09T08:35:01.838Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 972.3,
+      "headersMs": 967.7,
+      "bodyReadMs": 4.6,
+      "applicationMs": 695,
+      "decodedJsonBytes": 20612
+    },
+    {
+      "label": "sell",
+      "startedAt": "2026-10-09T08:35:02.927Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1127.9,
+      "headersMs": 1125,
+      "bodyReadMs": 2.9,
+      "applicationMs": 852,
+      "decodedJsonBytes": 20744
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:04.159Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1142.7,
+      "headersMs": 1141,
+      "bodyReadMs": 1.7,
+      "applicationMs": 856,
+      "decodedJsonBytes": 22810
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:05.419Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1293.7,
+      "headersMs": 1291.6,
+      "bodyReadMs": 2.1,
+      "applicationMs": 1018,
+      "decodedJsonBytes": 22849
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:06.826Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1293.9,
+      "headersMs": 1292.9,
+      "bodyReadMs": 1,
+      "applicationMs": 1018,
+      "decodedJsonBytes": 23290
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:08.232Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1298.5,
+      "headersMs": 1295.5,
+      "bodyReadMs": 3,
+      "applicationMs": 1019,
+      "decodedJsonBytes": 22567
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:09.638Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1304.2,
+      "headersMs": 1301.6,
+      "bodyReadMs": 2.6,
+      "applicationMs": 1019,
+      "decodedJsonBytes": 23761
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:11.052Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1279.5,
+      "headersMs": 1278.9,
+      "bodyReadMs": 0.5,
+      "applicationMs": 1018,
+      "decodedJsonBytes": 24759
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:12.440Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1282.6,
+      "headersMs": 1280.8,
+      "bodyReadMs": 1.7,
+      "applicationMs": 1019,
+      "decodedJsonBytes": 22518
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:13.835Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1295.4,
+      "headersMs": 1294,
+      "bodyReadMs": 1.4,
+      "applicationMs": 1017,
+      "decodedJsonBytes": 22819
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:15.235Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1299.6,
+      "headersMs": 1297.5,
+      "bodyReadMs": 2.1,
+      "applicationMs": 1018,
+      "decodedJsonBytes": 22762
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:16.647Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1280.3,
+      "headersMs": 1279.8,
+      "bodyReadMs": 0.5,
+      "applicationMs": 1017,
+      "decodedJsonBytes": 22773
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:18.030Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1284.9,
+      "headersMs": 1283.5,
+      "bodyReadMs": 1.4,
+      "applicationMs": 1016,
+      "decodedJsonBytes": 22877
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:19.422Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1305.5,
+      "headersMs": 1303.9,
+      "bodyReadMs": 1.5,
+      "applicationMs": 1020,
+      "decodedJsonBytes": 23173
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:20.838Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1308.1,
+      "headersMs": 1306,
+      "bodyReadMs": 2.1,
+      "applicationMs": 1023,
+      "decodedJsonBytes": 22609
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:22.252Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1284.1,
+      "headersMs": 1283.4,
+      "bodyReadMs": 0.7,
+      "applicationMs": 1018,
+      "decodedJsonBytes": 22888
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:23.653Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1301.7,
+      "headersMs": 1299.9,
+      "bodyReadMs": 1.9,
+      "applicationMs": 1025,
+      "decodedJsonBytes": 23848
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:25.068Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1298.4,
+      "headersMs": 1295.9,
+      "bodyReadMs": 2.5,
+      "applicationMs": 1019,
+      "decodedJsonBytes": 24254
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:26.485Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1329,
+      "headersMs": 1327.5,
+      "bodyReadMs": 1.5,
+      "applicationMs": 1049,
+      "decodedJsonBytes": 24254
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:27.917Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1314.6,
+      "headersMs": 1312.2,
+      "bodyReadMs": 2.4,
+      "applicationMs": 1024,
+      "decodedJsonBytes": 22900
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:29.346Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1297.7,
+      "headersMs": 1295.9,
+      "bodyReadMs": 1.8,
+      "applicationMs": 1017,
+      "decodedJsonBytes": 23170
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:30.749Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1298.5,
+      "headersMs": 1296.5,
+      "bodyReadMs": 2,
+      "applicationMs": 1017,
+      "decodedJsonBytes": 23212
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:32.154Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1284.7,
+      "headersMs": 1283.2,
+      "bodyReadMs": 1.5,
+      "applicationMs": 1021,
+      "decodedJsonBytes": 23172
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:33.554Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1299.5,
+      "headersMs": 1298.3,
+      "bodyReadMs": 1.3,
+      "applicationMs": 1018,
+      "decodedJsonBytes": 23184
+    },
+    {
+      "label": "next-turn",
+      "startedAt": "2026-10-09T08:35:34.957Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1360.4,
+      "headersMs": 1359.6,
+      "bodyReadMs": 0.7,
+      "applicationMs": 1087,
+      "decodedJsonBytes": 23233
+    },
+    {
+      "label": "current-compact",
+      "startedAt": "2026-10-09T08:35:36.432Z",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 797.6,
+      "headersMs": 795.3,
+      "bodyReadMs": 2.2,
+      "applicationMs": 517,
+      "decodedJsonBytes": 23233
+    },
+    {
+      "label": "current-full",
+      "startedAt": "2026-10-09T08:35:37.332Z",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 838.3,
+      "headersMs": 836.6,
+      "bodyReadMs": 1.7,
+      "applicationMs": 571,
+      "decodedJsonBytes": 49623
+    },
+    {
+      "label": "current-compact",
+      "startedAt": "2026-10-09T08:35:38.275Z",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 850.7,
+      "headersMs": 849.2,
+      "bodyReadMs": 1.4,
+      "applicationMs": 569,
+      "decodedJsonBytes": 23233
+    },
+    {
+      "label": "current-full",
+      "startedAt": "2026-10-09T08:35:39.241Z",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 905.7,
+      "headersMs": 902.1,
+      "bodyReadMs": 3.6,
+      "applicationMs": 626,
+      "decodedJsonBytes": 49623
+    },
+    {
+      "label": "current-compact",
+      "startedAt": "2026-10-09T08:35:40.258Z",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 793.9,
+      "headersMs": 791.3,
+      "bodyReadMs": 2.6,
+      "applicationMs": 528,
+      "decodedJsonBytes": 23233
+    },
+    {
+      "label": "current-full",
+      "startedAt": "2026-10-09T08:35:41.161Z",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 795.4,
+      "headersMs": 794.3,
+      "bodyReadMs": 1.2,
+      "applicationMs": 512,
+      "decodedJsonBytes": 49623
+    },
+    {
+      "label": "current-compact",
+      "startedAt": "2026-10-09T08:35:42.061Z",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 871.2,
+      "headersMs": 870,
+      "bodyReadMs": 1.2,
+      "applicationMs": 511,
+      "decodedJsonBytes": 23233
+    },
+    {
+      "label": "current-full",
+      "startedAt": "2026-10-09T08:35:43.046Z",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 791.4,
+      "headersMs": 790.5,
+      "bodyReadMs": 0.8,
+      "applicationMs": 511,
+      "decodedJsonBytes": 49623
+    },
+    {
+      "label": "current-compact",
+      "startedAt": "2026-10-09T08:35:43.953Z",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 776.1,
+      "headersMs": 774.4,
+      "bodyReadMs": 1.7,
+      "applicationMs": 511,
+      "decodedJsonBytes": 23233
+    },
+    {
+      "label": "current-full",
+      "startedAt": "2026-10-09T08:35:44.840Z",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 792.4,
+      "headersMs": 790.5,
+      "bodyReadMs": 1.9,
+      "applicationMs": 511,
+      "decodedJsonBytes": 49623
+    },
+    {
+      "label": "history",
+      "startedAt": "2026-10-09T08:35:45.741Z",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 620.6,
+      "headersMs": 620.1,
+      "bodyReadMs": 0.5,
+      "applicationMs": null,
+      "decodedJsonBytes": 968
+    },
+    {
+      "label": "future-rejected",
+      "startedAt": "2026-10-09T08:35:46.474Z",
+      "method": "GET",
+      "status": 400,
+      "elapsedMs": 611.4,
+      "headersMs": 611,
+      "bodyReadMs": 0.4,
+      "applicationMs": null,
+      "decodedJsonBytes": 129
+    },
+    {
+      "label": "other-device-rejected",
+      "startedAt": "2026-10-09T08:35:47.192Z",
+      "method": "GET",
+      "status": 404,
+      "elapsedMs": 619.7,
+      "headersMs": 617.9,
+      "bodyReadMs": 1.8,
+      "applicationMs": null,
+      "decodedJsonBytes": 111
+    },
+    {
+      "label": "end",
+      "startedAt": "2026-10-09T08:35:47.922Z",
+      "method": "POST",
+      "status": 200,
+      "elapsedMs": 1308.8,
+      "headersMs": 1307.5,
+      "bodyReadMs": 1.3,
+      "applicationMs": 1023,
+      "decodedJsonBytes": 23232
+    },
+    {
+      "label": "ended-history",
+      "startedAt": "2026-10-09T08:35:49.343Z",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 613.6,
+      "headersMs": 612.8,
+      "bodyReadMs": 0.8,
+      "applicationMs": null,
+      "decodedJsonBytes": 968
+    }
+  ],
+  "checks": [
+    "26기업/출처/가상 픽·직접 매수/매도/멱등 체결",
+    "24턴 compact/전체 계약·선택 그래프/미래 턴/타기기 차단",
+    "종료 후 원장·상세 보존/순위 요청 없음"
+  ],
+  "sessionId": 32,
+  "companies": [
+    {
+      "name": "카카오",
+      "symbol": "035720.KS",
+      "sector": "플랫폼·소프트웨어",
+      "source": "https://www.kakaocorp.com/ir/stockInformation?lang=ko",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "SK하이닉스",
+      "symbol": "000660.KS",
+      "sector": "반도체·AI 인프라",
+      "source": "https://m.skhynix.com/ir/UI-FR-IR03/",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "기아",
+      "symbol": "000270.KS",
+      "sector": "자동차·모빌리티",
+      "source": "https://worldwide.kia.com/ko/company/investor-relations",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "현대모비스",
+      "symbol": "012330.KS",
+      "sector": "자동차·모빌리티",
+      "source": "https://www.mobis.com/en/index.do",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "AMD",
+      "symbol": "AMD",
+      "sector": "반도체·AI 인프라",
+      "source": "https://ir.amd.com/",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "브로드컴",
+      "symbol": "AVGO",
+      "sector": "반도체·AI 인프라",
+      "source": "https://investors.broadcom.com/",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "알파벳 Class A",
+      "symbol": "GOOGL",
+      "sector": "플랫폼·소프트웨어",
+      "source": "https://abc.xyz/",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "아마존",
+      "symbol": "AMZN",
+      "sector": "플랫폼·소프트웨어",
+      "source": "https://ir.aboutamazon.com/overview/default.aspx",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "어도비",
+      "symbol": "ADBE",
+      "sector": "플랫폼·소프트웨어",
+      "source": "https://www.adobe.com/investor-relations.html",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "제너럴모터스",
+      "symbol": "GM",
+      "sector": "자동차·모빌리티",
+      "source": "https://investor.gm.com/",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "뱅크오브아메리카",
+      "symbol": "BAC",
+      "sector": "금융",
+      "source": "https://investor.bankofamerica.com/",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "화이자",
+      "symbol": "PFE",
+      "sector": "바이오·헬스케어",
+      "source": "https://investors.pfizer.com/overview/default.aspx",
+      "verifiedAt": "2026-10-09"
+    },
+    {
+      "name": "삼성전자",
+      "symbol": "005930.KS",
+      "sector": "반도체·AI 인프라",
+      "source": "https://semiconductor.samsung.com/about-us/business-area/",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "엔비디아",
+      "symbol": "NVDA",
+      "sector": "반도체·AI 인프라",
+      "source": "https://www.nvidia.com/en-us/about-nvidia/",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "NAVER",
+      "symbol": "035420.KS",
+      "sector": "플랫폼·소프트웨어",
+      "source": "https://www.navercorp.com/company/about",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "마이크로소프트",
+      "symbol": "MSFT",
+      "sector": "플랫폼·소프트웨어",
+      "source": "https://www.microsoft.com/en-us/investor/default",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "현대차",
+      "symbol": "005380.KS",
+      "sector": "자동차·모빌리티",
+      "source": "https://www.hyundai.com/worldwide/en",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "테슬라",
+      "symbol": "TSLA",
+      "sector": "자동차·모빌리티",
+      "source": "https://www.tesla.com/about",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "LG에너지솔루션",
+      "symbol": "373220.KS",
+      "sector": "배터리·에너지 저장",
+      "source": "https://www.lgensol.com/kr/company/info-outline",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "삼성SDI",
+      "symbol": "006400.KS",
+      "sector": "배터리·에너지 저장",
+      "source": "https://www.samsungsdi.com/business/index.html",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "삼성바이오로직스",
+      "symbol": "207940.KS",
+      "sector": "바이오·헬스케어",
+      "source": "https://samsungbiologics.com/about/our-dna",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "셀트리온",
+      "symbol": "068270.KS",
+      "sector": "바이오·헬스케어",
+      "source": "https://celltrion.com/en-us/company/celltrion/about",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "KB금융",
+      "symbol": "105560.KS",
+      "sector": "금융",
+      "source": "https://www.kbfg.com/eng/ir/investor/list.jsp",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "JP모건체이스",
+      "symbol": "JPM",
+      "sector": "금융",
+      "source": "https://www.jpmorganchase.com/about",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "한화에어로스페이스",
+      "symbol": "012450.KS",
+      "sector": "방산·항공우주",
+      "source": "https://www.hanwhaaerospace.com/eng/media/newsroom/view.do?seq=260",
+      "verifiedAt": "2026-10-07"
+    },
+    {
+      "name": "록히드마틴",
+      "symbol": "LMT",
+      "sector": "방산·항공우주",
+      "source": "https://www.lockheedmartin.com/en-us/who-we-are.html",
+      "verifiedAt": "2026-10-07"
+    }
+  ],
+  "finishedAt": "2026-10-09T08:35:49.959Z",
+  "timings": [
+    {
+      "label": "start",
+      "count": 1,
+      "medianMs": 2277.6,
+      "minMs": 2277.6,
+      "maxMs": 2277.6,
+      "minDecodedJsonBytes": 20353,
+      "maxDecodedJsonBytes": 20353
+    },
+    {
+      "label": "preview",
+      "count": 1,
+      "medianMs": 982,
+      "minMs": 982,
+      "maxMs": 982,
+      "minDecodedJsonBytes": 198,
+      "maxDecodedJsonBytes": 198
+    },
+    {
+      "label": "buy",
+      "count": 1,
+      "medianMs": 1120.9,
+      "minMs": 1120.9,
+      "maxMs": 1120.9,
+      "minDecodedJsonBytes": 20590,
+      "maxDecodedJsonBytes": 20590
+    },
+    {
+      "label": "buy-idempotent",
+      "count": 1,
+      "medianMs": 972.3,
+      "minMs": 972.3,
+      "maxMs": 972.3,
+      "minDecodedJsonBytes": 20612,
+      "maxDecodedJsonBytes": 20612
+    },
+    {
+      "label": "sell",
+      "count": 1,
+      "medianMs": 1127.9,
+      "minMs": 1127.9,
+      "maxMs": 1127.9,
+      "minDecodedJsonBytes": 20744,
+      "maxDecodedJsonBytes": 20744
+    },
+    {
+      "label": "next-turn",
+      "count": 23,
+      "medianMs": 1298.4,
+      "minMs": 1142.7,
+      "maxMs": 1360.4,
+      "minDecodedJsonBytes": 22518,
+      "maxDecodedJsonBytes": 24759
+    },
+    {
+      "label": "current-compact",
+      "count": 5,
+      "medianMs": 797.6,
+      "minMs": 776.1,
+      "maxMs": 871.2,
+      "minDecodedJsonBytes": 23233,
+      "maxDecodedJsonBytes": 23233
+    },
+    {
+      "label": "current-full",
+      "count": 5,
+      "medianMs": 795.4,
+      "minMs": 791.4,
+      "maxMs": 905.7,
+      "minDecodedJsonBytes": 49623,
+      "maxDecodedJsonBytes": 49623
+    },
+    {
+      "label": "history",
+      "count": 1,
+      "medianMs": 620.6,
+      "minMs": 620.6,
+      "maxMs": 620.6,
+      "minDecodedJsonBytes": 968,
+      "maxDecodedJsonBytes": 968
+    },
+    {
+      "label": "future-rejected",
+      "count": 1,
+      "medianMs": 611.4,
+      "minMs": 611.4,
+      "maxMs": 611.4,
+      "minDecodedJsonBytes": 129,
+      "maxDecodedJsonBytes": 129
+    },
+    {
+      "label": "other-device-rejected",
+      "count": 1,
+      "medianMs": 619.7,
+      "minMs": 619.7,
+      "maxMs": 619.7,
+      "minDecodedJsonBytes": 111,
+      "maxDecodedJsonBytes": 111
+    },
+    {
+      "label": "end",
+      "count": 1,
+      "medianMs": 1308.8,
+      "minMs": 1308.8,
+      "maxMs": 1308.8,
+      "minDecodedJsonBytes": 23232,
+      "maxDecodedJsonBytes": 23232
+    },
+    {
+      "label": "ended-history",
+      "count": 1,
+      "medianMs": 613.6,
+      "minMs": 613.6,
+      "maxMs": 613.6,
+      "minDecodedJsonBytes": 968,
+      "maxDecodedJsonBytes": 968
+    }
+  ]
+}

@@ -1,5 +1,11 @@
 # 결정과 관찰
 
+실제17:34:57 KST 세션32/43요청 PASS·종료 원장 보관. 기존Server-Timing 숫자39개, 필터 대상 아닌4개는null. 첫HTTP2277.6/headers2273.7/body4.0/application698ms, 다음 턴23개 중앙값HTTP1298.4/headers1295.9/body1.7/application1018ms. 현재전체5개 본문0.8~3.6ms. 본문 읽기는 이번 요청들의 큰 비용이 아니며 인증·응답 준비·DNS/TLS 중 원인 구분은 아직 불가하다. 앞선15.9초는 재현되지 않았지만 서버 기동/조건이 달라 해결된 것으로 주장하지 않는다. backend/배포/원래 사용자/순위/삭제/수집/EAS0.
+
+소스50f1cb4·CI37905207583/PR CI37905212865 서버/H2·전용 PostgreSQL·복원·웹/앱 모두 성공·PR#28은075c7a7로 머지·Issue#27 종료. backend/Render 설정·배포를 변경하지 않는다. 소유 ID 없는 관측 숫자만 저장한다. 실제 첫 큰 지연 확인은 BE-28에 유지한다.
+
+코드 확인상 AccountSessionFilter는 게임 요청 전에 JdbcTemplate의 linkedUser 조회를 하고, 연결 계정이면 authenticate도 호출한다. 이 조회는 게임 서비스 타이머 밖이며 Hibernate 이벤트 sql_count에도 포함되지 않는다. 따라서 SQL3/4는 전체 HTTP 요청의 모든 DB 호출 수가 아니라 게임 계측 범위의 횟수다. 인증을 생략하거나 캐시로 우회하지 않는다. 두 필터에 명시적 Order가 없어 application 헤더 경계를 모든 인증까지 포함한 전체 서버 시간으로 주장하지 않는다.
+
 사용자 로그10줄을 받았다. 첫 START server2903.904ms·SQL612.593ms3회·rules203.685ms·uptime1513576ms. 첫 JVM 기동 직후 요청이라고 할 수 없다. 매수977.535ms·SQL679ms4회, 재전송696.584ms·511.960ms3회, 매도850.122ms·670.829ms4회. NEXT_TURN5개는1014.474~1140.245ms·SQL673.194~874.070ms4회. warm 규칙은0.041~0.154ms로 비용이 작다.
 
 START 클라이언트15885.3ms와 서비스2903.904ms는 경계가 다른 측정이다. 미계측 차이를 응답 직렬화나 네트워크로 확정하지 않는다. 기존 RequestLatency 필터의 Server-Timing 헤더는 동작하지만 검증 script가 버렸으므로 이를 먼저 보존한다. 기본 필터 순서·서버 경계/API를 바꾸거나 새로운 로그를 추가할 필요가 없다.
