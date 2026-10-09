@@ -1,5 +1,9 @@
 # 게임 첫 HTTP 요청의 관측 경계 보완
 
+## 비동기 응답 준비 배포 확인 (2026-10-10)
+
+BE-28 PR#51 Render 적용 후2026-10-10 01:25:09 KST 격리 세션37·43요청 PASS·ENDED 보관. START HTTP6833.4/application6129/controller1801.092/response3200.598ms·PREVIEW1463.1ms·다음 턴23개 중앙값1394.6ms(1290.4~2813.1ms). 첫6.83초와 응답 준비3.20초가 남아 목표한 응답 지연 개선은 확인되지 않았다. 이전7.63초보다 짧은 표본을 변경 효과로 단정하지 않는다. response는 컨트롤러 종료~beforeCommit 경계이며 JSON 단독 시간이나 특정 CPU 원인으로 해석하지 않는다. 현재 준비 코드는 실제 HTTP 결과 처리기·미디어 선택·Netty 전체를 실행하지 않는다. 추가 추측성 서버 변경/반복 게임은 하지 않고 이번 배포 game_runtime_ready 숫자 로그1줄로 실제 시작 준비 실행을 먼저 확인한다. 기존 START/PREVIEW 로그 재요청·새배포/변수/과제/APK0. 기존Issue#45/BE-28 미완료·기존 사용자/순위/수집 변경0·private 파일 제외.
+
 ## JPA 준비 변경의 운영 확인 (2026-10-10)
 
 START/PREVIEW 로그 수신 완료: STARTserver2697.770ms/repository1598.312ms2회/SQL591.314ms3회/연결181.178ms/prepare87.714ms/큐99.275ms/규칙0.057ms70회. 이전service9.08초보다 작지만 모든 비용 제거는 아니다. 응답 준비3초가 남아 코드의 동기 encodeValue만 준비하는 경로를 실제 EncoderHttpMessageWriter의 Mono 응답 작성/commit 경로로 변경한다. 실제 컨트롤러 반환형을 Spring MethodParameter로 시작 시 해석한다. 가상 DTO를 메모리 응답에 쓰고 버퍼를 즉시 해제하며 네트워크/API/게임 서비스/새 DB 호출은 없다.30초의 유한 시작 준비 대기로 작업을 한 번 완료한다. 실제 게임 계약/버퍼 처리/마스킹/PG·main 검증 후 기존Issue#45에 연결한다. 운영 효과는 새 배포 측정 전 미확정이다.

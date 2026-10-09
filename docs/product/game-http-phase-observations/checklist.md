@@ -12,7 +12,9 @@
 - [x] 세션36 START/PREVIEW 로그 수신 대조 — START2697.770ms/repository1598.312ms2회/SQL591.314ms3회·로그 추가 요청 종료
 - [x] 실제 비동기 HTTP writer/commit·컨트롤러 반환형 준비 보완·로컬207검사 실패0/제외1
 - [x] 같은 Issue#45의 PR·PG 및 main CI 확인 — PR#51·소스055ab81·maina6aa350·push37957493452/PR37957538350/main37958166380 전체 성공
-- [ ] 새 배포 첫 응답 준비/시작 지연 실측 후 완료 기준 판단
+- [x] 새 배포 첫 응답 준비/시작 지연 실측 후 완료 기준 판단 — 세션37·43요청 PASS·START6.833초/response3.201초로 실제 성능 완료 미충족
+- [x] 이번 배포 game_runtime_ready 수신·시작 준비 실행 확인 — preparation12012ms/metadata412ms·첫START보다59.032초 이전 완료·로그 요청 종료
+- [ ] 남은 첫 응답 구간3.20초 원인 확인·필요한 수정 실측 검증
 
 - [x] BE-39·Issue#27 등록
 - [x] 기존 응답 헤더의 안전한 application 숫자·헤더/본문 시간·요청 시작 ISO 관측
