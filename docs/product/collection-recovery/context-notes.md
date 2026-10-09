@@ -33,3 +33,5 @@ main 3ba2e3b CI37986551175 attempt2 최종success·백엔드 전체/PG/백업복
 로컬 수신기 검증 통과. 실제 web-push5.1.2 전송 요청의 Content-Encoding=aes128gcm·Authorization=vapid t= 형식과 JDK ECDSA JWT서명을 검증했다. 새 테스트에서 실제로 생성한 서로 다른 키 쌍/잘못된 형식은 전송 요청 수 증가 없이 차단됐다. 별도 테스트 의존성 추가0. AUTH_REJECTED 안내는 실제 서버 키쌍 검증 통과 후 제공처 거절로 구분하고, 재구독만 반복시키는 안내는 제거했다. 실제 운영403 원인 확정/실수신 성공은 아직 아니다.
 
 최종 로컬 전체211검사 BUILD SUCCESSFUL(1분27초). 실제 라이브러리/로컬 수신기/JDK JWT서명 회귀와 키불일치503 안내를 포함했다. 최종 소스 CI·운영 배포/실수신을 다음 단계로 남긴다.
+
+CI37991730490/37991723843은 Initialize containers 단계 Docker Hub 익명 pull 한도 실패. 백엔드 테스트는 실행되지 않았고 웹/모바일은 성공했다. 실패 작업 무한 재시도 대신 동일 공식 PostgreSQL17 공개미러로 변경해 검증한다.

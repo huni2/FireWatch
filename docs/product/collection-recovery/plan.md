@@ -11,3 +11,5 @@
 추가 소스 검토에서 앱 발송 예외가 웹 발송까지 중단하는 경로를 확인했다. 채널별 예외를 안전하게 처리해 다른 채널 발송을 계속한다. 둘 다 실패하면 테스트503과 기존 outbox 실패 정책을 유지하고 예외만으로 구독/토큰을 삭제하지 않는다.
 
 새 브라우저 구독 후에도 AUTH_REJECTED 안내 지속. 로컬 web-push5.1.2 바이트코드에서 기본 send(Notification)가 Encoding.AESGCM(구형 WebPush 인증 헤더)을 사용하는 것을 확인했다. Encoding.AES128GCM을 명시하고 Utils.verifyKeyPair로 서버 키 쌍을 값 노출 없이 검증한다. 키 불일치/형식 오류는 외부 요청 전에 차단해 별도 조치 안내를 반환한다. 실제403 원인 확정/실수신 성공으로 확대하지 않는다. 외부 제공처 호출 없이 로컬 수신기로 요청 헤더와 JWT서명·키 불일치 차단을 검증한다.
+
+PR#55 push/PR CI는 테스트 전 postgres:17 이미지 다운로드에서 Docker Hub 익명 pull 한도(toomanyrequests)로 모두 실패했다. 동일 Docker Official Image의 ECR Public 미러 public.ecr.aws/docker/library/postgres:17로 CI 서비스 이미지 경로만 바꾸고 실제 컨테이너/전체검사/PG/복구를 검증한다. 자격증명 추가/테스트 건너뛰기/서버환경 변경/새 과제는 하지 않는다.
