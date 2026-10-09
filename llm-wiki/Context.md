@@ -1,5 +1,9 @@
 # FireWatch — 현재 맥락
 
+BE-28 최신 START/PREVIEW 로그 수신 완료. STARTserver9077.947ms/SQL573.095ms3회/연결181.306/큐99.052/규칙90.424ms로 SQL이 대부분 원인은 아니다. 동일 요청 로그 추가 요청은 종료. 실제 Spring AOP DefaultParameterNameDiscoverer.shared/KotlinReflection 첫 처리 경로를 확인해 GameService 메서드명을 서버 준비 단계에서 해석하며 서비스/DB 호출은 없다. 첫 시작 조회·저장에 기존 REPOSITORY phase를 적용·잠금/쿼리 변경0. 전체/감사 마스킹/PG 검증 중·기존Issue#45 유지.
+
+BE-28 최신 운영 검증: 사용자 Render 반영 완료 후2026-10-10 00:23:15 KST 격리 세션35·43요청 PASS·ENDED 보존. START15.205초·controller9.097초/response3.100초, PREVIEW1.484초·다음 턴23개 중앙값1.391초. 기능 정상·첫 시작 지연은 미해결이므로 기존Issue#45/BE-28 유지. 해당 START 로그1줄만 요청해 기존 SQL/연결/큐 시간을 대조한다. 재배포/추가 변수는 불필요하고 다음 수정은 로그 근거에 따라 결정한다. 공개 수치 JSON만 보관·기존 사용자/순위 변경0·새 과제/APK0.
+
 BE-28 초기화 이전 코드/머지 검증 완료. PR#49·소스aa3e5bd·mainf631544·main37950391498 서버/H2·PG·복원·웹/앱 전체 성공. 로컬206검사 실패0/제외1·관련 권한/게임 재검증 성공. 이전 push 감사로그20초 대기 실패는 XML/이슈에 보존하고1회만 재검증 성공·운영 인증/timeout 변경0. Render 새 코드 배포 확인을 한 번 요청해 대기 중이며, 다음은 도구로 첫 START controller/response를 직접 측정한다. 기존 BE-28/Issue#45는 닫지 않음·새 과제/APK0.
 
 BE-28 초기화 이전 PR#49 mainf631544 머지. 로컬206검사 실패0/제외1·관련 권한/게임 재검증 통과. PR37948978627 전체 성공·push37948913952 최초 감사로그20초 대기 실패 보존 후 실패job1회 재검증 성공. main CI37950391498 확인 중. Render 새 서버 코드 적용 확인 요청1회·기존 변수 그대로·APK0. 실제 첫 시작/응답 준비를 재측정하기 전 기존 BE-28/Issue#45는 열어 둔다.

@@ -26,6 +26,9 @@ class GameRuntimePreparationTest {
             assertFalse(preparation.prepared)
             preparation.afterSingletonsInstantiated()
             assertTrue(preparation.prepared)
+            val startMethod = com.firewatch.backend.service.GameService::class.java.declaredMethods.single { it.name == "startGame" }
+            assertEquals(listOf("deviceId", "difficulty", "allowShortSelling", "historyPoints"),
+                org.springframework.core.DefaultParameterNameDiscoverer.getSharedInstance().getParameterNames(startMethod)!!.toList())
             val sample = preparation.sampleResponse()
             val decoded = mapper.readValue(mapper.writeValueAsBytes(sample), GameTurnResponse::class.java)
             assertEquals(-1, decoded.sessionId)

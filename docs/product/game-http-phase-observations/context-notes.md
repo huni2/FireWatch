@@ -1,5 +1,17 @@
 # 결정과 관찰
 
+- 최종 관련 로컬 검사(감사AOP/게임HTTP/준비) 통과. 금액은 compareTo, 보유/거래의 DECIMAL은 trailing zero만 정규화해 ID/턴/종목/행동/수량/가격/총액을 대조한다.6종 테이블 건수·현금·보유·원장·시세 불변 확인. 이전 전체207검사의 유일한 숫자표현 비교 실패를 수정했고 최종 전체/PG CI에서 모두 다시 확인한다.
+
+- JPA 준비 추가 후 로컬 전체207검사 중 새 보존 검사1건만 DECIMAL 표현 차이9997500.0000/9997500.00000000로 실패·행 건수 불변은 통과했다. 금액 비교를 수치 비교로 정정하고 보유/거래의 ID·수량·가격·총액을 유지해 재검증한다. 운영 로직/정밀도는 변경하지 않는다. 첫 시작 repository18.597ms/SQL3.670ms·service121.873ms로 이전 로컬 첫repository1031.114ms보다 준비 비용이 요청 밖으로 이동한 표본을 확인했다. 이를 Render 효과로 주장하지 않는다.
+
+- 로컬 GameTimingIntegrationTest 첫 START repository1031.114ms/SQL1.722ms·다음 START repository7.591ms/SQL1.276ms로 첫 JPA 경로 준비 비용을 관측했다. 같은 세션 조회 메서드를 임시 UUID 식별자로 서버 준비 때 한 번 조회한다. 기존 잠금 메서드는 DB read-only 트랜잭션에서 금지되므로 일반 트랜잭션 안에서 조회만 한다. 새 데이터/감사 저장·게임 서비스 호출·주기 실행·재시도는 없다. 계정/게임 기록을 지우거나 바꾸지 않으며 실제 상태/행 건수 불변 검증을 추가한다. PR#50 설명도 최종 범위로 갱신한다.
+
+- 감사 메타데이터 준비 보완 로컬 전체206검사 실패0/제외1 통과. 실제 shared 해석기의 startGame 매개변수 이름/deviceId 마스킹 계약·감사 성공/실패/중첩 fallback·첫 SQL3회·repository_count2·게임 원장/권한 회귀 유지. 전체 성능 효과는 새 배포 실측 전 미확정. 기존Issue#45의 PR/전체PG/main CI를 확인한다.
+
+- 사용자 START/PREVIEW 로그 수신 완료. START server9077.947/큐99.052/연결181.306/SQL573.095ms3회/규칙90.424ms70회·uptime327280ms. PREVIEW server777.550/큐93.610/연결0.028/SQL378.801ms2회/규칙0.015ms. 첫 시작 지연 대부분은 SQL 실행으로 설명되지 않는다. Spring7.0.8 AOP MethodSignatureImpl.getParameterNames는 DefaultParameterNameDiscoverer.getSharedInstance를 호출하며 KotlinReflection을 먼저 사용한다(javap 확인). 감사로그 summarizeArgs가 이 경로를 호출하므로 동일 해석기를 GameService 메서드에 대해 시작 시 준비한다. 전체8초의 원인으로 단정하지 않고 기존 REPOSITORY 단계로 첫 조회/저장을 측정해 다음 대조를 보완한다.
+
+- 2026-10-10 사용자 Render 반영 완료 확인 후00:23:15 KST 시작·격리 세션35·43요청 PASS·ENDED 보관. START HTTP15204.9/application14729/auth1600.036/dispatch905.541/controller9097.298/response3099.997ms. PREVIEW1483.8ms·다음 턴23개 중앙값1391.4ms. 이전 표본보다 응답 준비가 작지만 인과/개선율을 일반화하지 않는다. 여전히15.2초로 성능 완료 미충족·기존BE-28/Issue#45 유지. 해당 START game_timing1줄만 요청해 SQL/연결/큐를 대조한다. 도구 보고서 private 소유 파일은 제외하고 공개 숫자 JSON만 저장, 기존 기록/순위 변경 없음·APK0.
+
 - 초기화 이전 수정 검증 종료. PR#49·소스aa3e5bd·mainf631544, PR37948978627 전체 성공·push37948913952 실패job1회 재검증 성공·main37950391498 전체 성공. 로컬206검사 실패0/제외1·관련 권한/게임 재검증 성공. Render 최신 서버 적용 확인 요청1회 대기이며 새 첫 시작 측정 전 지연 해소/BE-28 완료는 미확정이다.
 
 - PR#49 CI37948978627 전체 성공. push37948913952의 AccountSessionIntegrationTest.kt117은20초 응답 대기 TimeoutException으로 실패·보존 XML 확인. 잘못된 기기 토큰의401 assertion 실패로 단정하지 않는다. 운영 인증/timeout/검사 계약을 변경하지 않고 관련 로컬 및 실패 job1회만 재검증한다. 최초 실패 기록은 보존하며 반복 성공까지 재시도하지 않는다.

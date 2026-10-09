@@ -27,6 +27,10 @@ class GameTimingIntegrationTest {
     @LocalServerPort var port = 0
     @org.springframework.beans.factory.annotation.Autowired
     lateinit var preparation: com.firewatch.backend.web.GameRuntimePreparation
+    @org.springframework.beans.factory.annotation.Autowired
+    lateinit var persistencePreparation: com.firewatch.backend.web.GamePersistencePreparation
+    @org.springframework.beans.factory.annotation.Autowired
+    lateinit var jdbc: org.springframework.jdbc.core.JdbcTemplate
     private val logger = LoggerFactory.getLogger(GameRequestTiming::class.java) as Logger
     private lateinit var appender: ListAppender<ILoggingEvent>
     private val httpLogger = LoggerFactory.getLogger(com.firewatch.backend.web.RequestLatency::class.java) as Logger
@@ -46,8 +50,42 @@ class GameTimingIntegrationTest {
     private fun messages() = appender.list.map { it.formattedMessage }
     private fun sqlCount(message: String) = Regex("sql_count=(\\d+)").find(message)!!.groupValues[1].toInt()
 
+    @Test fun `persistence preparation preserves games trades audit and market records`() {
+        assertTrue(persistencePreparation.prepared)
+        val device = UUID.randomUUID().toString()
+        val turn = start(device)
+        val body = com.firewatch.backend.web.dto.GameTradeRequest(
+            instrumentType = com.firewatch.backend.entity.GameInstrumentType.GOLD,
+            action = com.firewatch.backend.entity.GameTradeAction.BUY,
+            quantity = java.math.BigDecimal.ONE, expectedTurnIndex = turn.turnIndex,
+        )
+        val before = client().post().uri("/api/game/trade?compact=true").header("X-Device-Id", device).bodyValue(body)
+            .exchange().expectStatus().isOk.expectBody(GameTurnResponse::class.java).returnResult().responseBody!!
+        fun counts() = listOf("game_sessions", "game_transactions", "game_price_snapshots", "audit_logs", "briefings", "briefing_news")
+            .associateWith { jdbc.queryForObject("SELECT COUNT(*) FROM $it", Long::class.java) }
+        val savedCounts = counts()
+        persistencePreparation.afterSingletonsInstantiated()
+        assertEquals(savedCounts, counts(), "Preparation must never persist or remove records")
+        val after = client().get().uri("/api/game/current?compact=true").header("X-Device-Id", device)
+            .exchange().expectStatus().isOk.expectBody(GameTurnResponse::class.java).returnResult().responseBody!!
+        assertEquals(before.sessionId, after.sessionId)
+        // SQL DECIMAL changes scale; compare numerical values without weakening IDs/quantities.
+        assertEquals(0, before.cash.compareTo(after.cash))
+        fun holdings(turn: GameTurnResponse) = turn.holdings.map { it.copy(
+            quantity = it.quantity.stripTrailingZeros(), currentPrice = it.currentPrice?.stripTrailingZeros(),
+            value = it.value?.stripTrailingZeros(),
+        ) }
+        fun transactions(turn: GameTurnResponse) = turn.transactions.map { it.copy(
+            quantity = it.quantity.stripTrailingZeros(), price = it.price.stripTrailingZeros(), total = it.total.stripTrailingZeros(),
+        ) }
+        assertEquals(holdings(before), holdings(after))
+        assertEquals(transactions(before), transactions(after))
+        assertEquals(before.stockPrices, after.stockPrices)
+    }
+
     @Test fun `preview measures binding boundary and rejects invalid quantity before controller`() {
         assertTrue(preparation.prepared, "HTTP must start after game runtime preparation")
+        assertTrue(persistencePreparation.prepared, "HTTP must start after persistence preparation")
         val device = UUID.randomUUID().toString()
         val turn = start(device)
         val body = com.firewatch.backend.web.dto.GameTradeRequest(
@@ -73,6 +111,7 @@ class GameTimingIntegrationTest {
         val started = start(device)
         val first = messages().last()
         assertTrue(first.contains("op=START outcome=success"))
+        assertTrue(first.contains("repository_count=2"), first)
         // Session lock lookup + new session INSERT + durable audit INSERT; no empty ledger SELECT.
         assertEquals(3, sqlCount(first))
         assertTrue(Regex("connection_count=([1-9][0-9]*)").containsMatchIn(first))
