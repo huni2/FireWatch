@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS instrument_catalog (
  verified_at DATE NOT NULL
 );
 ALTER TABLE instrument_catalog ADD COLUMN IF NOT EXISTS name_initials VARCHAR(160) NOT NULL DEFAULT '';
+ALTER TABLE instrument_catalog ADD COLUMN IF NOT EXISTS directory_baseline_json TEXT;
 CREATE INDEX IF NOT EXISTS idx_catalog_filters ON instrument_catalog(asset_class, region, sector_id);
 CREATE INDEX IF NOT EXISTS idx_catalog_name ON instrument_catalog(normalized_name);
 CREATE TABLE IF NOT EXISTS market_quotes (

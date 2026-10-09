@@ -53,6 +53,9 @@ class InstrumentCatalog(private val jdbc: JdbcTemplate, private val transactions
                 statement.setDate(9, java.sql.Date.valueOf(item.verifiedAt))
                 statement.setString(10, item.symbol)
             }
+            val refreshed = DirectoryCatalogRefresh(jdbc).apply(directory.toList(), seed.map { it.symbol }.toSet())
+            org.slf4j.LoggerFactory.getLogger(InstrumentCatalog::class.java).info(
+                "catalog_refresh baselined={} updated={} preserved={}", refreshed.baselined, refreshed.updated, refreshed.preserved)
             // Derive only the search field from current DB names, preserving edited metadata.
             val names = jdbc.query("SELECT symbol, name, name_initials FROM instrument_catalog", { row, _ ->
                 Triple(row.getString("symbol"), row.getString("name"), row.getString("name_initials"))

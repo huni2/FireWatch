@@ -95,7 +95,7 @@ function compareSnapshots(previous, next) {
   for (const [symbol, item] of before) if (!after.has(symbol)) missing.push({ symbol, name: item.name })
   return { previousVerifiedAt: previous.verifiedAt, nextVerifiedAt: next.verifiedAt,
     counts: { previous: before.size, next: after.size, added: added.length, renamed: renamed.length, industryChanged: industryChanged.length, missing: missing.length, unchanged },
-    databasePolicy: { existingRowsAutoUpdated: false, missingRowsAutoDeleted: false, missingMeansDelisted: false },
+    databasePolicy: { existingRowsAutoUpdated: true, requiresMatchingOfficialBaseline: true, requiresNewerVerifiedAt: true, missingRowsAutoDeleted: false, missingMeansDelisted: false },
     added, renamed, industryChanged, missing }
 }
 module.exports = { parseKrxHtml, buildDirectory, sourceUrl, generate, compareSnapshots }
