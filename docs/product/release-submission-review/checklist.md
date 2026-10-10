@@ -13,4 +13,4 @@
 - [x] 로컬215검사·소스/PR 전체 CI 성공·PR#64 머지 및 근거 기록 (PR#64 main CI38026137517 최종success)
 
 - [x] 복구 DB 로그인 세션·푸시 등록 비활성화 및 원본 DB 보존 검증 (PostgreSQL17 CI)
-- [x] 복구 후속 소스/PR CI·PR#65 머지·남은 실제 백업 확인 기록 (PR#64 main CI38026137517 최종success)
+- [x] 복구 후속 소스/PR CI·PR#65 머지·남은 실제 백업 확인 기록 (PR#65 main CI 별도 확인)
