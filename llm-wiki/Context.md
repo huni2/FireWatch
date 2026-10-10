@@ -1,5 +1,7 @@
 # FireWatch — 현재 맥락
 
+사용자 실제 테스트 알림 수신 성공 확인(2026-10-10, 오 됨). 제공처 수락만이 아닌 사용자 기기 실수신 근거로 기록한다. PR#55/main9b9511d·최종CI37994939959 완료. 수집 복구는 기존 운영DB 집계 확인. 운영 감사 기록 대조와 실제 일반 계정 차단은 아직 미확인으로 BE-30/Issue#53을 종료하지 않는다. WEB-19 권한 확인과 동일 결과를 공유하고 중복 테스트/새 과제/APK 없이 진행한다.
+
 PR#55 main9b9511d의 CI37994939959 최종success(전체 백엔드/PG/백업복구/웹/모바일). e560a10 push37994439548·PR37994446239도 success. CI Docker Hub 익명 pull 한도 오류는 공식 PostgreSQL17 ECR Public 미러 경로 변경 후 실제 준비/검사 통과로 해결 확인. 표준VAPID/키쌍 검증 소스 반영·키 값/운영 환경변수 변경0. Render 배포·실제 기기 수신은 미확인으로 기존BE-30/Issue#53 유지·APK0.
 
 BE-30 PR#55 main9b9511d 머지 완료·소스e560a10의 push37994439548/PR37994446239 전체CI 성공. 최초 CI는 Docker Hub 익명 pull 한도에서 테스트 전 실패했고 동일 Docker Official PostgreSQL17 ECR Public 미러로 컨테이너 준비/전체/PG/복구 검증을 통과했다. 로컬211검사 실패0·skip1. 표준 AES128GCM/VAPID·서버 키쌍 검증 반영·키 값/환경변수 변경0. main CI37994939959 및 Render 배포/실수신 확인은 별도. 기존Issue#53/BE-30 유지·새 과제/APK0.
