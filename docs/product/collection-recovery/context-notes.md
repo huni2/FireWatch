@@ -68,3 +68,5 @@ WEB-19 수정 검증. 기존 화면의 서버503 회귀가 수정 전 실패해 
 최종 자동 확인 결과. AccountSessionIntegrationTest7/AuthServiceTest7/CollectionAlertAccessIntegrationTest1 총15검사 실패0·오류0·skip0, BUILD SUCCESSFUL(1분18초). 실제 세션 일반403·운영자200·위조/만료401은 로컬 fixture이며 Google 운영 확인으로 처리하지 않는다. AuthSessions.logout은 세션/기기 연결만 해제하며 공유 설정은 보존한다. AuthService 재연결은 기존 계정 행을 사용하고 익명 포트폴리오 충돌은 덮어쓰지 않는다. AppShell은 서버 operations/access 응답으로만 계정 운영자 상태를 설정하고 클라이언트 로그아웃은 세션/운영자 상태를 초기화한다. 공개 웹1366/390px 감사 주소 표0·익명401(감사/수집)·전달 변경 요청0·재시도0 PASS. actual Google 계정 확인은 대기이며 session-verification.md에 동일 결과를 BE-30/WEB-19가 공유하도록 기록했다.
 
 2026-10-10. BE-21 인증 원문 실제 정리 완료 후 사용자가 BE-30/WEB-19 권한·로그아웃 기록 확인 진행에 동의했다. 실제 사용자 브라우저 세션 접근 도구가 없으므로 운영자 이외 계정의 메뉴/감사 주소/로그아웃 재로그인 기록 확인을 요청했다. 로컬 및 익명 점검과 실제 Google 검증을 구분한다. 계정 삭제나 운영 DB 수정·새 과제·APK 없음.
+
+2026-10-10 WEB-19 완료. 사용자 실제 일반 계정 차단·일반 브라우저 상태 표시/로딩 종료에 이어 같은 Google 계정 로그아웃/재로그인 후 기존 기록 유지와 운영자 감사로그 접근 확인(기록 유지되고 감사로그도 열림). 로컬 전체214검사 실패0/skip1·push38023472628/PR38023478533 전체 success·PR#61 main c21e7d1 머지. 신규 런타임/운영 DB 변경·APK/EAS 요청 없음. 이전 사용자 확인 대기 문단은 이 결과로 갱신한다.
