@@ -11,6 +11,8 @@
 
 ## 2026-10-10
 
+- **[PROJ] BE-30 실제 수집·푸시 감사 완료·BE-21 원문 형태 기록 확인**: 실제 사용자 DB 집계2026-10-10T02:03:09.432559 대조. 뉴스140/시세12(이전139/11), 주식SUCCESS43·금융SUCCESS3·브리핑SUCCESS4·미해결 장애0·오늘 회로실패0. CollectionJobRunner SUCCESS823/WARNING119, MarketCollection SUCCESS1/WARNING102, 테스트 푸시 과거FAILURE4 이후SUCCESS1 확인. 운영자/웹 구독1·모바일FCM0. 실제 수집·푸시 감사 기준 완료. WARNING은 감사 임계시간에 따른 분류이며 수집 실패로 대체 해석하지 않는다. 과거financial PAUSED는10월8일 이력으로 유지한다. 관측 건수는 최근2일 창이므로 이전 집계보다 줄어든 것을 데이터 삭제로 단정하지 않는다. BE-30은 실제 일반 Google 계정 차단(WEB-19와 공유)만 남았다. AUTH 감사49행 중 원문 형태18/완전마스킹4 확인: 신규 마스킹 동작의 실제 운영 근거이며 원문18의 시점/유효 세션/전체기간·백업 범위는 미확인. BE-21의 동일 과제에서 원문 없는 전체기간/세션 해시 대조 쿼리를 준비했고 아직 운영 실행·UPDATE/DELETE/세션폐기는 하지 않았다. 새 과제 번호·APK0.
+
 - **[WEB] 개인정보 고지 운영 미반영 확인·배포 후 재검증**: BE-21 실제 운영 확인: main79ccbf7 CI38014319018 success. 초기 운영 웹에는 이전 개인정보 고지가 남아 있었으므로 Wrangler 기존 인증/빌드 운영 API·Google ID·공개VAPID 포함을 값 출력 없이 확인해 Cloudflare0f1a9c43(https://0f1a9c43.firewatch-eqp.pages.dev)에 배포했다. 운영 주소1366/390px에서 최신 검색어 고지/시행일·삭제 앵커/메일/계정 링크·별도 게임 범위·가로 넘침0 PASS. 익명 감사 화면 운영자 게이트·표0, 감사/수집 API2GET401 PASS. 변경 HTTP 요청 전달0·재시도0이며 내부 감사 삽입0을 뜻하지 않는다. 전후 결과 JSON 보존. Render 버전/실제 운영 감사·일반계정·삭제/백업 이행은 미확인이다. 읽기 전용 operator-summary.sql에 authorization_audit 집계만 추가해 BE-21/30 확인을 한 실행으로 요청한다. 원문/계정ID/키 출력0·새 과제/APK0.
 
 - **[PROJ] BE-21 PR#58 전체 CI·머지와 남은 운영 기준 정리**: BE-21 PR#58 main79ccbf7 머지. 소스cac7b6d의 push38013982786/PR38014010120 전체 CI success(백엔드·PostgreSQL·별도 복구·웹·앱). 웹 로컬 build/lint 성공, 기존 lint 경고1개 유지. Play 데이터 보안 코드 대조 초안·계정/기기 삭제 요청 절차·비공개 처리 양식·백업 재적용 확인 항목과 공개 검색어 감사 안내 정정 완료. 이전 PR#57 main CI38012981864 success. 새 main CI/웹·Render 실제 반영은 별도 확인 전. 실제 보관기간/처리기간·계약·백업/삭제 이행·최종 SDK 확인이 남아 BE-21/Issue#56 유지. BE-30 운영 감사/일반계정도 대기. 새 과제 번호·운영 삭제·APK0.
