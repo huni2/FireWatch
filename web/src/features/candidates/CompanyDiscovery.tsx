@@ -1,5 +1,5 @@
 import { articleText } from '../../../../shared/article-text'
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { Alert, Button, Card, Drawer, Empty, Grid, Input, Modal, Segmented, Space, Tag, Typography } from 'antd'
 import { Link } from 'react-router-dom'
 import { catalogVerifiedAt, companies, companySector, findCompany, isRecommended, qualifiedRecommendations, portfolioContext, searchCompanies, sectors, type RecommendationReport } from '../../../../shared/discovery'
@@ -11,6 +11,7 @@ import './discovery.css'
 
 export function CompanyDiscovery({ briefing, portfolio, loading = false, shortTerm = false }: { briefing?: RecommendationReport | null; portfolio?: Portfolio | null; loading?: boolean; shortTerm?: boolean }) {
   const screens = Grid.useBreakpoint()
+  const searchId = useId()
   const [view, setView] = useState('picks')
   const [sectorId, setSectorId] = useState('all')
   const [region, setRegion] = useState('all')
@@ -39,7 +40,7 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, shortTe
   const detail = selected && <CompanyDetail key={selected.symbol} target={selected} briefing={briefing} portfolio={portfolio} />
   return <div className="discovery-page">
     <header className="compact-intro discovery-intro"><Typography.Title level={2}>{shortTerm ? '단기 관찰 후보' : '기업과 투자 근거를 탐색하세요.'}</Typography.Title><p>{shortTerm ? '일반 후보 분석을 바탕으로 가격·뉴스·위험을 관찰합니다. 실시간 진입·청산 신호는 제공하지 않아요.' : '회사 가격·차트·뉴스를 확인하고 내 보유와 비교하세요.'}</p></header>
-    <div className="discovery-search"><label>회사 이름으로 찾기<StockSearchInput onSelect={(symbol, name) => select({ symbol, name: name || '회사', exchange: null })} /></label><Segmented aria-label="기업 탐색 보기" value={view} onChange={v => setView(String(v))} options={[{ value: 'picks', label: '추천 후보' }, { value: 'companies', label: '분야별 기업' }]} /></div>
+    <div className="discovery-search"><div className="discovery-search-field"><label htmlFor={searchId}>회사 이름으로 찾기</label><StockSearchInput id={searchId} onSelect={(symbol, name) => select({ symbol, name: name || '회사', exchange: null })} /></div><Segmented aria-label="기업 탐색 보기" value={view} onChange={v => setView(String(v))} options={[{ value: 'picks', label: '추천 후보' }, { value: 'companies', label: '분야별 기업' }]} /></div>
     {briefing && <div className="data-status-line discovery-data-status"><div><strong>분석 자료 기준 · {briefing.sourceBriefingDate ?? briefing.briefingDate}</strong><details><summary>분석 시각</summary><span>{briefing.analyzedAt ? new Date(briefing.analyzedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + ' KST' : '분석 시각 확인 필요'}</span></details></div><Link to="/news">이후 뉴스 확인 →</Link></div>}
     {lookupError && <Alert type="error" message={lookupError} />}
     <div className={`discovery-layout ${selected ? 'has-detail' : ''}`}><div className="discovery-results">

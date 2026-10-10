@@ -821,3 +821,11 @@
 
 검증 실패 run38066740922는 해당 프로세스의 PGPASSWORD를 비워 DB 접속 전 CONFIG_MISSING을 발생시켰다. 저장된 secret 변경0·실패 보고 단계success. 사용자에게 의도적인 실패 실행과 본체 CI 성공을 구분해 설명했다. 정상 복구 run38066973888 전체success·서버 성공 감사1행/미해결 백업 장애0을 운영 API 집계로 확인. 본체 main CI38062992522 success. 사용자는 실패 푸시 실수신을 확인 못 함으로 답했으므로 수신 완료로 표시하지 않는다. 토요일19:43 KST 주간 예약 활성·artifact28일 만료이며 반복 실행/출시 전 매일 전환·PC 밖 개인키/EFS 복구수단·국외 계약/정책은 남음. 기존 BE-21/Issue56 유지·새 과제/APK0.
 2026-10-11 PR#68 https://github.com/huni2/FireWatch/pull/68 ·source6ddb39b: cloud 암호화 실복원/의도적 실패/정상 복구 감사 집계·템플릿 검증·현행 NextTasks/처리 목록 갱신. 최신 private run38066973888 전체success·BACKUP_ENABLED=true/소스2072dae 고정 재확인. 공개 앱 CI 재실행은 생략한 문서/검증 템플릿 변경이며 실제 수신 미확인으로 Issue56 유지.
+
+2026-10-11 WEB-38: 사용자 실제 첫 이용자 관찰 아직 없음 확인. 공통 검색에 명시적인 input id를 전달하고 기업 탐색의 복합 label(재시도 버튼 포함)을 단일 연결 label로 분리, 자산 등록의 연결 없는 검색 label도 htmlFor로 연결한다. 실제 label 클릭 초점·오류/재시도/키보드 선택을1366/390px 가상 API로 재확인하며 사람/스크린리더 검증을 대신하지 않는다. 기존 Issue62·새 과제/APK0.
+
+2026-10-11 WEB-38 검색 라벨 보완: 기업 탐색 label 내부의 검색/재시도 버튼을 분리하고 명시적인 htmlFor/id 연결. 자산 등록 검색 label도 실제 combobox에 연결. 로컬1366/390px 라벨 클릭 초점·실패/재시도·빈 결과·늦은 응답 삭제·방향키 선택 통과·넘침0·운영 쓰기0. web build/lint 통과(기존 푸시 effect 경고1). 최초 보조 검사의 catalog 응답을 배열로 잘못 구성해 화면이 해제됐으며 실제 계약의 items/total/hasMore 객체로 수정 후 통과; 제품 오류 해결로 해석하지 않는다. 사용자 실제 첫 이용자 관찰 아직 없음 확인·스크린리더/실제 확대 미확인·Issue62 유지.
+
+PR#69 source943dab5 생성. 소스CI38068336411 attempt1은 AccountSessionIntegrationTest.kt:275 운영 지표 권한 요청20초 timeout, PR CI38068339731 attempt1은 같은 클래스267 설정 조회20초 timeout(각218검사1실패/제외1). 웹/모바일 작업은 모두success. 실패 백엔드 작업만 동일 코드로1회 재실행했으며 로컬 같은 클래스9검사 실패0 통과. 원인 확정/제품 수정 해결로 주장하지 않고 attempt2 결과·머지/배포는 별도 기록한다.
+
+PR#69 source943dab5: 소스38068336411/PR38068339731 attempt2 전체success(H2/PostgreSQL/복원/웹/모바일). 최초20초 timeout 뒤 실패 작업1회 재검증으로 성공했으며 원인 미확정. 로컬9검사도 성공. 동일 코드 CI를 반복하지 않고 결과 문서 커밋에 skip ci/skip render 적용. 머지/웹 배포는 아래 결과에 기록한다.
