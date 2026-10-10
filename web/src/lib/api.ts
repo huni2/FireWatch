@@ -188,8 +188,8 @@ export function fetchAuditLogs(params: {
   return request<AuditLogPage>(`/api/audit-logs?${query.toString()}`, { headers: { 'X-API-Key': getOperatorKey() } })
 }
 
-export function fetchSettings(): Promise<Settings> {
-  return request<Settings>('/api/settings', { headers: { 'X-Device-Id': getDeviceId() } })
+export function fetchSettings(signal?: AbortSignal): Promise<Settings> {
+  return request<Settings>('/api/settings', { headers: { 'X-Device-Id': getDeviceId() }, signal })
 }
 
 export function updateSettings(input: {

@@ -9,9 +9,10 @@ import { useIsOperator } from '../../lib/operatorAccess'
 import '../support-pages.css'
 
 const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '').trim()
+const accountCheckOptions = { timeoutMs: 20000, retryDelaysMs: [] as readonly number[] }
 export function AccountPage() {
   const session = useLoginSession()
-  const settings = useSettings()
+  const settings = useSettings(accountCheckOptions)
   const operator = useIsOperator()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -20,7 +21,9 @@ export function AccountPage() {
   const [logoutOpen, setLogoutOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteDone, setDeleteDone] = useState(false)
-  const loggedIn = Boolean(session && getLoginSession() && settings.data?.linkedEmail && !settings.error)
+  const checking = Boolean(session && settings.loading)
+  const needsCheck = Boolean(session && settings.error)
+  const loggedIn = Boolean(session && getLoginSession() && !settings.loading && settings.data?.linkedEmail && !settings.error)
   const deviceAction = async (id?: string) => {
     setDeviceBusy(true); setError('')
     try {
@@ -46,9 +49,9 @@ export function AccountPage() {
   }
   return <Space className="account-page support-page" direction="vertical" size={16}>
     <header className="compact-intro"><Typography.Title level={2}>내 계정</Typography.Title><p>투자 기록을 다른 기기에서도 이어서 보세요.</p></header>
-    <Card className="account-connection" title={loggedIn ? '계정에 연결됐어요' : '내 기록을 계정에 연결하세요'} extra={<Tag color={loggedIn ? 'success' : 'default'}>{settings.loading ? '확인 중' : loggedIn ? '로그인됨' : '로그인 전'}</Tag>}>
-      {settings.loading && <p role="status">현재 계정 상태를 확인하고 있습니다.</p>}
-      {loggedIn ? <><Typography.Paragraph strong className="account-email">{settings.data?.linkedEmail}</Typography.Paragraph>{operator && <Tag color="orange">운영자</Tag>}<p>투자 기록과 관심·알림 설정이 계정에 연결돼 있어요.</p><Space wrap><Button loading={deviceBusy} onClick={() => void deviceAction()}>연결 기기 확인</Button><Button disabled={busy} onClick={() => setLogoutOpen(true)}>로그아웃</Button>{operator && <Link to="/audit-log">운영 감사로그 →</Link>}</Space></> : <>{settings.error && <Alert style={{ marginBottom: 16 }} type="warning" message="계정 확인이 필요합니다" description={settings.error.message} />}{clientId ? session && settings.loading ? <p>기존 로그인 상태를 확인하고 있습니다.</p> : <GoogleLoginButton onBusy={setBusy} onError={setError} /> : <Alert type="info" message="Google 로그인 활성화를 준비 중입니다" description="웹용 Google 로그인 설정이 완료되면 이곳에서 계정을 연결할 수 있어요. 익명 이용과 기존 기록은 계속 유지됩니다." />}<p className="account-assurance">로그아웃해도 계정 기록은 보관돼요.</p><details className="account-link-details"><summary>처음 연결할 때 내 기록은 어떻게 되나요?</summary><p>처음 연결하면 현재 브라우저의 투자 기록과 설정을 계정에 연결합니다. 이미 계정에 기록이 있다면 계정 자료를 표시하며, 포트폴리오가 충돌하면 덮어쓰지 않고 연결을 중단합니다.</p><p>같은 Google 계정으로 다시 로그인하면 계정 기록을 확인할 수 있어요.</p></details></>}
+    <Card className="account-connection" title={checking ? '로그인을 확인하고 있어요' : needsCheck ? '로그인 상태를 확인하지 못했어요' : loggedIn ? '계정에 연결됐어요' : '내 기록을 계정에 연결하세요'} extra={<Tag color={needsCheck ? 'warning' : loggedIn ? 'success' : 'default'}>{checking ? '확인 중' : needsCheck ? '확인 필요' : loggedIn ? '로그인됨' : '로그인 전'}</Tag>}>
+      {checking && <p role="status">{settings.isSlow ? '서버 응답이 늦어지고 있어요. 잠시만 기다려주세요.' : '저장된 로그인이 유효한지 확인하고 있어요.'}</p>}
+      {loggedIn ? <><Typography.Paragraph strong className="account-email">{settings.data?.linkedEmail}</Typography.Paragraph>{operator && <Tag color="orange">운영자</Tag>}<p>투자 기록과 관심·알림 설정이 계정에 연결돼 있어요.</p><Space wrap><Button loading={deviceBusy} onClick={() => void deviceAction()}>연결 기기 확인</Button><Button disabled={busy} onClick={() => setLogoutOpen(true)}>로그아웃</Button>{operator && <Link to="/audit-log">운영 감사로그 →</Link>}</Space></> : <>{settings.error && <Alert style={{ marginBottom: 16 }} type="warning" message="계정 확인이 필요합니다" description={<><p>{settings.error.message}</p>{!session && <p>기존에 연결한 Google 계정으로 다시 로그인해주세요. 계정 기록은 그대로 보관돼요.</p>}</>} action={<Button onClick={settings.reload}>다시 확인</Button>} />}{clientId ? session && settings.loading ? <p>기존 로그인 상태를 확인하고 있습니다.</p> : <GoogleLoginButton onBusy={setBusy} onError={setError} /> : <Alert type="info" message="Google 로그인 활성화를 준비 중입니다" description="웹용 Google 로그인 설정이 완료되면 이곳에서 계정을 연결할 수 있어요. 익명 이용과 기존 기록은 계속 유지됩니다." />}<p className="account-assurance">로그아웃해도 계정 기록은 보관돼요.</p><details className="account-link-details"><summary>처음 연결할 때 내 기록은 어떻게 되나요?</summary><p>처음 연결하면 현재 브라우저의 투자 기록과 설정을 계정에 연결합니다. 이미 계정에 기록이 있다면 계정 자료를 표시하며, 포트폴리오가 충돌하면 덮어쓰지 않고 연결을 중단합니다.</p><p>같은 Google 계정으로 다시 로그인하면 계정 기록을 확인할 수 있어요.</p></details></>}
       {busy && <p role="status">{deleteOpen ? '계정과 공유 기록을 삭제하고 있어요.' : logoutOpen ? '로그아웃하고 있어요.' : '계정 연결을 처리하고 있습니다. 완료되면 새 계정의 기록을 불러옵니다.'}</p>}
       {error && <Alert style={{ marginTop: 16 }} type="error" showIcon message={error} />}
     </Card>
