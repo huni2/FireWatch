@@ -49,3 +49,5 @@ BE-21 복구 후속 로컬 검증: bash 구문 검사 통과. PGlite에서 SQL2�
 PR#67 source d184256 생성. 비공개 저장소 워크플로 b091c3f 설치·BACKUP_ENABLED=false·dispatch38052651956 completed/skipped 확인. 이는 구문/비활성 조건 확인이며 운영 DB 접속·덤프·복원 성공이 아니다. GitHub 실행 평문/암호화 artifact 외부 처리와 활성화 전 계약/안내 확인을 처리 목록/Data Safety에 반영.
 
 첫 Linux CI38052576182/38052599390는 age 대역 경로 재귀 문제로 취소. 절대 경로 해석/20초 timeout 수정·로컬8검사 성공 후 새 CI에서 확인한다. 최초 실행을 성공으로 기록하지 않는다.
+
+2026-10-10 PR#67 최종 검증: 소스2072dae CI38052845547 success·PR38052848257 attempt2 전체success(H2/PG/복원/웹/모바일). PR 첫 시도는 기존 AccountSession 감사권한20초 timeout으로 실패했고 실패 작업1회 재검증 성공·원인은 미확정. 비공개 workflow 설치/disabled dispatch skipped 완료·검증한2072dae SHA 고정. 실제 운영 백업/복호화/복원/실패 수신·Render API 배포 확인은 남음. 문서 결과 기록만 추가하므로 동일 코드 CI를 다시 반복하지 않는다.

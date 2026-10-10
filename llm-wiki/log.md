@@ -812,3 +812,5 @@
 - **2026-10-10 BE-21 클라우드 암호화 백업**: 사용자 PC 종료 중 실행 요구를 반영. 비공개 FireWatch-backups 생성·BACKUP_ENABLED=false, public 소스에는 실행 도구/비공개 전용 템플릿만 추가. whitelist 실패 API/감사·재시도 보존·최대3회60분 푸시·운영자 화면 backup 이름. 로컬218검사 실패0/제외1, 실제 age 왕복+PG 대역 및 보고 안전8검사 성공, 웹 build/lint 기존경고1·모바일 타입/lint 성공. 초기 checksum 검사에서 Windows binary 표시(*) 차이를 확인해 상대 파일명 허용 검사로 수정. CI/운영 설정/실제 cloud 덤프·복원·실패 실수신은 남음. 기존 BE-21 유지·새 과제/APK0.
 
 - **2026-10-10 CI 수정**: Linux age 대역이 PATH의 자신을 재호출하는 문제를 발견해 최초 소스38052576182/PR38052599390 실행을 취소했다. 실제 age 경로를 대역 PATH 적용 전에 해석하고 개별 실행20초 timeout을 추가했다. 수정 후 로컬 안전8검사 성공·Linux CI는 재확인 대상. 운영 DB 접속0.
+
+- **2026-10-10 BE-21 PR#67 검증 완료**: 소스2072dae CI38052845547 success·PR38052848257 attempt2 전체success(H2/PG/복원/웹/모바일). PR 첫 시도는 기존 AccountSession 감사권한20초 timeout으로 실패했고 실패 작업1회 재검증 성공·원인은 미확정. 안전8검사·공개 CI 검증 완료, 비공개 workflow 설치·BACKUP_ENABLED=false·소스2072dae 고정·disabled dispatch38052651956 skipped. 머지와 실제 운영 설정은 구분한다. 개인 자료 외부 처리/28일 만료·비밀값/키 보관·무료 예산·실제 백업/복원/푸시 확인은 BE-21에 유지.
