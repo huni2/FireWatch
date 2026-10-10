@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "reports": [
+    {
+      "width": 1366,
+      "failureRetry": true,
+      "emptyDistinct": true,
+      "clearedPending": true,
+      "keyboardSelection": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "failureRetry": true,
+      "emptyDistinct": true,
+      "clearedPending": true,
+      "keyboardSelection": true,
+      "overflow": false
+    }
+  ],
+  "productionWrites": 0
+}

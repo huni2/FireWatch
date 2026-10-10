@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
-import { Select, Spin } from 'antd'
+import { useEffect, useId, useRef, useState } from 'react'
+import type { ElementRef } from 'react'
+import { Button, Select, Spin } from 'antd'
 import { searchStocks } from '../../../lib/api'
 import { stockLabel } from '../../../../../shared/stock-labels'
 
@@ -19,12 +20,20 @@ export function StockSearchInput({ onSelect, initialQuery = '' }: StockSearchInp
   const [value, setValue] = useState<string | undefined>(undefined)
   const [options, setOptions] = useState<{ value: string; label: string; name: string }[]>([])
   const [searching, setSearching] = useState(false)
+  const [failed, setFailed] = useState(false)
+  const [searched, setSearched] = useState(false)
+  const statusId = useId()
+  const searchRef = useRef<ElementRef<typeof Select>>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const handleSearch = (query: string) => {
     setQuery(query)
     const id = ++requestNumber.current
     clearTimeout(debounceRef.current)
+    setOptions([])
+    setFailed(false)
+    setSearched(false)
+    setSearching(!!query.trim())
     if (!query.trim()) {
       setOptions([])
       return
@@ -42,9 +51,9 @@ export function StockSearchInput({ onSelect, initialQuery = '' }: StockSearchInp
           })),
         )
       } catch {
-        if (id === requestNumber.current) setOptions([])
+        if (id === requestNumber.current) setFailed(true)
       } finally {
-        if (id === requestNumber.current) setSearching(false)
+        if (id === requestNumber.current) { setSearching(false); setSearched(true) }
       }
     }, DEBOUNCE_MS)
   }
@@ -57,23 +66,36 @@ export function StockSearchInput({ onSelect, initialQuery = '' }: StockSearchInp
   }, [initialQuery])
 
   return (
+    <div style={{ width: '100%', maxWidth: 360 }}>
     <Select
+      ref={searchRef}
       aria-label="회사·상품 이름 검색"
+      aria-describedby={statusId}
       showSearch
       searchValue={query}
       value={value}
       placeholder="종목명으로 검색 (예: 삼성전자, Apple)"
       filterOption={false}
-      notFoundContent={searching ? <Spin size="small" /> : '검색 결과 없음 — 영문 사명으로도 시도해보세요'}
+      notFoundContent={searching ? <Spin size="small" /> : failed ? '검색을 불러오지 못했어요. 아래에서 다시 시도해주세요.' : searched ? '일치하는 회사가 없어요. 이름을 바꿔 검색해보세요.' : '회사나 상품 이름을 입력해주세요.'}
       onSearch={handleSearch}
       onSelect={(selectedValue: string) => {
+        ++requestNumber.current
+        clearTimeout(debounceRef.current)
         onSelect(selectedValue, options.find(option => option.value === selectedValue)?.name)
         setValue(undefined)
         setQuery('')
         setOptions([])
+        setSearching(false)
+        setFailed(false)
+        setSearched(false)
       }}
       options={options}
-      style={{ width: '100%', maxWidth: 360 }}
+      style={{ width: '100%' }}
     />
+    <div id={statusId} role="status" aria-live="polite" aria-atomic="true" style={{ marginTop: 8, color: 'var(--ant-color-text-secondary)' }}>
+      {searching ? '회사를 찾고 있어요.' : failed ? '검색을 불러오지 못했어요. 입력한 이름은 유지했어요.' : searched ? options.length ? `검색 결과 ${options.length}개. 방향키로 선택할 수 있어요.` : '일치하는 회사가 없어요. 이름을 바꿔 검색해보세요.' : null}
+    </div>
+    {failed && <Button onClick={() => { searchRef.current?.focus(); handleSearch(query) }} style={{ marginTop: 8, minHeight: 44 }}>검색 다시 시도</Button>}
+    </div>
   )
 }
