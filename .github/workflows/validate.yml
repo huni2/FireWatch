@@ -33,7 +33,7 @@ jobs:
         working-directory: backend
         env:
           FIREWATCH_TEST_POSTGRES_URL: jdbc:postgresql://localhost:5432/firewatch_test
-        run: bash gradlew test --tests '*SettingsCreationConcurrencyTest' --tests '*CatalogIntegrationTest' --tests '*CatalogScaleIntegrationTest' --tests '*CatalogRealScaleIntegrationTest' --tests '*CatalogPageOrderIntegrationTest' --tests '*CommunityIntegrationTest' --tests '*GameRankingIntegrationTest' --tests '*GameSimulationVersionMigrationTest' --tests '*GameTimingIntegrationTest' --rerun-tasks
+        run: bash gradlew test --tests '*SettingsCreationConcurrencyTest' --tests '*CatalogIntegrationTest' --tests '*CatalogScaleIntegrationTest' --tests '*CatalogRealScaleIntegrationTest' --tests '*CatalogPageOrderIntegrationTest' --tests '*CommunityIntegrationTest' --tests '*GameRankingIntegrationTest' --tests '*GameSimulationVersionMigrationTest' --tests '*GameTimingIntegrationTest' --tests '*BackupReportIntegrationTest' --rerun-tasks
       - name: Preserve failed test reports
         if: failure()
         uses: actions/upload-artifact@v4
@@ -81,6 +81,13 @@ jobs:
       - name: Isolated game verifier safety tests
         if: matrix.client == 'web'
         run: node --test ../scripts/verify-game-live.test.cjs
+      - name: Encrypted backup safety tests
+        if: matrix.client == 'web'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq age
+          node --test ../scripts/create-encrypted-backup.test.cjs
+          node --test ../scripts/report-backup.test.cjs
       - run: npm run lint
       - if: matrix.client == 'web'
         run: npm run build

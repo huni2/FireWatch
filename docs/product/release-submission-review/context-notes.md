@@ -41,3 +41,13 @@ BE-21 복구 후속 로컬 검증: bash 구문 검사 통과. PGlite에서 SQL2�
 2026-10-10 사용자 가운영/출시 기준 분리 승인. 가운영 주1회+DB 구조/대량 변경 전·최근 주간4개 보관 확정. 출시 전 매일 자동 백업·실패 알림 실수신·최종 복원 확인은 기존 BE-21에서 처리. 출시 후 보관기간/암호화/반복 이행 미확인. 예약 실행/자료 삭제/새 과제/APK0.
 
 2026-10-10 현행 문서 대조: 첫 백업 복원본 읽기 전용 OperatorAccess 감사128/Bearer0/마스킹63 확인·세션 집계는 폐기 후 복원본이라고 범위 명시·서버 종료. NextTasks 열린3개 내용 축약·APP과거 접수 이력 체크리스트로 정리. WEB-38 main CI 진행중 문구 success로 정정. 정책/실사용/기기 확인 미완료는 유지.
+
+백업 자동화 기존 API 검토: 수집 알림은 collection_alerts/OperationsPushService 최대3회·60분 outbox이고 test API는 테스트 제목/기기 운영자 등록을 요구한다. 백업 실패 전용 연결은 아직 없다. 사용자가 현재 PC를 정기 가동할 수 있는지 요청 후 답변 대기. 운영자 키·DB 비밀번호를 채팅/코드에 받거나 자동 예약하지 않는다.
+
+2026-10-10 클라우드 구현 로컬 검증: 서버218검사 실패0/제외1·암호화/보고8검사 성공(실제 age+PG 대역)·웹 build/lint 기존경고1·모바일 타입/lint 성공. 비공개 huni2/FireWatch-backups 생성·BACKUP_ENABLED=false. secret·복호화 키·무료 예산/28일 보관·실제 백업/복원·실패 실수신 미확인. 템플릿 설치와 CI 결과는 다음 기록에 구분한다.
+
+PR#67 source d184256 생성. 비공개 저장소 워크플로 b091c3f 설치·BACKUP_ENABLED=false·dispatch38052651956 completed/skipped 확인. 이는 구문/비활성 조건 확인이며 운영 DB 접속·덤프·복원 성공이 아니다. GitHub 실행 평문/암호화 artifact 외부 처리와 활성화 전 계약/안내 확인을 처리 목록/Data Safety에 반영.
+
+첫 Linux CI38052576182/38052599390는 age 대역 경로 재귀 문제로 취소. 절대 경로 해석/20초 timeout 수정·로컬8검사 성공 후 새 CI에서 확인한다. 최초 실행을 성공으로 기록하지 않는다.
+
+2026-10-10 PR#67 최종 검증: 소스2072dae CI38052845547 success·PR38052848257 attempt2 전체success(H2/PG/복원/웹/모바일). PR 첫 시도는 기존 AccountSession 감사권한20초 timeout으로 실패했고 실패 작업1회 재검증 성공·원인은 미확정. 비공개 workflow 설치/disabled dispatch skipped 완료·검증한2072dae SHA 고정. 실제 운영 백업/복호화/복원/실패 수신·Render API 배포 확인은 남음. 문서 결과 기록만 추가하므로 동일 코드 CI를 다시 반복하지 않는다.

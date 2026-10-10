@@ -24,6 +24,8 @@
 
 ## 출시 전에 남은 확인
 
+2026-10-10 BE-21에는 PC와 독립적인 GitHub Actions 백업 도구와 비공개 `FireWatch-backups` 저장소를 준비했다. `BACKUP_ENABLED=false`이며 운영 자료 전송은 미실행이다. 활성화하면 개인 자료가 GitHub 실행 환경에서 일시 평문 처리되고 age 암호화 artifact가 비공개로28일 보관된다. 공개키 암호화가 개인정보 외부 처리를 없애지는 않는다. 실제 처리 국가·계약·공개 안내·삭제/만료 정책을 대조한 뒤 활성화한다. 개인 키는 전달하지 않으며 실패 보고에는 실행 번호·고정 오류 코드만 남긴다. [설정·복구 절차](../../deployment/data-preservation.md)를 따른다.
+
 [Play 데이터 보안 입력 초안](../release-submission-review/data-safety-draft.md)과 [삭제 요청 운영 절차](../release-submission-review/deletion-operations.md)에 현재 근거와 미확인 항목을 정리했다. 초안 작성은 Play 제출이나 운영 처리 이행을 뜻하지 않는다.
 
 2026-10-10 BE-21 감사 인증정보 점검. OperatorAccess.requireOperator의 authorization 인자가 이전 AuditLogAspect 비밀값 목록에서 빠져, 성공·실패 감사 요청에 Bearer 원문이 저장되는 것을 격리 테스트로 재현했다. 신규 기록은 authorization을 마스킹하도록 수정했다. 회귀는 실제 서비스 AOP 호출을 사용하며 권한 결과와 감사 상태를 보존한다. 이 수정은 기존 감사로그·백업을 정리하지 않는다. 운영 DB에서 원문 존재 여부나 유출을 확인한 것은 아니다. [운영 확인 절차](../release-audit-review/operations.md)를 따른다.
