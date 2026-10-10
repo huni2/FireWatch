@@ -1,0 +1,28 @@
+{
+  "fixtureOnly": true,
+  "root": "https://firewatch-eqp.pages.dev",
+  "width": 390,
+  "checks": [
+    {
+      "scenario": "server-error",
+      "pass": true
+    },
+    {
+      "scenario": "timeout",
+      "pass": true
+    },
+    {
+      "scenario": "revoked",
+      "pass": true
+    },
+    {
+      "scenario": "ordinary",
+      "pass": true
+    },
+    {
+      "scenario": "operator",
+      "pass": true
+    }
+  ],
+  "pass": true
+}
