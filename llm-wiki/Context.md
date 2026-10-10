@@ -1,5 +1,7 @@
 # FireWatch — 현재 맥락
 
+BE-21 제한 정리 SQL의 실제 운영ROLLBACK 점검 통과: 사용자 미리보기 감사121행/원문0/마스킹56. 기대원문51·유효세션1 가드 통과. 실제 DB 정리는 아직 미적용이며 동일SQL 마지막ROLLBACK을COMMIT으로 변경하는 사용자 선택 및 이후 authorization-impact-summary.sql 읽기 전용 재집계가 필요하다. 백업 원문 처리는 별도. 현재 로그인1개 폐기/인증 payload만 덮어쓰기; 감사 행/투자·시장·게임/다른세션·기기연결 유지.
+
 BE-21 제한 SQL의 사용자42601 구문 오류(해시 집계 여분 괄호1개)를 수정했다. 별도 PGlite 가상 PostgreSQL에서 전체 SQL 실행·롤백 보존·건수/시각 가드·가상 적용 범위 8항목 PASS. 운영 DB 실행 완료로 간주하지 않는다. 수정된 redact-recorded-authorization.sql 전체를 기본ROLLBACK으로 사용자 재실행 후 결과 확인 대기. 현재 유효 세션 변경 시 가드가 중단하므로 집계 재확인 없이 기대 건수를 바꾸지 않는다.
 
 BE-21 최신 사용자 전체기간 집계2026-10-10T02:09:42.028318 UTC: 감사120행·Bearer 형태51행·완전마스킹4행·현재 유효/연결 세션 일치1건. 기존 인증 원문51행과 해당 세션1건만 정리하는 docs/product/release-audit-review/redact-recorded-authorization.sql 준비(기대건수/확인시각 가드·행 잠금·기본ROLLBACK). 운영 실행/COMMIT·백업 원문 처리는 아직 하지 않았다. 현재 로그인 해제와 원문 덮어쓰기는 사용자 선택 후 적용하며 키 회전/전체 감사 삭제 없음. 실제 DB 실행 검증은 롤백 점검 대기. BE-21은 완료로 닫지 않는다.

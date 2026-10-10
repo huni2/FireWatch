@@ -1,0 +1,6 @@
+{
+  "mode": "transaction_preview_check_final_ROLLBACK_or_COMMIT",
+  "audit_rows_all_time": 121,
+  "bearer_pattern_rows_all_time": 0,
+  "fully_redacted_rows_all_time": 56
+}
