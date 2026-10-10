@@ -21,7 +21,7 @@ BEGIN
     -- 대상 행을 먼저 잠그고 원문 대신 내부 ID/해시만 메모리에 보관한다.
     SELECT array_agg(a.id), array_agg(DISTINCT encode(sha256(convert_to(
         substring(a.request_payload FROM '(?i)Bearer[[:space:]]+([A-Za-z0-9_-]{40,64})'),
-        'UTF8')), 'hex')))
+        'UTF8')), 'hex'))
     INTO audit_ids, session_hashes
     FROM (
         SELECT id, request_payload, created_at

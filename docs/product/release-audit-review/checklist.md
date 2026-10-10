@@ -1,5 +1,7 @@
 # BE-21 감사 인증정보 점검
 
+- [x] 제한 SQL 괄호 오류 수정 및 격리된 PostgreSQL에서 롤백/건수 가드 검증
+
 - [x] 실제 OperatorAccess 성공/실패 경로로 인증 헤더 노출 재현
 - [x] authorization 마스킹 및 원래 권한/감사 상태 보존
 - [x] 회귀와 전체 백엔드 검증
