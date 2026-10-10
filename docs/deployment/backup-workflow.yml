@@ -1,0 +1,61 @@
+# 비공개 백업 저장소에 설치해 PC와 독립적으로 암호화 백업을 실행하는 템플릿이다.
+name: FireWatch encrypted backup
+on:
+  schedule:
+    - cron: '43 10 * * 6' # 가운영 매주 토요일 19:43 KST, GitHub 지연 가능.
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: firewatch-backup
+  cancel-in-progress: false
+jobs:
+  backup:
+    if: ${{ vars.BACKUP_ENABLED == 'true' && github.event.repository.private == true }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Validate pinned source
+        env:
+          BACKUP_REF: ${{ vars.FIREWATCH_BACKUP_REF }}
+        run: '[[ "$BACKUP_REF" =~ ^[0-9a-f]{40}$ ]]'
+      - uses: actions/checkout@v4
+        id: source
+        with:
+          repository: huni2/FireWatch
+          ref: ${{ vars.FIREWATCH_BACKUP_REF }}
+          persist-credentials: false
+      - name: Install backup clients
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl --fail --silent --show-error -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main' | sudo tee /etc/apt/sources.list.d/firewatch-pgdg.list >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17 age
+          echo '/usr/lib/postgresql/17/bin' >> "$GITHUB_PATH"
+      - name: Create encrypted backup
+        id: dump
+        env:
+          PGHOST: ${{ secrets.BACKUP_PGHOST }}
+          PGPORT: '5432'
+          PGUSER: ${{ secrets.BACKUP_PGUSER }}
+          PGDATABASE: postgres
+          PGPASSWORD: ${{ secrets.BACKUP_PGPASSWORD }}
+          AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+          OUTPUT_DIR: ${{ runner.temp }}/encrypted-backup
+        run: bash scripts/create-encrypted-backup.sh
+      - uses: actions/upload-artifact@v4
+        id: upload
+        with:
+          name: encrypted-backup-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/encrypted-backup/
+          if-no-files-found: error
+          retention-days: 28 # 가운영 최근 4주. 변경 전 마지막 백업은 별도 보관한다.
+      - name: Report backup result
+        if: ${{ always() && steps.source.outcome == 'success' }}
+        env:
+          BACKEND_URL: https://firewatch-backend-q3cv.onrender.com
+          OPERATOR_KEY: ${{ secrets.OPERATOR_API_KEY }}
+          BACKUP_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+          FAILURE_CODE: ${{ steps.dump.outputs.failure_code || (steps.dump.outcome != 'success' && 'JOB_FAILED') || (steps.upload.outcome != 'success' && 'UPLOAD_FAILED') || '' }}
+        run: bash scripts/report-backup.sh

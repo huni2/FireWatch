@@ -83,3 +83,47 @@ Get-FileHash -LiteralPath $backupFile -Algorithm SHA256
 CI의 `scripts/verify-postgres-restore.sh`는 전용 로컬 PostgreSQL17 컨테이너만 받고 테스트 DB를 별도 DB에 복원해 모든 public 테이블의 행 수와 정렬된 행 서명을 비교한다. 운영 주소·암호를 받지 않으며 원본 DB와 기존 복구 DB를 덮어쓰지 않는다. 이 검사는 실제 운영 백업 확보나 전환 승인과 구분한다.
 
 2026-10-10 후속 시험에서는 일치 확인 후 복원본에만 시험 세션·푸시 등록을 넣는다. 고정된 `firewatch_restore_check` DB에서 로그인 세션·사용자 FCM/웹 구독·운영자 푸시 등록을 비활성화하고 나머지 테이블·관심/보유 설정과 원본 시험 DB의 서명이 그대로인지 확인한다. 테스트 등록이 없던 백업에서도 이 단계가 실제로 검증되도록 한다. 실제 운영 복구에 사용할 SQL 배포·운영 자료 삭제·백업 이후 삭제 요청 재적용을 수행한 것은 아니다. 해당 재적용과 운영 전환 판단은 위 복구 절차에 남긴다.
+
+## PC가 꺼져 있어도 실행하는 암호화 백업 — BE-21
+
+2026-10-10 사용자 요구에 따라 실행 환경은 GitHub Actions로 정했다. 비공개 [FireWatch-backups](https://github.com/huni2/FireWatch-backups)를 만들었으며 `BACKUP_ENABLED=false`로 둔다. 공개 FireWatch 저장소에는 실행 도구와 [워크플로 템플릿](backup-workflow.yml)만 둔다. **운영 자동화·실제 클라우드 백업·복원·실패 실수신은 아직 미확인**이다. 기존 첫 로컬 덤프의 암호화 상태도 이 구현으로 바뀌지 않는다.
+
+실행 흐름은 PostgreSQL17 클라이언트로 public 스키마 덤프 → archive 목록 검사 → age 공개키 암호화 → 비공개 Actions artifact 업로드 → 기존 운영 API에 결과 보고다. 임시 평문은 작업 종료 시 제거하고 업로드 폴더에는 암호화 파일과 상대 파일명 SHA256만 남긴다. 서버 비밀번호·URL 원문·예외 원문은 보고하지 않는다. `backup.report` 실패 감사와 운영자 장애 목록/백업 제목 푸시에 연결한다. 동일 실행의 재보고는 푸시 재시도 횟수를 초기화하지 않는다. 푸시는 기존 최대3회·60분 간격을 유지한다. 보고 HTTP 자체는 반복 재시도하지 않는다.
+
+### 활성화 전에 운영자가 설정할 값
+
+비공개 저장소 **Settings → Secrets and variables → Actions**에 아래를 등록한다. DB 값은 Supabase **Connect → Session pooler**에서 확인한다. 서버 비밀번호나 개인 키를 문서·채팅·커밋에 넣지 않는다.
+
+| 구분 | 이름 | 설정값 |
+|---|---|---|
+| Secret | `BACKUP_PGHOST` | Session pooler host |
+| Secret | `BACKUP_PGUSER` | Session pooler user |
+| Secret | `BACKUP_PGPASSWORD` | 기존 DB 비밀번호 |
+| Secret | `OPERATOR_API_KEY` | Render에 등록한 동일 운영 API 키 |
+| Variable | `FIREWATCH_BACKUP_REF` | 이 구현이 머지된 FireWatch 전체40자리 커밋 SHA |
+| Variable | `BACKUP_AGE_RECIPIENT` | 아래에서 만든 age 공개키 `age1…` |
+| Variable | `BACKUP_ENABLED` | 준비 중 `false`, 아래 확인 후 `true` |
+
+포트5432·DB명postgres·SSL require는 고정된다. Render에 새 백업 보고 API가 배포돼 있어야 한다. Google 계정 토큰이나 VAPID/Firebase 키를 위 DB 비밀번호 대신 쓰지 않는다.
+
+age는 [공식 배포](https://github.com/FiloSottile/age)를 사용한다. 개인 키를 **현재 사용자만 접근 가능한 Git 밖의 암호화 저장소**에 생성한다. 그 파일을 클라우드 workflow에는 넣지 않는다. 개인 키를 잃으면 클라우드 암호화 백업을 복원할 수 없으므로 별도 안전한 장소에도 보관한다. 기존 키 파일을 덮어쓰지 않는다.
+
+```powershell
+# age-keygen 실행 파일 경로를 로컬 설치에 맞춘다. 아래 파일이 없음을 먼저 확인한다.
+age-keygen -o E:\FireWatch-backup\backup-identity.txt
+age-keygen -y E:\FireWatch-backup\backup-identity.txt
+```
+
+두 번째 명령의 **공개키만** `BACKUP_AGE_RECIPIENT`에 등록한다. 개인 키 내용은 공유하지 않는다. 첫 로컬 덤프도 이 공개키로 `.age` 파일을 별도로 만들고 실제 복호화/해시 일치를 확인한 다음 원본 보관 방식을 결정한다. 자동으로 원본 덤프를 삭제하지 않는다.
+
+### 첫 실행과 비용·보관 확인
+
+1. 계정 Billing의 Actions 무료 잔여량·저장 공간과 **초과 지출을 허용하지 않는 예산 설정**을 확인한다. 비공개 Actions는 계정 무료 한도를 공유하며 무조건 무료라는 뜻이 아니다. [GitHub 공식 과금 안내](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
+2. 템플릿을 비공개 저장소 `.github/workflows/backup.yml`에 설치한다. 공개 저장소에서는 private 조건으로 실행되지 않는다. 소스는 승인한40자리 SHA로 고정하고 변경 시 CI 결과를 확인한 뒤 갱신한다.
+3. 가운영은 토요일19:43 KST 주간 예약과 수동 실행을 사용한다. 각 암호화 파일은10MiB 이하, artifact 자동 만료는28일이다. 이는 최근4주이며 수동 실행이 더 있으면 정확히4개는 아니다. **DB 변경 전 마지막 백업은 별도 비공개 암호화 장소에 내려받아 보관**한다. 28일 만료를 허용하고 무료 예산·키 보관을 확인한 뒤 활성화한다. 기존 PC 파일 자동 정리는 없다.
+4. `BACKUP_ENABLED=true` 후 Actions에서 첫 수동 실행한다. 암호화 artifact를 내려받고 `checksum.sha256`과 파일을 같은 폴더에 둔 뒤 SHA256을 확인한다. `age -d -i <개인키파일> -o <새 임시 dump> database.dump.age`로 복호화하고 목록 확인·별도 빈 로컬 DB 복원·세션/알림 등록 폐기를 위 복구 절차대로 확인한다. 복호화 파일은 Git 밖 제한된 임시 폴더에만 둔다.
+5. 실패 시험은 운영 DB를 수정하지 않는 방식으로 별도 수행하고 `backup.report` 감사·운영자 푸시 실제 도착을 확인한다. 테스트를 위해 정상 secret/키를 임의 교체하지 않는다. 백업 API가 성공했어도 실제 알림 표시 여부는 운영자가 확인한다.
+
+GitHub 예약 실행은 지연될 수 있다. 소스 checkout 전 실패·작업 취소/강제 종료·Render 장애/보고 실패에는 서버 감사/푸시가 남지 않을 수 있다. 이때 비공개 Actions 실행 실패와 GitHub 알림도 확인해야 하며 운영자 푸시만으로 누락을 보장하지 않는다. 마지막 성공 실행 시각과 artifact 존재를 주기적으로 확인한다. 출시 전에는 최종 백업/복원과 실제 실패 수신을 확인한 뒤 예약을 매일로 변경한다. 출시 후 보관기간은 삭제 정책과 함께 정하며 현재28일을 출시 후 확정값으로 사용하지 않는다.
+
+현재 코드 검증은 실제 age 왕복과 pg_dump/pg_restore 대역을 사용한 안전 검사이며 실제 클라우드 운영 덤프를 대신하지 않는다. 백엔드 H2/전용 PostgreSQL HTTP·재시도 검사는 별도로 기록한다. APK/EAS 실행은 이 작업에 포함하지 않는다.
