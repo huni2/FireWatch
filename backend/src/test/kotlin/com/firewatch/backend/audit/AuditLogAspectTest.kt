@@ -2,6 +2,14 @@ package com.firewatch.backend.audit
 
 import com.firewatch.backend.entity.AuditStatus
 import com.firewatch.backend.repository.AuditLogRepository
+import com.firewatch.backend.repository.AppUserRepository
+import com.firewatch.backend.repository.DeviceLinkRepository
+import com.firewatch.backend.repository.AuthSessions
+import com.firewatch.backend.entity.AppUser
+import com.firewatch.backend.entity.DeviceLink
+import com.firewatch.backend.service.OperatorAccess
+import com.firewatch.backend.web.UnauthorizedException
+import java.util.UUID
 import com.firewatch.backend.service.TestFixtureService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,11 +27,16 @@ import kotlin.test.assertFailsWith
     properties = [
         "firewatch.audit.warning-threshold-ms=50",
         "spring.datasource.url=jdbc:h2:mem:audit-aspect-test;DB_CLOSE_DELAY=-1",
+        "firewatch.operator.email=audit-operator@example.test",
     ],
 )
 class AuditLogAspectTest @Autowired constructor(
     private val fixture: TestFixtureService,
     private val auditLogRepository: AuditLogRepository,
+    private val operatorAccess: OperatorAccess,
+    private val users: AppUserRepository,
+    private val links: DeviceLinkRepository,
+    private val sessions: AuthSessions,
 ) {
 
     private fun lastLog() = auditLogRepository.findAll().maxByOrNull { it.id ?: 0L }
@@ -87,5 +100,32 @@ class AuditLogAspectTest @Autowired constructor(
         assertTrue(last.requestPayload?.contains("super-secret-value") == false)
         assertTrue(last.requestPayload?.contains("[REDACTED]") == true)
         assertTrue(last.requestPayload?.contains("device-abc") == false)
+    }
+
+    @Test
+    fun `실제 운영자 인증 성공 감사에도 Bearer 헤더를 저장하지 않는다`() {
+        val device = UUID.randomUUID().toString()
+        val user = users.save(AppUser(googleSub = device, email = "audit-operator@example.test", emailVerified = true))
+        links.save(DeviceLink(device, user.id!!))
+        val authorization = "Bearer ${sessions.issue(device).token}"
+
+        operatorAccess.requireOperator(device, authorization, null)
+
+        val saved = lastLogFor("OperatorAccess.requireOperator")
+        assertTrue(saved.status in setOf(AuditStatus.SUCCESS, AuditStatus.WARNING))
+        assertEquals("[[REDACTED], [REDACTED], [REDACTED]]", saved.requestPayload)
+        assertTrue(saved.responseSummary?.contains(authorization) == false)
+    }
+
+    @Test
+    fun `실제 운영자 인증 실패 감사에도 Bearer 헤더를 저장하지 않는다`() {
+        assertFailsWith<UnauthorizedException> {
+            operatorAccess.requireOperator("audit-unlinked-device", "Bearer audit-private-invalid-token", null)
+        }
+
+        val saved = lastLogFor("OperatorAccess.requireOperator")
+        assertEquals(AuditStatus.FAILURE, saved.status)
+        assertEquals("[[REDACTED], [REDACTED], [REDACTED]]", saved.requestPayload)
+        assertTrue(saved.responseSummary?.contains("audit-private-invalid-token") == false)
     }
 }
