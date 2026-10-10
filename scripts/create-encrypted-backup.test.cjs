@@ -7,7 +7,8 @@ const path = require('node:path');
 const {spawnSync} = require('node:child_process');
 const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : 'bash';
 const posix = value => process.platform === 'win32' ? value.replaceAll('\\', '/').replace(/^([A-Za-z]):/, (_,d) => '/'+d.toLowerCase()) : value;
-const ageBin = process.env.AGE_TEST_BIN || 'age';
+// Resolve before adding the stub directory to PATH, otherwise Linux recurses into its own stub.
+const ageBin = process.env.AGE_TEST_BIN || spawnSync(bash,['-c','command -v age'],{encoding:'utf8'}).stdout.trim();
 const keygen = process.env.AGE_TEST_KEYGEN || 'age-keygen';
 function fixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(),'firewatch-backup-test-'));
@@ -26,7 +27,7 @@ function fixture() {
   const env={...process.env, BACKUP_TEST_BIN:posix(bin), BACKUP_TEST_SCRIPT:posix(path.join(__dirname,'create-encrypted-backup.sh')),
     TMPDIR:posix(root), PGHOST:'fixture.invalid', PGPORT:'5432', PGDATABASE:'postgres', PGUSER:'fixture', PGPASSWORD:'SECRET_MARKER',
     AGE_RECIPIENT:recipient, OUTPUT_DIR:posix(output), GITHUB_OUTPUT:posix(githubOutput), REAL_AGE:ageBin, FAIL_STAGE:''};
-  return {root,output,identity,githubOutput,env, run:()=>spawnSync(bash,['-c','export PATH="$BACKUP_TEST_BIN:$PATH"; bash "$BACKUP_TEST_SCRIPT"'],{env,encoding:'utf8'}),
+  return {root,output,identity,githubOutput,env, run:()=>spawnSync(bash,['-c','export PATH="$BACKUP_TEST_BIN:$PATH"; bash "$BACKUP_TEST_SCRIPT"'],{env,encoding:'utf8',timeout:20000}),
     cleanup:()=>{assert.ok(path.resolve(root).startsWith(path.resolve(os.tmpdir())+path.sep)); fs.rmSync(root,{recursive:true,force:true});}};
 }
 test('암호화 파일만 남기고 실제 복호화 결과가 일치하며 임시 평문을 제거한다',()=>{

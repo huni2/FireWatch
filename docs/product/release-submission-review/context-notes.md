@@ -45,3 +45,7 @@ BE-21 복구 후속 로컬 검증: bash 구문 검사 통과. PGlite에서 SQL2�
 백업 자동화 기존 API 검토: 수집 알림은 collection_alerts/OperationsPushService 최대3회·60분 outbox이고 test API는 테스트 제목/기기 운영자 등록을 요구한다. 백업 실패 전용 연결은 아직 없다. 사용자가 현재 PC를 정기 가동할 수 있는지 요청 후 답변 대기. 운영자 키·DB 비밀번호를 채팅/코드에 받거나 자동 예약하지 않는다.
 
 2026-10-10 클라우드 구현 로컬 검증: 서버218검사 실패0/제외1·암호화/보고8검사 성공(실제 age+PG 대역)·웹 build/lint 기존경고1·모바일 타입/lint 성공. 비공개 huni2/FireWatch-backups 생성·BACKUP_ENABLED=false. secret·복호화 키·무료 예산/28일 보관·실제 백업/복원·실패 실수신 미확인. 템플릿 설치와 CI 결과는 다음 기록에 구분한다.
+
+PR#67 source d184256 생성. 비공개 저장소 워크플로 b091c3f 설치·BACKUP_ENABLED=false·dispatch38052651956 completed/skipped 확인. 이는 구문/비활성 조건 확인이며 운영 DB 접속·덤프·복원 성공이 아니다. GitHub 실행 평문/암호화 artifact 외부 처리와 활성화 전 계약/안내 확인을 처리 목록/Data Safety에 반영.
+
+첫 Linux CI38052576182/38052599390는 age 대역 경로 재귀 문제로 취소. 절대 경로 해석/20초 timeout 수정·로컬8검사 성공 후 새 CI에서 확인한다. 최초 실행을 성공으로 기록하지 않는다.
