@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "reports": [
+    {
+      "width": 1366,
+      "textScale": 1,
+      "keyboard": true,
+      "focus": true,
+      "overlap": true,
+      "retry": true,
+      "overflow": false,
+      "mockWrites": 1
+    },
+    {
+      "width": 390,
+      "textScale": 1,
+      "keyboard": true,
+      "focus": true,
+      "overlap": true,
+      "retry": true,
+      "overflow": false,
+      "mockWrites": 1
+    },
+    {
+      "width": 682,
+      "textScale": 2,
+      "staticRoutes": 4,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "textScale": 2,
+      "staticRoutes": 4,
+      "overflow": false
+    }
+  ],
+  "productionWrites": 0,
+  "scope": "Automated browser checks; not human or screen-reader validation"
+}
