@@ -1,3 +1,5 @@
+2026-10-10 운영 PostgreSQL17.6 사용자 확인. 공식 Windows→EDB17.11 x64 아카이브에서 허용된 로컬 아티팩트 postgres17-client/bin에 클라이언트 준비. pg_dump/pg_restore/psql17.11 실행 확인·first-backup.ps1 로컬 프롬프트 도우미 구문 통과. 실제 운영 백업은 로컬 연결/비밀번호/저장 위치 입력 전이며 미생성. 도구/Git 밖 개인정보 파일 요청 없음·DB 접속/서버 설치/APK0.
+
 2026-10-10 사용자 별도 운영 DB 백업 없음 확인. BE-21 Windows pg_dump 첫 백업·파일 목록 확인 절차를 기존 data-preservation 문서에 추가. pg_dump/pg_restore는 PATH와 기본 설치 경로에서 찾지 못함. 실제 운영 백업/복원은 미실행·DB 비밀번호 요청 없음·새 과제/APK0. 이전 백업 보유 여부 답변 대기는 이 확인으로 대체한다.
 
 2026-10-10 BE-21 복구 안전성 PR#65 main7026dfc 머지 완료. 소스38026706604 전체success·PR38026731646 attempt2 전체success. 실제 PostgreSQL17 덤프/복원 테이블/행서명/시퀀스 일치 후 복원본 세션/사용자 및 운영자 푸시 비활성화·다른 기록/원본 DB 보존 성공. 최초 PR attempt1은 기존 AccountSession 감사 접근 검사20초 timeout으로 실패(215검사1실패/skip1), 로컬9검사 및 동일 코드 실패 작업1회 재검증에서 재현되지 않았다. 검사 삭제/시간 제한 변경0·원인 확정/코드 해결로 주장하지 않는다. 실제 운영 백업/복구/삭제 요청 재적용·정책/최종SDK 미확인으로 Issue#56 유지·런타임 배포/APK/EAS0. 머지 후 main CI38027248332 최종 success 확인.
