@@ -11,6 +11,8 @@
 
 ## 2026-10-10
 
+- **[PROJ] BE-21 PR#57 전체 CI 통과·머지**: BE-21 PR#57 main d802d36 머지. 소스78194d3의 push38012614107/PR38012636647 전체 CI 성공(백엔드·PostgreSQL·별도 복구·웹·앱). 로컬213검사 실패0·skip1. 신규 감사 authorization 마스킹·실제 AOP 성공/실패 회귀·출시 범위 정정 완료. main CI 및 Render 반영은 별도 확인 전이며 과거 감사 원문/보관·운영 백업·계약/법률 확인은 미완료다. Issue#56/BE-21과 Issue#53/BE-30은 유지한다. 새 과제 번호·APK0.
+
 - **[BE] BE-21 운영자 인증 헤더 감사 마스킹**: BE-21 감사 인증정보 수정: 실제 OperatorAccess 성공/실패2경로의 Bearer 원문 저장을 로컬 AOP 테스트로 재현하고 authorization 마스킹을 추가했다. 수정 후 전체213검사 실패0·skip1·BUILD SUCCESSFUL(1분17초). 원래 권한/감사 상태를 보존한다. 운영 토큰/기존 감사 원문 조회·삭제0. 원문 없는 과거 집계와 운영 후속 절차를 작성했고 국내 전체+해외/ETF선별 첫 출시 범위를 BE-22 결과와 대조했다. Issue#56은 기존 BE-21 기록이며 새 과제 번호가 아니다. 운영 보관/백업/계약/법률·BE-30 감사/실제일반계정 확인은 대기·APK0.
 
 - **[PROJ] BE-30 배포 접근 차단·권한 감사 재검증**: 운영 권한 재검증(2026-10-10): 배포 서버 익명 GET2건은 감사로그/수집 진단 모두401·UNAUTHORIZED. 변경 HTTP 요청0·재시도0이며 GET 처리 중 내부 감사 기록 생성 여부는 단정하지 않는다. 로컬 AccountSession/CollectionAlertAccess/CollectionJobRunner/AuditLogAspect 관련23검사 실패0·skip0·BUILD SUCCESSFUL. 일반 계정403·운영자200·위조 세션401 및 감사 저장/재시도 제한은 로컬 근거이며 실제 Google 계정 검증을 대체하지 않는다. 읽기 전용 operator-summary.sql에 허용목록 감사 집계만 추가했고 운영 실행 결과는 아직 대기한다. BE-30/Issue#53 유지·새 과제/APK0.
