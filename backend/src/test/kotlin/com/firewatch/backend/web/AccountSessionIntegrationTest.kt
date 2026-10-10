@@ -84,6 +84,54 @@ class AccountSessionIntegrationTest {
     }
 
     @Test
+    fun `계정 삭제 마지막 단계 실패는 기록과 세션을 롤백하고 같은 세션 재시도를 허용한다`() {
+        val account = users.save(AppUser(googleSub = "deletion-rollback-owner"))
+        val shared = settings.save(UserSettings(userId = account.id, watchedStocksRaw = "035720.KS"))
+        val firstDevice = "deletion-rollback-first"
+        val secondDevice = "deletion-rollback-second"
+        links.save(DeviceLink(firstDevice, account.id!!))
+        links.save(DeviceLink(secondDevice, account.id!!))
+        val first = sessions.issue(firstDevice)
+        val second = sessions.issue(secondDevice)
+        client().put().uri("/api/portfolio").header("X-Device-Id", firstDevice).header("Authorization", "Bearer ${first.token}")
+            .bodyValue(PortfolioUpdateRequest(0, "롤백 보존", 60, "BALANCED", "GENERAL", BigDecimal.ZERO, BigDecimal("1000"),
+                listOf(PortfolioHoldingInput("035720.KS", "카카오", BigDecimal("3"), null))))
+            .exchange().expectStatus().isOk
+        client().post().uri("/api/community/feedback").header("X-Device-Id", firstDevice).header("Authorization", "Bearer ${first.token}")
+            .bodyValue(FeedbackInput(java.util.UUID.randomUUID().toString(), "BUG", "롤백 전 문의 기록", "WEB"))
+            .exchange().expectStatus().isOk
+        jdbc.update("INSERT INTO notice_preferences(user_id,hidden_until) VALUES (?,?)", account.id, java.sql.Timestamp.from(Instant.now().plusSeconds(3600)))
+        val ownerTables = listOf("portfolios", "portfolio_revisions")
+        val userTables = listOf("user_feedback", "notice_preferences", "device_links", "auth_sessions")
+        val snapshots = ownerTables.associateWith { jdbc.queryForList("SELECT * FROM $it WHERE owner_id=? ORDER BY 1", shared.id) } +
+            userTables.associateWith { jdbc.queryForList("SELECT * FROM $it WHERE user_id=? ORDER BY 1", account.id) }
+        assertTrue(snapshots.values.all { it.isNotEmpty() })
+        // 마지막 계정 DELETE에 실제 FK 오류를 일으킨다. 외부 DB에는 연결하지 않는 이 클래스의 H2 전용 시험이다.
+        jdbc.execute("CREATE TABLE deletion_rollback_guard (user_id BIGINT PRIMARY KEY REFERENCES app_users(id))")
+        try {
+            jdbc.update("INSERT INTO deletion_rollback_guard(user_id) VALUES (?)", account.id)
+            client().delete().uri("/api/auth/account").header("X-Device-Id", firstDevice).header("Authorization", "Bearer ${first.token}")
+                .exchange().expectStatus().isEqualTo(409)
+            assertTrue(users.existsById(account.id!!))
+            assertEquals("035720.KS", settings.findByUserId(account.id!!)?.watchedStocksRaw)
+            for (table in ownerTables) assertEquals(snapshots[table], jdbc.queryForList("SELECT * FROM $table WHERE owner_id=? ORDER BY 1", shared.id))
+            for (table in userTables) assertEquals(snapshots[table], jdbc.queryForList("SELECT * FROM $table WHERE user_id=? ORDER BY 1", account.id))
+            assertEquals(account.id, sessions.authenticate(firstDevice, "Bearer ${first.token}"))
+            assertEquals(account.id, sessions.authenticate(secondDevice, "Bearer ${second.token}"))
+        } finally {
+            jdbc.execute("DROP TABLE deletion_rollback_guard")
+        }
+        client().delete().uri("/api/auth/account").header("X-Device-Id", firstDevice).header("Authorization", "Bearer ${first.token}")
+            .exchange().expectStatus().isNoContent
+        assertFalse(users.existsById(account.id!!))
+        assertNull(settings.findByUserId(account.id!!))
+        for (table in ownerTables) assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM $table WHERE owner_id=?", Int::class.java, shared.id))
+        for (table in userTables) assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM $table WHERE user_id=?", Int::class.java, account.id))
+        assertFailsWith<UnauthorizedException> { sessions.authenticate(firstDevice, "Bearer ${first.token}") }
+        assertFailsWith<UnauthorizedException> { sessions.authenticate(secondDevice, "Bearer ${second.token}") }
+    }
+
+    @Test
     fun `인증된 계정 삭제는 공유 보유와 문의 및 모든 세션을 지우고 다른 계정은 보존한다`() {
         val account = users.save(AppUser(googleSub = "deletion-owner", email = "delete@example.test"))
         val other = users.save(AppUser(googleSub = "deletion-other"))
