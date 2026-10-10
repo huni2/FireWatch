@@ -1,4 +1,4 @@
-# 데이터 처리 대조 (2026-10-09)
+# 데이터 처리 대조 (2026-10-10)
 
 코드 기준 목록이며 Play 제출 답변이나 법률 검토 완료 증명이 아니다. 시행 중인 개인정보 안내는 `/privacy`, 삭제 요청 진입은 `/privacy#delete-account`다.
 
@@ -12,6 +12,7 @@
 | 선택 공개 순위·닉네임·우승자 | 동의한 공개 자료, 철회 후 비공개 | 프로필/등록/우승자 FK cascade 삭제 | ranking-h2/postgresql.sql |
 | 기기별 게임·체결·가격 | 서버 device_id 기록, 웹/앱의 기록 자체를 로컬에만 저장하는 것이 아님 | 자동 삭제하지 않음 | GameSession, AuthService |
 | 보안·장애 감사 IP·요약 | 감사 로그 저장·운영자 열람 | 자동 삭제하지 않음, 현재 자동 만료 없음 | AuditLog, SettingsUpdateCommand |
+| 일부 종목 검색어·조회 결과 | StockService.search의 요청/결과 요약이 운영 감사에 저장. 기기별 전체 검색 이력과는 다름 | 계정 삭제로 감사 원문이 자동 삭제되지는 않음 | StockService, AuditLogAspect |
 | 뉴스·시세·분석 근거 | 공공 시장 자료 누적 보관 | 계정 삭제와 별개 | release-scope.md |
 | 기존 개인 자료 백업 | 운영자가 외부 보관하는 절차, 실물 확보 미확인 | 즉시 자동 수정 아님, 복구 전에 삭제 요청 재적용 | data-preservation.md |
 
@@ -22,6 +23,8 @@
 - 웹 푸시는 브라우저 푸시 구독 endpoint·키와 알림 메시지를 처리한다. Render/Supabase/Cloudflare는 서버·DB·웹 인프라다. 업체별 국외 처리 국가·계약·보관 조건은 실제 운영 계약과 대조해야 한다.
 
 ## 출시 전에 남은 확인
+
+[Play 데이터 보안 입력 초안](../release-submission-review/data-safety-draft.md)과 [삭제 요청 운영 절차](../release-submission-review/deletion-operations.md)에 현재 근거와 미확인 항목을 정리했다. 초안 작성은 Play 제출이나 운영 처리 이행을 뜻하지 않는다.
 
 2026-10-10 BE-21 감사 인증정보 점검. OperatorAccess.requireOperator의 authorization 인자가 이전 AuditLogAspect 비밀값 목록에서 빠져, 성공·실패 감사 요청에 Bearer 원문이 저장되는 것을 격리 테스트로 재현했다. 신규 기록은 authorization을 마스킹하도록 수정했다. 회귀는 실제 서비스 AOP 호출을 사용하며 권한 결과와 감사 상태를 보존한다. 이 수정은 기존 감사로그·백업을 정리하지 않는다. 운영 DB에서 원문 존재 여부나 유출을 확인한 것은 아니다. [운영 확인 절차](../release-audit-review/operations.md)를 따른다.
 

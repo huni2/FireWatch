@@ -26,6 +26,8 @@
 8. 일반 사용자 문의 접수 → 내 문의 재조회 → 운영자 웹 답변 → 앱 답변 확인. 타인의 문의와 운영 관리가 노출되지 않아야 한다.
 9. Android/ALL 대상 공지가 있을 때 첫 진입 모달·닫기·이동 중 재노출 없음·오늘 숨김·KST 자정 후 다음 실행을 확인한다. 운영 DB에 검증 공지를 자동 생성하지 않는다.
 
+Data Safety 입력은 [코드 대조 초안](../product/release-submission-review/data-safety-draft.md)을 사용한다. 계정·기기 자료의 삭제 요청은 [운영 절차](../product/release-submission-review/deletion-operations.md)를 대조한다. 문서 작성과 실제 처리기간/보관기간 확정·삭제/백업 이행·최종 설치본 SDK 검증·Play 제출은 구분한다.
+
 ## 최신 설치본 빌드 (2026-10-09)
 
 [이전 versionCode4 빌드](https://expo.dev/accounts/huni2/projects/mobile/builds/3c4b54ea-4233-49ff-af39-feefd05c85f1)는 source6cedd8e로 FINISHED다. 커스텀 메뉴/게임 SVG와 자산 등록 개편은 포함되지 않는다. 최신 소스7594daa·versionCode5로 preview APK 빌드를 요청했다. Free 사용4/30·비용0을 확인했고 타입·린트·출시 검사8개·Android export를 통과했다. 현재 상태와 설치 확인은 `docs/product/android-preview-20261009/checklist.md`에 기록한다.

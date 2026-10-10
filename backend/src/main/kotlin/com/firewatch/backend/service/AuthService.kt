@@ -70,8 +70,9 @@ class AuthService(
 
     // Play 스토어 계정 삭제 요건(2026-10-06) — 연동 해제가 아니라 완전 삭제. 이 계정에 연동된
     // 기기가 여럿이어도(동기화 목적으로 여러 기기가 같은 userId를 공유) 전부 한 번에 끊어내고,
-    // 공유 설정 행·계정 자체까지 지운다. 기기별 익명 데이터(game_sessions 등)는 deviceId로만
-    // 연결돼 있어 계정과 무관하게 남는다 — 의도된 동작(가입 없이도 쓸 수 있던 로컬 데이터라 PII 아님).
+    // 공유 설정 행·계정 자체까지 지운다. 기기별 게임(game_sessions 등)은 deviceId로 연결된
+    // 서버 자료이며 현재 자동 삭제 범위에 포함되지 않는다. 계정 관련성·별도 삭제 요청 처리는
+    // docs/product/privacy-deletion-review/data-processing.md를 따른다. 비개인정보로 단정하지 않는다.
     @Transactional
     fun deleteAccount(deviceId: String) {
         val link = deviceLinkRepository.findById(deviceId).orElse(null)

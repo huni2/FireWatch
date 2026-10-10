@@ -7,7 +7,7 @@ const { Title, Paragraph, Text } = Typography
 // Play Console의 "Privacy policy URL" 등록에 필요. 이 페이지 자체가 그 URL이 가리키는 대상이다.
 // 수집 항목은 전부 코드(UserSettings/AppUser 엔티티, SettingsRateLimiter)에서 실제로 확인한 내용만
 // 적었다 — 法 자문이 아니라 일반적인 고지 템플릿이므로, 게시 전 한 번 검토가 필요하다.
-const EFFECTIVE_DATE = '2026-10-09'
+const EFFECTIVE_DATE = '2026-10-10'
 const CONTACT_EMAIL = 'powerhch@gmail.com'
 
 export function PrivacyPage() {
@@ -43,6 +43,7 @@ export function PrivacyPage() {
               <li>푸시 알림 수신 희망 시간, 관심 키워드, 관심 종목 — 이용자가 직접 입력한 값</li>
               <li>푸시 알림 토큰 — 알림 발송을 위한 모바일 Expo 푸시 토큰과 웹 브라우저 푸시 구독 정보</li>
               <li>접속 IP 주소 — 설정 저장 요청의 남용 방지(요청 빈도 제한)와 보안·운영 감사 기록에 사용합니다.</li>
+              <li>종목 검색 API에 보낸 검색어와 조회 처리 결과 — 일부 검색 경로는 운영 감사로그에 기록됩니다. 보안·장애 확인에 사용하며, 기기별 전체 검색 이력을 제공하는 기능은 아닙니다.</li>
               <li>직접 입력한 투자 목표·기간·성향·계좌 유형·월 투자액·현금·보유 기업·수량·매입가와 수정 이력 — 보유 구성 점검과 기록 복원을 위해 서버에 저장합니다. 실제 증권 계좌번호나 실제 주문을 수집하는 기능은 없습니다.</li>
               <li>기기별 가상투자 게임의 진행·가상 보유·주문·가격 기록 — 기기 식별자에 연결해 서버에 보관합니다.</li>
               <li>로그인 시 서버 발급 세션과 만료 시각 — 서버에는 세션 토큰의 해시를 저장하고, 웹·앱에는 인증을 위한 토큰을 보관합니다.</li>
