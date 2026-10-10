@@ -1,0 +1,12 @@
+{
+  "archive_unchanged": true,
+  "server_version": "17.11",
+  "source_database_comparison_performed": false,
+  "operating_database_connected": false,
+  "registrations_remaining": 0,
+  "archive_bytes": 890563,
+  "restored_public_tables": 31,
+  "restore_success": true,
+  "unrelated_records_preserved": true,
+  "local_server_stopped": true
+}
