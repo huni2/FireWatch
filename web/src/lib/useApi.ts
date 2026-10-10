@@ -22,7 +22,7 @@ const RETRY_DELAYS_MS = [2000, 4000, 8000, 15000, 25000, 35000]
 // 이 시간을 넘겨도 loading이면 isSlow를 켜서, 화면에서 "서버를 깨우는 중" 안내를 띄울 수 있게 한다.
 const SLOW_THRESHOLD_MS = 6000
 
-export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): UseApiResult<T> {
+export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = [], retryDelaysMs: readonly number[] = RETRY_DELAYS_MS): UseApiResult<T> {
   const generation = useRef(0)
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(true)
@@ -56,7 +56,7 @@ export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): UseA
         .catch((err: unknown) => {
           if (cancelled || id !== generation.current) return
           const retryable = !(err instanceof ApiRequestError) || err.status >= 500 || err.status === 429
-          const delay = retryable ? RETRY_DELAYS_MS[retryIndex] : undefined
+          const delay = retryable ? retryDelaysMs[retryIndex] : undefined
           if (delay != null) {
             retryTimer = setTimeout(() => {
               if (!cancelled && id === generation.current) attempt(retryIndex + 1)
@@ -75,7 +75,7 @@ export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): UseA
       clearTimeout(retryTimer)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...deps, reloadKey])
+  }, [...deps, reloadKey, retryDelaysMs])
 
   return { data, loading, error, isSlow, reload, replaceData }
 }
