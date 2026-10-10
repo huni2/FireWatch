@@ -13,6 +13,8 @@
 
 **2026-10-10 첫 운영 백업·별도 로컬 복원 완료** — 최초에는 별도 백업이 없었으나 사용자가 19:45:46에890563bytes의 첫 백업을 생성했다. 이 파일을 별도 PostgreSQL17.11 로컬 DB에 실제 복원해31개 public 테이블과 세션/푸시 비활성화 후 다른 기록 보존·원본 파일 해시 불변·시험 서버 종료를 확인했다. [집계 결과](../product/release-submission-review/operating-backup-restore-20261010.json). 운영 Supabase 접속·복원·전환은 없었으며 당시 운영 DB와 행 서명을 직접 대조한 검증은 아니다. 백업 이후 삭제 요청 재적용·주기/보관기간 결정과 보관 위치 암호화 확인은 별도로 남아 있다.
 
+이 첫 백업의 OperatorAccess 감사128행에서 Bearer 패턴0·마스킹63을 복원본 읽기 전용 집계로 확인했다. [첫 백업 감사 집계](../product/release-submission-review/first-backup-authorization-summary-20261010.json). 폐기 후 복원본의 세션 집계를 원본 세션 상태로 해석하지 않는다. 가운영 주기/보관 기준은 아래 승인된 기준을 따르고 출시 후 기간은 미확정이다.
+
 운영 서버 버전은 사용자 `SHOW server_version` 결과 **17.6**이다. 이 PC의 허용된 로컬 아티팩트 폴더에 공식 PostgreSQL Windows 페이지가 연결한 EDB Windows x64 바이너리 **17.11**의 클라이언트를 준비했다. `pg_dump`/`pg_restore`/`psql --version` 모두17.11 확인. DB 서버 설치·서비스 시작·운영 DB 접속은 하지 않았다. 바이너리/덤프는 Git에 포함하지 않는다.
 
 이 PC의 실행 파일은 `C:/Users/changhun/.codex/visualizations/2026/10/06/01a10ef2-3e85-7190-9a00-d19c7acd3f40/postgres17-client/first-backup.ps1`이다. 아래 PowerShell 예제를 실행하는 로컬 입력 도우미이며 구문 검사만 완료했다. 연결 정보/비밀번호/저장 폴더를 사용자 PC에서 입력해야 실제 백업이 생성된다. 비밀번호는 pg_dump의 숨김 프롬프트로 입력하며 채팅·GitHub에 제출하지 않는다. 다운로드 ZIP SHA256은 `80379B2C04D51C30225532E0AE04509899141E9957ED096FE749D7FD9DF8F82F`이다. 이는 로컬 파일 식별용이며 제공업체 서명 검증을 대신하지 않는다.

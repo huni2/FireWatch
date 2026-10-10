@@ -24,12 +24,14 @@
 ## 열린 과제 — 백엔드(BE)
 
 ### BE-21. 출시 전 투자 정보 범위·데이터 운영 정책 정리
-**완료된 항목** — 실제 데이터 처리/공개 고지·Data Safety 초안·삭제 운영 절차 작성, 신규 감사 인증정보 마스킹·운영 원문 정리 완료. 사용자 실제 집계03:15:27 UTC에서 감사121행 유지/원문0/완전마스킹56/일치 유효 및 연결세션0 확인. PR#57/#58·관련 CI/웹 배포 완료. [최종 집계](../docs/product/release-audit-review/authorization-cleanup-confirmed-20261010.json).
-**진행(2026-10-10)** — 삭제 최종 단계의 실제 FK 실패→공유 설정/포트폴리오/이력/문의/기기 연결/세션 전체 롤백→같은 세션 정상 재시도 HTTP 회귀 추가. AccountSession9검사·로컬전체215검사 실패0/skip1 통과. PR#64 main22b0e2e 머지·소스38025851258/PR38025869816 전체CI success. main CI38026137517 최종success. 복구 시험의 세션/푸시 비활성화·다른 기록/원본 보존도 실제 PostgreSQL17 CI 통과·PR#65 main7026dfc 머지. 소스38026706604/PR38026731646 attempt2 success. 최초 PR은 기존 감사 접근 timeout 실패로 동일 코드1회 재검증했으며 원인 확정은 아님. PR#65 main CI38027248332 최종success 확인. 처음에는 별도 백업이 없었으나 사용자 첫 운영 백업890563bytes 생성 및 별도 로컬 PostgreSQL17.11 복원31테이블 성공. 복원본 세션/푸시0·다른 기록 보존·원본 파일 불변·시험 서버 종료 확인. 운영 DB 직접 행서명 대조·전환·삭제 요청 재적용은 미실행. 사용자 가운영 주1회+DB 구조/대량 변경 전·최근 주간4개 보관 승인. 출시 전 매일 백업 자동화/실패 알림 준비를 기존 BE-21 완료 기준에 반영. 예약 실행/파일 삭제·운영 삭제·런타임 변경 없음.
-**현재 근거** — [처리 목록](../docs/product/privacy-deletion-review/data-processing.md), [Data Safety 초안](../docs/product/release-submission-review/data-safety-draft.md), [삭제 운영 절차](../docs/product/release-submission-review/deletion-operations.md), [인증정보 운영 확인](../docs/product/release-audit-review/operations.md), [백업·복구 절차](../docs/deployment/data-preservation.md). Issue#56을 유지하며 이전 진행 이력은 context-notes/log/Git에서 확인한다.
-**남은 일** — 첫 출시 투자 정보 범위의 적법성 검토, 기기 게임/별도 익명 자료 소유 확인과 실제 삭제 이행·처리기간, 감사/백업 보관기간·백업 인증 원문 처리, 국외 처리 국가/계약·최종 Android SDK와 Data Safety 대조, 가운영 정기 백업 이행/암호화 보관·출시 전 최종 복원/매일 백업 자동화/실패 알림 실수신·출시 후 보관기간 및 복원 후 삭제 요청 재적용/전환 확인. 첫 백업 실물/별도 로컬 복원은 완료. CI 복구 훈련을 실제 운영 백업으로 표시하지 않는다. 기간·계약을 임의 확정하거나 Play에 제출하지 않는다.
-**완료 기준** — 첫 출시 범위와 실제 처리/공개 안내·운영 이행을 일치시키고 남은 확인 결과를 기록한다. Android 설치는 APP-21에서 사용자 APK 보류 결정을 따른다. 새 과제 번호·운영 삭제·APK 요청 없음.
-**성능 제한** — BE-28 첫 요청 지연6.83초는 해결 완료로 표시하지 않는다. APP-21 최종 기기 확인에서 첫 진입 대기/오류 복구 사용성을 대조한다.
+**현재 상태(2026-10-10)** — Issue#56 OPEN. 첫 운영 백업/별도 복원과 가운영 백업 기준 결정은 완료. 나머지 운영 정책·출시 전 자동화 확인을 기존 과제 안에서 진행한다.
+**완료** — 공개 처리/삭제 안내·Data Safety 초안, 감사 원문 정리(운영 확인121행/원문0/마스킹56), 삭제 실패 전체 롤백/재시도와 복구 안전성 회귀. PR#64/#65 머지·main CI38026137517/38027248332 success. 첫 백업890563bytes·별도 로컬 복원31테이블·복원본 세션/푸시0·다른 기록 보존·원본 파일 불변·서버 종료 확인. 첫 백업의 OperatorAccess 감사128행에서 Bearer 패턴0/마스킹63도 확인했다. 세션 집계는 폐기 후 복원본 기준이다.
+**가운영 결정** — 주1회+DB 구조/대량 변경 전·최근 주간4개 및 마지막 변경 전 백업 보관. 시장 자료는 누적 보존. 자동 예약·파일 정리·시험 자료 삭제는 미실행.
+**다음 개발/운영 작업** — 기존 BE-21에서 출시 전 매일 백업 자동화·실패 알림 실수신·최종 백업/복원 확인. 실행 환경/비밀정보 보관/암호화 저장 위치는 아직 미확정이다. 가운영 반복 이행도 기록한다.
+**남은 확인** — 투자 정보 범위 검토, 기기/익명 자료 소유와 실제 삭제 이행·처리기간, 감사/출시 후 백업 보관기간·삭제 요청 재적용, 국외 국가/계약, 최종 설치본 SDK와 Data Safety 대조. 실제 운영 DB와 백업 행서명 직접 비교·복구 전환은 미실행이다.
+**근거** — [완료 체크리스트](../docs/product/release-submission-review/checklist.md), [처리 목록](../docs/product/privacy-deletion-review/data-processing.md), [Data Safety 초안](../docs/product/release-submission-review/data-safety-draft.md), [삭제 절차](../docs/product/release-submission-review/deletion-operations.md), [감사 확인](../docs/product/release-audit-review/operations.md), [백업 절차](../docs/deployment/data-preservation.md), [첫 백업 감사 집계](../docs/product/release-submission-review/first-backup-authorization-summary-20261010.json).
+**완료 기준** — 실제 운영/공개 안내/제출 범위를 대조하고 위 남은 결과를 기록한다. 기간·계약·스토어 제출을 임의 확정하지 않는다. Android 설치는 APP-21 보류 결정을 따른다. 새 과제 번호를 만들지 않는다.
+**성능 제한** — BE-28 첫 요청 지연6.83초는 미해결 제한으로 유지하고 APP-21 첫 진입 사용성에서 대조한다.
 
 **BE-30 종료(2026-10-10)** — 실제 수집 감사·운영자 푸시 실수신·일반 계정 차단 사용자 확인 완료. 종료 표와 docs/product/collection-recovery/results.md에 기록한다. WEB-19 실제 계정 확인·기록 보존도 완료했으며 종료 표에 기록한다.
 
@@ -45,15 +47,11 @@
 ## 열린 과제 — 모바일(APP)
 
 ### APP-21. 최신 Android 설치·실수신·출시 제출 검증
-**사용자 결정(2026-10-09)** — APK 빌드·배포는 과제와 디자인 후속조치 모두 완료 후 진행한다. 그전 EAS 추가 요청·사용자 대상 APK 배포는 보류하고 코드/화면 검증을 진행한다. 이미 접수된 versionCode5를 다시 빌드하지 않는다.
-**구현·설정 완료** — Android OAuth ID·운영 API·Firebase 파일·EAS 프로젝트/preview/production 설정 연결. 사용자 FCM V1 등록 확인. 출시 검사·타입/lint·Android export·CI 통과.
-**진행(2026-10-08)** — 소스9991091·versionCode2의 bf7a706a FINISHED/APK 생성 확인. 이후 마스코트 로비·설명 하단 메뉴·짧은 버튼을 구현해 타입/lint·Android export 성공. Free 사용2/30·비용0 확인 후 소스3855eac·versionCode3의 preview fb0c49b4-39da-4e0a-9b67-328dfa4a8f95 빌드 접수. https://expo.dev/accounts/huni2/projects/mobile/builds/fb0c49b4-39da-4e0a-9b67-328dfa4a8f95
-**남은 일** — 새 APK 완료/설치, Google 서명 SHA-1과 실제 로그인 왕복, 아래 통합 체크리스트, production AAB 테스트 트랙·실제 target SDK·Play 제출 양식 대조.
-**최신 설치본** — 개별 버튼·공통 메뉴 수정은 이전 versionCode3에 포함되지 않는다. Free 사용3/30·비용0 확인 후6cedd8e/versionCode4의 preview3c4b54ea-4233-49ff-af39-feefd05c85f1 접수. https://expo.dev/accounts/huni2/projects/mobile/builds/3c4b54ea-4233-49ff-af39-feefd05c85f1
-**추가 UI** — 전용 FireWatch 메뉴 SVG는 웹/앱 공유 원본으로 구현하고 앱 타입/lint·Android export를 확인했다. 기존6cedd8e/versionCode4 APK에는 포함되지 않아 새 빌드·설치/TalkBack 확인이 필요하다. 앱 구현 APP-26/27/28과 실제 설치를 구분한다.
-**마지막 상태(2026-10-09)** — versionCode4·소스6cedd8e의 FINISHED/APK 생성 확인. 최신 아이콘·자산 등록을 포함할 versionCode5를 준비한다. EAS Free4/30·비용0 확인. 실제 설치 확인은 미완료다. docs/product/android-preview-20261009/checklist.md 참조.
-**최신 접수** — 소스7594daa/versionCode5·preview fefb17ae-ce86-417f-9016-c9230010c1b3 업로드 완료. 타입/lint·출시 검사8개·Android export 통과. https://expo.dev/accounts/huni2/projects/mobile/builds/fefb17ae-ce86-417f-9016-c9230010c1b3 . 공식 무료 한도는 월 Android15회+iOS15회이며 총 BUILDS30 조회와 구분한다. APK 완료/설치는 미확인이다.
-**빌드 주의** — 과거 cde6e85의 preview3a953867은 현재 소스가 아니며 설치 검증 완료로 사용할 수 없다. 2026-10-08 EAS 조회에서 과거 preview3a953867의 FINISHED·APK 생성 확인. 소스 cde6e85라 최신 설치 확인을 대신하지 않는다.
+**현재 상태(2026-10-10)** — 사용자 APK/EAS 빌드 보류 유지. 과제/디자인 후속조치 완료 후 진행하며 이번 문서 점검은 빌드 요청이 아니다.
+**구현 완료** — Android OAuth/운영 API/Firebase/EAS 설정·사용자 FCM V1 등록, 출시 검사·타입/lint·Android export·CI. 실제 설치·로그인/푸시/TalkBack 결과는 미확인이다.
+**빌드 기록** — 마지막 접수는 source7594daa/versionCode5·preview fefb17ae-ce86-417f-9016-c9230010c1b3. 완료/다운로드/설치는 미확인. 현재 모바일 마지막 변경 커밋은5f77550이며 versionCode5는7594daa 기준 접수본이므로 최신 기능 설치 검증을 대신하지 않는다. 기존 접수를 반복하지 않는다.
+**남은 일** — 보류 해제 후 필요한 소스/서명·SHA-1 확인, 설치 Google 로그인·푸시·아래 전체 흐름 검증, production AAB/테스트 트랙·실제 target SDK·Data Safety 대조.
+**근거** — [설치 체크리스트·과거 접수 기록](../docs/product/android-preview-20261009/checklist.md), [설치 검증 절차](../docs/deployment/android-release-check.md), [Play 제출 가이드](../mobile/PLAY_STORE.md). 과거 EAS 사용량은 해당 조회일의 기록이며 현재 잔여량을 의미하지 않는다.
 **완료 기준** — 설치 기기에서 아래 항목을 확인·기록하고 AAB/테스트 트랙 검증. JS 번들·설정 검사 성공만으로 종료하지 않는다.
 
 | 이전 과제 | 코드 상태 | 남은 실제 설치 확인 |
