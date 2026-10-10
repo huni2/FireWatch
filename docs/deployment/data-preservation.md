@@ -11,6 +11,8 @@
 
 ## 무료 운영 백업
 
+**2026-10-10 운영자 확인** — 별도 운영 DB 백업을 만든 적이 없다. 아래 절차와 CI 복구 훈련은 준비된 상태지만 운영 백업 파일·복원 검증은 아직 없다.
+
 Supabase 무료 프로젝트의 자동 복구 기능을 보장된 백업으로 가정하지 않는다. 공식 문서도 무료 프로젝트의 정기 외부 내보내기를 권고한다. [Supabase 백업 안내](https://supabase.com/docs/guides/platform/backups).
 
 제안하는 백업 주기는 스키마 변경 전과 주 1회다. `public` 스키마의 구조·데이터를 PostgreSQL 버전에 맞는 `pg_dump`로 암호화 저장소에 보관하고 최근 주간 4개와 마지막 변경 전 백업을 남기는 초안이다. 주기·보관기간의 실제 운영자 결정과 이행은 아직 확인되지 않았다. 오래된 파일 정리는 복구 확인 후 운영자가 수행한다. 서버 디스크나 공개 Git 저장소/GitHub artifact에 개인 자료 덤프를 보관하지 않는다. 현재 운영 백업이 존재한다고 주장하지 않는다.
@@ -23,6 +25,34 @@ pg_dump --format=custom --schema=public --no-owner --no-privileges --file=firewa
 ```
 
 이 서비스의 Google 계정·세션·보유 기록은 public 테이블에 있다. 덤프에 세션·기기·푸시 정보도 포함되므로 개인정보와 동일하게 취급한다. Firebase 자격증명·Render 환경변수·Storage 파일은 DB 덤프에 포함되지 않는다. 플랫폼 auth/storage 등 관리 스키마를 raw 덤프에 포함시키지 않는다.
+
+### Windows에서 첫 백업 만들기
+
+1. Supabase 프로젝트의 **Connect**에서 DB 버전과 연결 정보를 확인한다. IPv4 PC에서는 **Session pooler**를 선택하고 표시된 host/port/user/database를 사용한다. transaction pooler를 선택하지 않는다. DB 비밀번호는 Google/운영 API 키와 별개다. 값을 채팅으로 보내지 않는다.
+2. [PostgreSQL Windows 설치 안내](https://www.postgresql.org/download/windows/)를 통해 DB 서버 버전과 같거나 호환되는 최신 `pg_dump`/`pg_restore` 클라이언트를 설치한다. 로컬 DB 서버 설치는 백업 내보내기 자체의 필수 조건이 아니다. 설치된 `bin` 폴더에서 PowerShell을 열어 아래를 실행한다.
+3. 저장 폴더는 Git 저장소 밖의 암호화된 개인 저장소로 선택한다. 파일을 공개 첨부하거나 GitHub에 올리지 않는다.
+
+```powershell
+# Connect 화면의 값을 로컬 입력한다. 비밀번호는 화면·명령 기록에 표시하지 않는다.
+$env:PGHOST = Read-Host 'Session pooler host'
+$env:PGPORT = Read-Host 'Session pooler port'
+$env:PGUSER = Read-Host 'DB user'
+$env:PGDATABASE = Read-Host 'DB name'
+$env:PGSSLMODE = 'require'
+$backupFolder = Read-Host '저장소 밖의 기존 암호화 백업 폴더 절대 경로'
+if (-not [IO.Path]::IsPathRooted($backupFolder) -or -not (Test-Path -LiteralPath $backupFolder -PathType Container)) {
+    throw '존재하는 절대 경로 폴더가 필요합니다.'
+}
+$backupFile = Join-Path $backupFolder ('firewatch-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [Guid]::NewGuid().ToString('N') + '.dump')
+& .\pg_dump.exe --password --format=custom --schema=public --no-owner --no-privileges --file=$backupFile
+if ($LASTEXITCODE -ne 0) { throw '백업 실패. 생성된 파일은 정상 백업으로 사용하지 마세요.' }
+& .\pg_restore.exe --list $backupFile > $null
+if ($LASTEXITCODE -ne 0) { throw '백업 목록 확인 실패.' }
+Get-Item -LiteralPath $backupFile | Select-Object Length,LastWriteTime
+Get-FileHash -LiteralPath $backupFile -Algorithm SHA256
+```
+
+`pg_dump --password`의 프롬프트에만 DB 비밀번호를 입력한다. 목록 확인은 파일을 읽을 수 있다는 검사이며 실제 복원 성공을 의미하지 않는다. 첫 백업이 성공하면 날짜·파일 크기·목록 확인 성공 여부만 운영 기록에 남긴다. 다음 단계는 아래 절차에 따른 **별도 빈 로컬 DB 복원**이며 운영 DB로 복원하지 않는다. 다운로드에는 운영 네트워크 전송량이 발생하므로 무료 플랜 사용량도 함께 확인한다.
 
 ## 복구 절차
 
