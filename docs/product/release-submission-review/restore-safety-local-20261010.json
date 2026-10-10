@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "wrongDatabaseSeedRejected": true,
+  "wrongDatabaseInvalidationRejected": true,
+  "invalidated": {
+    "sessions": 0,
+    "operators": 0,
+    "push": 0
+  },
+  "otherRecordsPreserved": true,
+  "scope": "Local PGlite SQL checks; database-name literal adapted only for success cases. Real archive/restore/source preservation checked in CI."
+}
