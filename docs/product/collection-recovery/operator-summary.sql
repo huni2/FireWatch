@@ -44,6 +44,13 @@ WITH jobs AS (
            (SELECT MAX(completed_at) FROM public.collection_runs WHERE id='news') AS latest_news_run_at,
            (SELECT COUNT(*) FROM public.market_quotes) AS quote_rows,
            (SELECT MAX(collected_at) FROM public.market_quotes) AS latest_quote_collected_at
+), audit AS (
+    SELECT action_name, status, COUNT(*) AS row_count, MAX(created_at) AS latest_at
+    FROM public.audit_logs
+    WHERE created_at >= (CURRENT_TIMESTAMP AT TIME ZONE 'UTC') - INTERVAL '2 days'
+      AND action_name IN ('PushService.testOperatorNotification', 'CollectionJobRunner.run',
+                          'MarketCollectionService.collectIfDue', 'collection.operatorPush')
+    GROUP BY action_name, status
 ), operator AS (
     SELECT COUNT(*) AS registered_rows,
            COUNT(s.id) AS existing_settings_rows,
@@ -60,7 +67,8 @@ SELECT jsonb_pretty(jsonb_build_object(
     'unresolved_alerts', (SELECT COALESCE(jsonb_agg(to_jsonb(alerts) ORDER BY category),'[]'::jsonb) FROM alerts),
     'recent_observations', (SELECT COALESCE(jsonb_agg(to_jsonb(observations) ORDER BY asset_group),'[]'::jsonb) FROM observations),
     'stored', (SELECT to_jsonb(stored) FROM stored),
-    'operator_registration', (SELECT to_jsonb(operator) FROM operator)
+    'operator_registration', (SELECT to_jsonb(operator) FROM operator),
+    'audit', (SELECT COALESCE(jsonb_agg(to_jsonb(audit) ORDER BY action_name,status),'[]'::jsonb) FROM audit)
 )) AS collection_operating_summary;
 
 COMMIT;

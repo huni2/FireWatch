@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-10-10T01:08:56.315Z",
+  "authenticated": false,
+  "requests": 2,
+  "retries": 0,
+  "checks": [
+    {
+      "path": "/api/audit-logs?size=1",
+      "status": 401,
+      "errorCode": "UNAUTHORIZED",
+      "pass": true
+    },
+    {
+      "path": "/api/collection/alerts",
+      "status": 401,
+      "errorCode": "UNAUTHORIZED",
+      "pass": true
+    }
+  ],
+  "mutationRequests": 0
+}

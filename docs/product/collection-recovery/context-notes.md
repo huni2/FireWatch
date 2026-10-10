@@ -41,3 +41,7 @@ BE-30 PR#55 main9b9511d 머지 완료·소스e560a10의 push37994439548/PR379944
 PR#55 main9b9511d의 CI37994939959 최종success(전체 백엔드/PG/백업복구/웹/모바일). e560a10 push37994439548·PR37994446239도 success. CI Docker Hub 익명 pull 한도 오류는 공식 PostgreSQL17 ECR Public 미러 경로 변경 후 실제 준비/검사 통과로 해결 확인. 표준VAPID/키쌍 검증 소스 반영·키 값/운영 환경변수 변경0. Render 배포·실제 기기 수신은 미확인으로 기존BE-30/Issue#53 유지·APK0.
 
 사용자 실제 테스트 알림 수신 성공 확인(2026-10-10, 오 됨). 제공처 수락만이 아닌 사용자 기기 실수신 근거로 기록한다. PR#55/main9b9511d·최종CI37994939959 완료. 수집 복구는 기존 운영DB 집계 확인. 운영 감사 기록 대조와 실제 일반 계정 차단은 아직 미확인으로 BE-30/Issue#53을 종료하지 않는다. WEB-19 권한 확인과 동일 결과를 공유하고 중복 테스트/새 과제/APK 없이 진행한다.
+
+실제 익명 운영API2GET401 PASS(2026-10-10T01:08:56.315Z)·변경 HTTP 요청/재시도0(내부 감사 저장 여부는 별도). 기존 operator-summary.sql에 허용목록의 감사 작업명/상태/건수/최신시각만 추가했다. 운영DB와 실제 Google 일반계정 도구가 없어 이 둘의 실제 확인은 아직 미완료이며 키/세션을 공유하도록 요청하지 않는다.
+
+운영 권한 재검증(2026-10-10): 배포 서버 익명 GET2건은 감사로그/수집 진단 모두401·UNAUTHORIZED. 변경 HTTP 요청0·재시도0이며 GET 처리 중 내부 감사 기록 생성 여부는 단정하지 않는다. 로컬 AccountSession/CollectionAlertAccess/CollectionJobRunner/AuditLogAspect 관련23검사 실패0·skip0·BUILD SUCCESSFUL. 일반 계정403·운영자200·위조 세션401 및 감사 저장/재시도 제한은 로컬 근거이며 실제 Google 계정 검증을 대체하지 않는다. 읽기 전용 operator-summary.sql에 허용목록 감사 집계만 추가했고 운영 실행 결과는 아직 대기한다. BE-30/Issue#53 유지·새 과제/APK0.

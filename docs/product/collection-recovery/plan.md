@@ -13,3 +13,5 @@
 새 브라우저 구독 후에도 AUTH_REJECTED 안내 지속. 로컬 web-push5.1.2 바이트코드에서 기본 send(Notification)가 Encoding.AESGCM(구형 WebPush 인증 헤더)을 사용하는 것을 확인했다. Encoding.AES128GCM을 명시하고 Utils.verifyKeyPair로 서버 키 쌍을 값 노출 없이 검증한다. 키 불일치/형식 오류는 외부 요청 전에 차단해 별도 조치 안내를 반환한다. 실제403 원인 확정/실수신 성공으로 확대하지 않는다. 외부 제공처 호출 없이 로컬 수신기로 요청 헤더와 JWT서명·키 불일치 차단을 검증한다.
 
 PR#55 push/PR CI는 테스트 전 postgres:17 이미지 다운로드에서 Docker Hub 익명 pull 한도(toomanyrequests)로 모두 실패했다. 동일 Docker Official Image의 ECR Public 미러 public.ecr.aws/docker/library/postgres:17로 CI 서비스 이미지 경로만 바꾸고 실제 컨테이너/전체검사/PG/복구를 검증한다. 자격증명 추가/테스트 건너뛰기/서버환경 변경/새 과제는 하지 않는다.
+
+사용자가 직접 최종 확인을 요청했다. 운영 감사/수집 API 익명2GET로401 차단을 확인하고 일반/운영/위조 세션·감사 저장·제한 재시도 통합 검증을 수행한다. 운영DB 접속과 사용자 브라우저 세션 도구는 없으므로 실제 운영 감사 기록/Google 일반계정 확인을 로컬 결과로 대체하지 않는다. 기존 읽기전용 집계 SQL에 허용된 작업명·상태·건수·최신시각만 추가해 개인정보/토큰/원문 출력 없이 조회할 수 있게 한다.
