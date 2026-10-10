@@ -1,0 +1,20 @@
+{
+  "restored_public_tables": 31,
+  "operating_database_connected": false,
+  "server_version": "17.11",
+  "unrelated_records_preserved": true,
+  "registrations_remaining": 0,
+  "restore_success": true,
+  "archive_bytes": 898622,
+  "source_database_comparison_performed": false,
+  "local_server_stopped": true,
+  "archive_unchanged": true,
+  "encrypted_artifact_checksum_match": true,
+  "decryption_success": true,
+  "local_unencrypted_file_count": 0,
+  "workflow_run_id": "38065999710",
+  "artifact_id": "11674542818",
+  "source_scope": "first_private_cloud_backup_restored_separately",
+  "checked_on_kst": "2026-10-11",
+  "local_encryption_check_method": "System.IO.File.GetAttributes"
+}

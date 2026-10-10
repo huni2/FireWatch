@@ -1,4 +1,4 @@
-# 데이터 처리 대조 (2026-10-10)
+# 데이터 처리 대조 (2026-10-11)
 
 코드 기준 목록이며 Play 제출 답변이나 법률 검토 완료 증명이 아니다. 시행 중인 개인정보 안내는 `/privacy`, 삭제 요청 진입은 `/privacy#delete-account`다.
 
@@ -14,7 +14,7 @@
 | 보안·장애 감사 IP·요약 | 감사 로그 저장·운영자 열람 | 자동 삭제하지 않음, 현재 자동 만료 없음 | AuditLog, SettingsUpdateCommand |
 | 일부 종목 검색어·조회 결과 | StockService.search의 요청/결과 요약이 운영 감사에 저장. 기기별 전체 검색 이력과는 다름 | 계정 삭제로 감사 원문이 자동 삭제되지는 않음 | StockService, AuditLogAspect |
 | 뉴스·시세·분석 근거 | 공공 시장 자료 누적 보관 | 계정 삭제와 별개 | release-scope.md |
-| 기존 개인 자료 백업 | 첫 운영 덤프 실물·별도 로컬 복원 완료. 가운영 주1회/최근4개 승인. 정기 이행/암호화·출시 후 보관기간은 미확인 | 즉시 자동 수정 아님, 복구 전에 삭제 요청 재적용 | data-preservation.md |
+| 기존 개인 자료 백업 | 첫 운영 덤프 실물·별도 로컬 복원 완료. 가운영 주1회/최근4개 승인. 클라우드 암호화/별도 복원 완료·주간 예약 활성화. 반복 이행·출시 후 보관기간은 미확인 | 즉시 자동 수정 아님, 복구 전에 삭제 요청 재적용 | data-preservation.md |
 
 ## 외부 전달
 
@@ -24,7 +24,7 @@
 
 ## 출시 전에 남은 확인
 
-2026-10-10 BE-21에는 PC와 독립적인 GitHub Actions 백업 도구와 비공개 `FireWatch-backups` 저장소를 준비했다. `BACKUP_ENABLED=false`이며 운영 자료 전송은 미실행이다. 활성화하면 개인 자료가 GitHub 실행 환경에서 일시 평문 처리되고 age 암호화 artifact가 비공개로28일 보관된다. 공개키 암호화가 개인정보 외부 처리를 없애지는 않는다. 실제 처리 국가·계약·공개 안내·삭제/만료 정책을 대조한 뒤 활성화한다. 개인 키는 전달하지 않으며 실패 보고에는 실행 번호·고정 오류 코드만 남긴다. [설정·복구 절차](../../deployment/data-preservation.md)를 따른다.
+2026-10-11 비공개 `FireWatch-backups`의 실제 백업2회와 별도 복원1회 완료·BACKUP_ENABLED=true·주간 예약 활성화. 개인 자료가 GitHub 실행 환경에서 일시 평문 처리됐고 age 암호화 artifact가 비공개로28일 보관된다. 개인키는 업로드하지 않았다. Actions 초과 지출 예산0/Stop usage Yes는 사용자 화면 확인. 저장 암호화가 외부 처리를 없애지는 않으며 실제 처리 국가·계약·공개 안내·삭제/만료 정책 대조는 아직 남는다. 실패 보고에는 실행 번호·고정 오류 코드만 남기며 실수신은 사용자 확인 못 함이다. [설정·복구 절차](../../deployment/data-preservation.md)를 따른다.
 
 [Play 데이터 보안 입력 초안](../release-submission-review/data-safety-draft.md)과 [삭제 요청 운영 절차](../release-submission-review/deletion-operations.md)에 현재 근거와 미확인 항목을 정리했다. 초안 작성은 Play 제출이나 운영 처리 이행을 뜻하지 않는다.
 
