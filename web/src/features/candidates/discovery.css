@@ -20,7 +20,7 @@
 .recommendation-evidence a { overflow-wrap: anywhere; }
 .discovery-page { display: grid; gap: 20px; }
 .discovery-search { display: grid; grid-template-columns: minmax(0,680px) max-content; align-items: end; gap: 20px; }
-.discovery-search > label { display: grid; gap: 8px; min-width: 0; }
+.discovery-search-field { display: grid; gap: 8px; min-width: 0; }
 .discovery-search .ant-select { max-width: 680px !important; }
 .discovery-filters { display: grid; grid-template-columns: minmax(0,1fr) max-content max-content; align-items: center; gap: 12px; }
 .catalog-filters { display: grid; grid-template-columns: minmax(220px,1fr) max-content max-content; align-items: center; gap: 12px; margin-bottom: 16px; }
