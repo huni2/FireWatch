@@ -1,0 +1,18 @@
+{
+  "checked_on_kst": "2026-10-11",
+  "expected_failure_run_id": "38066740922",
+  "expected_failure_code": "CONFIG_MISSING",
+  "failure_before_database_connection": true,
+  "failure_report_step": "success",
+  "recovery_run_id": "38066973888",
+  "recovery_conclusion": "success",
+  "matching_recovery_audit_rows": 1,
+  "unresolved_backup_alerts_after_recovery": 0,
+  "actual_device_delivery": "user_could_not_confirm",
+  "weekly_schedule_kst": "Saturday 19:43",
+  "artifact_retention_days": 28,
+  "account_actions_paid_budget_usd": 0,
+  "stop_paid_usage_user_confirmed": true,
+  "public_main_ci_run_id": "38062992522",
+  "public_main_ci_conclusion": "success"
+}

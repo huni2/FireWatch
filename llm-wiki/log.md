@@ -814,3 +814,9 @@
 - **2026-10-10 CI 수정**: Linux age 대역이 PATH의 자신을 재호출하는 문제를 발견해 최초 소스38052576182/PR38052599390 실행을 취소했다. 실제 age 경로를 대역 PATH 적용 전에 해석하고 개별 실행20초 timeout을 추가했다. 수정 후 로컬 안전8검사 성공·Linux CI는 재확인 대상. 운영 DB 접속0.
 
 - **2026-10-10 BE-21 PR#67 검증 완료**: 소스2072dae CI38052845547 success·PR38052848257 attempt2 전체success(H2/PG/복원/웹/모바일). PR 첫 시도는 기존 AccountSession 감사권한20초 timeout으로 실패했고 실패 작업1회 재검증 성공·원인은 미확정. 안전8검사·공개 CI 검증 완료, 비공개 workflow 설치·BACKUP_ENABLED=false·소스2072dae 고정·disabled dispatch38052651956 skipped. 머지와 실제 운영 설정은 구분한다. 개인 자료 외부 처리/28일 만료·비밀값/키 보관·무료 예산·실제 백업/복원/푸시 확인은 BE-21에 유지.
+
+- **2026-10-11 BE-21 실운영 백업 검증 착수**: Render 새API 인증 없는401 확인·필수secret4개 등록 이름 확인·현재 사용자 ACL/EFS age 개인키 생성/공개키 등록 및 합성왕복 성공. 사용자 Actions account0budget/Stop usage Yes 스크린샷 확인·작업 진행 지시. 실제cloud첫백업/별도복원/실패보고 검증 착수·새 과제/APK0. 비용 한도를 올리지 않는다.
+
+2026-10-11 실제 cloud 검증 결과: 사용자 Actions 예산$0/Stop usage Yes 확인 후 BACKUP_ENABLED=true. 첫 run38065999710 성공·artifact11674542818 checksum/age 복호화·별도 PostgreSQL17.11 복원31테이블 확인. 복원본 세션/푸시0·다른 기록/시퀀스 보존·원본 해시 불변·시험 서버 종료. 운영 원본 DB 행서명 대조는 수행하지 않았다. 로컬 개인키 및 시험 파일은 사용자 ACL/EFS 확인. PowerShell 파일 메타데이터와 달리 System.IO.File.GetAttributes로 검사한 최종 비암호화 파일0이며 빈 파일의 표시 차이를 실제 평문 유출로 단정하지 않는다. 기존 첫 로컬 덤프의 보관 암호화 상태는 별개다.
+
+검증 실패 run38066740922는 해당 프로세스의 PGPASSWORD를 비워 DB 접속 전 CONFIG_MISSING을 발생시켰다. 저장된 secret 변경0·실패 보고 단계success. 사용자에게 의도적인 실패 실행과 본체 CI 성공을 구분해 설명했다. 정상 복구 run38066973888 전체success·서버 성공 감사1행/미해결 백업 장애0을 운영 API 집계로 확인. 본체 main CI38062992522 success. 사용자는 실패 푸시 실수신을 확인 못 함으로 답했으므로 수신 완료로 표시하지 않는다. 토요일19:43 KST 주간 예약 활성·artifact28일 만료이며 반복 실행/출시 전 매일 전환·PC 밖 개인키/EFS 복구수단·국외 계약/정책은 남음. 기존 BE-21/Issue56 유지·새 과제/APK0.
