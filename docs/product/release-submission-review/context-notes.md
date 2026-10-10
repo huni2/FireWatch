@@ -9,3 +9,7 @@ BE-21 제출 대조: 공식 Play 데이터 보안/계정 삭제 안내와 실제
 웹 build 성공(30.47초)·lint exit0. 기존 useWebPushSubscription.ts의 set-state-in-effect 경고1개는 이번 수정 범위 밖이며 수정하지 않았다. 변경은 공개 안내/문서와 서버 주석이며 런타임 계정 삭제/감사 저장 로직은 바꾸지 않았다. 실제 SDK·운영 계약/백업·계정 삭제 실기기 검증을 대체하지 않는다.
 
 BE-21 PR#58 main79ccbf7 머지. 소스cac7b6d의 push38013982786/PR38014010120 전체 CI success(백엔드·PostgreSQL·별도 복구·웹·앱). 웹 로컬 build/lint 성공, 기존 lint 경고1개 유지. Play 데이터 보안 코드 대조 초안·계정/기기 삭제 요청 절차·비공개 처리 양식·백업 재적용 확인 항목과 공개 검색어 감사 안내 정정 완료. 이전 PR#57 main CI38012981864 success. 새 main CI/웹·Render 실제 반영은 별도 확인 전. 실제 보관기간/처리기간·계약·백업/삭제 이행·최종 SDK 확인이 남아 BE-21/Issue#56 유지. BE-30 운영 감사/일반계정도 대기. 새 과제 번호·운영 삭제·APK0.
+
+운영 웹 확인: PC1366/모바일390에서 /privacy는200·삭제 앵커/메일/계정 링크·기기 게임 별도 범위 안내·가로 넘침0. 그러나 새 검색어 고지와 시행일2026-10-10은 미반영이다. 익명 /audit-log는 운영자 게이트·표0, 감사 API/수집 진단 API 모두401. 변경 요청 전달0·재시도0. main79ccbf7 CI38014319018 success 확인. Cloudflare Wrangler 기존 OAuth/pages.write 인증을 확인하고 운영 API/Google ID/공개VAPID가 빌드에 포함된 것을 값 출력 없이 확인했다. 최신 웹을 기존 프로젝트firewatch에 반영하고 재확인한다. 실제 운영 DB/Google 세션 접속 수단은 없고 환경 연결 변수도 미설정이다.
+
+BE-21 실제 운영 확인: main79ccbf7 CI38014319018 success. 초기 운영 웹에는 이전 개인정보 고지가 남아 있었으므로 Wrangler 기존 인증/빌드 운영 API·Google ID·공개VAPID 포함을 값 출력 없이 확인해 Cloudflare0f1a9c43(https://0f1a9c43.firewatch-eqp.pages.dev)에 배포했다. 운영 주소1366/390px에서 최신 검색어 고지/시행일·삭제 앵커/메일/계정 링크·별도 게임 범위·가로 넘침0 PASS. 익명 감사 화면 운영자 게이트·표0, 감사/수집 API2GET401 PASS. 변경 HTTP 요청 전달0·재시도0이며 내부 감사 삽입0을 뜻하지 않는다. 전후 결과 JSON 보존. Render 버전/실제 운영 감사·일반계정·삭제/백업 이행은 미확인이다. 읽기 전용 operator-summary.sql에 authorization_audit 집계만 추가해 BE-21/30 확인을 한 실행으로 요청한다. 원문/계정ID/키 출력0·새 과제/APK0.

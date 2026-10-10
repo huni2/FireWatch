@@ -51,6 +51,14 @@ WITH jobs AS (
       AND action_name IN ('PushService.testOperatorNotification', 'CollectionJobRunner.run',
                           'MarketCollectionService.collectIfDue', 'collection.operatorPush')
     GROUP BY action_name, status
+), authorization_audit AS (
+    SELECT COUNT(*) AS audit_rows,
+           COUNT(*) FILTER (WHERE request_payload ~* 'Bearer[[:space:]]+[A-Za-z0-9_-]{40,64}') AS bearer_pattern_rows,
+           COUNT(*) FILTER (WHERE request_payload = '[[REDACTED], [REDACTED], [REDACTED]]') AS fully_redacted_rows,
+           MAX(created_at) AS latest_at
+    FROM public.audit_logs
+    WHERE action_name = 'OperatorAccess.requireOperator'
+      AND created_at >= (CURRENT_TIMESTAMP AT TIME ZONE 'UTC') - INTERVAL '2 days'
 ), operator AS (
     SELECT COUNT(*) AS registered_rows,
            COUNT(s.id) AS existing_settings_rows,
@@ -68,7 +76,8 @@ SELECT jsonb_pretty(jsonb_build_object(
     'recent_observations', (SELECT COALESCE(jsonb_agg(to_jsonb(observations) ORDER BY asset_group),'[]'::jsonb) FROM observations),
     'stored', (SELECT to_jsonb(stored) FROM stored),
     'operator_registration', (SELECT to_jsonb(operator) FROM operator),
-    'audit', (SELECT COALESCE(jsonb_agg(to_jsonb(audit) ORDER BY action_name,status),'[]'::jsonb) FROM audit)
+    'audit', (SELECT COALESCE(jsonb_agg(to_jsonb(audit) ORDER BY action_name,status),'[]'::jsonb) FROM audit),
+    'authorization_audit', (SELECT to_jsonb(authorization_audit) FROM authorization_audit)
 )) AS collection_operating_summary;
 
 COMMIT;

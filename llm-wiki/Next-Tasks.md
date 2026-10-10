@@ -29,7 +29,7 @@
 **완료 기준** — 사용자의 이전 수행·보존 확인 또는 이전 불필요 결정 기록. 신규 사용자 노출 차단을 미구현으로 표시하지 않는다.
 
 ### BE-21. 출시 전 투자 정보 범위·데이터 운영 정책 정리
-**개발·대조 완료(2026-10-10)** — 출시 범위·실제 데이터 처리·개인정보 안내·백업/복구 절차를 정리했다. 개인 기록/세션/게임·수집 상태의 구현과 PostgreSQL 검증은 완료. PR#57(main d802d36) 신규 감사 authorization 마스킹·실제 AOP 성공/실패 회귀, 로컬213검사 실패0/skip1·소스/PR/main CI success. PR#58(main79ccbf7) 데이터 보안 초안·삭제 요청 절차·검색어 감사 안내 정정, 웹 build/lint·소스/PR 전체 CI success. 새 main CI/운영 배포는 별도 확인 전이다.
+**개발·대조 완료(2026-10-10)** — 출시 범위·실제 데이터 처리·개인정보 안내·백업/복구 절차를 정리했다. 개인 기록/세션/게임·수집 상태의 구현과 PostgreSQL 검증은 완료. PR#57(main d802d36) 신규 감사 authorization 마스킹·실제 AOP 성공/실패 회귀, 로컬213검사 실패0/skip1·소스/PR/main CI success. PR#58(main79ccbf7) 데이터 보안 초안·삭제 요청 절차·검색어 감사 안내 정정, 웹 build/lint·소스/PR 전체 CI success. main CI38014319018·Cloudflare0f1a9c43 배포·운영 웹1366/390px 고지/삭제 링크/익명 차단 확인도 완료했다. Render 버전·실제 운영 감사는 별도 확인 전이다.
 **현재 근거** — [처리 목록](../docs/product/privacy-deletion-review/data-processing.md), [Data Safety 입력 초안](../docs/product/release-submission-review/data-safety-draft.md), [삭제 요청 운영 절차](../docs/product/release-submission-review/deletion-operations.md), [인증정보 운영 확인](../docs/product/release-audit-review/operations.md), [백업·복구 절차](../docs/deployment/data-preservation.md). 이전 수정/CI 상세는 각 context-notes.md·log·Git 이력에 보존한다. 기존 Issue#56을 사용한다.
 **남은 일** — 개인별 구성 초안 제공의 출시 적법성 검토, 기기 게임/익명 자료의 소유 확인·실제 삭제 이행·처리기간, 감사/백업 보관기간·과거 인증 원문 집계 및 처리, 국외 처리 국가/계약·최종 APK SDK와 Data Safety 대조, 운영 백업 실물·별도 복원 후 삭제 요청 재적용/전환 확인. CI의 복원 훈련을 실제 운영 백업으로 처리하지 않는다. 아직 기간·계약을 임의 확정하거나 Play에 제출하지 않는다.
 **완료 기준** — 사용자 첫 출시 범위와 실제 처리/안내·운영 이행을 일치시키고 위 남은 확인을 기록한다. 실제 수집/푸시는 BE-30, Android 설치는 APP-21에 유지한다. 새 과제 번호·운영 삭제·APK 요청 없음.

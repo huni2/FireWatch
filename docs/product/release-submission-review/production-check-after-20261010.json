@@ -1,0 +1,60 @@
+{
+  "checkedAt": "2026-10-10T01:57:20.372Z",
+  "authenticated": false,
+  "web": [
+    {
+      "width": 1366,
+      "path": "/privacy#delete-account",
+      "status": 200,
+      "currentDisclosure": true,
+      "effectiveDate": true,
+      "deletionAnchor": true,
+      "emailRequest": true,
+      "accountDeletionLink": true,
+      "preservesScopeDisclosure": true,
+      "horizontalOverflowPx": 0
+    },
+    {
+      "width": 1366,
+      "path": "/audit-log",
+      "guestGate": true,
+      "auditRowsRendered": false
+    },
+    {
+      "width": 390,
+      "path": "/privacy#delete-account",
+      "status": 200,
+      "currentDisclosure": true,
+      "effectiveDate": true,
+      "deletionAnchor": true,
+      "emailRequest": true,
+      "accountDeletionLink": true,
+      "preservesScopeDisclosure": true,
+      "horizontalOverflowPx": 0
+    },
+    {
+      "width": 390,
+      "path": "/audit-log",
+      "guestGate": true,
+      "auditRowsRendered": false
+    }
+  ],
+  "backend": [
+    {
+      "path": "/api/audit-logs?size=1",
+      "status": 401,
+      "errorCode": "UNAUTHORIZED",
+      "pass": true
+    },
+    {
+      "path": "/api/collection/alerts",
+      "status": 401,
+      "errorCode": "UNAUTHORIZED",
+      "pass": true
+    }
+  ],
+  "blockedMutationRequests": 0,
+  "deliveredMutationRequests": 0,
+  "retries": 0,
+  "pass": true
+}
