@@ -5,7 +5,7 @@
 | 자료 | 처리·보관 | 계정 삭제 시 현재 동작 | 코드 근거 |
 |---|---|---|---|
 | Google 식별자·이메일 | 선택 로그인·동기화·운영 권한 확인 | app_users 삭제 | AuthService, AppUser |
-| 로그인 세션 | 서버 SHA-256 해시·기기/계정·만료, 클라이언트 인증 토큰 | 모든 계정 세션 삭제, 요청 기기 클라이언트 토큰 폐기 | AuthSessions, accountApi, mobile api |
+| 로그인 세션 | auth_sessions에는 SHA-256 해시·기기/계정·만료, 클라이언트에는 인증 토큰. 기존 감사 기록의 원문 가능성은 아래 점검 참조 | 모든 계정 세션 삭제, 요청 기기 클라이언트 토큰 폐기 | AuthSessions, accountApi, mobile api |
 | 관심/수신 설정·푸시 등록 | 계정 공유 또는 익명 기기 설정 | 계정 공유 설정 삭제, 별도 익명 행은 유지 | UserSettings, SettingsService |
 | 보유·투자 조건·수정 이력 | 서버 portfolios/portfolio_revisions | 계정 공유 owner 행과 이력 삭제 | PortfolioService, AuthService |
 | 문의·운영자 답변·공지 숨김 | 계정 연결 테이블 | FK cascade 삭제 | community-h2/postgresql.sql |
@@ -22,6 +22,8 @@
 - 웹 푸시는 브라우저 푸시 구독 endpoint·키와 알림 메시지를 처리한다. Render/Supabase/Cloudflare는 서버·DB·웹 인프라다. 업체별 국외 처리 국가·계약·보관 조건은 실제 운영 계약과 대조해야 한다.
 
 ## 출시 전에 남은 확인
+
+2026-10-10 BE-21 감사 인증정보 점검. OperatorAccess.requireOperator의 authorization 인자가 이전 AuditLogAspect 비밀값 목록에서 빠져, 성공·실패 감사 요청에 Bearer 원문이 저장되는 것을 격리 테스트로 재현했다. 신규 기록은 authorization을 마스킹하도록 수정했다. 회귀는 실제 서비스 AOP 호출을 사용하며 권한 결과와 감사 상태를 보존한다. 이 수정은 기존 감사로그·백업을 정리하지 않는다. 운영 DB에서 원문 존재 여부나 유출을 확인한 것은 아니다. [운영 확인 절차](../release-audit-review/operations.md)를 따른다.
 
 1. 계정에 연관된 기기 게임/익명 행을 구분하고 삭제 요청을 처리하는 운영 절차·본인 확인·처리기간을 확정해야 한다. 현재 자동 계정 삭제는 위 표 범위이며 **게임을 개인정보가 아니라고 단정해 제외하지 않는다**. 해당 범위를 광고하거나 Play 삭제 항목에 답하기 전에 실제 이행을 확인한다.
 2. 감사로그·백업의 목적별 보관기간과 별도 삭제 요청 이행·복구 후 재삭제를 확정한다. 미구현 자동 만료를 구현됐다고 고지하지 않는다.
