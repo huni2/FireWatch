@@ -1,0 +1,12 @@
+{
+  "checked_at_utc": "2026-10-10T03:15:27.671823",
+  "session_matches": {
+    "unexpired_session_matches": 0,
+    "active_linked_session_matches": 0
+  },
+  "latest_bearer_at": null,
+  "audit_rows_all_time": 121,
+  "latest_fully_redacted_at": "2026-10-10T02:26:01.766457",
+  "bearer_pattern_rows_all_time": 0,
+  "fully_redacted_rows_all_time": 56
+}
