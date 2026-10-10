@@ -1,5 +1,7 @@
 # BE-30 실제 수집 상태 확인 (2026-10-10)
 
+권한·세션 최종 후속. 기존 AccountSession7/AuthService7/CollectionAlertAccess1 총15검사 실패0/skip0·BUILD SUCCESSFUL. [배포 익명 확인](session-public-check-20261010.json)에서1366/390px 감사 직접 주소 차단·표0·감사/수집 API401 PASS. [실제 계정 확인 절차](session-verification.md)는 WEB-19와 공유한다. 사용자 일반 계정 시도는 기존 기기의 계정 연결 가드 메시지로 중단돼 아직 로그인 후 권한을 검증하지 못했다. 새 시크릿 창 확인 요청 후 대기하며 BE-30/Issue#53을 닫지 않는다.
+
 사용자가 Supabase에서 읽기 전용 집계를 실행해 [결과](operator-summary-20261010.json)를 제공했다. 공개 GET3건 [검증](public-status-20261010.json)과 저장 상태를 함께 대조했다. 운영 데이터나 실패 한도를 변경하지 않았다.
 
 | 범위 | 관측 | 판단 |
