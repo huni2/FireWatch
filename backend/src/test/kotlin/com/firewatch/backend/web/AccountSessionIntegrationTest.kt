@@ -11,6 +11,15 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.web.reactive.server.WebTestClient
 import java.time.Instant
 import kotlin.test.*
+import com.firewatch.backend.client.GoogleIdentity
+import com.firewatch.backend.client.GoogleIdentityVerifier
+import com.firewatch.backend.web.dto.PortfolioHoldingInput
+import com.firewatch.backend.web.dto.PortfolioUpdateRequest
+import com.firewatch.backend.web.dto.PortfolioResponse
+import com.firewatch.backend.web.dto.SettingsResponse
+import org.mockito.Mockito.`when`
+import org.springframework.test.context.bean.override.mockito.MockitoBean
+import java.math.BigDecimal
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = ["spring.datasource.url=jdbc:h2:mem:session-test;DB_CLOSE_DELAY=-1", "firewatch.scheduler.cron=-", "firewatch.settings.api-key=session-test-key", "firewatch.operator.api-key=operator-test-key"])
 class AccountSessionIntegrationTest {
@@ -20,7 +29,59 @@ class AccountSessionIntegrationTest {
     @Autowired lateinit var links: DeviceLinkRepository
     @Autowired lateinit var settings: UserSettingsRepository
     @Autowired lateinit var jdbc: org.springframework.jdbc.core.JdbcTemplate
+    @MockitoBean lateinit var google: GoogleIdentityVerifier
     private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").responseTimeout(java.time.Duration.ofSeconds(20)).build()
+
+    @Test
+    fun `HTTP 로그아웃과 Google 재로그인은 관심 기업과 보유 종목 및 이력을 보존하고 폐기 토큰을 거절한다`() {
+        val device = "record-preservation-device"
+        val sub = "record-preservation-user"
+        `when`(google.verify("record-preservation-fixture")).thenReturn(GoogleIdentity(sub, "preserved@example.test", true))
+        fun login() = client().post().uri("/api/auth/google/link").header("X-Device-Id", device)
+            .bodyValue(mapOf("idToken" to "record-preservation-fixture"))
+            .exchange().expectStatus().isOk.expectBody(SettingsResponse::class.java).returnResult().responseBody!!
+        val first = login()
+        val firstToken = first.session!!.token
+        client().put().uri("/api/settings").header("X-Device-Id", device).header("Authorization", "Bearer $firstToken")
+            .bodyValue(mapOf("watchedStocks" to listOf("035720.KS"), "interestKeywords" to listOf("반도체")))
+            .exchange().expectStatus().isOk
+        val savedPortfolio = client().put().uri("/api/portfolio").header("X-Device-Id", device).header("Authorization", "Bearer $firstToken")
+            .bodyValue(PortfolioUpdateRequest(0, "재로그인 보존", 60, "BALANCED", "GENERAL", BigDecimal.ZERO, BigDecimal("10000"),
+                listOf(PortfolioHoldingInput("035720.KS", "카카오", BigDecimal("3"), BigDecimal("50000")))))
+            .exchange().expectStatus().isOk.expectBody(PortfolioResponse::class.java).returnResult().responseBody!!
+        val userId = users.findByGoogleSub(sub)!!.id!!
+        val ownerId = settings.findByUserId(userId)!!.id
+        val portfolioBefore = jdbc.queryForList("SELECT * FROM portfolios WHERE owner_id=?", ownerId)
+        val revisionsBefore = jdbc.queryForList("SELECT * FROM portfolio_revisions WHERE owner_id=? ORDER BY id", ownerId)
+        assertEquals(1, portfolioBefore.size)
+        assertTrue(revisionsBefore.isNotEmpty())
+
+        client().post().uri("/api/auth/logout").header("X-Device-Id", device).header("Authorization", "Bearer $firstToken")
+            .exchange().expectStatus().isNoContent
+        assertFailsWith<UnauthorizedException> { sessions.authenticate(device, "Bearer $firstToken") }
+        assertFalse(links.existsById(device))
+        client().get().uri("/api/settings").header("X-Device-Id", device)
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.linkedEmail").isEmpty.jsonPath("$.watchedStocks.length()").isEqualTo(0)
+        assertEquals("035720.KS", settings.findById(ownerId).get().watchedStocksRaw)
+        assertEquals(portfolioBefore, jdbc.queryForList("SELECT * FROM portfolios WHERE owner_id=?", ownerId))
+        assertEquals(revisionsBefore, jdbc.queryForList("SELECT * FROM portfolio_revisions WHERE owner_id=? ORDER BY id", ownerId))
+
+        val second = login()
+        val secondToken = second.session!!.token
+        assertNotEquals(firstToken, secondToken)
+        assertEquals(listOf("035720.KS"), second.watchedStocks)
+        assertEquals(listOf("반도체"), second.interestKeywords)
+        assertEquals(ownerId, settings.findByUserId(userId)!!.id)
+        client().get().uri("/api/portfolio").header("X-Device-Id", device).header("Authorization", "Bearer $secondToken")
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.version").isEqualTo(savedPortfolio.version)
+            .jsonPath("$.goal").isEqualTo("재로그인 보존").jsonPath("$.cash").isEqualTo(10000)
+            .jsonPath("$.holdings[0].holding.symbol").isEqualTo("035720.KS")
+            .jsonPath("$.holdings[0].holding.quantity").isEqualTo(3)
+        client().get().uri("/api/portfolio").header("X-Device-Id", device).header("Authorization", "Bearer $firstToken")
+            .exchange().expectStatus().isUnauthorized
+        assertEquals(portfolioBefore, jdbc.queryForList("SELECT * FROM portfolios WHERE owner_id=?", ownerId))
+        assertEquals(revisionsBefore, jdbc.queryForList("SELECT * FROM portfolio_revisions WHERE owner_id=? ORDER BY id", ownerId))
+    }
 
     @Test
     fun `인증된 계정 삭제는 공유 보유와 문의 및 모든 세션을 지우고 다른 계정은 보존한다`() {
