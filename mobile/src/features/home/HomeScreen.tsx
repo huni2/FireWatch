@@ -17,6 +17,7 @@ import { IndicesScreen } from '../indices/IndicesScreen'
 import { NewsScreen } from '../news/NewsScreen'
 import { StocksScreen } from '../stocks/StocksScreen'
 import { FirewatchIcon } from '../../components/FirewatchIcon'
+import { FirewatchBrand } from '../../components/FirewatchBrand'
 import type { FirewatchIconName } from '../../../../shared/firewatch-icons'
 
 type HomeTab = 'portfolio' | 'candidates' | 'brief' | 'stocks' | 'indices' | 'news' | 'short-term' | 'practice'
@@ -79,10 +80,11 @@ export function HomeScreen() {
         options={{
           headerStyle: { backgroundColor: tokens.light.surface },
           headerTintColor: tokens.light.text,
+          headerShadowVisible: false,
+          headerTitle: () => <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}><FirewatchBrand size={27} /><Text style={{ color: tokens.light.text, fontSize: 20, fontWeight: '700', letterSpacing: -.5 }}>FireWatch</Text></View>,
           headerRight: () => (
             <View style={{ flexDirection: 'row', gap: 6 }}>
-              <Pressable accessibilityRole="button" accessibilityLabel="도움말 열기" accessibilityHint="앱 안에서 서비스 이용 방법을 엽니다." onPress={() => router.push('/guide')} style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="help" size={22} color={tokens.light.muted} /></Pressable>
-              <Pressable accessibilityRole="button" accessibilityLabel="계정·설정 열기" onPress={() => router.push('/settings')} style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="settings" size={22} /></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="계정·설정 열기" onPress={() => router.push('/settings')} style={{ minHeight: 44, minWidth: 64, borderRadius: 22, backgroundColor: tokens.light.canvas, flexDirection: 'row', gap: 5, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="settings" size={18} color={tokens.light.muted} /><Text style={{ fontSize: 13, fontWeight: '600', color: tokens.light.text }}>내 계정</Text></Pressable>
             </View>
           ),
         }}

@@ -1,14 +1,11 @@
 // 선택적 Google 계정 연결(APP-6). 커스텀 Android 빌드에서 서명/OAuth 왕복을 검증한다.
 // Expo Go와 JS export는 설치 앱의 로그인 검증을 대신하지 않는다.
-import { useEffect, useState } from 'react'
+import { useRef, useState } from 'react'
 import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native'
-import * as Google from 'expo-auth-session/providers/google'
-import * as WebBrowser from 'expo-web-browser'
+import { googleIdToken } from '@/lib/googleSignIn'
 import Toast from 'react-native-toast-message'
 
 import { ApiRequestError, deleteAccount, linkGoogleAccount, logoutAccount, fetchLinkedDevices, revokeLinkedDevice, type LinkedDevice, type Settings } from '@/lib/api'
-
-WebBrowser.maybeCompleteAuthSession()
 
 interface GoogleLinkButtonProps {
   // 서버가 확인한 연동 상태(Settings.linkedEmail) — 2026-10-06부터 이 컴포넌트 내부 state가 아니라
@@ -51,27 +48,23 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
     catch (error) { Toast.show({ type: 'error', text1: '로그아웃 실패', text2: error instanceof Error ? error.message : '다시 시도해주세요.' }) }
     finally { setDeviceBusy(false) }
   }
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-  })
-
-  useEffect(() => {
-    if (response?.type !== 'success' || !response.params.id_token) return
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLinking(true)
-    linkGoogleAccount(response.params.id_token)
-      .then((settings) => {
-        onLinked(settings)
-        Toast.show({ type: 'success', text1: '연동 완료', text2: 'Google 계정과 연동했습니다.' })
-      })
-      .catch((error) => {
-        const message =
-          error instanceof ApiRequestError ? error.apiError.message : 'Google 계정 연동에 실패했습니다.'
-        Toast.show({ type: 'error', text1: '연동 실패', text2: message })
-      })
-      .finally(() => setLinking(false))
-  }, [response, onLinked])
+  const loginInProgress = useRef(false)
+  const [loginError, setLoginError] = useState<string | null>(null)
+  async function login() {
+    if (loginInProgress.current) return
+    loginInProgress.current = true
+    setLinking(true); setLoginError(null)
+    try {
+      const token = await googleIdToken()
+      if (!token) return
+      onLinked(await linkGoogleAccount(token))
+      Toast.show({ type: 'success', text1: '계정을 연결했어요', text2: '같은 계정으로 기록을 이어서 볼 수 있어요.' })
+    } catch (error) {
+      const message = error instanceof ApiRequestError ? error.apiError.message : error instanceof Error ? error.message : '연결하지 못했어요. 잠시 후 다시 시도해주세요.'
+      setLoginError(message)
+      Toast.show({ type: 'error', text1: '계정 연결을 확인해주세요', text2: message })
+    } finally { loginInProgress.current = false; setLinking(false) }
+  }
 
   // Play 스토어 계정 삭제 요건(2026-10-06) — 연동 해제가 아니라 서버 쪽 계정 자체를 완전히 삭제.
   function handleDeletePress() {
@@ -102,7 +95,8 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
       <View className="gap-2">
         <Text className="text-center text-sm font-semibold text-brand">{linkedEmail} 계정과 연동되었습니다 ✓</Text>
         <Text className="text-xs text-muted">로그인은 30일간 유지됩니다. 만료되면 Google 계정으로 다시 로그인해주세요.</Text>
-        <Pressable disabled={!request || linking} onPress={() => promptAsync()} className="min-h-11 items-center justify-center"><Text className="text-brand">Google 로그인 갱신</Text></Pressable>
+        <Pressable disabled={linking || deviceBusy || deleting} onPress={() => void login()} className="min-h-11 items-center justify-center">{linking ? <ActivityIndicator /> : <Text className="text-brand">Google 로그인 갱신</Text>}</Pressable>
+        {loginError && <Text accessibilityRole="alert" className="text-sm text-red-600">{loginError}</Text>}
         <Pressable disabled={deviceBusy} onPress={manageDevices} className="min-h-11 items-center justify-center"><Text className="text-brand">연결된 기기 확인</Text></Pressable>
         {devices?.map((device, index) => <View key={device.id} className="rounded-xl border border-line p-3">
           <Text className="font-semibold text-ink">{device.current ? '현재 기기' : `연결 기기 ${index + 1}`}</Text>
@@ -118,9 +112,9 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
   }
 
   return (
-    <Pressable
-      onPress={() => promptAsync()}
-      disabled={!request || linking}
+    <View className="gap-2"><Pressable
+      onPress={() => void login()}
+      disabled={linking}
       className="flex-row items-center justify-center gap-2 rounded-full border border-line bg-surface py-3"
     >
       {linking ? (
@@ -128,6 +122,6 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
       ) : (
         <Text className="text-base font-semibold text-muted">Google 계정 연동</Text>
       )}
-    </Pressable>
+    </Pressable>{loginError && <Text accessibilityRole="alert" className="text-sm text-red-600">{loginError}</Text>}</View>
   )
 }

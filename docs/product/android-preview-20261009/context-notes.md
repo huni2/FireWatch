@@ -21,3 +21,6 @@ versionCode5 출시 설정·타입·린트·테스트8개·Android export2162모
 7594daa/versionCode5의 preview fefb17ae-ce86-417f-9016-c9230010c1b3 업로드·접수 완료. https://expo.dev/accounts/huni2/projects/mobile/builds/fefb17ae-ce86-417f-9016-c9230010c1b3 . APK 생성 완료는 아직 확인하지 않았다.
 
 공식 요금표는 월 Android15회+iOS15회다. 계정 GraphQL의 총 BUILDS 한도30을 Android30회로 해석하면 안 된다. 비용0원 원칙을 유지하며 한도 소진 시 다음 달 갱신 또는 PC 로컬 Android 빌드를 선택한다.
+2026-10-12 APK1.0.2 사용자가 Google 화면에서 오류를 보고했다. 설치 소스는 deprecated expo-auth-session Google provider의 Android custom URI 리다이렉트로 로그인했다. Google의 Android URI 제한과 호환 문제가 있어 @react-native-google-signin/google-signin 네이티브 계정 선택으로 변경했다. 앱 서명은 직전 빌드에서 1.0.1과 동일함을 검증했으며 변경하지 않았다. ID 토큰 대상은 기존 웹 OAuth 공개 ID(app.json extra.googleWebClientId, EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID로 재정의 가능)이며 서버 허용 목록에도 있어야 한다. 클라이언트 비밀번호·새 로그인 DB·Firebase Auth는 도입하지 않는다. 실제 Google 오류 전문과 새 설치본의 성공은 아직 미확인이다.
+
+동일 후속에서 홈 상단을 FireWatch 심볼/워드마크와 내 계정 버튼으로 정리했다. 도움말은 설정에서 접근한다. 게임 시작은 정찰대 그림·시작 게임머니·짧은 흐름으로 구성했다. 진행 중 주차/진행률/총자산/현금/수익률과 다음 주 동작을 스크롤 밖에 두며 기존 하단 메뉴를 유지했다. 영어 구획명과 반복 총자산 카드를 제거했다. 360/390px 앱 웹 미리보기에서 로비·진행 4조건 페이지 오류0·쓰기0·가로 넘침0·다음 주 버튼 위치 유지 확인. 미리보기에서 SecureStore/알림/플랫폼 메타데이터만 시험 대체하고 API는 가상 응답으로 격리했으며 네이티브 인증·안전 저장소·실데이터 검증을 대신하지 않는다. Android JS export2170모듈/5.1MB 통과, 타입·소스 린트 통과, 로그인/출시/차트 계약 테스트16개 통과. 새 APK/EAS/OTA 배포 없이 기존 Issue62에 기록한다.

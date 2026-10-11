@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { validate } = require('./release-check.cjs');
 const config = {
   android: { package: 'com.firewatch.mobile', versionCode: 1 },
-  extra: { eas: { projectId: 'test-project' } },
+  extra: { eas: { projectId: 'test-project' }, googleWebClientId: '123-web.apps.googleusercontent.com' },
 };
 const env = {
   EXPO_PUBLIC_API_BASE_URL: 'https://api.example.com',
@@ -24,6 +24,10 @@ test('unsafe API addresses are rejected', () => {
 });
 test('missing OAuth ID is rejected', () => {
   assert.ok(validate(config, { ...env, EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID: '' }, validFile).length);
+});
+test('server ID token client must be configured separately from the Android OAuth client', () => {
+  assert.ok(validate(config, { ...env, EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID }, validFile).length);
+  assert.ok(validate({ ...config, extra: { ...config.extra, googleWebClientId: '' } }, env, validFile).length);
 });
 test('missing or malformed Firebase config is rejected without echoing content', () => {
   for (const read of [() => { throw new Error('secret file content'); }, () => 'private text']) {
@@ -49,5 +53,5 @@ test('public server secrets are blocked without displaying their value', () => {
   assert.ok(!errors.join().includes('test-secret'));
 });
 test('invalid version and missing project ID are rejected', () => {
-  assert.equal(validate({ android: { package: 'com.firewatch.mobile', versionCode: 0 } }, env, validFile).length, 2);
+  assert.equal(validate({ android: { package: 'com.firewatch.mobile', versionCode: 0 }, extra: { googleWebClientId: config.extra.googleWebClientId } }, env, validFile).length, 2);
 });
