@@ -2,7 +2,7 @@ import tokens from '../../../shared/design-tokens.json'
 import '../global.css'
 
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
-import { Stack } from 'expo-router'
+import { Stack, type ErrorBoundaryProps } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import Toast from 'react-native-toast-message'
@@ -12,9 +12,14 @@ import { useNotificationRegistration } from '@/features/notifications/hooks/useN
 import { hasConsented, setConsented } from '@/lib/consent'
 import { toastConfig } from '@/lib/toastConfig'
 import { AnnouncementPopup, noteStartupInteraction } from '@/components/AnnouncementPopup'
+import { StartupState } from '@/components/StartupState'
 
-// 동의 전에는 푸시 토큰 등록(서버로 데이터 전송)도 일어나면 안 되므로, useNotificationRegistration은
-// 동의 후에만 마운트되는 이 컴포넌트 안에서 호출한다(Hooks 규칙상 조건부 호출이 아니라 조건부 마운트).
+// 화면 렌더 오류는 복구 화면으로 전환한다. 네이티브 프로세스 종료는 이 경계로 잡을 수 없다.
+export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
+  return <StartupState failed onRetry={() => { void retry() }} />
+}
+
+// 동의 후에는 알림 탭 리스너만 연결한다. 권한·토큰 등록은 설정에서 사용자가 선택한다.
 function AppContent() {
   useNotificationRegistration()
 
@@ -46,17 +51,22 @@ function AppContent() {
 
 export default function RootLayout() {
   const [consented, setConsentState] = useState<boolean | null>(null)
+  const [loadError, setLoadError] = useState(false)
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
-    hasConsented().then(setConsentState)
-  }, [])
+    let active = true
+    hasConsented().then(value => { if (active) setConsentState(value) }).catch(() => { if (active) setLoadError(true) })
+    return () => { active = false }
+  }, [attempt])
 
-  if (consented === null) return null
+  if (loadError) return <StartupState failed onRetry={() => { setLoadError(false); setAttempt(value => value + 1) }} />
+  if (consented === null) return <StartupState />
   if (!consented) {
     return (
       <ConsentScreen
-        onAgree={() => {
-          setConsented()
+        onAgree={async () => {
+          await setConsented()
           setConsentState(true)
         }}
       />

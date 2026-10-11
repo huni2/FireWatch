@@ -1,22 +1,36 @@
 // 최초 동의와 개인정보 전문 읽기를 앱 안에서 완료하며 동의 전 서버 등록은 시작하지 않는다.
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { InfoDocument } from '../help/InfoDocument'
 import tokens from '../../../../shared/design-tokens.json'
+import { FirewatchBrand } from '@/components/FirewatchBrand'
 
 interface ConsentScreenProps {
-  onAgree: () => void
+  onAgree: () => void | Promise<void>
 }
 
 export function ConsentScreen({ onAgree }: ConsentScreenProps) {
   const [checked, setChecked] = useState(false)
   const [policyOpen, setPolicyOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(false)
+  const pending = useRef(false)
+  async function agree() {
+    if (!checked || pending.current) return
+    pending.current = true
+    setSaving(true); setSaveError(false)
+    try { await onAgree() }
+    catch { setSaveError(true) }
+    finally { pending.current = false; setSaving(false) }
+  }
 
   return (
     <SafeAreaProvider><SafeAreaView style={{ flex: 1, backgroundColor: tokens.light.canvas }}><ScrollView className="flex-1" contentContainerClassName="flex-grow justify-between gap-8 p-6">
       <View className="gap-4">
-        <Text className="text-2xl font-extrabold text-ink">시작하기 전에</Text>
+        <View className="flex-row items-center gap-2"><FirewatchBrand size={36} /><Text className="text-lg font-bold text-ink">FireWatch</Text></View>
+        <Text className="text-3xl font-bold leading-10 text-ink">내 투자 기록을{ '\n' }한눈에 살펴보세요</Text>
+        <Text className="text-sm font-semibold text-muted">시작하기 전에 · 자료 보관 안내</Text>
         <Text className="text-base leading-6 text-muted">
           직접 입력한 투자 기록과 관심 기업을 저장해 점검에 사용해요. Google 계정 연결과 알림은 선택이며, 알림을 켜면 푸시 토큰을 사용해요. 어떤 자료를 보관하는지 아래에서 확인할 수 있어요.
         </Text>
@@ -26,7 +40,7 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
       </View>
 
       <View className="gap-4">
-        <Pressable accessibilityRole="checkbox" accessibilityState={{ checked }} onPress={() => setChecked((value) => !value)} className="min-h-11 flex-row items-center gap-3">
+        <Pressable accessibilityRole="checkbox" accessibilityState={{ checked, disabled: saving }} disabled={saving} onPress={() => setChecked((value) => !value)} className="min-h-11 flex-row items-center gap-3">
           <View
             className={`h-6 w-6 items-center justify-center rounded border ${
               checked ? 'border-brand bg-brand' : 'border-neutral-400'
@@ -38,14 +52,15 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
             (필수) 개인정보 수집·이용 및 개인정보처리방침에 동의합니다.
           </Text>
         </Pressable>
+        {saveError && <Text accessibilityRole="alert" className="text-base leading-6 text-red-700">동의 설정을 저장하지 못했어요. 다시 눌러주세요.</Text>}
         <Pressable
-          onPress={onAgree}
+          onPress={() => { void agree() }}
           accessibilityRole="button"
-          accessibilityState={{ disabled: !checked }}
-          disabled={!checked}
-          className={`items-center rounded-full py-4 ${checked ? 'bg-brand' : 'bg-neutral-300'}`}
+          accessibilityState={{ disabled: !checked || saving, busy: saving }}
+          disabled={!checked || saving}
+          className={`items-center rounded-full py-4 ${checked ? 'bg-brand' : 'bg-neutral-200'}`}
         >
-          <Text className="text-base font-bold text-white">동의하고 시작하기</Text>
+          <Text className={`text-base font-bold ${checked ? 'text-white' : 'text-muted'}`}>{saving ? '설정 저장 중…' : '동의하고 시작하기'}</Text>
         </Pressable>
       </View>
     </ScrollView></SafeAreaView>

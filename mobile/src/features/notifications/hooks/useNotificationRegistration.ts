@@ -16,7 +16,8 @@ Notifications.setNotificationHandler({
   }),
 })
 
-async function registerPushToken() {
+// 사용자가 설정에서 알림 등록을 선택했을 때만 권한·토큰을 요청한다.
+export async function registerPushToken(): Promise<boolean> {
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'default',
@@ -26,27 +27,23 @@ async function registerPushToken() {
 
   const existing = await Notifications.getPermissionsAsync()
   const granted = existing.granted ? existing : await Notifications.requestPermissionsAsync()
-  if (!granted.granted) return
+  if (!granted.granted) return false
 
   // EAS 프로젝트가 연결돼 있어야 발급된다 — 없으면 `npx eas init`으로 한 번 연결 필요(README 참고).
   const projectId = Constants.expoConfig?.extra?.eas?.projectId
   if (!projectId) {
-    console.warn('[FireWatch] EAS projectId가 없어 푸시 토큰을 받을 수 없습니다 — npx eas init 필요')
-    return
+    throw new Error('이 설치본의 알림 설정을 확인해야 해요.')
   }
 
   const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync({ projectId })
   await updateSettings({
     fcmToken: expoPushToken,
   })
+  return true
 }
 
 export function useNotificationRegistration() {
   useEffect(() => {
-    registerPushToken().catch((error: unknown) => {
-      console.warn('[FireWatch] 푸시 토큰 등록 실패 — 다음 앱 실행 시 재시도됩니다', error)
-    })
-
     const subscription = Notifications.addNotificationResponseReceivedListener(() => {
       router.push('/')
     })

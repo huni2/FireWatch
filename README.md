@@ -12,6 +12,8 @@
 
 **최신 테스트 버전: 1.0.1 · Android 빌드 6 · 2026-10-11**
 
+현재 이 설치본에서 ‘동의하고 시작하기’ 이후 반복 종료 제보를 조사 중입니다. 시작 화면·앱 이미지·오류 처리 후속은 소스에 반영 중이며, 사용자 요청 전까지 APK를 재빌드하지 않습니다. 설치본의 정상 시작 검증이 끝난 상태는 아닙니다.
+
 [**APK 다운로드**](https://github.com/huni2/FireWatch/releases/download/v1.0.1-android-preview/FireWatch-1.0.1-android.apk) · [변경 내용·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.1-android-preview)
 
 1. Android 휴대폰에서 APK를 다운로드하고 파일을 엽니다.
