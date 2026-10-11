@@ -109,20 +109,20 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
         {market && <nav className="context-navigation" aria-label="시장 소식 화면">{[{ to: '/news', label: '뉴스' }, { to: '/briefing', label: '브리핑' }, { to: '/indices', label: '시장 지표' }].map(item => <Link key={item.to} to={item.to} aria-current={location.pathname === item.to ? 'page' : undefined}>{item.label}</Link>)}</nav>}
         <Outlet />
       </Content>
-      <Footer className="site-footer">
+      <Footer className={`site-footer ${location.pathname === '/account' ? 'account-footer' : ''}`}>
         <div className="site-footer-inner">
           <div className="site-footer-brand">
             <Link to="/" aria-label="푸터 FireWatch 메인 페이지로 이동"><img src="/brand-mark.svg" alt="" width={24} height={24} /><strong>FireWatch</strong></Link>
             <p>시장을 읽고, 내 투자 계획을 점검하세요.</p>
           </div>
-          <nav aria-label="서비스 안내" className="site-footer-links">
+          <details className="site-footer-disclosure" open={location.pathname === '/account' ? undefined : true}><summary>도움말·서비스 고지</summary><nav aria-label="서비스 안내" className="site-footer-links">
             <button type="button" onClick={showFirstVisitGuide}>처음 사용 안내</button>
             <Link to="/guide">이용안내</Link>
             <Link to="/community">공지사항 · 의견 보내기</Link>
             <Link to="/investment-info">투자 정보 이용안내</Link>
             <Link to="/open-source">오픈소스 고지</Link>
             <Link to="/privacy">개인정보처리방침</Link>
-          </nav>
+          </nav></details>
         </div>
         <div className="site-footer-meta"><span>시장 자료 · 포트폴리오 · 가상투자 연습</span><span>가상투자 게임의 뉴스와 가격은 가상 자료입니다.</span></div>
       </Footer>
