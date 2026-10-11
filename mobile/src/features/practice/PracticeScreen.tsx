@@ -9,6 +9,7 @@ import { virtualOrderPreview } from '../../../../shared/game-preview'
 import * as Crypto from 'expo-crypto'
 import { practice, previewPractice, type PracticePreview, type PracticeTurn } from '@/lib/investingApi'
 import { PracticeRankings } from './PracticeRankings'
+import { PracticeCompletion } from './PracticeCompletion'
 import type { RankingTab } from '../../../../shared/game-ranking'
 import { PracticeMenu } from './PracticeMenu'
 import tokens from '../../../../shared/design-tokens.json'
@@ -30,6 +31,7 @@ export function PracticeScreen() {
   function showRanking(tab: RankingTab) { setRankingTab(tab); setRankingOpen(true) }
   const [replay, setReplay] = useState<PracticeReplayState | null>(null)
   const [lastReplay, setLastReplay] = useState<PracticeReplayState | null>(null)
+  const [completionOpen, setCompletionOpen] = useState(false)
   const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false)
   const [slow, setSlow] = useState(false)
   useEffect(() => {
@@ -94,12 +96,12 @@ export function PracticeScreen() {
     if (operation.current || (name === 'trade' && (!matches || !preview?.allowed))) return
     operation.current = true; setBusy(true); setError(null)
     const replayBefore = name === 'next-turn' && turn?.simulation ? turn : null
-    if (replayBefore) setReplay({ before: replayBefore, after: null })
+    if (replayBefore && replayBefore.turnIndex < replayBefore.totalTurns - 2) setReplay({ before: replayBefore, after: null })
     if (name === 'start') { setReplay(null); setLastReplay(null) }
     const body = name === 'start' ? { difficulty, allowShortSelling: short } : name === 'trade' ? { instrumentType: instrument, symbol: ticker ?? undefined, action: side, quantity: qty, requestId: requestId.current ?? (requestId.current = Crypto.randomUUID()), expectedTurnIndex: turn?.turnIndex, expectedPrice: preview!.unitPrice } : name === 'next-turn' ? { expectedTurnIndex: turn?.turnIndex } : undefined
     try {
       const updated = await practice(name, body)
-      if (updated.status === 'ENDED' && updated.simulation && updated.turnIndex > 0 && (name === 'end' || name === 'next-turn')) Alert.alert('게임 기록을 공개할까요?', '선택한 기록만 닉네임으로 주간 순위에 공개합니다.', [{ text: '등록하지 않기', style: 'cancel' }, { text: '등록하기', onPress: () => showRanking('publish') }])
+      if (updated.status === 'ENDED' && (name === 'end' || name === 'next-turn')) { setReplay(null); setRankingOpen(false); setCompletionOpen(true) }
       setTurn(updated); setPreview(null); setRevision(v => v + 1)
       if (replayBefore && updated.turnIndex > replayBefore.turnIndex) { const completed = { before: replayBefore, after: updated }; setLastReplay(completed); setReplay(current => current ? completed : null) }
       else if (replayBefore) setReplay(null)
@@ -119,6 +121,7 @@ export function PracticeScreen() {
   }
   return <ScrollView ref={scrollRef} style={s.screen} contentContainerStyle={s.content}>
     {rankingOpen && <PracticeRankings turn={turn} initialTab={rankingTab} close={() => setRankingOpen(false)} />}
+    {completionOpen && turn?.status === 'ENDED' && <PracticeCompletion turn={turn} close={() => setCompletionOpen(false)} publish={() => { setCompletionOpen(false); showRanking('publish') }} />}
     <PracticeReplay value={replay} close={() => setReplay(null)} />
     {(busy || loading) && <ActivityIndicator color={accent} />}
     {slow && (busy || loading) && <Text style={s.muted}>서버 응답 대기 중입니다. 잠든 서버의 첫 요청은 시간이 걸릴 수 있습니다.</Text>}
@@ -145,7 +148,7 @@ export function PracticeScreen() {
       <View style={s.panel}><Text style={s.eyebrow}>MY POSITIONS</Text><Text style={s.heading}>보유 자산</Text>{turn.holdings.length ? turn.holdings.map(h => { const stats = positionStats(turn.transactions, h.instrumentType, h.symbol, h.currentPrice); const change = historyChange(turn.assetHistories?.find(a => a.instrumentType === h.instrumentType && a.symbol === h.symbol)); return <View style={s.receipt} key={`${h.instrumentType}:${h.symbol}`}><Text style={s.text}>{assetName(h.instrumentType, h.symbol)} · {h.quantity}개</Text><Text style={s.muted}>단가 {amount(h.currentPrice)} · 평가액 {amount(h.value)}</Text><Text style={s.muted}>직전 턴 가격 {change ? `${change.percent >= 0 ? '+' : ''}${change.percent.toFixed(2)}%` : '이전 기록 없음'}</Text><Text style={[s.orange, (stats.profit ?? 0) < 0 && { color: '#2563eb' }]}>평가손익 {stats.profit == null ? '미확정' : `${stats.profit >= 0 ? '+' : ''}${amount(stats.profit)}`} 게임머니{stats.returnPercent != null ? ` (${stats.returnPercent.toFixed(2)}%)` : ''}</Text><GameButton label="상세보기 · 턴별 그래프" disabled={busy} onPress={() => setDetail({ instrumentType: h.instrumentType, symbol: h.symbol, name: assetName(h.instrumentType, h.symbol) })} /></View> }) : <Text style={s.muted}>첫 거래를 하면 보유 자산이 표시됩니다.</Text>}</View>
       <View style={s.panel}><Text style={s.eyebrow}>TRADE RECEIPTS</Text><Text style={s.heading}>체결 내역</Text>{turn.transactions.length ? [...turn.transactions].reverse().map(t => <View key={t.id} style={s.receipt}><Text style={s.text}>턴 {t.turnIndex + 1} · {assetName(t.instrumentType, t.symbol)} · {t.action === 'BUY' ? '매수' : '매도'} {t.quantity}개</Text><Text style={s.orange}>총 {amount(t.total)} · 단가 {amount(t.price)}</Text></View>) : <Text style={s.muted}>아직 체결된 거래가 없습니다.</Text>}</View>
       <View style={s.panel}><Text style={s.heading}>게임 속 가상 뉴스</Text>{turn.briefing.news.length ? turn.briefing.news.slice(0,5).map(n => <View key={n.title} style={s.receipt}><Text style={s.text}>{n.title}</Text><Text style={s.muted}>{n.description}</Text></View>) : <Text style={s.muted}>이 턴에는 뉴스가 없습니다.</Text>}</View>
-      {turn.status === 'ACTIVE' ? <>{<GameButton tone="next" icon="next-turn" label={'다음 턴으로'} onPress={ () => void action('next-turn')} disabled={busy} />}</> : <View style={s.panel}><Text style={s.heading}>이번 게임 돌아보기</Text><Text style={s.muted}>첫 턴 대비 코스피 {turn.benchmarkReturnPercent ?? '미확정'} · 실제 기간 벤치마크와 다릅니다.</Text>{turn.review.map(x => <Text key={x} style={s.text}>• {x}</Text>)}{<GameButton label={'새 게임 설정'} onPress={ () => setTurn(null)} disabled={busy} />}</View>}
+      {turn.status === 'ACTIVE' ? <>{<GameButton tone="next" icon="next-turn" label={'다음 턴으로'} onPress={ () => void action('next-turn')} disabled={busy} />}</> : <View style={s.panel}><Text style={s.heading}>이번 게임 돌아보기</Text><Text style={s.muted}>첫 턴 대비 코스피 {turn.benchmarkReturnPercent ?? '미확정'} · 실제 기간 벤치마크와 다릅니다.</Text>{turn.review.map(x => <Text key={x} style={s.text}>• {x}</Text>)}<GameButton label={'결과 다시 보기'} onPress={() => setCompletionOpen(true)} disabled={busy} />{<GameButton label={'새 게임 설정'} onPress={ () => setTurn(null)} disabled={busy} />}</View>}
     </>}
     {turn && <PracticeAssetDetail target={detail} turn={turn} close={() => setDetail(null)} order={selectOrder} />}
   </ScrollView>

@@ -187,3 +187,15 @@
 .game-company-filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, .7fr); gap: 12px; }
 .game-company-filters .ant-select { min-width: 0; }
 @media (max-width: 520px) { .game-company-filters { grid-template-columns: minmax(0, 1fr); } }
+.game-completion { display: grid; gap: 20px; padding-top: 8px; }
+.game-completion-badge { display: flex; align-items: center; gap: 12px; color: var(--ant-color-text-secondary); }
+.game-completion-score { padding: 24px; border-radius: 20px; background: var(--ant-color-fill-quaternary); }
+.game-completion-score > strong { display: block; font-size: clamp(32px, 7vw, 44px); line-height: 1.3; margin-top: 8px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.game-completion-score p { margin: 12px 0 0; color: var(--ant-color-text-secondary); }
+.game-completion-score .negative { color: var(--ant-color-info); }
+.game-completion-value { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.game-completion-value strong { font-size: 18px; overflow-wrap: anywhere; }.game-completion-value small { font-weight: 400; font-size: 13px; }
+.game-completion-review h3 { font-size: 16px; margin: 0 0 12px; }.game-completion-review ul { padding-left: 20px; margin: 0; }.game-completion-review li + li { margin-top: 8px; }.game-completion-review details { margin-top: 12px; }.game-completion-review summary { cursor: pointer; }
+.game-completion-note { margin: 0; color: var(--ant-color-text-secondary); font-size: 13px; }
+.game-completion-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+@media (max-width: 480px) { .game-completion-actions { display: grid; grid-template-columns: 1fr; }.game-completion-actions .ant-btn { height: auto; min-height: 44px; white-space: normal; }.game-completion-actions .ant-btn-primary { grid-row: 1; } }
