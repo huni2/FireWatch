@@ -46,6 +46,7 @@
 **운영 확인** — WEB-30에서 이관. 처음 등록→집중/중복 발견→회사/근거 뉴스 확인을 처음 쓰는 사람에게 수행하게 하고 막힌 단계와 발견까지 걸린 시간을 기록한다. 실제 브라우저 확대 설정·스크린리더의 읽기 순서/폼/키보드를 확인한다.
 **실제 확대 자동 검사(2026-10-11)** — Chromium151 native zoom=2/CSS viewport1366→683으로 주요5화면 점검. 취소 확인 뒤 BODY로 초점이 빠지는 문제를 수정하고 로컬 회귀 통과. 실제 사람 관찰·스크린리더는 계속 미확인이며 Issue#62 유지. PR#72 main0e023cb·소스/PR CI 전체 성공·Cloudflarecaa2dcd9 배포 후 같은 회귀 통과. main CI38105633192는 조회 당시 진행 중.
 **완료 기준** — 관찰 기록과 발견한 문제의 수정/재확인. 자동 fixture·CSS 텍스트 확대 성공을 실제 사용자 만족도나 스크린리더 검증으로 대체하지 않는다.
+**사용자 요청 게임 종료 보완(2026-10-11)** — 결과 우선/선택적 공개·중복 모달 제거·결과 다시 보기 웹/Android 구현. PR#74 maind20e182·소스/PR 전체CI success·Cloudflare59f1e17a 배포 회귀 통과. Android 설치는 APP-21 보류 유지. main CI38107661790는 조회 당시 진행 중.
 **직전 main CI 확인(2026-10-11)** — WEB-38 PR#72 머지 후38105633192 `Validate code` 전체 success 확인. 앞선 진행 중 기록을 확정한다.
 **근거** — docs/product/web30-support-design/context-notes.md. Android 실기기 접근성은 APP-21이다.
 
@@ -54,7 +55,7 @@
 ### APP-21. 최신 Android 설치·실수신·출시 제출 검증
 **현재 상태(2026-10-10)** — 사용자 APK/EAS 빌드 보류 유지. 과제/디자인 후속조치 완료 후 진행하며 이번 문서 점검은 빌드 요청이 아니다.
 **구현 완료** — Android OAuth/운영 API/Firebase/EAS 설정·사용자 FCM V1 등록, 출시 검사·타입/lint·Android export·CI. 실제 설치·로그인/푸시/TalkBack 결과는 미확인이다.
-**빌드 기록** — 마지막 접수는 source7594daa/versionCode5·preview fefb17ae-ce86-417f-9016-c9230010c1b3. 완료/다운로드/설치는 미확인. 게임 기능의 마지막 모바일 변경은5f77550이며 이번 BE-21에는 운영자 백업 장애 이름 표시가 추가된다. versionCode5는7594daa 기준 접수본이므로 최신 기능 설치 검증을 대신하지 않는다. 기존 접수를 반복하지 않는다.
+**빌드 기록** — 마지막 접수는 source7594daa/versionCode5·preview fefb17ae-ce86-417f-9016-c9230010c1b3. 완료/다운로드/설치는 미확인. 게임 종료 결과 화면의 최신 모바일 변경은316714e(PR#74 maind20e182)이며 운영자 백업 장애 이름 표시도 포함된다. versionCode5는7594daa 기준 접수본이므로 최신 기능 설치 검증을 대신하지 않는다. 기존 접수를 반복하지 않는다.
 **남은 일** — 보류 해제 후 필요한 소스/서명·SHA-1 확인, 설치 Google 로그인·푸시·아래 전체 흐름 검증, production AAB/테스트 트랙·실제 target SDK·Data Safety 대조.
 **근거** — [설치 체크리스트·과거 접수 기록](../docs/product/android-preview-20261009/checklist.md), [설치 검증 절차](../docs/deployment/android-release-check.md), [Play 제출 가이드](../mobile/PLAY_STORE.md). 과거 EAS 사용량은 해당 조회일의 기록이며 현재 잔여량을 의미하지 않는다.
 **완료 기준** — 설치 기기에서 아래 항목을 확인·기록하고 AAB/테스트 트랙 검증. JS 번들·설정 검사 성공만으로 종료하지 않는다.
