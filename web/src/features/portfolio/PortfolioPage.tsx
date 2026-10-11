@@ -32,6 +32,7 @@ export function PortfolioPage() {
   const findingRef = useRef<HTMLElement>(null)
   const headingRef = useRef<HTMLElement>(null)
   const analysisRef = useRef<HTMLElement>(null)
+  const allocationRef = useRef<HTMLElement>(null)
   const detailsRef = useRef<HTMLDetailsElement>(null)
   const draft = editingDraft ?? (query.data ? toDraft(query.data) : null)
   useEffect(() => {
@@ -71,9 +72,13 @@ export function PortfolioPage() {
   const hasOverlap = !!portfolio?.exposure?.indexOverlaps.length
   const firstHolding = portfolio?.holdings[0]?.holding
   function inspectFinding() {
-    const target = hasOverlap ? detailsRef.current : analysisRef.current
+    const target = hasOverlap ? detailsRef.current : allocationRef.current
     if (!target) return
     if (hasOverlap && detailsRef.current) detailsRef.current.open = true
+    if (!hasOverlap) {
+      const basis = allocationRef.current?.querySelector<HTMLDetailsElement>('.allocation-basis')
+      if (basis) basis.open = true
+    }
     target.style.scrollMarginTop = `${(document.querySelector('.site-header')?.getBoundingClientRect().height ?? 0) + 16}px`
     const focusTarget = hasOverlap ? target.querySelector<HTMLElement>('summary') : target
     focusTarget?.focus({ preventScroll: true })
@@ -88,11 +93,11 @@ export function PortfolioPage() {
     {hasAssets && portfolio && <>
       <section className="portfolio-summary" aria-label="등록한 자산 요약"><Statistic title="등록한 자산 평가액" suffix={portfolio.totalValueKrw == null ? undefined : '원'} value={portfolio.totalValueKrw ?? '일부 가격 확인 필요'} /><div><strong>보유 자산 {portfolio.holdings.length}개</strong><small>{portfolio.updatedAt ? `기록 저장 ${new Date(portfolio.updatedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}` : '저장한 보유 기록'}</small><small>수집 시세 기준 · 증권사 자동 연동 없음</small></div></section>
       <section ref={findingRef} tabIndex={-1} className="portfolio-finding" aria-label="내 기록에서 발견" aria-describedby="portfolio-finding-text"><span className="page-eyebrow">내 기록에서 확인할 점</span><strong id="portfolio-finding-text">{finding}</strong><div className="portfolio-finding-actions"><Button type="text" onClick={inspectFinding}>{hasOverlap ? '겹치는 ETF 확인하기' : '계산 기준과 비중 보기'}</Button>{firstHolding && <Link to={`/stocks?symbol=${encodeURIComponent(firstHolding.symbol)}`}>{firstHolding.name} 가격·근거 보기 →</Link>}</div></section>
-      <div className="portfolio-home-grid"><section ref={analysisRef} tabIndex={-1} id="portfolio-analysis" className="portfolio-holdings" aria-label="저장된 보유 자산"><div className="portfolio-section-heading"><Title level={3}>보유 자산</Title><Text type="secondary">기록 수정</Text></div><p className="portfolio-coverage">{portfolioCoverageText(portfolio)}</p>
+      <div className="portfolio-home-grid"><aside ref={allocationRef} tabIndex={-1} className="portfolio-allocation" aria-label="등록한 자산 구성"><Title level={3}>내 자산 구성</Title>{Object.entries(portfolio.allocation).map(([key, value]) => <div key={key}><div className="portfolio-weight-label"><span>{assetLabels[key]}</span><strong>{value.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}%</strong></div><Progress percent={value} showInfo={false} strokeColor={key === 'ETF' ? 'var(--fw-connection)' : key === 'STOCK' ? 'var(--fw-market)' : 'var(--ant-color-text-secondary)'} /></div>)}{!Object.keys(portfolio.allocation).length && <p>가격·환율을 확인하면 비중을 볼 수 있어요.</p>}<details className="allocation-basis"><summary>비중 계산 기준</summary><p>{portfolioCoverageText(portfolio)}</p><p>등록하지 않은 자산은 포함되지 않아요.</p></details></aside><section ref={analysisRef} tabIndex={-1} id="portfolio-analysis" className="portfolio-holdings" aria-label="저장된 보유 자산"><div className="portfolio-section-heading"><Title level={3}>보유 자산</Title><Text type="secondary">기록 수정</Text></div><p className="portfolio-coverage">{portfolioCoverageText(portfolio)}</p>
         {portfolio.holdings.map((row, index) => <article className="portfolio-holding-row" key={row.holding.symbol}><div><Link to={`/stocks?symbol=${encodeURIComponent(row.holding.symbol)}`}><strong>{row.holding.name}</strong></Link><small>{row.holding.quantity.toLocaleString()}주 · {assetLabels[row.holding.assetClass]}</small><small>{row.holding.averageCost == null ? '매입가 미입력 · 손익 계산 안 함' : `평균 매입가 ${row.holding.averageCost.toLocaleString()} ${row.holding.currency === 'KRW' ? '원' : '달러'}`}</small></div><div className="portfolio-holding-value"><strong>{row.valueKrw == null ? '가격·환율 확인 필요' : `${row.valueKrw.toLocaleString()}원`}</strong><small>{row.quoteAsOf ? `시세 ${new Date(row.quoteAsOf).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}` : '시세 미수집'}</small></div><Space><Button type="text" disabled={saving} aria-label={`${row.holding.name} 기록 수정`} onClick={() => openHolding(index)}>수정</Button><Dropdown trigger={['click']} menu={{ items: [{ key: 'delete', label: '보유 기록 삭제', danger: true, onClick: () => deleteHolding(index) }] }}><Button type="text" disabled={saving} aria-label={`${row.holding.name} 기록 더보기`}>···</Button></Dropdown></Space></article>)}
         <div className="portfolio-cash-row"><Text>등록한 현금</Text><strong>{portfolio.cash.toLocaleString()}원</strong></div>
         <details className="portfolio-profit"><summary>투자원금·손익 확인</summary><p>투자원금 {portfolio.investedKrw == null ? '매입가·환율 확인 필요' : `${portfolio.investedKrw.toLocaleString()}원`}</p><p>가격 변동 수익률 {portfolio.returnPercent == null ? '계산하지 않았어요' : `${portfolio.returnPercent}%`}</p><small>매입가·수집 시세·환율이 확인된 경우 계산해요. 수수료·세금은 포함하지 않아요.</small></details>
-      </section><aside className="portfolio-allocation" aria-label="등록한 자산 구성"><Title level={3}>내 자산 구성</Title><p>{portfolioCoverageText(portfolio)}</p>{Object.entries(portfolio.allocation).map(([key, value]) => <div key={key}><div className="portfolio-weight-label"><span>{assetLabels[key]}</span><strong>{value.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}%</strong></div><Progress percent={value} showInfo={false} strokeColor={key === 'ETF' ? 'var(--fw-connection)' : key === 'STOCK' ? 'var(--fw-market)' : 'var(--ant-color-text-secondary)'} /></div>)}{!Object.keys(portfolio.allocation).length && <p>가격·환율을 확인하면 비중을 볼 수 있어요.</p>}<small>등록하지 않은 자산은 포함되지 않아요.</small></aside></div>
+      </section></div>
       <PortfolioConnections portfolio={portfolio} />
       <details ref={detailsRef} className="portfolio-details"><summary>분야·통화·ETF 중복 계산 더 보기</summary><PortfolioExposureCard portfolio={portfolio} /></details>
       <InvestmentFocus portfolio={portfolio} />

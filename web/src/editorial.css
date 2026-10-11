@@ -178,3 +178,33 @@
 .connection-hub { position: relative; }.connection-hub::after { content: ''; position: absolute; right: -30px; width: 30px; top: 50%; height: 1px; background: var(--fw-connection); }
 .app-content .candidate-reason { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 @media(max-width:599px) { .connection-hub::after { right: auto; left: 18px; top: 100%; width: 1px; height: 16px; } }
+
+/* 요약부터 읽고 상세 기준은 필요할 때 펼치는 화면 순서. */
+.app-content .portfolio-home-grid { grid-template-areas: 'holdings allocation'; }
+.app-content .portfolio-holdings { grid-area: holdings; }.app-content .portfolio-allocation { grid-area: allocation; }
+.app-content .portfolio-allocation:focus { outline: 2px solid var(--fw-connection); outline-offset: 4px; }
+.app-content .allocation-basis { font-size: 12px; color: var(--ant-color-text-secondary); }
+.allocation-basis summary { min-height: 44px; padding-block: 12px; cursor: pointer; }
+.app-content .allocation-basis p { margin: 0 0 8px; }
+.app-content .discovery-page { gap: 8px; }.app-content .discovery-search { margin-block: 0; }
+.app-content .discovery-data-status { margin: 0; padding: 0; min-height: 44px; }
+.app-content .discovery-results > section > h4 { margin: 4px 0 8px; font-size: 16px; color: var(--ant-color-text-secondary); }
+.app-content .company-card .ant-card-body { padding-top: 10px; gap: 8px; }
+.app-content .company-card .candidate-heading { order: -1; }
+.app-content .company-card .candidate-heading h4 { margin: 0; }
+.app-content .company-card .candidate-source { margin: 0; }
+.app-content .account-page { max-width: 720px; }
+.account-assurance { color: var(--ant-color-text-secondary); margin: 16px 0 0; font-size: 13px; }
+.account-return { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; margin-bottom: 8px; }
+.site-footer-disclosure { display: contents; }.site-footer-disclosure > summary { display: none; }
+.site-footer-disclosure:not([open]) > .site-footer-links { display: flex; }
+.site-footer-disclosure::details-content { content-visibility: visible; }
+@media(max-width:899px) { .app-content .portfolio-home-grid { grid-template-areas: 'allocation' 'holdings'; }.app-content .portfolio-allocation { order: 0; padding: 16px; }.app-content .portfolio-allocation h3 { font-size: 17px; margin-bottom: 8px; }.portfolio-weight-label { font-size: 14px; }.app-content .portfolio-allocation .ant-progress { margin-bottom: 0; } }
+@media(max-width:599px) {
+ .account-footer .site-footer-brand { display: none; }.account-footer .site-footer-inner { display: block; }
+ .account-footer .site-footer-disclosure { display: block; }.account-footer .site-footer-disclosure > summary { display: list-item; min-height: 44px; padding-block: 12px; cursor: pointer; }
+ .account-footer .site-footer-disclosure:not([open]) > .site-footer-links { display: none; }
+ .account-footer .site-footer-disclosure:not([open])::details-content { content-visibility: hidden; }
+ .account-footer .site-footer-links { padding-top: 12px; }.account-footer .site-footer-meta { display: none; }
+ .app-content .account-connection .ant-card-head-title { flex-basis: 160px; font-size: 17px; }
+}
