@@ -134,11 +134,11 @@ export function PracticeScreen() {
     {slow && (busy || loading) && <Text style={s.muted}>서버 응답 대기 중입니다. 잠든 서버의 첫 요청은 시간이 걸릴 수 있습니다.</Text>}
     {error && <View style={s.panel}><Text style={s.warning}>{error}</Text>{<GameButton label={'현재 상태 확인'} onPress={ () => void reload()} disabled={busy} />}</View>}
     {!loading && !turn && <View style={s.lobby}>
-      <Text style={s.eyebrow}>FIREWATCH / PRACTICE</Text><Text style={s.title}>가상투자 게임</Text>
-      <Text style={s.muted}>시장을 읽고, 나만의 선택을 연습하세요.</Text>{gameMenu(true)}
+      <Text style={s.eyebrow}>FireWatch 투자 연습</Text><Text style={s.title}>가상투자 게임</Text>
+      <Text style={s.muted}>24주 동안 시장을 읽고, 내 선택을 돌아보세요.</Text><View style={{ flexDirection: 'row', gap: 12, padding: 16, borderRadius: 12, backgroundColor: '#ecf1f8' }}>{['시장 읽기', '선택하기', '돌아보기'].map((step,index)=><View key={step} style={{ flex: 1, gap: 8 }}><Text style={{ color: '#2c527f', fontSize: 12 }}>0{index+1}</Text><Text style={s.text}>{step}</Text></View>)}</View>
       <Text style={[s.muted, { textAlign: 'center' }]}>24주 · 게임머니 {difficulty === 'EASY' ? '2,000만' : difficulty === 'HARD' ? '500만' : '1,000만'} · 공매도 {short ? '허용' : '사용 안 함'}</Text>
       <View style={{ alignSelf: 'center' }}><GameButton tone="primary" icon="start" label="게임 시작" onPress={() => void action('start')} disabled={busy} /></View>
-      <Text style={s.muted}>뉴스·가격·픽은 모두 가상입니다.</Text>
+      {gameMenu(true)}<Text style={s.muted}>뉴스·가격·픽은 모두 가상입니다.</Text>
       <Pressable accessibilityRole="button" accessibilityLabel="시작 설정" accessibilityState={{ expanded: optionsOpen }} disabled={busy} onPress={() => setOptionsOpen(value => !value)} style={s.optionsToggle}><Text style={s.muted}>시작 설정 {optionsOpen ? '접기' : '보기'}</Text></Pressable>
       {optionsOpen && <View style={s.options}><View style={s.row}>{[['EASY','2,000만'],['NORMAL','1,000만'],['HARD','500만']].map(([key,label]) => <Pressable accessibilityRole="button" accessibilityState={{ selected: difficulty === key }} disabled={busy} key={key} onPress={() => setDifficulty(key)} style={[s.chip, s.iconRow, difficulty === key && s.selected]}><Text style={s.text}>{label}</Text>{difficulty === key && <FirewatchIcon name="selected" size={18} />}</Pressable>)}</View><View style={s.split}><Text style={s.text}>공매도 모드</Text><Switch accessibilityLabel="공매도 허용" disabled={busy} value={short} onValueChange={setShort} trackColor={{ false: c.border, true: accent }} /></View><Text style={s.muted}>공매도는 실제 증거금·강제청산을 반영하지 않습니다.</Text></View>}
     </View>}

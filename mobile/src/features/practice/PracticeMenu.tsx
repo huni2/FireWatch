@@ -1,4 +1,4 @@
-import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
 import tokens from '../../../../shared/design-tokens.json'
 import { FirewatchIcon } from '../../components/FirewatchIcon'
 
@@ -27,7 +27,6 @@ export function PracticeMenu({ lobby, busy, canPublish, canReplay, canEnd, onRul
     ] : []),
   ]
   return <View style={lobby ? s.lobby : undefined}>
-    {lobby && <Image source={require('../../../../shared/assets/firewatch-lobby-scout.png')} accessible={false} style={s.image} resizeMode="contain" />}
     <View style={s.actions}>{items.filter(item => lobby || item.title === '주간 순위' || item.title === '지난 턴 복기' || (item.title === '완주 기록 등록' && canPublish)).map(item => <Pressable key={item.title} accessibilityRole="button" accessibilityLabel={item.title}
       accessibilityHint={item.description} accessibilityState={{ disabled: busy || item.disabled }} disabled={busy || item.disabled}
       onPress={item.action} style={[s.button, (busy || item.disabled) && s.disabled]}>

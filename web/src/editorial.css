@@ -120,3 +120,61 @@
  .app-content .game-panel { border: 0; background: transparent; padding: 16px 0; border-bottom: 1px solid var(--ant-color-border-secondary); border-radius: 0; }.app-content .order-panel { background: var(--ant-color-bg-container); padding: 18px; border-radius: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior: auto !important; } }
+
+/* 브랜드 행동·자산 연결·시장 근거의 색과 정보 위계를 분리한다. */
+:root { --fw-connection: #176e65; --fw-connection-bg: #eaf4f0; --fw-market: #2c527f; --fw-market-bg: #ecf1f8; }
+[data-theme=dark] { --fw-connection: #8ad5c6; --fw-connection-bg: #192e2c; --fw-market: #9bbfe9; --fw-market-bg: #1c2a3e; }
+.app-content h1,.app-content h2,.app-content h3 { text-wrap: balance; }
+.app-content strong,.app-content .ant-statistic-content,.portfolio-holding-value { font-variant-numeric: tabular-nums; }
+.section-kicker { color: var(--fw-connection); font-size: 12px; font-weight: 700; letter-spacing: .025em; }
+.site-header .all-menu-button { border: 0; box-shadow: none; background: transparent; }
+@media (min-width: 900px) { .site-header.ant-layout-header { grid-template-columns: auto minmax(0,1fr) auto; }.site-header .nav-icon { display: none; } }
+.app-content .portfolio-welcome { background: transparent; border: 0; border-radius: 0; padding: 36px 0 44px; gap: 48px; }
+.welcome-copy h3.ant-typography { font-size: clamp(28px,3vw,42px); line-height: 1.35; letter-spacing: -.045em; margin: 14px 0 18px; }
+.welcome-copy p { color: var(--ant-color-text-secondary); line-height: 1.8; margin-bottom: 24px; }
+.welcome-copy .ant-btn-primary { margin-right: 10px; }
+.welcome-connection { display: grid; justify-items: center; gap: 18px; padding: 36px 24px; background: var(--fw-connection-bg); border-radius: 24px; color: var(--fw-connection); }
+.welcome-connection > span { font-size: 13px; }.welcome-connection > strong { font-size: 26px; }.welcome-connection small { font-size: 11px; }
+.welcome-connection > div { display: flex; align-items: center; width: 100%; justify-content: center; }
+.welcome-connection b { border: 1px solid var(--fw-connection); background: var(--ant-color-bg-container); border-radius: 10px; padding: 16px; font-size: 18px; }
+.welcome-connection i { width: 60px; height: 1px; background: var(--fw-connection); }
+.sample-connection { display: grid; gap: 0; padding: 24px 0; text-align: center; color: var(--fw-connection); }
+.sample-connection span { border: 1px solid var(--ant-color-border-secondary); border-radius: 10px; padding: 16px; }.sample-connection b { background: var(--fw-connection-bg); padding: 18px; }
+.app-content .portfolio-finding { border-left-color: var(--fw-connection); }.app-content .portfolio-finding .page-eyebrow { color: var(--fw-connection); }
+.app-content .investment-map { border-top: 3px solid var(--fw-connection); }
+.investment-map-groups button[aria-pressed=true] { background: var(--fw-connection-bg); border-color: transparent; }
+.investment-map-detail > h4 { display: none; }
+.connection-network { display: grid; grid-template-columns: minmax(110px,.8fr) minmax(0,1fr); align-items: center; gap: 30px; padding: 18px 0; }
+.connection-hub { display: grid; gap: 8px; background: var(--fw-connection-bg); color: var(--fw-connection); padding: 20px 14px; border-radius: 12px; text-align: center; }
+.connection-hub span,.connection-hub small { font-size: 11px; }.connection-hub strong { font-size: 20px; word-break: keep-all; overflow-wrap: anywhere; }
+.connection-nodes { display: grid; gap: 12px; border-left: 1px solid var(--fw-connection); padding-left: 22px; }
+.connection-nodes > a { display: grid; gap: 6px; position: relative; border: 1px solid var(--ant-color-border-secondary); border-radius: 10px; padding: 12px; min-height: 60px; background: var(--ant-color-bg-container); }
+.connection-nodes > a::before { content: ''; position: absolute; width: 22px; height: 1px; top: 50%; left: -23px; background: var(--fw-connection); }
+.connection-nodes > a > span { color: var(--ant-color-text-secondary); font-size: 11px; }
+.app-content .connection-news { color: var(--fw-connection); }
+.app-content .discovery-search { margin-top: 8px; margin-bottom: 12px; }
+.app-content .discovery-data-status { font-size: 12px; margin-bottom: 8px; padding: 10px 0; color: var(--ant-color-text-secondary); }
+.app-content .discovery-data-status strong { font-weight: 400; }
+.app-content .discovery-results h4 { margin-top: 20px; }
+.app-content .candidate-heading h4 { margin-top: 4px; font-size: 24px; }
+.candidate-source { display: block; color: var(--fw-market); font-size: 12px; margin-bottom: 6px; }
+.app-content .candidate-reason { max-width: 740px; font-size: 16px; line-height: 1.8; }
+.app-content .company-card .recommendation-context { border-left: 2px solid var(--fw-connection); padding-left: 14px; margin: 12px 0; }.app-content .recommendation-context strong { color: var(--fw-connection); font-size: 12px; }
+.app-content .company-card .recommendation-risk,.recommendation-evidence { display: inline-block; margin-right: 22px; }
+.app-content .recommendation-risk summary,.app-content .recommendation-evidence summary { min-height: 44px; display: list-item; padding-block: 12px; font-size: 13px; }
+.market-heading .section-kicker { color: var(--fw-market); }.app-content .news-page .compact-intro h2 { margin-top: 8px; }
+.app-content .news-result-heading { align-items: center; }.app-content .news-result-heading strong { color: var(--fw-market); }
+.app-content .news-result-heading > div > span { font-size: 12px; }.app-content .news-results .article-meta { font-size: 12px; color: var(--ant-color-text-secondary); }
+.app-content .news-results .article-description { color: var(--ant-color-text-secondary); }
+.app-content .game-lobby { max-width: 1000px; width: 100%; display: grid; grid-template-columns: minmax(0,1.3fr) minmax(0,1fr); column-gap: 48px; text-align: left; padding: 40px; border: 0; border-radius: 20px; }
+.app-content .game-lobby > * { grid-column: 1; }.app-content .game-lobby h1 { font-size: 36px; }.app-content .game-lobby-copy { max-width: 430px; line-height: 1.7; }
+.app-content .game-lobby .game-start-cta { justify-self: start; margin: 12px 0; }.app-content .game-lobby-summary { margin-top: 20px; }
+.app-content .game-lobby .game-quick-menu { align-items: start; margin: 8px 0; }.app-content .game-lobby-mascot { width: 76px; height: 76px; object-fit: contain; margin: 0; }
+.app-content .game-lobby-path { grid-column: 2; grid-row: 1/8; align-self: center; list-style: none; display: grid; padding: 24px; gap: 0; background: var(--fw-market-bg); border-radius: 16px; margin: 0; }
+.game-lobby-path li { display: grid; grid-template-columns: 26px 1fr; gap: 6px 14px; padding: 20px 0; border-bottom: 1px solid var(--ant-color-border-secondary); }.game-lobby-path li:last-child { border: 0; }.game-lobby-path span { grid-row: span 2; color: var(--fw-market); font-size: 12px; }.game-lobby-path strong { font-size: 18px; }.game-lobby-path small { color: var(--ant-color-text-secondary); font-size: 12px; }
+.app-content .game-lobby .game-start-options { grid-column: 1/-1; }.app-content .game-panel > .eyebrow { color: var(--fw-market); }
+@media (max-width: 899px) { .app-content .portfolio-welcome { gap: 20px; padding-top: 20px; }.app-content .game-lobby { grid-template-columns: 1fr; padding: 24px; }.app-content .game-lobby-path { grid-column: 1; grid-row: auto; display: flex; gap: 10px; padding: 16px; margin: 18px 0; }.game-lobby-path li { flex: 1; min-width: 0; display: grid; grid-template-columns: 1fr; padding: 0; border: 0; }.game-lobby-path span { grid-row: auto; }.game-lobby-path strong { font-size: 14px; }.game-lobby-path small { font-size: 11px; } }
+@media (max-width: 599px) { .welcome-copy h3.ant-typography { font-size: 30px; }.welcome-copy .ant-btn-primary { margin-right: 0; }.welcome-copy .ant-btn-text { display: block; padding-inline: 0; margin-top: 8px; }.welcome-connection { display: none; }.app-content .portfolio-welcome { padding-bottom: 24px; }.app-content .portfolio-home-heading h2 { font-size: 18px; }.app-content .news-submit { display: none; }.app-content .discovery-search { gap: 8px; }.app-content .candidate-heading h4 { font-size: 23px; }.app-content .candidate-reason { font-size: 15px; }.app-content .game-lobby h1 { font-size: 28px; }.app-content .game-lobby .game-lobby-copy { font-size: 14px; }.app-content .game-lobby-mascot { display: none; }.app-content .game-lobby .game-quick-menu { margin-block: 4px; }.app-content .game-lobby-path { padding: 12px; }.connection-network { grid-template-columns: 1fr; gap: 16px; }.connection-hub { padding: 14px; }.connection-nodes { margin-left: 18px; }.investment-map-detail > .page-eyebrow { display: none; } }
+.connection-hub { position: relative; }.connection-hub::after { content: ''; position: absolute; right: -30px; width: 30px; top: 50%; height: 1px; background: var(--fw-connection); }
+.app-content .candidate-reason { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+@media(max-width:599px) { .connection-hub::after { right: auto; left: 18px; top: 100%; width: 1px; height: 16px; } }
