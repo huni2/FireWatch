@@ -1,0 +1,62 @@
+{
+  "passed": true,
+  "apiFixtures": true,
+  "reports": [
+    {
+      "width": 1366,
+      "sectors": 12,
+      "companies": 60,
+      "sectorNews": true,
+      "heldFilter": true,
+      "orderReset": true,
+      "completeOnly": true,
+      "optionalPublish": true,
+      "overflow": false,
+      "errors": 0,
+      "fixturePosts": 2,
+      "productionWrites": 0
+    },
+    {
+      "width": 1024,
+      "sectors": 12,
+      "companies": 60,
+      "sectorNews": true,
+      "heldFilter": true,
+      "orderReset": true,
+      "completeOnly": true,
+      "optionalPublish": true,
+      "overflow": false,
+      "errors": 0,
+      "fixturePosts": 2,
+      "productionWrites": 0
+    },
+    {
+      "width": 390,
+      "sectors": 12,
+      "companies": 60,
+      "sectorNews": true,
+      "heldFilter": true,
+      "orderReset": true,
+      "completeOnly": true,
+      "optionalPublish": true,
+      "overflow": false,
+      "errors": 0,
+      "fixturePosts": 2,
+      "productionWrites": 0
+    },
+    {
+      "width": 360,
+      "sectors": 12,
+      "companies": 60,
+      "sectorNews": true,
+      "heldFilter": true,
+      "orderReset": true,
+      "completeOnly": true,
+      "optionalPublish": true,
+      "overflow": false,
+      "errors": 0,
+      "fixturePosts": 2,
+      "productionWrites": 0
+    }
+  ]
+}
