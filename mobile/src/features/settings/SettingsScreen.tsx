@@ -13,6 +13,7 @@ import { ApiRequestError, updateSettings, type Settings } from '@/lib/api'
 import { GoogleLinkButton } from './components/GoogleLinkButton'
 import { KeywordInput } from './components/KeywordInput'
 import { useSettings } from './hooks/useSettings'
+import { registerPushToken } from '@/features/notifications/hooks/useNotificationRegistration'
 
 function timeStringToDate(hhmm: string): Date {
   const [hours, minutes] = hhmm.split(':').map(Number)
@@ -27,6 +28,7 @@ export function SettingsScreen() {
   const [keywords, setKeywords] = useState<string[]>([])
   const [showPicker, setShowPicker] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [registeringPush, setRegisteringPush] = useState(false)
   const [linkedEmail, setLinkedEmail] = useState<string | null>(null)
 
   // 서버(외부 시스템)에서 비동기로 도착한 값으로 편집 가능한 로컬 상태를 동기화 — web/SettingsPage.tsx와
@@ -137,6 +139,16 @@ export function SettingsScreen() {
         </Text>
       </View>
       <OperatorPushSetup linkedEmail={linkedEmail} />
+      <View className="gap-2 rounded-xl bg-surface p-4">
+        <Text className="text-base font-bold text-ink">이 기기에서 알림 받기</Text>
+        <Text className="text-sm leading-6 text-muted">알림은 선택이에요. 브리핑을 받고 싶다면 기기 권한을 허용하고 등록해주세요.</Text>
+        <Pressable accessibilityRole="button" disabled={registeringPush} accessibilityState={{ disabled: registeringPush, busy: registeringPush }} className="min-h-11 justify-center" onPress={() => {
+          setRegisteringPush(true)
+          void registerPushToken().then(registered => Toast.show({ type: registered ? 'success' : 'info', text1: registered ? '이 기기의 알림을 등록했어요.' : '알림 권한을 허용하면 받을 수 있어요.' }))
+            .catch(() => Toast.show({ type: 'error', text1: '알림을 등록하지 못했어요.', text2: '앱은 계속 사용할 수 있어요. 잠시 후 다시 시도해주세요.' }))
+            .finally(() => setRegisteringPush(false))
+        }}><Text className="text-base font-semibold text-brand">{registeringPush ? '알림 등록 중…' : '알림 등록하기'}</Text></Pressable>
+      </View>
       <Link href="/community" className="py-3 text-brand">공지사항 · 문제 신고·의견 · 내 문의</Link>
       <Link href="/guide" className="py-3 text-brand">앱 도움말</Link>
       <Link href="/privacy" className="py-3 text-brand">개인정보처리방침</Link>
