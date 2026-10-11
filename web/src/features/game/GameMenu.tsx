@@ -1,4 +1,4 @@
-import { Tooltip } from 'antd'
+import { Dropdown, Tooltip } from 'antd'
 import { FirewatchIcon } from '../../components/FirewatchIcon'
 import mascot from '../../../../shared/assets/firewatch-lobby-scout.png'
 
@@ -28,11 +28,12 @@ export function GameMenu({ lobby, busy, canPublish, canReplay, canEnd, onRules, 
   return <div className={`game-quick-menu ${lobby ? 'lobby' : 'compact'}`}>
     {lobby && <img className="game-lobby-mascot" src={mascot} alt="FireWatch 불꽃 정찰대" />}
     <nav className="game-quick-actions" aria-label="게임 도구">
-      {actions.map(item => <Tooltip key={item.name} title={item.description} trigger={['hover', 'focus']}>
+    {actions.filter(item => lobby || item.name === '주간 순위' || item.name === '지난 턴 복기' || (item.name === '완주 기록 등록' && canPublish)).map(item => <Tooltip key={item.name} title={item.description} trigger={['hover', 'focus']}>
         <span><button type="button" aria-label={item.name} disabled={busy || item.disabled} onClick={item.action}>
           <span aria-hidden="true">{item.icon}</span><span>{item.label}</span>
         </button></span>
       </Tooltip>)}
+      {!lobby && <Dropdown trigger={['click']} menu={{ items: [{ key: 'rules', label: '게임 규칙', icon: <FirewatchIcon name="rules" size={18} />, onClick: onRules }, { key: 'end', label: '이번 게임 마무리', icon: <FirewatchIcon name="exit" size={18} />, disabled: !canEnd, onClick: onEnd }] }}><button type="button" disabled={busy} aria-label="게임 더보기"><FirewatchIcon name="more" size={20} /><span>더보기</span></button></Dropdown>}
     </nav>
   </div>
 }

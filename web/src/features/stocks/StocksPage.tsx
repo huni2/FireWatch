@@ -117,7 +117,7 @@ export function StocksPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.1 }}
         >
-          <Card className="company-price-chart" {...SECTION_CARD_PROPS}>
+          <div className="stock-detail-layout"><Card className="company-price-chart" {...SECTION_CARD_PROPS}>
             {new Set([...watchedStocks, ...(selected ? [selected] : [])]).size > 1 && <Segmented
               value={selected ?? undefined}
               onChange={(value) => setSelected(value as string)}
@@ -125,10 +125,10 @@ export function StocksPage() {
               style={{ marginBottom: 16, maxWidth: '100%', overflowX: 'auto' }}
             />}
             {selected && <StockChart key={selected} symbol={selected} name={labelForValue(selected)} onNameFound={rememberName} />}
-          </Card>
+          </Card>{selected && <InvestmentContext symbol={selected} name={labelForValue(selected)} />}</div>
         </motion.div>
       )}
-      {selected && <InvestmentContext symbol={selected} name={labelForValue(selected)} />}
+
     </Space>
   )
 }

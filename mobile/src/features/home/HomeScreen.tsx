@@ -1,7 +1,5 @@
+// Android의 주요 이동을 하단에 고정하고 알림·상세 탐색 상태를 유지한다.
 import tokens from '../../../../shared/design-tokens.json'
-// 상단 세그먼트 탭(홈/종목/지수/뉴스)으로 화면을 전환하는 홈 화면 — 하단 탭·드로어 대신 사용자가 선택한
-// 네비게이션 구조(2026-10-04, APP-8~10). 알림 탭 시 바텀시트를 띄우려면 탭을 바꿔도 브리핑 데이터가
-// 유지돼야 해서, 브리핑 조회·바텀시트는 여기(최상위)에서 관리하고 각 탭 화면엔 표시만 맡긴다.
 import { router, Stack } from 'expo-router'
 import * as Notifications from 'expo-notifications'
 import { useEffect, useRef, useState } from 'react'
@@ -10,6 +8,7 @@ import { PortfolioScreen } from '../portfolio/PortfolioScreen'
 import { CandidatesScreen } from '../candidates/CandidatesScreen'
 import { PracticeScreen } from '../practice/PracticeScreen'
 import { StatusBar } from 'expo-status-bar'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { BriefingSheet, type BriefingSheetRef } from '../briefing/components/BriefingSheet'
 import { BriefingScreen } from '../briefing/BriefingScreen'
@@ -34,6 +33,7 @@ const TABS: { key: HomeTab; label: string }[] = [
 ]
 
 export function HomeScreen() {
+  const insets = useSafeAreaInsets()
   const [activeTab, setActiveTab] = useState<HomeTab>('portfolio')
   const [stockTarget, setStockTarget] = useState<{ symbol?: string; query?: string }>({})
   const [newsQuery, setNewsQuery] = useState('')
@@ -88,17 +88,6 @@ export function HomeScreen() {
         }}
       />
 
-      <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: tokens.light.border, backgroundColor: tokens.light.surface }}>
-        {primaryTabs.map((tab) => (
-          <Pressable accessibilityRole="tab" accessibilityLabel={tab.label} accessibilityState={{ selected: tab.selected }} key={tab.key} onPress={() => { if (!tab.selected) setActiveTab(tab.key) }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 60, paddingVertical: 6, gap: 2 }}>
-            <FirewatchIcon name={tab.icon} size={22} color={tab.selected ? tokens.light.accent : tokens.light.muted} />
-            <Text className={`text-sm font-semibold ${tab.selected ? 'text-brand' : 'text-muted'}`}>
-              {tab.label}
-            </Text>
-            {tab.selected && <View className="mt-1 h-0.5 w-6 rounded-full bg-brand" />}
-          </Pressable>
-        ))}
-      </View>
       {(exploration || market) && <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ backgroundColor: tokens.light.surface, paddingHorizontal: 12, gap: 4 }}>
         {TABS.filter(tab => (exploration ? ['candidates', 'stocks', 'short-term'] : ['news', 'brief', 'indices']).includes(tab.key)).map(tab => <Pressable key={tab.key} accessibilityRole="tab" accessibilityState={{ selected: activeTab === tab.key }} onPress={() => setActiveTab(tab.key)} style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 12, borderBottomWidth: 2, borderBottomColor: activeTab === tab.key ? tokens.light.accent : 'transparent' }}><Text style={{ fontSize: 13, color: activeTab === tab.key ? tokens.light.accent : tokens.light.muted }}>{tab.key === 'candidates' ? '추천·분야' : tab.key === 'stocks' ? '회사 검색·시세' : tab.key === 'short-term' ? '단기 관찰' : tab.label}</Text></Pressable>)}
       </ScrollView>}
@@ -121,6 +110,18 @@ export function HomeScreen() {
       {activeTab === 'stocks' && <StocksScreen initialSymbol={stockTarget.symbol} initialQuery={stockTarget.query} onOpenPortfolio={discoveryNavigation.onOpenPortfolio} />}
       {activeTab === 'indices' && <IndicesScreen />}
       {activeTab === 'news' && <NewsScreen initialQuery={newsQuery} />}
+
+      <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: tokens.light.border, paddingBottom: insets.bottom, backgroundColor: tokens.light.surface }}>
+        {primaryTabs.map((tab) => (
+          <Pressable accessibilityRole="tab" accessibilityLabel={tab.label} accessibilityState={{ selected: tab.selected }} key={tab.key} onPress={() => { if (activeTab !== tab.key) setActiveTab(tab.key) }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 60, paddingVertical: 6, gap: 2 }}>
+            <FirewatchIcon name={tab.icon} size={22} color={tab.selected ? tokens.light.accent : tokens.light.muted} />
+            <Text className={`text-sm font-semibold ${tab.selected ? 'text-brand' : 'text-muted'}`}>
+              {tab.label}
+            </Text>
+            {tab.selected && <View className="mt-1 h-0.5 w-6 rounded-full bg-brand" />}
+          </Pressable>
+        ))}
+      </View>
 
       {briefing && <BriefingSheet ref={sheetRef} briefing={briefing} />}
     </View>

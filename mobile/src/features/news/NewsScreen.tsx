@@ -1,8 +1,13 @@
-import { ScreenIntro } from '@/components/ScreenIntro'
+// Android 뉴스는 목록을 먼저 보여주고 날짜 입력을 별도 시트에서 처리한다.
+import { SafeAreaView } from 'react-native-safe-area-context'
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker'
+import { newsDateRangeError } from '../../../../shared/news-date-range'
+import { articleText } from '../../../../shared/article-text'
 // web/src/features/news/NewsPage.tsx에 대응하는 모바일 뉴스 화면(APP-10) — 오늘의 관련 뉴스 목록,
 // 탭하면 외부 브라우저로 기사 링크를 연다.
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, Linking, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, Linking, Modal, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from 'react-native'
+import { newsQuery } from '../../../../shared/investing'
 import type { NewsFilters } from '../../../../shared/investing'
 
 import type { NewsArticle } from '@/lib/api'
@@ -14,50 +19,54 @@ function NewsItem({ article }: { article: NewsArticle }) {
   return (
     <Pressable
       onPress={() => Linking.openURL(article.link)}
-      className="gap-1 rounded-xl border border-line bg-surface p-4"
+      className="gap-2 border-b border-line py-4"
     >
-      <Text className="text-sm font-semibold text-ink">{article.title}</Text>
+      <Text className="text-sm font-semibold text-ink">{articleText(article.title)}</Text>
       {article.description && (
         <Text className="text-xs text-muted" numberOfLines={2}>
-          {article.description}
+          {articleText(article.description)}
         </Text>
       )}
-      {article.pubDate && <Text className="text-xs text-muted">{new Date(article.pubDate).toLocaleString('ko-KR')}</Text>}
+      {article.pubDate && <Text className="text-xs text-muted">{new Date(article.pubDate).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + ' KST'}</Text>}
     </Pressable>
   )
 }
 
 export function NewsScreen({ initialQuery = '' }: { initialQuery?: string }) {
+  const [dateField, setDateField] = useState<'from' | 'to' | null>(null)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [validation, setValidation] = useState('')
   const [draft, setDraft] = useState({ q: initialQuery, from: '', to: '' })
   const [filters, setFilters] = useState<NewsFilters>({ q: initialQuery, page: 0, size: 20 })
-  const fetcher = useCallback(() => fetchNewsFeed(filters), [filters])
-  const { data, loading, error, reload } = useResource(fetcher)
+  const requestKey = newsQuery(filters)
+  const fetcher = useCallback(async () => ({ key: requestKey, feed: await fetchNewsFeed(filters) }), [filters, requestKey])
+  const { data: response, loading, error, reload } = useResource(fetcher)
+  const data = response?.key === requestKey ? response.feed : null
   const news = data?.news ?? []
-
-  if (loading && !data) {
-    return (
-      <View className="flex-1 items-center justify-center bg-canvas">
-        <ActivityIndicator />
-      </View>
-    )
+  function selectDate(event: DateTimePickerEvent, date?: Date) {
+    const field = dateField; setDateField(null)
+    if (event.type === 'set' && date && field) { const value = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; setDraft(v => ({ ...v, [field]: value })); setValidation('') }
   }
+  function apply() { const problem = newsDateRangeError(draft.from, draft.to); setValidation(problem); if (problem) return; setFilters({ ...draft, q: draft.q.trim(), page: 0, size: 20 }); setFilterOpen(false) }
+
 
 
   return (
-    <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5 pb-10" refreshControl={<RefreshControl refreshing={loading} onRefresh={reload} />}>
-      <ScreenIntro eyebrow="NEWS ARCHIVE" title="뉴스 보관함" description="날짜와 종목 키워드로 저장된 소식을 다시 찾아보세요." />
+    <><ScrollView className="flex-1 bg-canvas" keyboardShouldPersistTaps="handled" contentContainerClassName="gap-4 p-5 pb-10" refreshControl={<RefreshControl refreshing={loading} onRefresh={reload} />}>
+      <Text className="text-2xl font-bold text-ink">내 관심사의 소식</Text>
       <TextInput accessibilityLabel="뉴스 검색어" placeholder="종목명·키워드 (예: 반도체)" maxLength={100} value={draft.q} onChangeText={q => setDraft(v => ({ ...v, q }))} className="rounded-xl border border-line bg-surface p-3" />
-      <TextInput accessibilityLabel="뉴스 시작 날짜" placeholder="시작 날짜 YYYY-MM-DD" value={draft.from} onChangeText={from => setDraft(v => ({ ...v, from }))} className="rounded-xl border border-line bg-surface p-3" />
-      <TextInput accessibilityLabel="뉴스 마지막 날짜" placeholder="마지막 날짜 YYYY-MM-DD" value={draft.to} onChangeText={to => setDraft(v => ({ ...v, to }))} className="rounded-xl border border-line bg-surface p-3" />
-      <View className="flex-row gap-3"><Pressable onPress={() => setFilters({ ...draft, page: 0, size: 20 })} className="rounded-xl bg-brand p-3"><Text className="text-white">뉴스 찾기</Text></Pressable><Pressable onPress={() => { setDraft({ q: '', from: '', to: '' }); setFilters({ page: 0, size: 20 }) }} className="p-3"><Text>전체 보기</Text></Pressable></View>
+      <View className="flex-row gap-3"><Pressable onPress={apply} className="rounded-xl bg-brand p-3"><Text className="text-white">뉴스 찾기</Text></Pressable><Pressable onPress={() => { setValidation(''); setDraft({ q: '', from: '', to: '' }); setFilters({ page: 0, size: 20 }) }} className="p-3"><Text>전체 보기</Text></Pressable><Pressable accessibilityRole="button" onPress={() => setFilterOpen(true)} className="min-h-11 justify-center px-2"><Text className="text-ink">필터</Text></Pressable></View>
+      {(filters.from || filters.to) && <Text className="text-xs text-muted">한국 날짜 · {filters.from || '처음부터'} ~ {filters.to || '최근까지'}</Text>}
+      {validation && !filterOpen && <Text accessibilityRole="alert" className="text-red-600">{validation}</Text>}
+      {loading && !data && <ActivityIndicator />}
       {!loading && !news.length && !error && <Text className="text-muted">이 조건으로 저장된 뉴스가 없습니다.</Text>}
-      <Text className="text-xs text-muted">브리핑 이후 추가 소식 · 약 30분 간격{data?.updatedAt ? ` · ${new Date(data.updatedAt).toLocaleString('ko-KR')}` : ''}</Text>
       {error && <Text className="text-red-600">{error}</Text>}
       {news.map((article) => (
         <NewsItem key={article.link} article={article} />
       ))}
       <View className="flex-row justify-between"><Pressable disabled={!filters.page || loading} onPress={() => setFilters(v => ({ ...v, page: (v.page ?? 0) - 1 }))}><Text className="text-brand">이전</Text></Pressable><Text>{(filters.page ?? 0) + 1} 페이지 · {data?.total ?? news.length}건</Text><Pressable disabled={!data?.hasMore || loading} onPress={() => setFilters(v => ({ ...v, page: (v.page ?? 0) + 1 }))}><Text className="text-brand">다음</Text></Pressable></View>
-      <Text className="text-xs text-muted">한국 시간 날짜 기준 · 저장된 제목·설명에서 검색합니다.</Text>
-    </ScrollView>
+      <Text className="text-xs text-muted">한국 날짜 기준 · 저장된 제목·설명 검색 · 수집 예정 간격 약 {data?.refreshMinutes ?? 30}분, 지연될 수 있어요.{data?.updatedAt ? ` 마지막 수집 ${new Date(data.updatedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} KST` : ''}</Text>
+    </ScrollView><Modal visible={filterOpen} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => { setDateField(null); setFilterOpen(false) }}><SafeAreaView className="flex-1 bg-surface"><ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-5 p-5"><View className="flex-row justify-between items-center"><Text className="text-xl font-bold text-ink">뉴스 기간 선택</Text><Pressable accessibilityRole="button" onPress={() => setFilterOpen(false)} className="min-h-11 justify-center"><Text className="text-ink">닫기</Text></Pressable></View><Text className="text-muted">한국 시간 날짜 기준 · 비워두면 전체 기간을 찾아요.</Text>      <Pressable accessibilityRole="button" accessibilityLabel="뉴스 시작 날짜 선택" onPress={() => setDateField('from')} className="min-h-12 justify-center rounded-xl border border-line px-4"><Text className="text-ink">시작 날짜 · {draft.from || '전체 기간'}</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel="뉴스 마지막 날짜 선택" onPress={() => setDateField('to')} className="min-h-12 justify-center rounded-xl border border-line px-4"><Text className="text-ink">마지막 날짜 · {draft.to || '최근까지'}</Text></Pressable><Pressable accessibilityRole="button" onPress={() => { setDraft(v => ({ ...v, from: '', to: '' })); setValidation('') }} className="min-h-11 justify-center"><Text className="text-ink">기간 초기화</Text></Pressable>{dateField && <DateTimePicker mode="date" value={draft[dateField] ? new Date(`${draft[dateField]}T12:00:00`) : new Date()} onChange={selectDate} />}{validation && <Text accessibilityRole="alert" className="text-red-600">{validation}</Text>}</ScrollView><Pressable accessibilityRole="button" onPress={apply} className="m-5 min-h-12 items-center justify-center rounded-xl bg-brand"><Text className="font-bold text-white">기간 적용</Text></Pressable></SafeAreaView></Modal></>
   )
 }

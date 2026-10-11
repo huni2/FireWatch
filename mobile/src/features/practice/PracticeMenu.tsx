@@ -1,4 +1,4 @@
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import tokens from '../../../../shared/design-tokens.json'
 import { FirewatchIcon } from '../../components/FirewatchIcon'
 
@@ -28,11 +28,11 @@ export function PracticeMenu({ lobby, busy, canPublish, canReplay, canEnd, onRul
   ]
   return <View style={lobby ? s.lobby : undefined}>
     {lobby && <Image source={require('../../../../shared/assets/firewatch-lobby-scout.png')} accessible={false} style={s.image} resizeMode="contain" />}
-    <View style={s.actions}>{items.map(item => <Pressable key={item.title} accessibilityRole="button" accessibilityLabel={item.title}
+    <View style={s.actions}>{items.filter(item => lobby || item.title === '주간 순위' || item.title === '지난 턴 복기' || (item.title === '완주 기록 등록' && canPublish)).map(item => <Pressable key={item.title} accessibilityRole="button" accessibilityLabel={item.title}
       accessibilityHint={item.description} accessibilityState={{ disabled: busy || item.disabled }} disabled={busy || item.disabled}
       onPress={item.action} style={[s.button, (busy || item.disabled) && s.disabled]}>
       <FirewatchIcon name={item.icon} size={18} color={c.muted} /><Text style={s.label}>{item.label}</Text>
-    </Pressable>)}</View>
+    </Pressable>)}{!lobby && <Pressable accessibilityRole="button" accessibilityLabel="게임 더보기" disabled={busy} onPress={() => Alert.alert('게임 도구', '필요한 항목을 선택해주세요.', [{ text: '게임 규칙', onPress: onRules }, ...(canEnd ? [{ text: '이번 게임 마무리', style: 'destructive' as const, onPress: onEnd }] : []), { text: '닫기', style: 'cancel' }])} style={s.button}><FirewatchIcon name="more" size={18} color={c.muted} /><Text style={s.label}>더보기</Text></Pressable>}</View>
   </View>
 }
 

@@ -12,7 +12,7 @@ export function CandidatesScreen({ shortTerm = false, ...navigation }: { shortTe
   const briefing = useResource(fetchRecommendations)
   const portfolio = useResource(fetchPortfolio)
   return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5" refreshControl={<RefreshControl refreshing={briefing.loading} onRefresh={() => { void briefing.reload(); void portfolio.reload() }} />}>
-    <ScreenIntro eyebrow={shortTerm ? "PRE-MARKET WATCH" : "INVESTMENT CANDIDATES"} title={shortTerm ? "단기 투자 후보" : "투자 발견 · 분야와 기업"} description="분야별 기업을 살펴보고 추천 이유와 내 보유 자산을 함께 비교하세요." />
+    <ScreenIntro eyebrow={shortTerm ? "단기 관찰" : "기업 탐색"} title={shortTerm ? "단기 투자 후보" : "어떤 기업을 살펴볼까요?"} description="분야별 기업을 살펴보고 추천 이유와 내 보유 자산을 함께 비교하세요." />
     <InvestmentNotice />
     <CompanyDiscovery briefing={briefing.data} portfolio={portfolio.data} loading={briefing.loading} {...navigation} />
     {!shortTerm && <CatalogExplorer onOpenStock={navigation.onOpenStock} />}
