@@ -28,4 +28,5 @@ PR#12 main5b17f9d·CI37875515100/37875544652 전체 성공·Cloudflare24b19ca7. 
 - [x] WEB-38 검색 label 보완 소스/PR CI·머지·배포 주소 확인 (PR#69·main4e05f2c·소스/PR attempt2 success·Cloudflare8c39fab3·1366/390px 운영 회귀)
 
 - [x] WEB-38 실제 browser native200% 자동 검사5화면·등록 취소 초점 복귀 수정/로컬 회귀 (사람 관찰/스크린리더 별도)
-- [ ] WEB-38 취소 초점 보완 CI·머지·배포 주소 회귀
+- [x] WEB-38 취소 초점 보완 소스/PR CI·머지·배포 주소 회귀 (PR#72·main0e023cb·Cloudflarecaa2dcd9; main CI는 진행 중)
+

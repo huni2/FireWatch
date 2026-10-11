@@ -43,7 +43,7 @@
 **진행(2026-10-10)** — Issue#62에서 검색 실패/빈 결과 구분·수동 재시도·로딩 초기화·키보드 초점 복귀 구현. 1366/390px 검색 회귀·첫 등록 흐름·텍스트 확대 보조 검사 및 웹 build/lint 통과. PR#63 main795181c·소스/PR CI success·Cloudflare d8d1f5d5 배포 후 동일 회귀 성공. main CI38025144604 최종 success. 실제 관찰/스크린리더는 아직 미확인. [첫 이용자 관찰 절차·기록표](../docs/product/web30-support-design/first-user-observation.md) 준비. PC/모바일 웹과 실제 확대·키보드·스크린리더를 구분한다. 실제 관찰 결과와 발견 문제 재확인은 아직 미확인이다.
 **추가 점검(2026-10-11)** — 사용자 실제 첫 이용자 관찰 아직 없음. 기업 탐색/자산 등록의 검색 label 연결 보완·1366/390px 클릭 초점/검색 오류 복구/키보드 선택 및 build/lint 성공. PR#69 source943dab5·소스38068336411/PR38068339731 attempt2 전체CI success. 최초 계정 세션20초 timeout 뒤 실패 작업1회 재검증 성공·원인은 미확정. main4e05f2c 머지·Cloudflare8c39fab3 배포·운영 주소1366/390px 동일 회귀 성공/운영 쓰기0. 실제 관찰·스크린리더 완료를 의미하지 않는다.
 **운영 확인** — WEB-30에서 이관. 처음 등록→집중/중복 발견→회사/근거 뉴스 확인을 처음 쓰는 사람에게 수행하게 하고 막힌 단계와 발견까지 걸린 시간을 기록한다. 실제 브라우저 확대 설정·스크린리더의 읽기 순서/폼/키보드를 확인한다.
-**실제 확대 자동 검사(2026-10-11)** — Chromium151 native zoom=2/CSS viewport1366→683으로 주요5화면 점검. 취소 확인 뒤 BODY로 초점이 빠지는 문제를 수정하고 로컬 회귀 통과. 실제 사람 관찰·스크린리더는 계속 미확인이며 Issue#62 유지. CI/배포 검증은 진행 중.
+**실제 확대 자동 검사(2026-10-11)** — Chromium151 native zoom=2/CSS viewport1366→683으로 주요5화면 점검. 취소 확인 뒤 BODY로 초점이 빠지는 문제를 수정하고 로컬 회귀 통과. 실제 사람 관찰·스크린리더는 계속 미확인이며 Issue#62 유지. PR#72 main0e023cb·소스/PR CI 전체 성공·Cloudflarecaa2dcd9 배포 후 같은 회귀 통과. main CI38105633192는 조회 당시 진행 중.
 **완료 기준** — 관찰 기록과 발견한 문제의 수정/재확인. 자동 fixture·CSS 텍스트 확대 성공을 실제 사용자 만족도나 스크린리더 검증으로 대체하지 않는다.
 **근거** — docs/product/web30-support-design/context-notes.md. Android 실기기 접근성은 APP-21이다.
 
@@ -225,3 +225,4 @@
 | BE-6 | 브리핑 이력 저장 API | 완료. `BriefingController`(`GET /latest`, `GET ?from=&to=`). 함께 `AuditLogController`(`GET /api/audit-logs`, 원래 Next-Tasks에 독립 항목이 없었는데 Design §4.1이 요구해 이번에 같이 구현 — WEB-3의 전제조건)와 `SchedulerController`(`POST /api/scheduler/trigger`, 디버그용 수동 실행)도 이 모듈에서 함께 만듦. `ApiIntegrationTest`(WebTestClient, 실제 내장 서버 기동)로 확인 | `backend/.../web/BriefingController.kt` (2026-08-19 [[log]]) |
 | BE-7 | 사용자 설정 API | 완료. `SettingsController` + `SettingsService`(USER_SETTING 이벤트). API 키 검증을 컨트롤러가 아니라 **Service 메서드 안에서** 해 인증 실패도 감사로그에 남게 함([[Decisions/0004-write-api-protection]]). `ApiIntegrationTest`로 401/200/400(fieldErrors) 전부 확인, 실제 서버 기동해 curl로도 재확인 | `backend/.../service/SettingsService.kt` (2026-08-19 [[log]]) |
 | BE-5 | FCM 푸시 발송 서비스 | 완료. `FirebaseFcmSender`(Firebase Admin SDK `sendEachForMulticast`) + `PushService`, 무효 토큰(`MessagingErrorCode.UNREGISTERED`) 자동 정제해 `user_settings.fcm_tokens`에서 제거. `PushSendResult(tokenCount, successCount)`를 반환해 감사로그 response_summary에 발송 통계가 그대로 남음(FR-07 요건). `PushServiceTest` 3개 시나리오 통과. **Phase 1엔 등록 토큰이 없는 게 정상**(모바일 앱은 Phase 2) — 실기기 발송은 Phase 2에서 검증 | `backend/.../service/PushService.kt` (2026-08-19 [[log]]) |
+
