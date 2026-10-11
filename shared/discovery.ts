@@ -62,6 +62,7 @@ export function companyNews(company: Company, briefing?: DiscoveryBriefing | nul
 }
 export function portfolioContext(company: Company, portfolio?: Portfolio | null): string {
   if (!portfolio) return '포트폴리오를 등록하면 내 보유 기업과 비교할 수 있어요.'
+  if (!portfolio.holdings.length) return '아직 등록한 보유 자산이 없어요. 자산을 등록하면 이 기업과 비교할 수 있어요.'
   const held = portfolio.holdings.find(row => row.holding.symbol === company.symbol)
   if (held) {
     const market = portfolio.allocationBasis === 'MARKET_VALUE'
@@ -71,5 +72,9 @@ export function portfolioContext(company: Company, portfolio?: Portfolio | null)
     return `이미 보유한 기업이에요.${weight} 보유 수량과 비중을 함께 확인하세요.`
   }
   const peers = portfolio.holdings.filter(row => row.holding.assetClass === 'STOCK' && (findCompany(row.holding.symbol)?.sectorId === company.sectorId || row.holding.sector === companySector(company).name))
-  return peers.length ? `같은 분야의 ${peers.slice(0, 3).map(row => row.holding.name).join(' · ')}${peers.length > 3 ? ` 외 ${peers.length - 3}개` : ''}를 보유 중이에요. 분야가 겹치는지 확인하세요.` : '현재 등록한 개별주식과 다른 기업이에요. ETF 안에 포함된 기업은 별도로 확인하세요.'
+  if (peers.length) return `같은 분야의 ${peers.slice(0, 3).map(row => row.holding.name).join(' · ')}${peers.length > 3 ? ` 외 ${peers.length - 3}개` : ''}를 보유 중이에요. 분야가 겹치는지 확인하세요.`
+  const hasStocks = portfolio.holdings.some(row => row.holding.assetClass === 'STOCK')
+  return hasStocks
+    ? '현재 등록한 개별주식과 다른 기업이에요. ETF 안에 포함된 기업은 별도로 확인하세요.'
+    : '등록한 보유 기록에 이 기업의 개별주식은 없어요. ETF 안에 포함된 기업은 별도로 확인하세요.'
 }
