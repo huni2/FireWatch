@@ -33,6 +33,7 @@
 **근거** — [완료 체크리스트](../docs/product/release-submission-review/checklist.md), [처리 목록](../docs/product/privacy-deletion-review/data-processing.md), [Data Safety 초안](../docs/product/release-submission-review/data-safety-draft.md), [삭제 절차](../docs/product/release-submission-review/deletion-operations.md), [감사 확인](../docs/product/release-audit-review/operations.md), [백업 절차](../docs/deployment/data-preservation.md), [첫 백업 감사 집계](../docs/product/release-submission-review/first-backup-authorization-summary-20261010.json).
 **완료 기준** — 실제 운영/공개 안내/제출 범위를 대조하고 위 남은 결과를 기록한다. 기간·계약·스토어 제출을 임의 확정하지 않는다. Android 설치는 APP-21 보류 결정을 따른다. 새 과제 번호를 만들지 않는다.
 **성능 제한** — BE-28 첫 요청 지연6.83초는 미해결 제한으로 유지하고 APP-21 첫 진입 사용성에서 대조한다.
+**로컬 암호화 추가 확인(2026-10-11)** — 첫890563bytes 덤프의 새 age 사본890971bytes 생성·복호화 스트림 SHA256 원본 일치·원본/개인키/암호화 파일 불변 확인. DB 연결/업로드/평문 출력 파일0. 기존 원본 EFS false 보존 상태와 PC 밖 복구키는 미완료 유지. 예약 실행 기록은 아직 수동 실행만 확인돼 주간 반복 성공으로 표시하지 않는다.
 
 **BE-30 종료(2026-10-10)** — 실제 수집 감사·운영자 푸시 실수신·일반 계정 차단 사용자 확인 완료. 종료 표와 docs/product/collection-recovery/results.md에 기록한다. WEB-19 실제 계정 확인·기록 보존도 완료했으며 종료 표에 기록한다.
 
@@ -45,6 +46,7 @@
 **운영 확인** — WEB-30에서 이관. 처음 등록→집중/중복 발견→회사/근거 뉴스 확인을 처음 쓰는 사람에게 수행하게 하고 막힌 단계와 발견까지 걸린 시간을 기록한다. 실제 브라우저 확대 설정·스크린리더의 읽기 순서/폼/키보드를 확인한다.
 **실제 확대 자동 검사(2026-10-11)** — Chromium151 native zoom=2/CSS viewport1366→683으로 주요5화면 점검. 취소 확인 뒤 BODY로 초점이 빠지는 문제를 수정하고 로컬 회귀 통과. 실제 사람 관찰·스크린리더는 계속 미확인이며 Issue#62 유지. PR#72 main0e023cb·소스/PR CI 전체 성공·Cloudflarecaa2dcd9 배포 후 같은 회귀 통과. main CI38105633192는 조회 당시 진행 중.
 **완료 기준** — 관찰 기록과 발견한 문제의 수정/재확인. 자동 fixture·CSS 텍스트 확대 성공을 실제 사용자 만족도나 스크린리더 검증으로 대체하지 않는다.
+**직전 main CI 확인(2026-10-11)** — WEB-38 PR#72 머지 후38105633192 `Validate code` 전체 success 확인. 앞선 진행 중 기록을 확정한다.
 **근거** — docs/product/web30-support-design/context-notes.md. Android 실기기 접근성은 APP-21이다.
 
 ## 열린 과제 — 모바일(APP)
