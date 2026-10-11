@@ -49,7 +49,7 @@ export function KeywordInput({
         {value.map((keyword) => (
           <View
             key={keyword}
-            className="flex-row items-center gap-1 rounded-full bg-neutral-100 py-1 pl-3 pr-2"
+            className="flex-row items-center gap-1 rounded-full bg-canvas py-1 pl-3 pr-2"
           >
             <Text className="text-sm text-muted">{labelForValue?.(keyword) ?? keyword}</Text>
             <Pressable onPress={() => onChange(value.filter((k) => k !== keyword))} hitSlop={8}>
@@ -74,7 +74,7 @@ export function KeywordInput({
             returnKeyType="done"
             className="rounded-lg border border-line bg-surface px-3 py-2 text-base"
           />
-          {error && <Text className="text-xs text-red-500">{error}</Text>}
+          {error && <Text className="text-xs text-danger">{error}</Text>}
         </>
       )}
     </View>

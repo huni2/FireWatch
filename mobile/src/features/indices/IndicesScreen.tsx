@@ -18,7 +18,7 @@ export function IndicesScreen() {
     return (
       <View className="flex-1 items-center justify-center bg-canvas p-6">
         <Text className="text-center text-base text-muted">{error ?? '저장된 지수 데이터가 아직 없습니다.'}</Text>
-        <Pressable accessibilityRole="button" onPress={reload} className="mt-4 min-h-11 justify-center rounded-xl bg-brand px-5"><Text className="text-white">다시 확인</Text></Pressable>
+        <Pressable accessibilityRole="button" onPress={reload} className="mt-4 min-h-11 justify-center rounded-xl bg-brand px-5"><Text className="text-onbrand">다시 확인</Text></Pressable>
       </View>
     )
   }

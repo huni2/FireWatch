@@ -72,7 +72,7 @@ export function StockSearchInput({ onSelect, initialQuery = '' }: StockSearchInp
         className="rounded-lg border border-line bg-surface px-3 py-2 text-base"
       />
       {searching && <ActivityIndicator className="self-start" />}
-      {error && <Text className="text-xs text-red-600">{error}</Text>}
+      {error && <Text className="text-xs text-danger">{error}</Text>}
       {!searching && !error && query.trim() && results.length === 0 && (
         <Text className="text-xs text-muted">검색 결과 없음 — 영문 사명으로도 시도해보세요</Text>
       )}

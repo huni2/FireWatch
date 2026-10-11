@@ -1,3 +1,4 @@
+import { useTheme, ThemeSurface } from '@/lib/theme'
 // Android에서 키보드와 뒤로가기를 고려한 별도 자산·계획 입력 화면을 제공한다.
 import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
@@ -7,10 +8,10 @@ import { StockSearchInput } from '../stocks/components/StockSearchInput'
 import { holdingError, selectedHolding } from '../../../../shared/holding-registration'
 import { accountLabels, assetLabels, riskLabels } from '../../../../shared/investing'
 import type { Holding, PortfolioDraft } from '../../../../shared/investing'
-import tokens from '../../../../shared/design-tokens.json'
-const c = tokens.light
 
 function EditorFrame({ title, saving, error, changed, close, submit, button, children }: { title: string; saving: boolean; error: string | null; changed: boolean; close: () => void; submit: () => void; button: string; children: ReactNode }) {
+  const { colors: c } = useTheme()
+
   const insets = useSafeAreaInsets()
   function cancel() {
     if (saving) return
@@ -18,18 +19,24 @@ function EditorFrame({ title, saving, error, changed, close, submit, button, chi
     if (changed) Alert.alert('입력한 내용을 취소할까요?', '저장하지 않은 변경만 취소해요.', [{ text: '계속 입력', style: 'cancel' }, { text: '입력 취소', style: 'destructive', onPress: close }])
     else close()
   }
-  return <Modal visible animationType="slide" onRequestClose={cancel}>
+  return <Modal visible animationType="slide" onRequestClose={cancel}><ThemeSurface>
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: c.surface, paddingTop: insets.top }}>
       <View style={{ paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', gap: 12 }}><Pressable accessibilityRole="button" accessibilityLabel="입력 화면 닫기" disabled={saving} onPress={cancel} style={{ minHeight: 48, justifyContent: 'center' }}><Text style={{ color: c.muted }}>닫기</Text></Pressable><Text style={{ flex: 1, fontSize: 20, fontWeight: '700', color: c.text }}>{title}</Text></View>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 24, gap: 24 }} pointerEvents={saving ? 'none' : 'auto'}>{children}{error && <View accessibilityRole="alert" style={{ gap: 8 }}><Text style={{ color: '#B42318' }}>{error}</Text><Text style={{ color: c.muted }}>입력한 내용은 그대로 있어요. 확인한 뒤 다시 저장해주세요.</Text></View>}</ScrollView>
-      <View style={{ padding: 20, paddingBottom: Math.max(20, insets.bottom), borderTopWidth: 1, borderTopColor: c.border }}><Pressable accessibilityRole="button" accessibilityState={{ disabled: saving }} disabled={saving} onPress={() => { Keyboard.dismiss(); submit() }} style={{ minHeight: 52, borderRadius: 14, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', opacity: saving ? .6 : 1 }}><Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>{saving ? '기록 저장 중…' : button}</Text></Pressable></View>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 24, gap: 24 }} pointerEvents={saving ? 'none' : 'auto'}>{children}{error && <View accessibilityRole="alert" style={{ gap: 8 }}><Text style={{ color: c.danger }}>{error}</Text><Text style={{ color: c.muted }}>입력한 내용은 그대로 있어요. 확인한 뒤 다시 저장해주세요.</Text></View>}</ScrollView>
+      <View style={{ padding: 20, paddingBottom: Math.max(20, insets.bottom), borderTopWidth: 1, borderTopColor: c.border }}><Pressable accessibilityRole="button" accessibilityState={{ disabled: saving }} disabled={saving} onPress={() => { Keyboard.dismiss(); submit() }} style={{ minHeight: 52, borderRadius: 14, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', opacity: saving ? .6 : 1 }}><Text style={{ color: c.onAccent, fontWeight: '700', fontSize: 16 }}>{saving ? '기록 저장 중…' : button}</Text></Pressable></View>
     </KeyboardAvoidingView>
-  </Modal>
+  </ThemeSurface></Modal>
 }
-function Field({ label, value, change, numeric = false }: { label: string; value: string; change: (value: string) => void; numeric?: boolean }) { return <View style={{ gap: 8 }}><Text style={{ color: c.muted }}>{label}</Text><TextInput accessibilityLabel={label} value={value} onChangeText={change} keyboardType={numeric ? 'decimal-pad' : 'default'} style={{ minHeight: 48, borderWidth: 1, borderColor: c.border, borderRadius: 12, padding: 14, color: c.text }} /></View> }
-function Choice({ label, selected, press }: { label: string; selected: boolean; press: () => void }) { return <Pressable accessibilityRole="button" accessibilityState={{ selected }} onPress={press} style={{ minHeight: 44, padding: 12, borderWidth: 1, borderColor: selected ? c.accent : c.border, borderRadius: 10 }}><Text style={{ color: selected ? c.accent : c.text }}>{label}</Text></Pressable> }
+function Field({ label, value, change, numeric = false }: { label: string; value: string; change: (value: string) => void; numeric?: boolean }) {
+  const { colors: c } = useTheme()
+ return <View style={{ gap: 8 }}><Text style={{ color: c.muted }}>{label}</Text><TextInput accessibilityLabel={label} value={value} onChangeText={change} keyboardType={numeric ? 'decimal-pad' : 'default'} style={{ minHeight: 48, borderWidth: 1, borderColor: c.border, borderRadius: 12, padding: 14, color: c.text }} /></View> }
+function Choice({ label, selected, press }: { label: string; selected: boolean; press: () => void }) {
+  const { colors: c } = useTheme()
+ return <Pressable accessibilityRole="button" accessibilityState={{ selected }} onPress={press} style={{ minHeight: 44, padding: 12, borderWidth: 1, borderColor: selected ? c.accent : c.border, borderRadius: 10 }}><Text style={{ color: selected ? c.accent : c.text }}>{label}</Text></Pressable> }
 
 export function HoldingRegistration({ initial, others, editing, saving, error, close, save }: { initial: Holding; others: Holding[]; editing: boolean; saving: boolean; error: string | null; close: () => void; save: (value: Holding) => void }) {
+  const { colors: c } = useTheme()
+
   const [holding, setHolding] = useState(initial)
   const [quantity, setQuantity] = useState(initial.quantity ? String(initial.quantity) : '')
   const [cost, setCost] = useState(initial.averageCost == null ? '' : String(initial.averageCost))
@@ -52,6 +59,8 @@ export function HoldingRegistration({ initial, others, editing, saving, error, c
 }
 
 export function PortfolioPlanEditor({ initial, saving, error, close, save }: { initial: PortfolioDraft; saving: boolean; error: string | null; close: () => void; save: (value: PortfolioDraft) => void }) {
+  const { colors: c } = useTheme()
+
   const [draft, setDraft] = useState(initial)
   const [cash, setCash] = useState(String(initial.cash)), [months, setMonths] = useState(String(initial.horizonMonths)), [monthly, setMonthly] = useState(String(initial.monthlyContribution))
   const value = { ...draft, cash: Number(cash), horizonMonths: Number(months), monthlyContribution: Number(monthly) }

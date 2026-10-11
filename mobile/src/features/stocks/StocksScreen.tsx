@@ -79,9 +79,9 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
                 <Pressable
                   key={symbol}
                   onPress={() => setSelected(symbol)}
-                  className={`min-h-11 justify-center rounded-xl px-4 py-3 ${selected === symbol ? 'bg-brand' : 'bg-neutral-100'}`}
+                  className={`min-h-11 justify-center rounded-xl px-4 py-3 ${selected === symbol ? 'bg-brand' : 'bg-canvas'}`}
                 >
-                  <Text className={`text-xs font-medium ${selected === symbol ? 'text-white' : 'text-muted'}`}>
+                  <Text className={`text-xs font-medium ${selected === symbol ? 'text-onbrand' : 'text-muted'}`}>
                     {labelForValue(symbol)}
                   </Text>
                 </Pressable>

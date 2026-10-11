@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Light fallback for the route error boundary outside the theme provider. */
+@layer base {
+  :root {
+    --fw-accent: 185 77 11;
+    --fw-onAccent: 255 255 255;
+    --fw-canvas: 244 245 247;
+    --fw-surface: 255 255 255;
+    --fw-text: 23 32 46;
+    --fw-muted: 89 101 121;
+    --fw-border: 221 226 234;
+    --fw-negative: 37 99 235;
+    --fw-danger: 180 35 24;
+  }
+}

@@ -1,5 +1,5 @@
+import { useTheme } from '@/lib/theme'
 import { LoadingState } from '@/components/LoadingState'
-import tokens from '../../../../../shared/design-tokens.json'
 // web/src/features/stocks/components/StockChart.tsx와 동일 역할 — RN엔 recharts가 없어
 // react-native-gifted-charts의 LineChart(영역 채움)로 대체.
 import { useEffect, useMemo, useState } from 'react'
@@ -13,7 +13,6 @@ import { stockLabel } from '../../../../../shared/stock-labels'
 import { formatStockPrice } from '../../../../../shared/stock-price'
 import { CompanyNews } from './CompanyNews'
 
-const CHART_COLOR = tokens.light.accent
 
 interface StockChartProps {
   symbol: string
@@ -39,6 +38,7 @@ function formatLabel(timestamp: string, range: StockChartRange): string {
 }
 
 export function StockChart({ symbol, name = stockLabel(symbol), onNameFound }: StockChartProps) {
+  const { colors } = useTheme()
   const [range, setRange] = useState<StockChartRange>('6mo')
   const { data, loading, error } = useStockHistory(symbol, range)
   const currentData = data?.symbol === symbol ? data : null
@@ -69,9 +69,9 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound }: S
             <Pressable
               key={option.value}
               onPress={() => setRange(option.value)}
-              className={`min-h-11 justify-center rounded-xl px-4 py-3 ${range === option.value ? 'bg-brand' : 'bg-neutral-100'}`}
+              className={`min-h-11 justify-center rounded-xl px-4 py-3 ${range === option.value ? 'bg-brand' : 'bg-canvas'}`}
             >
-              <Text className={`text-xs font-medium ${range === option.value ? 'text-white' : 'text-muted'}`}>
+              <Text className={`text-xs font-medium ${range === option.value ? 'text-onbrand' : 'text-muted'}`}>
                 {option.label}
               </Text>
             </Pressable>
@@ -80,7 +80,7 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound }: S
       </ScrollView>
 
       {loading && <LoadingState inline message="가격 흐름을 불러오고 있어요" />}
-      {!loading && error && <Text className="text-xs text-red-500">{companyName} 시세를 불러오지 못했습니다.</Text>}
+      {!loading && error && <Text className="text-xs text-danger">{companyName} 시세를 불러오지 못했습니다.</Text>}
       {!loading && !error && chartData.length === 0 && (
         <Text className="text-xs text-muted">표시할 데이터가 없습니다.</Text>
       )}
@@ -88,22 +88,22 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound }: S
         <LineChart
           data={chartData}
           height={220}
-          color={CHART_COLOR}
+          color={colors.accent}
           thickness={2}
           areaChart
-          startFillColor={CHART_COLOR}
+          startFillColor={colors.accent}
           startOpacity={0.25}
-          endFillColor={CHART_COLOR}
+          endFillColor={colors.accent}
           endOpacity={0}
           curved
           hideDataPoints
-          yAxisTextStyle={{ fontSize: 10, color: tokens.light.muted }}
-          xAxisLabelTextStyle={{ fontSize: 10, color: tokens.light.muted }}
+          yAxisTextStyle={{ fontSize: 10, color: colors.muted }}
+          xAxisLabelTextStyle={{ fontSize: 10, color: colors.muted }}
           noOfSections={4}
           rulesType="dashed"
-          rulesColor={tokens.light.border}
+          rulesColor={colors.border}
           yAxisColor="transparent"
-          xAxisColor={tokens.light.border}
+          xAxisColor={colors.border}
           initialSpacing={8}
         />
       )}

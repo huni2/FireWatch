@@ -1,4 +1,4 @@
-import tokens from '../../../shared/design-tokens.json'
+import { ThemeProvider, useTheme } from '@/lib/theme'
 import '../global.css'
 
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
@@ -24,6 +24,7 @@ export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
 
 // 동의 후에는 알림 탭 리스너만 연결한다. 권한·토큰 등록은 설정에서 사용자가 선택한다.
 function AppContent() {
+  const { colors } = useTheme()
   useNotificationRegistration()
   const [ready, setReady] = useState(false)
   const pathname = usePathname()
@@ -35,10 +36,10 @@ function AppContent() {
       <AppReadiness.Provider value={preparation}><View style={{ flex: 1 }} importantForAccessibility={preparation.preparing ? 'no-hide-descendants' : 'auto'} accessibilityElementsHidden={preparation.preparing}><BottomSheetModalProvider>
         <Stack
           screenOptions={{
-            headerStyle: { backgroundColor: tokens.light.surface },
-            headerTintColor: tokens.light.text,
+            headerStyle: { backgroundColor: colors.surface },
+            headerTintColor: colors.text,
             headerTitleStyle: { fontWeight: '800' },
-            contentStyle: { backgroundColor: tokens.light.canvas },
+            contentStyle: { backgroundColor: colors.canvas },
             headerShadowVisible: false,
           }}
         >
@@ -58,6 +59,10 @@ function AppContent() {
 }
 
 export default function RootLayout() {
+  return <ThemeProvider><RootContent /></ThemeProvider>
+}
+
+function RootContent() {
   const [consented, setConsentState] = useState<boolean | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [attempt, setAttempt] = useState(0)

@@ -1,8 +1,7 @@
+import { useTheme, type ThemeColors } from '@/lib/theme'
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
-import tokens from '../../../../shared/design-tokens.json'
 import { FirewatchIcon } from '../../components/FirewatchIcon'
 
-const c = tokens.light
 interface Props {
   lobby?: boolean
   busy: boolean
@@ -17,6 +16,9 @@ interface Props {
 }
 
 export function PracticeMenu({ lobby, busy, canPublish, canReplay, canEnd, onRules, onRanking, onPublish, onReplay, onEnd }: Props) {
+  const { colors: c } = useTheme()
+  const s = createStyles(c)
+
   const items = [
     { title: '주간 순위', label: '순위', icon: 'rankings' as const, description: '이번 주 순위와 지난 주 우승자', action: onRanking, disabled: false },
     { title: '게임 규칙', label: '규칙', icon: 'rules' as const, description: '가상 가격·거래·턴의 작동 방식', action: onRules, disabled: false },
@@ -35,7 +37,7 @@ export function PracticeMenu({ lobby, busy, canPublish, canReplay, canEnd, onRul
   </View>
 }
 
-const s = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   lobby: { alignItems: 'center', gap: 8 }, image: { width: 164, height: 164 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   button: { minHeight: 44, minWidth: 44, paddingHorizontal: 7, flexDirection: 'row', gap: 4, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: c.border, borderRadius: 12, backgroundColor: c.surface },
