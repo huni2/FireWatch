@@ -7,7 +7,7 @@ const { Title, Paragraph, Text } = Typography
 // Play Console의 "Privacy policy URL" 등록에 필요. 이 페이지 자체가 그 URL이 가리키는 대상이다.
 // 수집 항목은 전부 코드(UserSettings/AppUser 엔티티, SettingsRateLimiter)에서 실제로 확인한 내용만
 // 적었다 — 法 자문이 아니라 일반적인 고지 템플릿이므로, 게시 전 한 번 검토가 필요하다.
-const EFFECTIVE_DATE = '2026-10-10'
+const EFFECTIVE_DATE = '2026-10-11'
 const CONTACT_EMAIL = 'powerhch@gmail.com'
 
 export function PrivacyPage() {
@@ -76,6 +76,7 @@ export function PrivacyPage() {
               <li>이용자가 설정한 관심 종목·키워드 저장 및 기기 간 동기화(계정 연동 시)</li>
               <li>비정상적인 요청(어뷰징) 방지</li>
               <li>사용자가 등록한 투자 기록의 저장·이력 관리·구성 점검과 문의 처리</li>
+              <li>자료 보존과 장애 복구를 위한 데이터베이스 백업</li>
             </ul>
           </section>
 
@@ -96,7 +97,8 @@ export function PrivacyPage() {
               </li>
             </ul>
             <Paragraph>기기별 가상게임과 익명 기기 기록은 계정 삭제만으로 자동 삭제되지 않습니다. 보안·장애 조사 목적의 감사로그와 기존 백업도 자동 삭제되지 않습니다. 해당 자료의 삭제는 위 이메일로 요청하면 소유 여부와 처리 범위를 확인해 안내합니다. 공공 시장 자료·뉴스는 개인 계정 삭제와 별도로 보관합니다.</Paragraph>
-            <Paragraph>계정 공유 자료는 직접 삭제 시 처리하며 그 외 자료의 일괄 자동 만료·정리 작업은 현재 없습니다. 백업에서 복구할 때는 삭제 요청을 다시 적용하고 로그인 세션과 알림 등록을 폐기합니다.</Paragraph>
+            <Paragraph>계정 공유 자료는 직접 삭제 시 처리합니다. 기기 기록과 감사로그의 일괄 자동 만료·정리 작업은 현재 없습니다. 백업에서 복구할 때는 삭제 요청을 다시 적용하고 로그인 세션과 알림 등록을 폐기합니다.</Paragraph>
+            <Paragraph>장애 복구를 위해 데이터베이스를 백업합니다. 현재 가운영의 GitHub 암호화 백업 파일은 28일 보관 후 자동 만료되도록 설정돼 있습니다. 별도로 내려받은 변경 전 백업과 로컬 백업에는 이 만료 설정이 적용되지 않습니다. 계정 삭제가 기존 백업 파일의 내용을 즉시 변경하지는 않으며, 백업에 포함된 자료의 삭제는 위 이메일로 요청할 수 있습니다.</Paragraph>
           </section>
 
           <section>
@@ -111,6 +113,7 @@ export function PrivacyPage() {
               <li>Google — 선택적 계정 연동(Google 로그인)</li>
               <li>Render, Supabase — 서버·데이터베이스 호스팅</li>
               <li>Cloudflare — 웹 페이지 호스팅</li>
+              <li>GitHub — 장애 복구용 데이터베이스 백업 실행과 비공개 암호화 파일 보관. 백업에는 계정·설정·보유·게임·문의·감사 기록이 포함될 수 있으며, 암호화 전 데이터베이스 내용이 백업 실행 환경에서 일시 처리됩니다. 백업을 여는 개인키는 GitHub에 전달하지 않습니다.</li>
               <li>Google Gemini — 수집한 시장 지표와 뉴스의 분석·요약. 현재 생성 요청에는 계정 이메일·인증 세션·개인 보유 기록을 포함하지 않습니다.</li>
             </ul>
           </section>
@@ -118,7 +121,7 @@ export function PrivacyPage() {
           <section>
             <Title level={5}>6. 안전성 확보조치</Title>
             <ul style={{ margin: 0 }}>
-              <li>모든 통신은 HTTPS로 암호화됩니다.</li>
+              <li>배포된 웹·앱과 API 서버 간 통신은 HTTPS를 사용합니다. 데이터베이스 백업 연결에는 TLS를 사용하고, 클라우드에 보관하는 백업 파일은 별도로 암호화합니다.</li>
               <li>익명 기록은 기기 식별자로 구분하며 계정에 연결된 개인 기록과 계정 삭제는 서버 발급 인증 세션을 확인합니다. 설정 저장에는 IP 기준 요청 빈도 제한이 적용됩니다.</li>
               <li>Google 계정 연동은 Google 공식 라이브러리로 토큰 서명을 검증하며, 자체적으로 비밀번호를 보관하지 않습니다.</li>
             </ul>

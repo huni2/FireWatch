@@ -49,3 +49,5 @@ SDK나 인프라의 별도 식별자·진단·로그 처리도 최종 목록에 
 [Play 데이터 보안 안내](https://support.google.com/googleplay/android-developer/answer/10787469?hl=ko)는 앱과 SDK의 기기 외부 전송, 가명 자료, 선택 여부, 제공업체 예외를 설명한다. 위 금융·활동 분류 후보는 그 분류와 FireWatch 코드의 대조 결과이며 Google의 개별 앱 판정이 아니다.
 
 [계정 삭제 안내](https://support.google.com/googleplay/android-developer/answer/13327111?hl=ko)는 앱 내 경로·웹 요청과 계정 관련 자료 처리를 다룬다. 2026-10-10 확인. 실제 계정 관련 자료의 삭제와 정당한 보관 범위 확인이 남아 있으므로 제출 완료로 처리하지 않는다.
+
+2026-10-11 공개 고지 대조: PrivacyPage에 실제 운영 중 GitHub 백업 실행/일시 DB 처리·암호화 보관·가운영28일 만료 범위/별도 보관 예외를 반영한다. 국외 국가/계약·자료별 보관/삭제 이행 전체는 미확인으로 유지한다. [Play User Data](https://support.google.com/googleplay/android-developer/answer/10144311)와 [GitHub artifact 만료 안내](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/remove-workflow-artifacts)를2026-10-11 확인했다. 업체 서비스 제공 예외의 계약 판단/Play 제출 완료를 의미하지 않는다.
