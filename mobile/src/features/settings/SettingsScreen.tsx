@@ -138,6 +138,9 @@ export function SettingsScreen() {
       </View>
       <OperatorPushSetup linkedEmail={linkedEmail} />
       <Link href="/community" className="py-3 text-brand">공지사항 · 문제 신고·의견 · 내 문의</Link>
+      <Link href="/guide" className="py-3 text-brand">앱 도움말</Link>
+      <Link href="/privacy" className="py-3 text-brand">개인정보처리방침</Link>
+      <Link href="/investment-info" className="py-3 text-brand">투자 정보 이용안내</Link>
     </ScrollView>
   )
 }

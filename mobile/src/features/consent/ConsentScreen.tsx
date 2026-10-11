@@ -1,9 +1,9 @@
-// 최초 실행 시 개인정보 이용에 동의해야 앱을 쓸 수 있게 막는 화면. 전문은 웹의 PrivacyPage
-// (web/src/features/privacy/PrivacyPage.tsx)를 그대로 가리킨다 — 네이티브로 중복 작성하지 않음.
+// 최초 동의와 개인정보 전문 읽기를 앱 안에서 완료하며 동의 전 서버 등록은 시작하지 않는다.
 import { useState } from 'react'
-import { Linking, Pressable, ScrollView, Text, View } from 'react-native'
-
-const PRIVACY_POLICY_URL = 'https://firewatch-eqp.pages.dev/privacy'
+import { Modal, Pressable, ScrollView, Text, View } from 'react-native'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
+import { InfoDocument } from '../help/InfoDocument'
+import tokens from '../../../../shared/design-tokens.json'
 
 interface ConsentScreenProps {
   onAgree: () => void
@@ -11,16 +11,16 @@ interface ConsentScreenProps {
 
 export function ConsentScreen({ onAgree }: ConsentScreenProps) {
   const [checked, setChecked] = useState(false)
+  const [policyOpen, setPolicyOpen] = useState(false)
 
   return (
-    <ScrollView className="flex-1 bg-canvas" contentContainerClassName="flex-grow justify-between p-6">
+    <SafeAreaProvider><SafeAreaView style={{ flex: 1, backgroundColor: tokens.light.canvas }}><ScrollView className="flex-1" contentContainerClassName="flex-grow justify-between gap-8 p-6">
       <View className="gap-4">
         <Text className="text-2xl font-extrabold text-ink">시작하기 전에</Text>
         <Text className="text-base leading-6 text-muted">
-          FireWatch는 매일 아침 증시 브리핑을 보내드리기 위해 기기 식별자와 푸시 알림 토큰, 회원님이 설정한 관심
-          종목·키워드를 수집·저장합니다. 비밀번호·실명·결제 정보는 수집하지 않습니다.
+          직접 입력한 투자 기록과 관심 기업을 저장해 점검에 사용해요. Google 계정 연결과 알림은 선택이며, 알림을 켜면 푸시 토큰을 사용해요. 어떤 자료를 보관하는지 아래에서 확인할 수 있어요.
         </Text>
-        <Pressable onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}>
+        <Pressable accessibilityRole="button" accessibilityHint="앱 안에서 전문을 읽고 이 화면으로 돌아옵니다." onPress={() => setPolicyOpen(true)} className="min-h-11 justify-center">
           <Text className="text-base font-semibold text-brand underline">개인정보처리방침 전문 보기</Text>
         </Pressable>
       </View>
@@ -40,12 +40,24 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
         </Pressable>
         <Pressable
           onPress={onAgree}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !checked }}
           disabled={!checked}
           className={`items-center rounded-full py-4 ${checked ? 'bg-brand' : 'bg-neutral-300'}`}
         >
           <Text className="text-base font-bold text-white">동의하고 시작하기</Text>
         </Pressable>
       </View>
-    </ScrollView>
+    </ScrollView></SafeAreaView>
+      <Modal visible={policyOpen} animationType="slide" onRequestClose={() => setPolicyOpen(false)}>
+        <SafeAreaProvider><SafeAreaView style={{ flex: 1, backgroundColor: tokens.light.canvas }}>
+          <View className="flex-row items-center justify-between gap-3 border-b border-line px-5 py-2">
+            <Text accessibilityRole="header" className="flex-1 text-lg font-bold text-ink">개인정보처리방침</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel="개인정보처리방침 닫기" onPress={() => setPolicyOpen(false)} className="min-h-11 min-w-11 items-center justify-center"><Text className="text-base font-semibold text-brand">닫기</Text></Pressable>
+          </View>
+          <ScrollView contentContainerClassName="p-5 pb-10"><InfoDocument kind="privacy" /></ScrollView>
+        </SafeAreaView></SafeAreaProvider>
+      </Modal>
+    </SafeAreaProvider>
   )
 }
