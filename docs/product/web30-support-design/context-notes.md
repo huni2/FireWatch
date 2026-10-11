@@ -29,3 +29,5 @@ WEB-38 검색 복구 구현: 실패와 정상 빈 결과를 구분하고 입력 
 PR#69 source943dab5 생성. 소스CI38068336411 attempt1은 AccountSessionIntegrationTest.kt:275 운영 지표 권한 요청20초 timeout, PR CI38068339731 attempt1은 같은 클래스267 설정 조회20초 timeout(각218검사1실패/제외1). 웹/모바일 작업은 모두success. 실패 백엔드 작업만 동일 코드로1회 재실행했으며 로컬 같은 클래스9검사 실패0 통과. 원인 확정/제품 수정 해결로 주장하지 않고 attempt2 결과·머지/배포는 별도 기록한다.
 
 PR#69 source943dab5: 소스38068336411/PR38068339731 attempt2 전체success(H2/PostgreSQL/복원/웹/모바일). 최초20초 timeout 뒤 실패 작업1회 재검증으로 성공했으며 원인 미확정. 로컬9검사도 성공. 동일 코드 CI를 반복하지 않고 결과 문서 커밋에 skip ci/skip render 적용. 머지/웹 배포는 아래 결과에 기록한다.
+
+2026-10-11 PR#69 main4e05f2c 머지·Cloudflare8c39fab3(https://8c39fab3.firewatch-eqp.pages.dev) 배포. 운영 주소1366/390px에서 가상 API로 검색 라벨 클릭 초점/label 밖 재시도 버튼·실패 재시도/빈 결과/늦은 응답 삭제/방향키 선택 성공·넘침0·운영 쓰기0. 최초 npx 배포는 출력 지연 중 종료 시 업로드 완료 로그가 확인됐지만 배포 완료는 미확인; 기존 Wrangler 직접 실행의 최종 deployment complete 및 운영 회귀로 확인했다. 실제 관찰/스크린리더 미확인으로 WEB-38/Issue62 유지. 새 과제/APK0.

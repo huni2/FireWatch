@@ -25,4 +25,4 @@ PR#12 main5b17f9d·CI37875515100/37875544652 전체 성공·Cloudflare24b19ca7. 
 - [x] WEB-38 소스/PR CI·머지·웹 배포 및 배포 주소 회귀 확인 (main CI38025144604 최종 success)
 
 - [x] WEB-38 기업 탐색/등록 검색 label 연결·1366/390px 클릭 초점/키보드/오류 복구 검사·build/lint
-- [ ] WEB-38 검색 label 보완 소스/PR CI·머지·배포 주소 확인
+- [x] WEB-38 검색 label 보완 소스/PR CI·머지·배포 주소 확인 (PR#69·main4e05f2c·소스/PR attempt2 success·Cloudflare8c39fab3·1366/390px 운영 회귀)
