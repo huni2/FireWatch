@@ -123,7 +123,7 @@ export function PracticeScreen() {
   }
   function gameMenu(lobby = false) {
     return <PracticeMenu lobby={lobby} busy={busy} canPublish={canPublishGame(turn)} canReplay={!!lastReplay} canEnd={turn?.status === 'ACTIVE'}
-      onRules={() => Alert.alert('게임 규칙', '새 게임은 24개의 주간 관찰 시점이에요. 첫 주 시작 가격에서 다음 주로 23번 이동해요. 실제로 일주일을 기다릴 필요는 없어요. 뉴스·가격·픽은 모두 가상이며 분야별 사건이 몇 주에 걸쳐 이어져요. 기존 게임에는 당시 규칙이 유지돼요. 단가 × 수량을 게임머니로 계산합니다. 가상 사이드카는 이번 턴 지수 주문만 막습니다. 가상 종목 거래정지는 직전 가격을 유지하고 매매만 막습니다. 다음 턴에 제한이 해제되며 새 사건이 다시 발생할 수 있습니다. 실제 거래소 제도와 다른 게임 규칙입니다. 실제 원화 환산·수수료·세금·기업행사는 반영하지 않습니다. 가격이 없으면 평가 미확정이며, 다음 턴의 보유 가격이 없으면 현재 턴을 유지합니다. 공매도 모드는 증거금·강제청산을 반영하지 않습니다.')} onRanking={() => showRanking('board')} onPublish={() => showRanking('publish')}
+      onRules={() => Alert.alert('게임 규칙', '새 게임은 24개의 주간 관찰 시점이에요. 첫 주 시작 가격에서 다음 주로 23번 이동해요. 실제로 일주일을 기다릴 필요는 없어요. 뉴스·가격·픽은 모두 가상이며 분야별 사건이 몇 주에 걸쳐 이어져요. 기존 게임에는 당시 규칙이 유지돼요. 단가 × 수량을 게임머니로 계산합니다. 새 주간 게임에서는 장중 사이드카를 일주일의 거래 제한으로 사용하지 않아요. 이전 게임의 거래 제한은 당시 규칙을 따르며 제한 중인 자산은 직전 가격으로 평가해요. 실제 거래소 제도를 재현한 게임은 아니에요. 실제 원화 환산·수수료·세금·기업행사는 반영하지 않습니다. 가격이 없으면 평가 미확정이며, 다음 턴의 보유 가격이 없으면 현재 턴을 유지합니다. 공매도 모드는 증거금·강제청산을 반영하지 않습니다.')} onRanking={() => showRanking('board')} onPublish={() => showRanking('publish')}
       onReplay={() => { if (lastReplay) setReplay(lastReplay) }} onEnd={() => Alert.alert('게임을 종료할까요?', '현재 기록은 보관됩니다. 순위 공개는 종료 후 선택합니다.', [{ text: '계속 플레이', style: 'cancel' }, { text: '게임 종료', style: 'destructive', onPress: () => void action('end') }])} />
   }
   return <ScrollView ref={scrollRef} style={s.screen} contentContainerStyle={s.content}>
