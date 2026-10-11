@@ -53,7 +53,7 @@ export function NewsScreen({ initialQuery = '' }: { initialQuery?: string }) {
 
   return (
     <><ScrollView className="flex-1 bg-canvas" keyboardShouldPersistTaps="handled" contentContainerClassName="gap-4 p-5 pb-10" refreshControl={<RefreshControl refreshing={loading} onRefresh={reload} />}>
-      <Text className="text-2xl font-bold text-ink">내 관심사의 소식</Text>
+      <Text className="text-2xl font-bold text-ink">{filters.q ? `${filters.q} 관련 소식` : '시장 소식'}</Text>
       <TextInput accessibilityLabel="뉴스 검색어" placeholder="종목명·키워드 (예: 반도체)" maxLength={100} value={draft.q} onChangeText={q => setDraft(v => ({ ...v, q }))} className="rounded-xl border border-line bg-surface p-3" />
       <View className="flex-row gap-3"><Pressable onPress={apply} className="rounded-xl bg-brand p-3"><Text className="text-white">뉴스 찾기</Text></Pressable><Pressable onPress={() => { setValidation(''); setDraft({ q: '', from: '', to: '' }); setFilters({ page: 0, size: 20 }) }} className="p-3"><Text>전체 보기</Text></Pressable><Pressable accessibilityRole="button" onPress={() => setFilterOpen(true)} className="min-h-11 justify-center px-2"><Text className="text-ink">필터</Text></Pressable></View>
       {(filters.from || filters.to) && <Text className="text-xs text-muted">한국 날짜 · {filters.from || '처음부터'} ~ {filters.to || '최근까지'}</Text>}

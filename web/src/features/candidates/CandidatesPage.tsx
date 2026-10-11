@@ -18,7 +18,7 @@ export function CandidatesPage({ shortTerm = false }: { shortTerm?: boolean }) {
     <InvestmentNotice />
     {!shortTerm && <CatalogExplorer />}
     {!!briefing.data?.excludedCount && <Alert type="info" message={`기업명과 근거 기사 연결을 확인하지 못한 후보 ${briefing.data.excludedCount}개는 제외했습니다.`} description="분석 원본은 보존하며 확인되지 않은 계열사 관계를 추천 근거로 사용하지 않습니다." />}
-    <Alert type="info" showIcon message={shortTerm ? '실시간 진입·청산 신호는 제공하지 않습니다.' : '후보 근거 확인 → 내 보유와 비교'} description={shortTerm ? '장전 자료로 선정된 관찰 후보입니다. 장중 뉴스와 가격 변화는 별도로 확인하세요.' : '브리핑 후보는 개별 매수 지시가 아닙니다. 보유 비중과 상품 설명을 함께 확인하세요.'} />
+    {shortTerm ? <Alert type="info" message="실시간 진입·청산 신호는 제공하지 않습니다." description="장전 자료로 선정된 관찰 후보입니다. 장중 뉴스와 가격 변화는 별도로 확인하세요." /> : <Link to="/short-term">단기 관찰 후보 보기 →</Link>}
     {portfolio.error && <Alert type="warning" message="내 포트폴리오를 불러오지 못했습니다." action={<Button onClick={portfolio.reload}>재시도</Button>} />}
     {portfolio.data && <Card title="내 투자 조건"><Space wrap><Tag>{accountLabels[portfolio.data.accountType]}</Tag><Tag>{riskLabels[portfolio.data.riskLevel]}</Tag><Tag>{portfolio.data.horizonMonths}개월</Tag><Link to="/">포트폴리오 수정</Link></Space><ul>{portfolio.data.insights.map(x => <li key={x}>{x}</li>)}</ul></Card>}
     {briefing.error && <Alert type="warning" message="현재 브리핑 후보가 없습니다." description={briefing.error.message} action={<Button onClick={briefing.reload}>재시도</Button>} />}
