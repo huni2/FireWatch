@@ -75,6 +75,10 @@ export function PortfolioPage() {
     const target = hasOverlap ? detailsRef.current : allocationRef.current
     if (!target) return
     if (hasOverlap && detailsRef.current) detailsRef.current.open = true
+    if (!hasOverlap) {
+      const basis = allocationRef.current?.querySelector<HTMLDetailsElement>('.allocation-basis')
+      if (basis) basis.open = true
+    }
     target.style.scrollMarginTop = `${(document.querySelector('.site-header')?.getBoundingClientRect().height ?? 0) + 16}px`
     const focusTarget = hasOverlap ? target.querySelector<HTMLElement>('summary') : target
     focusTarget?.focus({ preventScroll: true })
