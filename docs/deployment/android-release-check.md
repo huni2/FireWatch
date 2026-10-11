@@ -1,6 +1,6 @@
 # Android 설치 검증
 
-**현재 상태(2026-10-10)** — 사용자 APK/EAS 보류 결정 유지. 마지막 접수7594daa/versionCode5의 완료/다운로드/설치는 미확인이고 현재 모바일 마지막 변경은5f77550이다. 아래 ‘최신 설치본 빌드’는2026-10-09 당시 접수 이력이다. 새 빌드나 설치 완료를 뜻하지 않는다. [현재 체크리스트](../product/android-preview-20261009/checklist.md)·[열린 과제](../../llm-wiki/Next-Tasks.md)를 따른다.
+**현재 상태(2026-10-11)** — 최신 APK 1회 빌드 완료·다운로드·GitHub 사전 릴리스 공개. 소스 `bcbf354`, 버전 **1.0.1 / versionCode 6**, [EAS preview](https://expo.dev/accounts/huni2/projects/mobile/builds/7989e89f-d886-4a42-8fe1-741dbd507e13) FINISHED. [APK 설치 링크](https://github.com/huni2/FireWatch/releases/download/v1.0.1-android-preview/FireWatch-1.0.1-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.1-android-preview). 파일 내부 패키지 `com.firewatch.mobile`·버전1.0.1·versionCode6·ZIP CRC 무결성을 확인했다. 크기114,084,303바이트, SHA-256 `c8e7d78dd943e5a350999a79722b82a768979d9c6cfbf8cc07fbe8df2cf4fe63`; GitHub 업로드 digest도 일치한다. 실제 기기 설치·로그인·푸시는 미확인이다. 이전 versionCode5도 FINISHED를 확인했다. 자동 EAS 빌드는 활성화하지 않는다. 아래 과거 접수와 [현재 체크리스트](../product/android-preview-20261009/checklist.md)를 구분한다.
 
 이번 출시 보강의 타입/린트/Android JS 번들은 검증했다. 실제 APK 설치·Google 로그인·푸시·계정 삭제는 별도이며 검증 완료로 표시하지 않는다.
 
