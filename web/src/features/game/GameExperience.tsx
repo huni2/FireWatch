@@ -11,6 +11,7 @@ import { GameReplay, type ReplayState } from './GameReplay'
 import scout from '../../../../shared/assets/firewatch-scout.png'
 import { ModernToggle } from '../../vendor/threeui/ModernToggle'
 import { GameRankings } from './GameRankings'
+import { GameCompletion } from './GameCompletion'
 import type { RankingTab } from '../../../../shared/game-ranking'
 import { GameMenu } from './GameMenu'
 import './game.css'
@@ -41,6 +42,7 @@ export function GameExperience() {
   const [busy, setBusy] = useState(false)
   const [replay, setReplay] = useState<ReplayState | null>(null)
   const [lastReplay, setLastReplay] = useState<ReplayState | null>(null)
+  const [completionOpen, setCompletionOpen] = useState(false)
   const [slow, setSlow] = useState(false)
   useEffect(() => {
     const timer = setTimeout(() => setSlow(busy || loading), busy || loading ? 3000 : 0)
@@ -121,12 +123,12 @@ export function GameExperience() {
     operation.current = true; setBusy(true); setError(null)
     if (action === 'next') message.destroy()
     const replayBefore = action === 'next' && turn?.simulation ? turn : null
-    if (replayBefore) setReplay({ before: replayBefore, after: null })
+    if (replayBefore && replayBefore.turnIndex < replayBefore.totalTurns - 2) setReplay({ before: replayBefore, after: null })
     if (action === 'start') { setReplay(null); setLastReplay(null) }
     try {
       const updated = action === 'start' ? await startGame({ difficulty, allowShortSelling: short }) : action === 'next' ? await nextGameTurn(turn?.turnIndex) : action === 'end' ? await endGame()
         : await tradeGame({ instrumentType: instrument, symbol: instrument === 'STOCK' ? symbol ?? undefined : undefined, action: side, quantity: quantity!, expectedTurnIndex: turn!.turnIndex, expectedPrice: preview!.unitPrice, requestId: orderId.current ?? (orderId.current = crypto.randomUUID()) })
-      if (updated.status === 'ENDED' && updated.simulation && updated.turnIndex > 0 && (action === 'next' || action === 'end')) showRanking('publish')
+      if (updated.status === 'ENDED' && (action === 'next' || action === 'end')) { setReplay(null); setRankingOpen(false); setCompletionOpen(true) }
       setTurn(updated); setConfirming(false); setPreview(null); setRevision(v => v + 1)
       if (action === 'start' || action === 'next') setWorkspaceView('market')
       if (replayBefore && updated.turnIndex > replayBefore.turnIndex) {
@@ -159,6 +161,7 @@ export function GameExperience() {
   </>
   return <div className={`game-page ${turn ? 'has-session' : ''} view-${workspaceView} ${turn?.status === 'ENDED' ? 'session-ended' : ''}`}>
     {rankingOpen && <GameRankings turn={turn} initialTab={rankingTab} close={() => setRankingOpen(false)} />}
+    {completionOpen && turn?.status === 'ENDED' && <GameCompletion turn={turn} close={() => setCompletionOpen(false)} publish={() => { setCompletionOpen(false); showRanking('publish') }} />}
     <GameReplay value={replay} close={() => setReplay(null)} />
 
     {slow && (busy || loading) && <Alert type="info" showIcon icon={<FirewatchIcon name="notice" />} message="서버 응답을 기다리고 있습니다. 서버가 잠들어 있었다면 첫 요청에 시간이 걸릴 수 있습니다." />}
@@ -168,7 +171,7 @@ export function GameExperience() {
       <div className="game-metrics"><div className="metric-main"><span>총자산 · 게임머니</span><strong>{money(turn.portfolioValue)}</strong><small>현금 + 보유 자산 평가액</small></div><div><span>시작 대비 수익률</span><strong className={(turn.returnPercent ?? 0) < 0 ? 'negative' : 'positive'}>{percent(turn.returnPercent)}</strong><small>무작위 턴의 게임 결과</small></div><div><span>보유 현금</span><strong>{money(turn.cash)}</strong><small>현재 주문 가능한 게임머니</small></div></div>
       {turn.portfolioValue == null && <Alert type="warning" showIcon icon={<FirewatchIcon name="warning" />} message="가격 자료가 없어 평가를 확정하지 않았습니다." description="보유 수량과 현금은 유지됩니다. 0원이나 실제 거래정지로 해석하지 마세요." />}
       {turn.status === 'ACTIVE' && <Segmented className="game-mobile-tabs" aria-label="게임 작업" value={workspaceView} onChange={v => setWorkspaceView(String(v))} options={[{ value: 'market', label: '시장·픽' }, { value: 'order', label: '주문' }, { value: 'positions', label: '보유·체결' }]} />}
-      {turn.status === 'ENDED' ? <section className="game-panel"><span className="eyebrow">SESSION COMPLETE</span><h2>이번 게임, 어떻게 플레이했나요?</h2><p>첫 턴 대비 코스피 변화 {percent(turn.benchmarkReturnPercent)} · 무작위 날짜이므로 실제 기간 벤치마크가 아닙니다.</p><ul>{turn.review.map(r => <li key={r}>{r}</li>)}</ul><Button type="primary" onClick={() => { setTurn(null); setError(null) }}>새 게임 설정</Button></section> : <div className="game-workspace"><div className="market-column" tabIndex={0} aria-label="시장 소식과 보유 자산 탐색">{turnOutcome}
+      {turn.status === 'ENDED' ? <section className="game-panel"><span className="eyebrow">SESSION COMPLETE</span><h2>이번 게임, 어떻게 플레이했나요?</h2><p>첫 턴 대비 코스피 변화 {percent(turn.benchmarkReturnPercent)} · 무작위 날짜이므로 실제 기간 벤치마크가 아닙니다.</p><ul>{turn.review.map(r => <li key={r}>{r}</li>)}</ul><Space wrap><Button onClick={() => setCompletionOpen(true)}>결과 다시 보기</Button><Button type="primary" onClick={() => { setTurn(null); setError(null) }}>새 게임 설정</Button></Space></section> : <div className="game-workspace"><div className="market-column" tabIndex={0} aria-label="시장 소식과 보유 자산 탐색">{turnOutcome}
         <section className="game-panel"><div className="panel-heading"><div><span className="eyebrow">MARKET CONTEXT</span><h2>이번 턴의 시장</h2></div><Tag>{turn.turnDate}</Tag></div><p className="market-summary">{turn.briefing.marketSummary || '이 턴의 시장 요약이 없습니다.'}</p><div className="market-readings">{[{ name: '코스피', value: turn.briefing.kospi }, { name: 'S&P 500', value: turn.briefing.sp500 }, { name: '달러/원', value: turn.briefing.usdKrw }].map(m => <div key={m.name}><span>{m.name}</span><strong>{m.value == null ? '자료 없음' : money(m.value)}</strong></div>)}</div></section>
         <section className="game-panel pick-panel"><span className="eyebrow">AI WATCHLIST</span><div className="pick-guide"><img src={scout} alt="FireWatch 불꽃 정찰대" /><div><h2>AI의 이번 턴 픽</h2><small>불꽃 정찰대의 관찰 노트</small></div></div><p>게임 시나리오로 생성한 가상 후보입니다. 실제 AI의 투자 추천이 아닙니다.</p>{turn.briefing.recommendedStocks.length ? <div className="pick-list">{turn.briefing.recommendedStocks.map(name => <article className="pick-note" key={name}><button key={name} disabled={busy} onClick={() => pick(name)}><span>{name}<small style={{ display: 'block', marginTop: 6 }}>가격 {money(turn.stockPrices[gameAssets.find(a => a.name === name || a.symbol === name)?.symbol ?? ''])} 게임머니 · 매수 주문에 담기</small></span><FirewatchIcon name="buy" size={22} /></button>{(() => { const note = turn.gamePicks?.find(p => p.name === name); return note ? <div className="pick-reason"><strong>왜 골랐나요?</strong><p>{note.reason}</p><small>{note.newsTitle}</small><div className="pick-risk"><strong>확인할 위험</strong><p>{note.risk}</p></div></div> : <p className="pick-reason">이 기록에는 선정 이유가 없습니다. 가상 후보 목록으로만 확인해주세요.</p> })()}</article>)}</div> : <div className="game-empty"><strong>이 턴에는 저장된 AI 후보가 없습니다.</strong><p>{turn.briefing.dataSourceStatus === 'FALLBACK' ? '브리핑이 대체 데이터로 저장됐습니다. 후보를 임의로 만들지 않습니다.' : '후보가 비어 있습니다. 거래 패널에서 직접 종목을 탐색할 수 있습니다.'}</p></div>}</section>
         <section className="game-panel"><span className="eyebrow">ALL COMPANIES</span><h2>거래할 기업 찾기</h2><p>{gameAssets.length}개 기업 · 실제 기업명, 가상 가격·뉴스·픽 · 모든 가격은 게임머니입니다.</p><div className="game-company-filters"><Input aria-label="게임 기업 검색" placeholder="회사 이름으로 찾기" allowClear value={companyQuery} onChange={e => { setCompanyQuery(e.target.value); setCompanyPage(1) }} /><Select aria-label="게임 기업 분야" value={companySector} onChange={v => { setCompanySector(v); setCompanyPage(1) }} options={[{ value: '', label: '모든 분야' }, ...[...new Set(gameAssets.map(a => a.sector).filter(Boolean))].map(sector => ({ value: sector!, label: sector! }))]} /></div><p aria-live="polite">검색 결과 {filteredCompanies.length}개</p><div className="game-company-list">{visibleCompanies.map(asset => { const change = historyChange(turn.assetHistories?.find(h => h.symbol === asset.symbol)); return <article key={asset.symbol}><strong>{asset.name}</strong>{asset.sector && <small>{asset.sector}</small>}<span>{money(turn.stockPrices[asset.symbol])} 게임머니</span><small className={change && change.percent < 0 ? 'negative' : 'positive'}>{change ? `직전 턴 ${percent(change.percent)}` : '첫 턴 또는 이전 기록 없음'}</small><Space><Button onClick={() => setDetail({ instrumentType: 'STOCK', symbol: asset.symbol, name: asset.name })}>상세보기</Button><Button disabled={busy || turn.stockPrices[asset.symbol] == null} onClick={() => selectOrder({ instrumentType: 'STOCK', symbol: asset.symbol, name: asset.name })}>매수 주문</Button></Space></article> })}</div>{!filteredCompanies.length && <Empty description="찾는 기업이 없어요. 이름이나 분야를 바꿔보세요." />}<Pagination aria-label="게임 기업 페이지" current={displayedPage} pageSize={6} total={filteredCompanies.length} showSizeChanger={false} hideOnSinglePage onChange={setCompanyPage} /></section>

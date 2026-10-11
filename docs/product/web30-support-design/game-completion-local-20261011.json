@@ -1,0 +1,47 @@
+{
+  "passed": true,
+  "reports": [
+    {
+      "width": 1366,
+      "kind": "finish",
+      "score": 12.5,
+      "oneDialog": true,
+      "optionalPublish": true,
+      "overflow": false,
+      "pageErrors": 0,
+      "publicPosts": 0
+    },
+    {
+      "width": 390,
+      "kind": "finish",
+      "score": -8,
+      "oneDialog": true,
+      "optionalPublish": true,
+      "overflow": false,
+      "pageErrors": 0,
+      "publicPosts": 0
+    },
+    {
+      "width": 360,
+      "kind": "early",
+      "score": 0,
+      "oneDialog": true,
+      "optionalPublish": true,
+      "overflow": false,
+      "pageErrors": 0,
+      "publicPosts": 0
+    },
+    {
+      "width": 390,
+      "kind": "finish",
+      "score": null,
+      "oneDialog": true,
+      "optionalPublish": true,
+      "overflow": false,
+      "pageErrors": 0,
+      "publicPosts": 0
+    }
+  ],
+  "fixtures": true,
+  "productionWrites": 0
+}
