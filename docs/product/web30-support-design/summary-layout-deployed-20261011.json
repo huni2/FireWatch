@@ -1,0 +1,115 @@
+{
+  "passed": true,
+  "fixtureOnly": true,
+  "base": "https://firewatch-eqp.pages.dev",
+  "checks": [
+    {
+      "width": 1920,
+      "pathname": "/",
+      "passed": true
+    },
+    {
+      "width": 1920,
+      "pathname": "/candidates",
+      "passed": true
+    },
+    {
+      "width": 1920,
+      "pathname": "/account",
+      "passed": true
+    },
+    {
+      "width": 1366,
+      "pathname": "/",
+      "passed": true
+    },
+    {
+      "width": 1366,
+      "pathname": "/candidates",
+      "passed": true
+    },
+    {
+      "width": 1366,
+      "pathname": "/account",
+      "passed": true
+    },
+    {
+      "width": 1024,
+      "pathname": "/",
+      "passed": true
+    },
+    {
+      "width": 1024,
+      "pathname": "/candidates",
+      "passed": true
+    },
+    {
+      "width": 1024,
+      "pathname": "/account",
+      "passed": true
+    },
+    {
+      "width": 900,
+      "pathname": "/",
+      "passed": true
+    },
+    {
+      "width": 900,
+      "pathname": "/candidates",
+      "passed": true
+    },
+    {
+      "width": 900,
+      "pathname": "/account",
+      "passed": true
+    },
+    {
+      "width": 768,
+      "pathname": "/",
+      "passed": true
+    },
+    {
+      "width": 768,
+      "pathname": "/candidates",
+      "passed": true
+    },
+    {
+      "width": 768,
+      "pathname": "/account",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "pathname": "/",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "pathname": "/candidates",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "pathname": "/account",
+      "passed": true
+    },
+    {
+      "width": 360,
+      "pathname": "/",
+      "passed": true
+    },
+    {
+      "width": 360,
+      "pathname": "/candidates",
+      "passed": true
+    },
+    {
+      "width": 360,
+      "pathname": "/account",
+      "passed": true
+    }
+  ],
+  "darkScreens": 3,
+  "productionWrites": 0,
+  "errors": []
+}
