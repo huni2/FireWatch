@@ -202,3 +202,5 @@
 .ranking-rules { margin: 16px 0; padding: 16px; border: 1px solid var(--ant-color-border); border-radius: 12px; }
 .ranking-rules > p { color: var(--ant-color-text-secondary); margin: 0 0 12px; }.ranking-rules summary { cursor: pointer; font-weight: 600; }
 .ranking-rules dl { margin: 16px 0; display: grid; gap: 16px; }.ranking-rules dt { font-weight: 600; }.ranking-rules dd { margin: 6px 0 0; color: var(--ant-color-text-secondary); overflow-wrap: anywhere; }
+.ranking-loading { box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-height: 200px; width: 100%; padding: 24px 16px; color: var(--ant-color-text-secondary); text-align: center; }
+.ranking-loading > span { line-height: 1.6; }
