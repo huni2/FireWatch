@@ -1,0 +1,43 @@
+{
+  "passed": true,
+  "base": "https://firewatch-eqp.pages.dev",
+  "fixtureOnly": true,
+  "reports": [
+    {
+      "width": 1366,
+      "centered": true,
+      "visibleBody": true,
+      "tabSwitch": true,
+      "retry": true,
+      "closeDuringLoad": true,
+      "writes": 0
+    },
+    {
+      "width": 768,
+      "centered": true,
+      "visibleBody": true,
+      "tabSwitch": true,
+      "retry": true,
+      "closeDuringLoad": true,
+      "writes": 0
+    },
+    {
+      "width": 390,
+      "centered": true,
+      "visibleBody": true,
+      "tabSwitch": true,
+      "retry": true,
+      "closeDuringLoad": true,
+      "writes": 0
+    },
+    {
+      "width": 360,
+      "centered": true,
+      "visibleBody": true,
+      "tabSwitch": true,
+      "retry": true,
+      "closeDuringLoad": true,
+      "writes": 0
+    }
+  ]
+}
