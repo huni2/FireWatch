@@ -53,14 +53,14 @@ async function verifyGame({ baseUrl, reportPath, writeIsolatedGame, pauseMs = 10
   }
   function checkTurn(turn) {
     assert.equal(turn.simulation, true)
-    assert.equal(turn.simulationVersion, 2)
+    assert.equal(turn.simulationVersion, 3)
     assert.equal(turn.totalTurns, 24)
-    assert.equal(turn.gameAssets.length, 26)
-    assert.equal(new Set(turn.gameAssets.map(asset => asset.symbol)).size, 26)
+    assert.equal(turn.gameAssets.length, 60)
+    assert.equal(new Set(turn.gameAssets.map(asset => asset.symbol)).size, 60)
     assert.ok(turn.gameAssets.every(asset => asset.name && asset.sector && asset.source && asset.verifiedAt))
-    assert.equal(Object.keys(turn.stockPrices).length, 26)
+    assert.equal(Object.keys(turn.stockPrices).length, 60)
     assert.ok(Object.values(turn.stockPrices).every(price => price > 0))
-    assert.equal(turn.assetHistories.length, 34)
+    assert.equal(turn.assetHistories.length, 68)
     assert.ok(turn.assetHistories.every(history => history.points.length === Math.min(2, turn.turnIndex + 1)))
     assert.ok(turn.gamePicks.length > 0)
     assert.ok(turn.gamePicks.every(pick => turn.stockPrices[pick.symbol] > 0 && pick.reason && pick.risk && pick.newsTitle.includes('가상')))
@@ -97,7 +97,7 @@ async function verifyGame({ baseUrl, reportPath, writeIsolatedGame, pauseMs = 10
     checkTurn(turn)
     assert.equal(turn.transactions.length, 2)
     assert.equal(turn.holdings.find(holding => holding.symbol === pick.symbol).quantity, 1)
-    report.checks.push('26기업/출처/가상 픽·직접 매수/매도/멱등 체결')
+    report.checks.push('60기업/출처/가상 픽·직접 매수/매도/멱등 체결')
     const ledger = turn.transactions
     while (turn.turnIndex < 23) {
       const previous = turn
@@ -126,7 +126,7 @@ async function verifyGame({ baseUrl, reportPath, writeIsolatedGame, pauseMs = 10
     assert.equal(history.history.points.at(-1).price, turn.stockPrices[pick.symbol])
     await request('future-rejected', path.replace('turnIndex=23', 'turnIndex=24'), { expectedStatus: 400 })
     await request('other-device-rejected', path, { expectedStatus: 404, device: `game-check-${randomUUID()}` })
-    report.checks.push('24턴 compact/전체 계약·선택 그래프/미래 턴/타기기 차단')
+    report.checks.push('24주 compact/전체 계약·선택 그래프/미래 턴/타기기 차단')
     const ended = await request('end', '/api/game/end?compact=true', { body: {} })
     assert.equal(ended.status, 'ENDED')
     assert.deepEqual(ended.transactions, ledger)

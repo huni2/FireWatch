@@ -85,7 +85,7 @@ class ApiIntegrationTest @Autowired constructor(
         fun bytes(spec: WebTestClient.RequestHeadersSpec<*>) = spec.exchange().expectStatus().isOk.expectBody().returnResult().responseBody!!
         val start = mapper.readTree(bytes(post("/api/game/start?compact=true")))
         val sessionId = start["sessionId"].asLong()
-        kotlin.test.assertEquals(34, start["assetHistories"].size())
+        kotlin.test.assertEquals(68, start["assetHistories"].size())
         post("/api/game/trade?compact=true", """{"instrumentType":"GOLD","action":"BUY","quantity":1,"requestId":"history-trade"}""")
             .exchange().expectStatus().isOk.expectBody().jsonPath("$.transactions.length()").isEqualTo(1)
         for (turn in 0..22) post("/api/game/next-turn?compact=true", """{"expectedTurnIndex":$turn}""")

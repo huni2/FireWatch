@@ -39,9 +39,9 @@ class GameRankingIntegrationTest {
         links.save(DeviceLink(device,account.id!!))
         return Player(account.id!!,device,"Bearer ${sessions.issue(device).token}")
     }
-    private fun game(p: Player, turn: Int=23, ended: Boolean=true, cash: String="10000000", short: Boolean=false) = games.save(GameSession(deviceId=p.device,
+    private fun game(p: Player, turn: Int=23, ended: Boolean=true, cash: String="10000000", short: Boolean=false, version: Int=GameSimulation.CURRENT_VERSION) = games.save(GameSession(deviceId=p.device,
         status=if(ended) GameSessionStatus.ENDED else GameSessionStatus.ACTIVE, turnDatesRaw=GameSimulation.dates(42L).joinToString(","),
-        currentTurnIndex=turn, startingCash=BigDecimal(cash),allowShortSelling=short,simulationSeed=42L,simulationVersion=GameSimulation.CURRENT_VERSION))
+        currentTurnIndex=turn, startingCash=BigDecimal(cash),allowShortSelling=short,simulationSeed=42L,simulationVersion=version))
     private fun publish(p: Player, g: GameSession, nickname: String) = client().post().uri("/api/game/rankings").header("X-Device-Id",p.device).header("Authorization",p.auth)
         .bodyValue(RankingSubmission(g.id!!,g.currentTurnIndex,nickname)).exchange().expectStatus().isOk.expectBody(RankingEntry::class.java).returnResult().responseBody!!
     @BeforeEach fun reset() {
@@ -70,7 +70,7 @@ class GameRankingIntegrationTest {
 
     @Test fun `persisted simulation version selects rules and refuses unsupported version before writes`() {
         val p = login()
-        val g = game(p, 0, false)
+        val g = game(p, 0, false, version=2)
         fun current() = client().get().uri("/api/game/current").header("X-Device-Id", p.device).header("Authorization", p.auth).exchange()
         current().expectStatus().isOk.expectBody().jsonPath("$.simulationVersion").isEqualTo(2)
             .jsonPath("$.stockPrices['005930.KS']").isEqualTo(32400.0)
@@ -97,16 +97,19 @@ class GameRankingIntegrationTest {
 
     @Test fun `leagues separate completion turn difficulty and short mode with one best place per account`() {
         val p=login();publish(p,game(p),"플레이어하나");publish(p,game(p),"플레이어하나")
-        val early=login();assertEquals("PROGRESS",publish(early,game(early,4),"중도종료").board)
+        val early=login()
+        client().post().uri("/api/game/rankings").header("X-Device-Id",early.device).header("Authorization",early.auth).bodyValue(RankingSubmission(game(early,4).id!!,4,"중도종료")).exchange().expectStatus().isBadRequest
         val easy=login();publish(easy,game(easy,cash="20000000"),"쉬움모드")
         val short=login();publish(short,game(short,short=true),"공매도모드")
-        val active=login();publish(active,game(active,6,false),"진행중플레이어")
+        for (turn in listOf(6,23)) { val active=login(); client().post().uri("/api/game/rankings").header("X-Device-Id",active.device).header("Authorization",active.auth).bodyValue(RankingSubmission(game(active,turn,false).id!!,turn,"진행중플레이어")).exchange().expectStatus().isBadRequest }
         fun count(query: String, expected: Int) { client().get().uri("/api/game/rankings$query").exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(expected) }
         count("",1);count("?difficulty=EASY",1);count("?shortSelling=true",1)
-        count("?board=PROGRESS&turn=4",1);count("?board=PROGRESS&turn=6",1);count("?board=PROGRESS&turn=3",0)
+        count("?board=PROGRESS&turn=4",0);count("?board=PROGRESS&turn=6",0);count("?board=PROGRESS&turn=3",0)
         client().get().uri("/api/game/rankings/mine").header("X-Device-Id",p.device).header("Authorization",p.auth).exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(2).jsonPath("$.entries.length()").isEqualTo(2)
         client().get().uri("/api/game/rankings/mine?page=1").header("X-Device-Id",p.device).header("Authorization",p.auth).exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(2).jsonPath("$.entries.length()").isEqualTo(0)
         client().get().uri("/api/game/rankings/mine").header("X-Device-Id",p.device).header("Authorization",easy.auth).exchange().expectStatus().isUnauthorized
+        val invalid=game(p,cash="10000001")
+        client().post().uri("/api/game/rankings").header("X-Device-Id",p.device).header("Authorization",p.auth).bodyValue(RankingSubmission(invalid.id!!,23,"플레이어하나")).exchange().expectStatus().isBadRequest
         val legacy=game(p).also { it.simulationSeed=null };games.saveAndFlush(legacy)
         client().post().uri("/api/game/rankings").header("X-Device-Id",p.device).header("Authorization",p.auth).bodyValue(RankingSubmission(legacy.id!!,23,"플레이어하나")).exchange().expectStatus().isBadRequest
         client().get().uri("/api/game/rankings?week=2026-10-06").exchange().expectStatus().isBadRequest
@@ -136,8 +139,8 @@ class GameRankingIntegrationTest {
     }
     @Test fun `score is derived from persisted fills and concurrent retries create one record`() {
         val p=login();val g=game(p)
-        val initial=GameSimulation.forVersion(2).price(42L,0,GameInstrumentType.STOCK,"005930.KS")!!
-        val current=GameSimulation.forVersion(2).price(42L,23,GameInstrumentType.STOCK,"005930.KS")!!
+        val initial=GameSimulation.forVersion(GameSimulation.CURRENT_VERSION).price(42L,0,GameInstrumentType.STOCK,"005930.KS")!!
+        val current=GameSimulation.forVersion(GameSimulation.CURRENT_VERSION).price(42L,23,GameInstrumentType.STOCK,"005930.KS")!!
         transactions.saveAndFlush(GameTransaction(sessionId=g.id!!,turnIndex=0,instrumentType=GameInstrumentType.STOCK,symbol="005930.KS",action=GameTradeAction.BUY,quantity=BigDecimal.TEN,price=initial))
         val pool=java.util.concurrent.Executors.newFixedThreadPool(2)
         try {

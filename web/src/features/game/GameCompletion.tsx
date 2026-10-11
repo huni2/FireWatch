@@ -12,7 +12,7 @@ export function GameCompletion({ turn, close, publish }: { turn: GameTurn; close
       <div className="game-completion-score"><span>시작 대비 수익률</span><strong className={result.tone}>{result.score}</strong><p>실제 투자 수익이나 내 보유 자산에 반영되지 않아요.</p></div>
       <div className="game-completion-value"><span>최종 총자산</span><strong>{result.value}<small> 게임머니</small></strong></div>
       {result.reviews.length > 0 && <div className="game-completion-review"><h3>이번 플레이 돌아보기</h3><ul>{result.reviews.slice(0, 2).map((text, index) => <li key={index}>{text}</li>)}</ul>{result.reviews.length > 2 && <details><summary>회고 더 보기</summary><ul>{result.reviews.slice(2).map((text, index) => <li key={index}>{text}</li>)}</ul></details>}</div>}
-      <p className="game-completion-note">순위에는 자동으로 등록되지 않아요. 닉네임과 공개 범위를 확인한 뒤 결정할 수 있어요.</p>
+      <p className="game-completion-note">{result.canPublish ? '순위에는 자동으로 등록되지 않아요. 닉네임과 공개 범위를 확인한 뒤 결정할 수 있어요.' : '순위는 새 주간 게임을 끝까지 진행하고 평가가 확인되었을 때 참여할 수 있어요. 이번 기록은 그대로 남겨둘게요.'}</p>
     </section>
   </Modal>
 }

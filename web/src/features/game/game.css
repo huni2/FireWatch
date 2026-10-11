@@ -199,3 +199,6 @@
 .game-completion-note { margin: 0; color: var(--ant-color-text-secondary); font-size: 13px; }
 .game-completion-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
 @media (max-width: 480px) { .game-completion-actions { display: grid; grid-template-columns: 1fr; }.game-completion-actions .ant-btn { height: auto; min-height: 44px; white-space: normal; }.game-completion-actions .ant-btn-primary { grid-row: 1; } }
+.ranking-rules { margin: 16px 0; padding: 16px; border: 1px solid var(--ant-color-border); border-radius: 12px; }
+.ranking-rules > p { color: var(--ant-color-text-secondary); margin: 0 0 12px; }.ranking-rules summary { cursor: pointer; font-weight: 600; }
+.ranking-rules dl { margin: 16px 0; display: grid; gap: 16px; }.ranking-rules dt { font-weight: 600; }.ranking-rules dd { margin: 6px 0 0; color: var(--ant-color-text-secondary); overflow-wrap: anywhere; }

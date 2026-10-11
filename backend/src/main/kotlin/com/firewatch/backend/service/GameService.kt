@@ -121,7 +121,15 @@ class GameService(
         return buildTurnSnapshot(session, emptyList(), historyPoints)
     }
 
-    fun getCurrentTurn(deviceId: String, historyPoints: Int = 24): GameTurnSnapshot = buildTurnSnapshot(activeSessionOrThrow(deviceId), historyPoints = historyPoints)
+    fun getCurrentTurn(deviceId: String, historyPoints: Int = 24): GameTurnSnapshot {
+        val session = GameTimingScope.phase(GameTimingPhase.REPOSITORY) {
+            gameSessionRepository.findByDeviceIdAndStatus(deviceId, GameSessionStatus.ACTIVE)
+                ?: gameSessionRepository.findFirstByDeviceIdAndStatusOrderByCreatedAtDescIdDesc(deviceId, GameSessionStatus.ENDED)
+                    ?.takeIf { it.simulationVersion == GameSimulation.CURRENT_VERSION && it.simulationSeed != null }
+        } ?: throw NotFoundException("진행 중인 게임이 없어요. 새 게임을 시작해보세요.")
+        if (session.simulationSeed != null && session.simulationVersion == 1) throw NotFoundException("출시 전 시험 게임은 보관됩니다. 새 게임을 시작해주세요.")
+        return buildTurnSnapshot(session, historyPoints = historyPoints)
+    }
 
     @Transactional(readOnly = true)
     fun getAssetHistory(deviceId: String, sessionId: Long, turnIndex: Int, type: GameInstrumentType, symbol: String?): GameAssetHistory {
@@ -231,7 +239,10 @@ class GameService(
     // nextTurn()의 "덱 소진" 분기와 동일하게 상태만 ENDED로 바꾸고, 지금 턴 인덱스는 그대로 둔다
     // (마지막으로 보던 턴 기준 최종 결과를 보여주기 위함).
     fun endGame(deviceId: String, historyPoints: Int = 24): GameTurnSnapshot {
-        val session = activeSessionOrThrow(deviceId)
+        val session = gameSessionRepository.findByDeviceIdAndStatus(deviceId, GameSessionStatus.ACTIVE)
+            ?: return getCurrentTurn(deviceId, historyPoints)
+        if (session.simulationSeed != null && session.simulationVersion == 1) throw NotFoundException("출시 전 시험 게임은 보관됩니다. 새 게임을 시작해주세요.")
+        if (session.simulationSeed != null) simulationFor(session)
         session.status = GameSessionStatus.ENDED
         session.endedAt = Instant.now()
         gameSessionRepository.save(session)
@@ -253,6 +264,10 @@ class GameService(
             val unavailable = computeHoldingQuantities(session, ledger).keys.filter { confirmedPrice(session, it.instrumentType, it.symbol, briefing, date, nextIndex) == null }
             if (unavailable.isNotEmpty()) throw ValidationException("다음 턴의 보유 자산 가격을 확인하지 못했습니다. 자산을 0원으로 처리하지 않고 현재 턴을 유지합니다. 재시도하거나 현재 턴에서 정리해주세요.", mapOf("unavailable" to unavailable.joinToString { it.symbol ?: it.instrumentType.name }))
             session.currentTurnIndex = nextIndex
+            if (session.simulationVersion >= 3 && nextIndex == totalTurns - 1) {
+                session.status = GameSessionStatus.ENDED
+                session.endedAt = Instant.now()
+            }
         }
         gameSessionRepository.save(session)
         return buildTurnSnapshot(session, ledger, historyPoints)
@@ -385,11 +400,41 @@ class GameService(
         val first = briefingFor(session, 0)
         val benchmark = if (first.kospi != null && briefing.kospi != null && first.kospi!! > BigDecimal.ZERO) PortfolioService.percent(briefing.kospi!! - first.kospi!!, first.kospi!!) else null
         val review = buildList {
-            add(if (session.simulationSeed != null) "모든 뉴스·지표·가격·AI 픽은 가상입니다. 게임 속 픽은 시나리오 규칙으로 생성하며 실제 AI 투자 추천이 아닙니다." else "기존 과거 자료 게임 기록입니다. 새 게임은 완전 가상 시뮬레이션으로 시작합니다.")
+            if (portfolioValue != null && session.status == GameSessionStatus.ENDED && session.simulationVersion >= 3 && session.simulationSeed != null) {
+                val histories = simulationFor(session).histories(session.simulationSeed!!, session.currentTurnIndex)
+                    .associateBy { GameHoldingKey(it.instrumentType, it.symbol) }
+                var peak = session.startingCash
+                var drawdown = BigDecimal.ZERO
+                for (week in 0..session.currentTurnIndex) {
+                    val past = ledger.filter { it.turnIndex <= week }
+                    val value = computeHoldingQuantities(session, past).entries.fold(computeCash(session, past)) { sum, (key, quantity) ->
+                        sum + quantity * histories.getValue(key).points[week].price
+                    }
+                    if (value > peak) peak = value
+                    val loss = PortfolioService.percent(peak - value, peak)
+                    if (loss > drawdown) drawdown = loss
+                }
+                add("주간 평가 기준으로 자산이 가장 높았을 때보다 최대 ${drawdown.setScale(2, RoundingMode.HALF_UP)}% 줄어든 적이 있어요. 최종 수익률과 함께 살펴보세요. 주중 가격 변화는 반영하지 않았어요.")
+            }
+            if (session.simulationSeed != null && portfolioValue != null && portfolioValue > BigDecimal.ZERO) {
+                val sectors = simulationFor(session).assets.associate { it.symbol to it.sector }
+                val bySector = holdings.filter { it.symbol in sectors && it.value != null && it.value!! > BigDecimal.ZERO }
+                    .groupBy { sectors[it.symbol]!! }.mapValues { (_, positions) -> positions.fold(BigDecimal.ZERO) { sum, item -> sum + item.value!! } }
+                bySector.maxByOrNull { it.value }?.let { (sector, value) ->
+                    val share = value.multiply(BigDecimal(100)).divide(portfolioValue, 0, RoundingMode.HALF_UP)
+                    if (share >= BigDecimal(40)) add("$sector 분야에 게임 자산의 ${share.toPlainString()}%가 모여 있어요. 기업이 달라도 같은 분야의 영향을 함께 받을 수 있어요.")
+                }
+            }
+            if (benchmark != null && portfolioValue != null) {
+                val result = PortfolioService.percent(portfolioValue - session.startingCash, session.startingCash)
+                val difference = result - benchmark
+                add("같은 게임 기간의 코스피와 비교하면 ${difference.abs().setScale(2, RoundingMode.HALF_UP)}%p ${if (difference >= BigDecimal.ZERO) "높은" else "낮은"} 수익률이에요. 시장의 흐름과 내 선택의 영향을 함께 돌아보세요.")
+            }
             if (holdings.any { it.currentPrice == null }) add("일부 과거 시세가 없어 평가가 불완전합니다. 이 턴의 수익률은 확정 결과로 해석하지 마세요.")
-            if (portfolioValue != null && portfolioValue > BigDecimal.ZERO && holdings.any { it.value != null && it.value.abs() > portfolioValue.abs() * BigDecimal("0.4") }) add("단일 자산이 평가금액의 40%를 넘습니다. 집중 투자 영향을 복기하세요.")
-            if (cash > session.startingCash * BigDecimal("0.5")) add("현금 비중이 높습니다. 변동성 대응과 투자 기회를 함께 복기하세요.")
+            if (portfolioValue != null && portfolioValue > BigDecimal.ZERO && holdings.any { it.value != null && it.value.abs() > portfolioValue.abs() * BigDecimal("0.4") }) add("한 자산에 투자한 비중이 조금 높아요. 가격이 움직일 때 전체 자산이 얼마나 영향을 받았는지 살펴보세요.")
+            if (cash > session.startingCash * BigDecimal("0.5")) add("현금을 여유 있게 남겨두었어요. 기다린 선택이 이번 결과에 어떤 영향을 줬는지 돌아볼까요?")
             if (holdings.any { it.quantity < BigDecimal.ZERO }) add("공매도 포지션은 가격 상승 때 손실이 확대될 수 있습니다.")
+            add(if (session.simulationSeed != null) "가격·뉴스·픽은 모두 게임용 가상 자료예요. 실제 기업 소식이나 실제 AI 투자 추천은 아니에요." else "기존 과거 자료 게임 기록이에요. 새 게임은 가상 시뮬레이션으로 시작해요.")
         }
 
         val contributions = if (session.currentTurnIndex == 0) emptyList() else {

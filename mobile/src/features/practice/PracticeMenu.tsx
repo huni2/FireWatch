@@ -21,7 +21,7 @@ export function PracticeMenu({ lobby, busy, canPublish, canReplay, canEnd, onRul
     { title: '주간 순위', label: '순위', icon: 'rankings' as const, description: '이번 주 순위와 지난 주 우승자', action: onRanking, disabled: false },
     { title: '게임 규칙', label: '규칙', icon: 'rules' as const, description: '가상 가격·거래·턴의 작동 방식', action: onRules, disabled: false },
     ...(!lobby ? [
-      { title: '이 턴 기록 등록', label: '등록', icon: 'publish' as const, description: '동의한 기록만 닉네임으로 공개', action: onPublish, disabled: !canPublish },
+      { title: '완주 기록 등록', label: '등록', icon: 'publish' as const, description: '동의한 기록만 닉네임으로 공개', action: onPublish, disabled: !canPublish },
       { title: '지난 턴 복기', label: '복기', icon: 'replay' as const, description: '내 거래와 가격 변화 다시보기', action: onReplay, disabled: !canReplay },
       { title: '게임 종료', label: '종료', icon: 'exit' as const, description: '확인 후 현재 기록으로 마무리', action: onEnd, disabled: !canEnd },
     ] : []),
