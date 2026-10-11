@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "sourceBytes": 890563,
+  "encryptedBytes": 890971,
+  "decryptSha256Matches": true,
+  "sourceUnchanged": true,
+  "identityUnchanged": true,
+  "ciphertextUnchanged": true,
+  "plaintextOutputFiles": 0,
+  "databaseConnections": 0,
+  "uploads": 0,
+  "originalRemoved": false,
+  "originalEfsEncrypted": false,
+  "offPcKeyVerified": false
+}
