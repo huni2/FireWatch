@@ -31,3 +31,7 @@ PR#69 source943dab5 생성. 소스CI38068336411 attempt1은 AccountSessionIntegr
 PR#69 source943dab5: 소스38068336411/PR38068339731 attempt2 전체success(H2/PostgreSQL/복원/웹/모바일). 최초20초 timeout 뒤 실패 작업1회 재검증으로 성공했으며 원인 미확정. 로컬9검사도 성공. 동일 코드 CI를 반복하지 않고 결과 문서 커밋에 skip ci/skip render 적용. 머지/웹 배포는 아래 결과에 기록한다.
 
 2026-10-11 PR#69 main4e05f2c 머지·Cloudflare8c39fab3(https://8c39fab3.firewatch-eqp.pages.dev) 배포. 운영 주소1366/390px에서 가상 API로 검색 라벨 클릭 초점/label 밖 재시도 버튼·실패 재시도/빈 결과/늦은 응답 삭제/방향키 선택 성공·넘침0·운영 쓰기0. 최초 npx 배포는 출력 지연 중 종료 시 업로드 완료 로그가 확인됐지만 배포 완료는 미확인; 기존 Wrangler 직접 실행의 최종 deployment complete 및 운영 회귀로 확인했다. 실제 관찰/스크린리더 미확인으로 WEB-38/Issue62 유지. 새 과제/APK0.
+
+2026-10-11 WEB-38 실제 브라우저 확대 검증 착수: 설치된 Playwright bundled Chromium의 별도 새 프로필/검사 전용 확장에서 chrome.tabs.setZoom/getZoom을 사용한다. CSS 확대·기기 배율 에뮬레이션을 쓰지 않으며 native zoom2/실제 CSS viewport 변화 증거를 남긴다. 운영 API는 가상 응답/변경 차단, 실제 사용자 프로필/저장 기록 접근0. 기업 탐색/등록/계정/점검 결과·키보드/취소 흐름을 확인하며 첫 이용자 관찰/스크린리더/Android를 완료로 대신하지 않는다. 기존 Issue62·새 과제/APK0.
+
+2026-10-11 WEB-38 브라우저 native 확대: bundled Chromium151의 격리 프로필에서 chrome.tabs.getZoom=2, CSS viewport1366→683/dpr1→2 확인. 가상 API로 빈 홈·등록 폼·점검 결과·기업 탐색·계정5화면의 문서 가로 넘침0. 등록 선택/수량 초점/검증 오류/저장 footer 접근 성공. 취소 확인 뒤 BODY로 초점이 빠지는 문제를 발견해 열었던 등록/수정 버튼을 기억하고 모달 종료 뒤 복귀하도록 수정, 동일 native200% 회귀 통과. 실제 원격 저장/사용자 계정 변경0·실제 사람 관찰/스크린리더 미확인. fullPage 캡처가 native 확대에서 일부 영역만 캡처하므로 CDP 실제 프레임 캡처로 별도 시각 확인. web build/lint 성공(기존 푸시 effect 경고1). CI/머지/배포는 아직 대기.

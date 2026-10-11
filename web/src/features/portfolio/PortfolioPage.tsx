@@ -27,6 +27,7 @@ export function PortfolioPage() {
   const [sampleOpen, setSampleOpen] = useState(false)
   const operation = useRef(false)
   const savedFocus = useRef(false)
+  const holdingOpener = useRef<HTMLElement | null>(null)
   const findingRef = useRef<HTMLElement>(null)
   const headingRef = useRef<HTMLElement>(null)
   const analysisRef = useRef<HTMLElement>(null)
@@ -50,7 +51,9 @@ export function PortfolioPage() {
     } catch (e) { setError(e instanceof Error ? e.message : '기록을 저장하지 못했어요.'); return false }
     finally { operation.current = false; setSaving(false) }
   }
-  function openHolding(index: number | null = null) { if (!draft || saving) return; setError(null); setDraft(draft); setSelected({ initial: index == null ? emptyHolding() : draft.holdings[index], index }) }
+  function returnToHoldingOpener() { requestAnimationFrame(() => { if (holdingOpener.current?.isConnected) holdingOpener.current.focus() }) }
+  function closeHolding() { setSelected(null); setDraft(null); returnToHoldingOpener() }
+  function openHolding(index: number | null = null) { if (!draft || saving) return; holdingOpener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; setError(null); setDraft(draft); setSelected({ initial: index == null ? emptyHolding() : draft.holdings[index], index }) }
   function deleteHolding(index: number) {
     if (!draft || saving) return
     modal.confirm({ title: `${draft.holdings[index].name} 기록을 삭제할까요?`, content: '보유 기록만 삭제하며 실제 주식은 매도하지 않아요.', okText: '기록 삭제', cancelText: '유지하기', okButtonProps: { danger: true }, onOk: async () => { if (!await persist({ ...draft, holdings: draft.holdings.filter((_, i) => i !== index) })) throw new Error('삭제 실패') } })
@@ -96,7 +99,7 @@ export function PortfolioPage() {
     <InvestmentNotice />
     {!hasAssets && <Link to="/candidates">분야별 기업 살펴보기 →</Link>}
     <Modal title="이렇게 점검할 수 있어요" open={sampleOpen} onCancel={() => setSampleOpen(false)} footer={<Button type="primary" onClick={() => { setSampleOpen(false); openHolding() }}>내 첫 자산 등록하기</Button>}><Tag>가상 예시 · 개인 기록에 저장되지 않음</Tag><p>등록한 두 ETF가 같은 지수를 따르는지, 특정 회사에 비중이 몰렸는지 확인해요.</p><p>ETF 안의 실제 기업별 비중은 별도로 확인해야 해요.</p></Modal>
-    {selected && <HoldingDrawer initial={selected.initial} others={draft.holdings.filter((_, index) => index !== selected.index)} editing={selected.index != null} saving={saving} error={error} close={() => { setSelected(null); setDraft(null) }} save={holding => { const holdings = selected.index == null ? [...draft.holdings, holding] : draft.holdings.map((h, i) => i === selected.index ? holding : h); void persist({ ...draft, holdings }) }} />}
+    {selected && <HoldingDrawer initial={selected.initial} others={draft.holdings.filter((_, index) => index !== selected.index)} editing={selected.index != null} saving={saving} error={error} close={closeHolding} returnFocus={returnToHoldingOpener} save={holding => { const holdings = selected.index == null ? [...draft.holdings, holding] : draft.holdings.map((h, i) => i === selected.index ? holding : h); void persist({ ...draft, holdings }) }} />}
     <Drawer title="현금·투자 계획" open={planOpen} onClose={closePlan} width="min(480px, 100vw)" maskClosable={!saving} keyboard={!saving} closable={!saving} footer={<Button block type="primary" size="large" loading={saving} onClick={() => void persist(draft)}>계획 저장하기</Button>}>
       <div className="holding-advanced"><label>보유 현금 · 원<InputNumber aria-label="보유 현금 · 원" style={{ width: '100%' }} disabled={saving} min={0} max={1e12} value={draft.cash} onChange={v => setDraft({ ...draft, cash: v ?? 0 })} /></label><label>투자 목표<Input aria-label="투자 목표" disabled={saving} value={draft.goal} maxLength={120} onChange={e => setDraft({ ...draft, goal: e.target.value })} /></label><label>투자 기간 · 개월<InputNumber aria-label="투자 기간 · 개월" style={{ width: '100%' }} disabled={saving} min={1} max={600} value={draft.horizonMonths} onChange={v => setDraft({ ...draft, horizonMonths: v ?? 1 })} /></label><label>투자 성향<Select aria-label="투자 성향" disabled={saving} value={draft.riskLevel} options={Object.entries(riskLabels).map(([value, label]) => ({ value, label }))} onChange={riskLevel => setDraft({ ...draft, riskLevel })} /></label><label>계좌 종류<Select aria-label="계좌 종류" disabled={saving} value={draft.accountType} options={Object.entries(accountLabels).map(([value, label]) => ({ value, label }))} onChange={accountType => setDraft({ ...draft, accountType })} /></label><label>월 추가 투자금 · 원<InputNumber aria-label="월 추가 투자금 · 원" style={{ width: '100%' }} disabled={saving} min={0} max={1e9} value={draft.monthlyContribution} onChange={v => setDraft({ ...draft, monthlyContribution: v ?? 0 })} /></label>{error && <Alert type="error" message={error} description="입력한 내용은 유지돼요." />}</div>
       <details style={{ marginTop: 24 }}><summary>내 조건으로 만드는 구성 초안</summary><p>기간·성향을 반영한 규칙 기반 예시예요. 실제 상품과 계좌 조건은 별도로 확인해주세요.</p>{Object.entries(portfolio?.targetAllocation ?? {}).map(([key, value]) => <p key={key}>{assetLabels[key]} {value}% · 월 배분 예시 {portfolio?.contributionPlan[key]?.toLocaleString()}원</p>)}<small>저장된 투자 조건 기준이에요. 변경한 조건은 저장 후 반영돼요.</small></details>

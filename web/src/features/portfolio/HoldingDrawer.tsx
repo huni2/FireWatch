@@ -7,7 +7,7 @@ import { assetLabels } from '../../../../shared/investing'
 import { holdingError, selectedHolding } from '../../../../shared/holding-registration'
 import { StockSearchInput } from '../stocks/components/StockSearchInput'
 
-export function HoldingDrawer({ initial, others, editing, saving, error, close, save }: { initial: Holding; others: Holding[]; editing: boolean; saving: boolean; error: string | null; close: () => void; save: (value: Holding) => void }) {
+export function HoldingDrawer({ initial, others, editing, saving, error, close, returnFocus, save }: { initial: Holding; others: Holding[]; editing: boolean; saving: boolean; error: string | null; close: () => void; returnFocus: () => void; save: (value: Holding) => void }) {
   const [holding, setHolding] = useState(initial)
   const [search, setSearch] = useState(!initial.symbol)
   const [costOpen, setCostOpen] = useState(initial.averageCost != null)
@@ -18,7 +18,10 @@ export function HoldingDrawer({ initial, others, editing, saving, error, close, 
   const { modal } = App.useApp()
   function cancel() {
     if (saving) return
-    if (JSON.stringify(holding) !== JSON.stringify(initial)) modal.confirm({ title: '입력한 내용을 취소할까요?', okText: '입력 취소', cancelText: '계속 입력', onOk: close })
+    if (JSON.stringify(holding) !== JSON.stringify(initial)) {
+      let discarded = false
+      modal.confirm({ title: '입력한 내용을 취소할까요?', okText: '입력 취소', cancelText: '계속 입력', onOk: () => { discarded = true; close() }, afterClose: () => { if (discarded) returnFocus() } })
+    }
     else close()
   }
   function change(patch: Partial<Holding>) { setHolding(current => ({ ...current, ...patch })); setValidation(null) }

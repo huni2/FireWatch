@@ -1,0 +1,61 @@
+{
+  "passed": true,
+  "browser": "151.0.7922.34",
+  "before": {
+    "width": 1366,
+    "dpr": 1
+  },
+  "reports": [
+    {
+      "name": "home-empty",
+      "nativeZoom": 2,
+      "width": 683,
+      "dpr": 2,
+      "scrollWidth": 683
+    },
+    {
+      "name": "holding-drawer",
+      "nativeZoom": 2,
+      "width": 683,
+      "dpr": 2,
+      "scrollWidth": 683
+    },
+    {
+      "name": "portfolio-finding",
+      "nativeZoom": 2,
+      "width": 683,
+      "dpr": 2,
+      "scrollWidth": 683
+    },
+    {
+      "name": "discovery",
+      "nativeZoom": 2,
+      "width": 683,
+      "dpr": 2,
+      "scrollWidth": 683
+    },
+    {
+      "name": "account",
+      "nativeZoom": 2,
+      "width": 683,
+      "dpr": 2,
+      "scrollWidth": 683
+    }
+  ],
+  "keyboard": {
+    "open": true,
+    "searchSelect": true,
+    "quantityFocus": true,
+    "validation": true,
+    "dirtyCancel": true,
+    "focusReturn": true,
+    "cleanClose": true,
+    "continueEditing": true,
+    "editCancel": true
+  },
+  "pageErrors": [],
+  "productionWrites": 0,
+  "fixtures": true,
+  "humanObservation": false,
+  "screenReader": false
+}
