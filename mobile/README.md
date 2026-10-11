@@ -2,6 +2,10 @@
 
 Expo + React Native + Expo Router 기반 앱. 웹과 동일한 백엔드를 사용하며 개인 포트폴리오, 시장 자료, 별도의 가상 게임, 공지·문의 화면을 제공한다.
 
+## 설치용 APK
+
+최신 테스트 버전 **1.0.1 / versionCode 6 (2026-10-11)**: [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.1-android-preview/FireWatch-1.0.1-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.1-android-preview). Expo Go 없이 Android에 설치한다. Play 게시와 실기기 로그인·푸시 확인은 별도다.
+
 ## 개발
 
 ~~~bash
@@ -22,7 +26,7 @@ EAS 프로젝트는 이미 app.json에 연결되어 있다. eas.json은 운영 A
 
 ### 웹·서버 배포와 별도 실행
 
-2026-10-09 사용자 결정에 따라 APK 빌드·배포는 과제와 디자인 후속조치를 모두 마친 뒤 진행한다. 그전에는 EAS 추가 빌드를 요청하지 않고 코드·화면·로컬 번들 검증만 수행한다. 이미 접수한 versionCode5는 재요청하지 않는다.
+2026-10-11 사용자 요청으로 최신 설치본 1.0.1/versionCode6의 preview 빌드를 한 번 실행한다. 자동 빌드는 계속 비활성 상태이며, 이후에도 설치본 요청이 있을 때만 실행한다. 이전 versionCode5의 완료 상태는 확인했으며 재요청하지 않는다.
 
 `build:apk`는 사용자가 모바일 설치본을 요청할 때만 수동 실행한다. 웹/서버 배포, Git push, CI 검증에서는 실행하지 않는다. 실행 전 무료 잔여량을 확인하고 모바일 변경을 모아 한 번만 빌드한다. 명령은 APK 생성 요청이며 Play 게시를 실행하지 않는다.
 
