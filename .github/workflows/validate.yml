@@ -81,6 +81,9 @@ jobs:
       - name: Isolated game verifier safety tests
         if: matrix.client == 'web'
         run: node --test ../scripts/verify-game-live.test.cjs
+      - name: Investment connection and news date contracts
+        if: matrix.client == 'web'
+        run: node --test ../scripts/design-data-contract.test.cjs
       - name: Encrypted backup safety tests
         if: matrix.client == 'web'
         run: |

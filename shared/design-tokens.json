@@ -4,5 +4,5 @@
   "light": { "canvas": "#F4F5F7", "surface": "#FFFFFF", "elevated": "#FFFFFF", "text": "#17202E", "muted": "#596579", "border": "#DDE2EA", "accent": "#B94D0B" },
   "radius": 16,
   "spacing": { "screen": 20, "card": 20, "stack": 16 },
-  "typography": { "title": 28, "section": 20, "body": 14, "caption": 12, "eyebrow": 10 }
+  "typography": { "title": 28, "section": 20, "body": 15, "caption": 12, "eyebrow": 10 }
 }

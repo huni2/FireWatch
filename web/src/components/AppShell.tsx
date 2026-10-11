@@ -82,7 +82,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
       <a className="skip-content" href="#main-content">본문으로 건너뛰기</a><Header className="site-header">
         <div className="site-brand-row">
         <Link to="/" aria-label="FireWatch 메인 페이지로 이동" style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, flexShrink: 0, marginInlineEnd: 16 }}>
-          <img src="/favicon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+          <img src="/brand-mark.svg" alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
           <span style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.4, color: 'var(--ant-color-text)' }}>
             FireWatch
           </span>
@@ -121,7 +121,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
       <Footer className="site-footer">
         <div className="site-footer-inner">
           <div className="site-footer-brand">
-            <Link to="/" aria-label="푸터 FireWatch 메인 페이지로 이동"><img src="/favicon.png" alt="" width={24} height={24} /><strong>FireWatch</strong></Link>
+            <Link to="/" aria-label="푸터 FireWatch 메인 페이지로 이동"><img src="/brand-mark.svg" alt="" width={24} height={24} /><strong>FireWatch</strong></Link>
             <p>시장을 읽고, 내 투자 계획을 점검하세요.</p>
           </div>
           <nav aria-label="서비스 안내" className="site-footer-links">

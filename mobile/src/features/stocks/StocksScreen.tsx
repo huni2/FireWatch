@@ -61,7 +61,7 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
 
   return (
     <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">
-      <ScreenIntro eyebrow="MY WATCHLIST" title="관심 종목" description="지켜볼 회사를 모으고 가격 흐름을 비교하세요." />
+      <ScreenIntro eyebrow="기업·상품" title="관심 종목" description="지켜볼 회사를 모으고 가격 흐름을 비교하세요." />
       <View className="gap-3">
         <Text className="text-sm font-semibold text-muted">관심 종목</Text>
 
