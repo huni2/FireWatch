@@ -3,7 +3,7 @@ import tokens from '../../../../shared/design-tokens.json'
 import { router, Stack } from 'expo-router'
 import * as Notifications from 'expo-notifications'
 import { useEffect, useRef, useState } from 'react'
-import { Linking, Pressable, ScrollView, Text, View } from 'react-native'
+import { Pressable, ScrollView, Text, View } from 'react-native'
 import { PortfolioScreen } from '../portfolio/PortfolioScreen'
 import { CandidatesScreen } from '../candidates/CandidatesScreen'
 import { PracticeScreen } from '../practice/PracticeScreen'
@@ -81,7 +81,7 @@ export function HomeScreen() {
           headerTintColor: tokens.light.text,
           headerRight: () => (
             <View style={{ flexDirection: 'row', gap: 6 }}>
-              <Pressable accessibilityRole="button" accessibilityLabel="도움말 열기" accessibilityHint="브라우저에서 서비스 이용 방법을 엽니다." onPress={() => void Linking.openURL('https://firewatch-eqp.pages.dev/guide')} style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="help" size={22} color={tokens.light.muted} /></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="도움말 열기" accessibilityHint="앱 안에서 서비스 이용 방법을 엽니다." onPress={() => router.push('/guide')} style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="help" size={22} color={tokens.light.muted} /></Pressable>
               <Pressable accessibilityRole="button" accessibilityLabel="계정·설정 열기" onPress={() => router.push('/settings')} style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="settings" size={22} /></Pressable>
             </View>
           ),

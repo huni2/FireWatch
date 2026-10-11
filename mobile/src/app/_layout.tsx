@@ -33,6 +33,9 @@ function AppContent() {
           <Stack.Screen name="index" options={{ title: 'FireWatch' }} />
           <Stack.Screen name="settings" options={{ title: '설정' }} />
           <Stack.Screen name="community" options={{ title: '공지·의견 보내기' }} />
+          <Stack.Screen name="privacy" options={{ title: '개인정보처리방침' }} />
+          <Stack.Screen name="guide" options={{ title: '도움말' }} />
+          <Stack.Screen name="investment-info" options={{ title: '투자 정보 이용안내' }} />
         </Stack>
       </BottomSheetModalProvider>
       <Toast config={toastConfig} />
