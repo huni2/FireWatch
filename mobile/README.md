@@ -4,7 +4,7 @@ Expo + React Native + Expo Router 기반 앱. 웹과 동일한 백엔드를 사�
 
 ## 설치용 APK
 
-최신 테스트 버전 **1.0.1 / versionCode 6 (2026-10-11)**: [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.1-android-preview/FireWatch-1.0.1-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.1-android-preview). Expo Go 없이 Android에 설치한다. Play 게시와 실기기 로그인·푸시 확인은 별도다.
+최신 테스트 버전 **1.0.2 / versionCode 7 (2026-10-12)**: [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.2-android-preview/FireWatch-1.0.2-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.2-android-preview). 동의 후 차트 의존성 누락 수정·앱 내부 안내·새 아이콘을 포함한다. 로컬 Gradle로 빌드했으며 EAS 클라우드 횟수는 사용하지 않았다. 기존 설치본과 서명이 같고 Expo Go 없이 설치한다. 실기기 시작·재실행·로그인·푸시 확인과 Play 게시는 별도다.
 
 ## 개발
 
@@ -25,6 +25,10 @@ npm run build:apk
 EAS 프로젝트는 이미 app.json에 연결되어 있다. eas.json은 운영 API·Android 공개 OAuth ID를 공통 설정으로 전달한다. preview는 APK, production은 AAB다. 두 Android 프로필의 post-install 검사는 누락된 Firebase 파일·잘못된 API/OAuth/패키지 설정을 차단한다.
 
 ### 웹·서버 배포와 별도 실행
+
+2026-10-12 사용자의 수정 APK 재요청으로 이번 빌드 보류를 해제하고, 소스 b600f97의 1.0.2/versionCode7을 로컬에서 생성·서명·검증해 GitHub에 공개했다. 자동 빌드는 계속 비활성이다. 아래 1.0.1 빌드·보류 문단은 당시 이력이며 다음 설치본은 다시 사용자 요청이 있어야 만든다.
+
+로컬 Android 빌드는 Expo를 제거하지 않고 `npx expo prebuild --platform android --no-install`로 생성한 네이티브 프로젝트에서 Gradle `:app:assembleRelease`를 실행한다. 생성된 프로젝트는 기본 debug 서명이므로 배포 전 기존 release 키로 서명하고 이전 APK와 인증서를 비교해야 한다. SDK·NDK·CMake·Gradle 첫 준비는 오래 걸릴 수 있다. 이번 기본 JVM 2GiB/메타스페이스512MiB 경고도 기록했으며 다음 빌드 전에 PC 메모리에 맞춰 조정한다. 키·비밀번호·google-services.json·생성 android 폴더는 커밋하지 않는다.
 
 2026-10-11 사용자 요청으로 최신 설치본 1.0.1/versionCode6의 preview 빌드를 한 번 실행한다. 자동 빌드는 계속 비활성 상태이며, 이후에도 설치본 요청이 있을 때만 실행한다. 이전 versionCode5의 완료 상태는 확인했으며 재요청하지 않는다.
 

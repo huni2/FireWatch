@@ -10,11 +10,11 @@
 
 ## Android 설치
 
-**최신 테스트 버전: 1.0.1 · Android 빌드 6 · 2026-10-11**
+**최신 테스트 버전: 1.0.2 · Android 빌드 7 · 2026-10-12**
 
-현재 이 설치본에서 ‘동의하고 시작하기’ 이후 반복 종료 제보를 조사 중입니다. 시작 화면·앱 이미지·오류 처리 후속은 소스에 반영 중이며, 사용자 요청 전까지 APK를 재빌드하지 않습니다. 설치본의 정상 시작 검증이 끝난 상태는 아닙니다.
+동의 후 홈 차트의 필수 패키지 누락을 수정하고, 앱 내부 개인정보·도움말 화면과 새 아이콘·실행 로고를 포함했습니다. PC에서 로컬로 빌드해 EAS 클라우드 빌드 횟수를 사용하지 않았습니다. 기존 설치본과 서명 일치를 확인했으며, 실제 휴대폰의 정상 진입·재실행 확인은 남아 있습니다.
 
-[**APK 다운로드**](https://github.com/huni2/FireWatch/releases/download/v1.0.1-android-preview/FireWatch-1.0.1-android.apk) · [변경 내용·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.1-android-preview)
+[**APK 다운로드**](https://github.com/huni2/FireWatch/releases/download/v1.0.2-android-preview/FireWatch-1.0.2-android.apk) · [변경 내용·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.2-android-preview)
 
 1. Android 휴대폰에서 APK를 다운로드하고 파일을 엽니다.
 2. 설치가 차단되면 다운로드에 사용한 브라우저의 ‘이 출처의 앱 설치 허용’을 켭니다.
@@ -24,7 +24,7 @@ Play 스토어 출시 전 테스트용 설치본입니다. 최신 자산 요약�
 
 ## 현재 상태
 
-2026-10-11 기준. 웹 UI 후속조치 `11dc337`까지 포함한 Android 1.0.1 설치본 소스는 `bcbf354`입니다.
+2026-10-12 기준. 앱 내부 안내와 시작 오류·브랜드 후속조치까지 포함한 Android 1.0.2 설치본 소스는 `b600f97`입니다.
 
 2026-10-09 후속으로 [BE-40 PR](https://github.com/huni2/FireWatch/pull/30)에서 KIND 공식 한국 상장법인2,651개의 회사명·업종 검색을 추가했습니다. 기존 편집 목록과 시세는 보존하며 가격을 생성하지 않습니다. [출처·범위·갱신 문서](docs/product/krx-company-directory/data-source.md)를 참고하세요. 서버·PostgreSQL·복원·웹/앱 CI 통과 후 웹·Render 배포를 확인했습니다. 공개 API에서 총2,669상품·새 기업의 한국어 검색·기존 분류·ETF·페이지 경계를 검증했습니다.
 
@@ -111,7 +111,7 @@ OpenSearch는 비용과 운영 부담으로 보류했습니다. 종목 검색은
 
 서버가 저장 기록과 거래 장부의 기준입니다. 웹은 기능별 훅과 로컬 상태로 조회·편집·처리 중·실패를 관리하며, 모바일은 같은 API 계약을 사용합니다. 전역 서버 캐시 라이브러리는 아직 도입하지 않았습니다. 검색 결과와 조건의 일치, 요청 경쟁, 중복 조회는 계속 점검할 항목입니다.
 
-[CI 워크플로](.github/workflows/validate.yml)는 백엔드 테스트, PostgreSQL 동시성·카탈로그/합성3,000건·문의·게임 순위 통합 검사 및 별도 DB 백업 복원/행 서명/시퀀스 대조, 웹 lint/build, 모바일 lint/타입 검사와 출시 설정 검사 테스트를 수행합니다. Android 1.0.1 소스의 [PR #82 CI](https://github.com/huni2/FireWatch/actions/runs/38138043902)는 성공했습니다. 이 결과가 실제 기기 푸시 수신이나 현재 외부 수집 성공을 증명하지는 않습니다.
+[CI 워크플로](.github/workflows/validate.yml)는 백엔드 테스트, PostgreSQL 동시성·카탈로그/합성3,000건·문의·게임 순위 통합 검사 및 별도 DB 백업 복원/행 서명/시퀀스 대조, 웹 lint/build, 모바일 lint/타입 검사와 출시 설정·네이티브 차트 의존성 검사를 수행합니다. Android 1.0.2 소스의 [CI](https://github.com/huni2/FireWatch/actions/runs/38149392171)는 성공했습니다. 이 결과가 실제 기기 푸시 수신이나 현재 외부 수집 성공을 증명하지는 않습니다.
 
 ## 로컬 실행
 
