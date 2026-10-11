@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "base": "https://firewatch-eqp.pages.dev",
+  "fixtures": true,
+  "productionWrites": 0,
+  "results": [
+    {
+      "width": 1366,
+      "empty": true,
+      "etfOnly": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "empty": true,
+      "etfOnly": true,
+      "overflow": false
+    }
+  ]
+}
