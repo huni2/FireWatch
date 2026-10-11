@@ -10,11 +10,12 @@ export interface RankingBoard {
   entries: { rank: number; entry: RankingEntry }[]
 }
 export interface RankingMine { nickname: string | null; entries: RankingEntry[]; total: number; page: number }
-export interface RankingGame { sessionId: number; turnIndex: number; totalTurns: number; status: 'ACTIVE' | 'ENDED'; simulation: boolean; returnPercent: number | null }
+export interface RankingGame { sessionId: number; turnIndex: number; totalTurns: number; status: 'ACTIVE' | 'ENDED'; simulation: boolean; returnPercent: number | null; simulationVersion?: number | null }
+export const canPublishGame = (g: RankingGame | null) => !!g && g.simulation && (g.simulationVersion ?? 0) >= 3 && g.status === 'ENDED' && g.turnIndex === g.totalTurns - 1 && g.returnPercent != null && Number.isFinite(g.returnPercent)
 export const rankingDifficulties = { EASY: '여유롭게', NORMAL: '균형 있게', HARD: '신중하게' }
 export const rankingScore = (score: number) => `${score > 0 ? '+' : ''}${score.toFixed(2)}%`
 export const rankingLeague = (e: RankingEntry) => `${rankingDifficulties[e.difficulty]} · 공매도 ${e.shortSelling ? '허용' : '없음'}`
-export const rankingGameBoard = (g: RankingGame) => g.status === 'ENDED' && g.turnIndex === g.totalTurns - 1 ? '24턴 완주' : `${g.turnIndex + 1}턴 기록`
+export const rankingGameBoard = (g: RankingGame) => g.status === 'ENDED' && g.turnIndex === g.totalTurns - 1 ? '24주 완주' : '아직 진행 중인 게임'
 export function rankingWeek(offset = 0, now = new Date()) {
   const kst = new Date(now.getTime() + 9 * 3600_000)
   kst.setUTCDate(kst.getUTCDate() - (kst.getUTCDay() + 6) % 7 + offset * 7)

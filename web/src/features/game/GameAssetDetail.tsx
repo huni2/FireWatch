@@ -1,3 +1,5 @@
+// 자산의 주간 가격과 체결 기록을 미래 데이터 없이 표시한다.
+import { gamePeriod, isWeeklyGame } from '../../../../shared/game-week'
 import { FirewatchIcon } from '../../components/FirewatchIcon'
 import { Alert, Button, Empty, Modal, Space, Skeleton } from 'antd'
 import { useGameAssetHistory } from './useGameAssetHistory'
@@ -7,6 +9,7 @@ import { historyChange, positionStats } from '../../../../shared/game-turn'
 
 export interface GameDetailTarget { instrumentType: GameInstrumentType; symbol: string | null; name: string }
 export function GameAssetDetail({ target, turn, close, order }: { target: GameDetailTarget | null; turn: GameTurn; close: () => void; order: (target: GameDetailTarget, side: 'BUY' | 'SELL') => void }) {
+  const period = gamePeriod(turn)
   const company = turn.gameAssets?.find(a => a.symbol === target?.symbol)
   const graph = useGameAssetHistory(target && turn.simulation ? { sessionId: turn.sessionId, turnIndex: turn.turnIndex, instrumentType: target.instrumentType, symbol: target.symbol } : null)
   const history = graph.history
@@ -21,9 +24,9 @@ export function GameAssetDetail({ target, turn, close, order }: { target: GameDe
     <h2>{money(summary?.points.at(-1)?.price ?? holding?.currentPrice ?? (target?.symbol ? turn.stockPrices[target.symbol] : null))} 게임머니</h2>
     <p>직전 턴 가격 {change ? `${change.percent >= 0 ? '+' : ''}${change.percent.toFixed(2)}%` : '첫 턴 또는 이전 기록 없음'}</p>
     {holding && <p>보유 {holding.quantity}개 · 평균 진입 단가 {money(stats?.averagePrice)} · 평가손익 {money(stats?.profit)} 게임머니{stats?.returnPercent != null ? ` (${stats.returnPercent.toFixed(2)}%)` : ''}</p>}
-    <p>날짜는 무작위입니다. 그래프는 턴 순서이며 미래 턴은 표시하지 않습니다.</p>
-    {graph.loading ? <div role="status"><p>턴별 그래프를 불러오고 있어요.</p><Skeleton active paragraph={{ rows: 4 }} /></div> : graph.error ? <Alert type="warning" showIcon message="그래프를 불러오지 못했어요" description={graph.error} action={<Button onClick={graph.retry}>그래프 다시 불러오기</Button>} /> : history?.points.length ? <ResponsiveContainer width="100%" height={260}><AreaChart data={history.points.map(p => ({ turn: p.turnIndex + 1, price: p.price }))} margin={{ left: 12, right: 16 }}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="turn" allowDecimals={false} label={{ value: '턴', position: 'insideBottomRight', offset: -4 }} /><YAxis domain={['auto', 'auto']} width={75} /><Tooltip labelFormatter={value => `턴 ${value}`} formatter={value => [money(Number(value)), '가상 가격']} /><Area dataKey="price" stroke="var(--ant-color-primary)" fill="var(--ant-color-primary)" fillOpacity={0.12} dot={history.points.length === 1} isAnimationActive={false} />{trades.map(t => <ReferenceDot key={t.id} x={t.turnIndex + 1} y={t.price} r={5} fill={t.action === 'BUY' ? '#f97316' : '#2563eb'} stroke="#fff" />)}</AreaChart></ResponsiveContainer> : <Empty image={<FirewatchIcon name="stocks" size={40} />} description="이 게임의 턴별 가격 기록이 아직 제공되지 않았습니다." />}
+    <p>{isWeeklyGame(turn) ? '일주일 간격의 가격이에요. 첫 주는 시작 가격이며 진행한 주까지만 보여드려요.' : '기존 게임의 턴 순서로 보여드려요. 미래 가격은 표시하지 않아요.'}</p>
+    {graph.loading ? <div role="status"><p>턴별 그래프를 불러오고 있어요.</p><Skeleton active paragraph={{ rows: 4 }} /></div> : graph.error ? <Alert type="warning" showIcon message="그래프를 불러오지 못했어요" description={graph.error} action={<Button onClick={graph.retry}>그래프 다시 불러오기</Button>} /> : history?.points.length ? <ResponsiveContainer width="100%" height={260}><AreaChart data={history.points.map(p => ({ turn: p.turnIndex + 1, price: p.price }))} margin={{ left: 12, right: 16 }}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="turn" allowDecimals={false} label={{ value: period, position: 'insideBottomRight', offset: -4 }} /><YAxis domain={['auto', 'auto']} width={75} /><Tooltip labelFormatter={value => `${period} ${value}`} formatter={value => [money(Number(value)), '가상 가격']} /><Area dataKey="price" stroke="var(--ant-color-primary)" fill="var(--ant-color-primary)" fillOpacity={0.12} dot={history.points.length === 1} isAnimationActive={false} />{trades.map(t => <ReferenceDot key={t.id} x={t.turnIndex + 1} y={t.price} r={5} fill={t.action === 'BUY' ? '#f97316' : '#2563eb'} stroke="#fff" />)}</AreaChart></ResponsiveContainer> : <Empty image={<FirewatchIcon name="stocks" size={40} />} description="이 게임의 턴별 가격 기록이 아직 제공되지 않았습니다." />}
     <p>주황 표시: 매수 · 파랑 표시: 매도. 평가손익은 현재 보유분의 미실현 손익이며 확정 손익과 다릅니다.</p>
-    <h3>이 자산의 체결 기록</h3>{trades.length ? trades.map(t => <p key={t.id}>턴 {t.turnIndex + 1} · {t.action === 'BUY' ? '매수' : '매도'} {t.quantity}개 · 단가 {money(t.price)} · 총액 {money(t.total)}</p>) : <p>아직 거래하지 않은 자산입니다.</p>}
+    <h3>이 자산의 체결 기록</h3>{trades.length ? trades.map(t => <p key={t.id}>{period} {t.turnIndex + 1} · {t.action === 'BUY' ? '매수' : '매도'} {t.quantity}개 · 단가 {money(t.price)} · 총액 {money(t.total)}</p>) : <p>아직 거래하지 않은 자산입니다.</p>}
   </Modal>
 }

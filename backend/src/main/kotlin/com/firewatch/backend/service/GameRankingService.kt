@@ -69,9 +69,10 @@ class GameRankingService(private val jdbc: JdbcTemplate, private val games: Game
         val profile = jdbc.query("SELECT nickname FROM game_ranking_profiles WHERE user_id=?", { r, _ -> r.getString(1) }, owner).firstOrNull()
         if (profile != null && nickname != profile) bad("이미 등록한 게임 닉네임 $profile 을 사용해주세요.")
         val snapshot = games.getRankingSnapshot(device, input.sessionId)
-        if (!snapshot.simulation || snapshot.turnIndex < 1 || snapshot.startingCash <= BigDecimal.ZERO || snapshot.portfolioValue == null) bad("평가가 확정된 가상 게임의 2턴 이후 기록만 등록할 수 있습니다.")
+        if (!snapshot.simulation || snapshot.status != GameSessionStatus.ENDED || snapshot.turnIndex != snapshot.totalTurns - 1 || snapshot.totalTurns != 24 || snapshot.portfolioValue == null) bad("24주를 끝까지 진행하고 평가가 확인되면 순위에 등록할 수 있어요.")
+        if (listOf("20000000", "10000000", "5000000").none { snapshot.startingCash.compareTo(BigDecimal(it)) == 0 }) bad("게임의 시작 금액을 확인할 수 없어요. 기록을 유지한 채 운영자에게 문의해주세요.")
         if (snapshot.turnIndex != input.expectedTurnIndex) throw ConflictException("턴이 변경됐습니다. 현재 게임을 확인하고 다시 등록해주세요.")
-        val board = if (snapshot.status == GameSessionStatus.ENDED && snapshot.turnIndex == snapshot.totalTurns - 1) "FINISHED" else "PROGRESS"
+        val board = "FINISHED"
         // Retries keep the original publication week/score and cannot enter an old game again next week.
         rows("$joined WHERE e.session_id=? AND e.turn_index=? AND e.board=?", input.sessionId, snapshot.turnIndex, board).firstOrNull()?.let {
             val existingOwner = jdbc.queryForObject("SELECT user_id FROM game_ranking_entries WHERE id=?", Long::class.java, it.id)
@@ -97,7 +98,8 @@ class GameRankingService(private val jdbc: JdbcTemplate, private val games: Game
         // Each account occupies one place per league: best score, earliest submission on ties.
         val filtered = """SELECT * FROM (SELECT e.*,p.nickname,ROW_NUMBER() OVER(PARTITION BY e.user_id ORDER BY e.return_percent DESC,e.submitted_at,e.id) best
             FROM game_ranking_entries e JOIN game_ranking_profiles p ON e.user_id=p.user_id
-            WHERE e.week_start=? AND e.difficulty=? AND e.short_selling=? AND e.board=? AND e.turn_index=? AND e.visible=TRUE) s WHERE best=1"""
+            WHERE e.week_start=? AND e.difficulty=? AND e.short_selling=? AND e.board=? AND e.turn_index=? AND e.visible=TRUE
+            AND e.session_id IN (SELECT id FROM game_sessions WHERE simulation_version=${GameSimulation.CURRENT_VERSION})) s WHERE best=1"""
         val args = arrayOf<Any>(selected, difficulty, shortSelling, board, if (board == "FINISHED") 23 else turn)
         val count = jdbc.queryForObject("SELECT COUNT(*) FROM ($filtered) counted", Int::class.java, *args) ?: 0
         val entries = rows("$filtered ORDER BY return_percent DESC,submitted_at,id LIMIT 20 OFFSET ?", *args, page * 20)

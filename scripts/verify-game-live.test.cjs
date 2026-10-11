@@ -49,11 +49,11 @@ test('한 격리 게임의24턴/멱등 주문/조회 경계/종료 보존만 요
   let owner
   const transactions = []
   const requests = []
-  const companies = Array.from({ length: 26 }, (_, index) => ({ symbol: `S${index}`, name: `기업${index}`, sector: '분야', source: 'https://example.com/company', verifiedAt: '2026-10-09' }))
+  const companies = Array.from({ length: 60 }, (_, index) => ({ symbol: `S${index}`, name: `기업${index}`, sector: '분야', source: 'https://example.com/company', verifiedAt: '2026-10-09' }))
   const history = (symbol, points) => ({ instrumentType: 'STOCK', symbol, name: '기업0', points: Array.from({ length: points }, (_, i) => ({ turnIndex: i, price: 100 })) })
-  const snapshot = compact => ({ sessionId: 1, simulation: true, simulationVersion: 2, totalTurns: 24, turnIndex,
+  const snapshot = compact => ({ sessionId: 1, simulation: true, simulationVersion: 3, totalTurns: 24, turnIndex,
     status: ended ? 'ENDED' : 'ACTIVE', gameAssets: companies, stockPrices: Object.fromEntries(companies.map(company => [company.symbol, 100])),
-    marketEvents: [], assetHistories: Array.from({ length: 34 }, (_, i) => history(`S${i}`, compact ? Math.min(2, turnIndex + 1) : turnIndex + 1)),
+    marketEvents: [], assetHistories: Array.from({ length: 68 }, (_, i) => history(`S${i}`, compact ? Math.min(2, turnIndex + 1) : turnIndex + 1)),
     gamePicks: [{ symbol: 'S0', reason: '관찰 이유', risk: '위험', newsTitle: '[가상 뉴스] 시험' }], transactions: structuredClone(transactions),
     cash: 10000 - quantity * 100, portfolioValue: 10000,
     holdings: quantity ? [{ symbol: 'S0', quantity, currentPrice: 100, value: quantity * 100 }] : [] })

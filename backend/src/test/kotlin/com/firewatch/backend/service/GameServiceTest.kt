@@ -48,6 +48,31 @@ class GameServiceTest {
     }
 
     @Test
+    fun `weekly game advances 23 times ends at week24 and keeps portfolio and filtered history`() {
+        val session = virtualSession(42L)
+        val initial = service.getCurrentTurn("device-a")
+        assertEquals(60, initial.gameAssets.size)
+        service.trade("device-a", GameInstrumentType.STOCK, "005930.KS", GameTradeAction.BUY, BigDecimal("150"))
+        val mapper = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build()
+        val directory = java.io.File("build/test-fixtures").apply { mkdirs() }
+        directory.resolve("game-week-start.json").writeBytes(mapper.writeValueAsBytes(service.getCurrentTurn("device-a", 2).toResponse()))
+        for (index in 1..23) {
+            val next = service.nextTurn("device-a", index - 1, 2)
+            assertEquals(initial.turnDate.plusWeeks(index.toLong()), next.turnDate)
+            assertEquals(0, (initial.cash - BigDecimal("4860000")).compareTo(next.cash))
+            assertEquals(BigDecimal("150"), next.holdings.single().quantity)
+            assertTrue(next.portfolioValue!! > BigDecimal.ZERO)
+            assertEquals(if (index == 23) GameSessionStatus.ENDED else GameSessionStatus.ACTIVE, next.status)
+            assertTrue(next.assetHistories.all { it.points.size == 2 && it.points.last().turnIndex == index })
+            if (index == 8 || index == 22 || index == 23) directory.resolve("game-week-$index.json").writeBytes(mapper.writeValueAsBytes(next.toResponse()))
+            if (index == 23) assertTrue(next.review.any { it.contains("반도체") })
+        }
+        assertEquals(23, session.currentTurnIndex)
+        assertTrue(session.endedAt != null)
+        verify(exactly = 0) { stockService.fetchPriceHistory(any(), any()) }
+    }
+
+    @Test
     fun `미지원 규칙은 기록을 바꾸거나 가격을 현재 버전으로 대체하지 않는다`() {
         val session = virtualSession(42L, version = 999)
         every { gameSessionRepository.findByIdAndDeviceId(1L, "device-a") } returns session
@@ -70,8 +95,8 @@ class GameServiceTest {
     fun `현재 게임은 저장 규칙으로 재조회하고 같은 기업 목록을 반환한다`() {
         virtualSession(42L)
         val turn = service.getCurrentTurn("device-a")
-        assertEquals(2, turn.simulationVersion)
-        assertEquals(2, turn.toResponse().simulationVersion)
+        assertEquals(GameSimulation.CURRENT_VERSION, turn.simulationVersion)
+        assertEquals(GameSimulation.CURRENT_VERSION, turn.toResponse().simulationVersion)
         assertEquals(simulation.picks(42L, 0), turn.gamePicks)
         assertEquals(turn.stockPrices, service.getCurrentTurn("device-a").stockPrices)
     }
@@ -88,7 +113,7 @@ class GameServiceTest {
         assertEquals(1, previous.simulationVersion)
         assertEquals(42L, previous.simulationSeed)
         assertEquals(2L, current.sessionId)
-        assertEquals(26, current.gameAssets.size)
+        assertEquals(60, current.gameAssets.size)
         verify(exactly = 0) { gameTransactionRepository.save(any()) }
     }
 
@@ -115,8 +140,9 @@ class GameServiceTest {
 
     @Test
     fun `거래정지는 평가 가격을 유지하고 주문을 막으며 다음 턴 재개된다`() {
+        val simulation = GameSimulation.forVersion(2)
         val seed = (0L..1000L).first { simulation.events(it, 1).any { e -> e.code == "TRADING_HALT" } && simulation.events(it, 2).isEmpty() }
-        virtualSession(seed)
+        virtualSession(seed, version = 2)
         val symbol = simulation.events(seed, 1).single().blockedAssets.single().substringAfter(":")
         val bought = service.trade("device-a", GameInstrumentType.STOCK, symbol, GameTradeAction.BUY, BigDecimal.TEN)
         val halted = service.nextTurn("device-a", 0)
@@ -133,8 +159,9 @@ class GameServiceTest {
 
     @Test
     fun `사이드카는 지수 주문만 막고 현물과 다음 턴 진행을 허용한다`() {
+        val simulation = GameSimulation.forVersion(2)
         val seed = (0L..1000L).first { simulation.events(it, 1).any { e -> e.code == "SIDECAR" } && simulation.events(it, 2).isEmpty() }
-        virtualSession(seed)
+        virtualSession(seed, version = 2)
         service.trade("device-a", GameInstrumentType.KOSPI, null, GameTradeAction.BUY, BigDecimal.ONE)
         val paused = service.nextTurn("device-a", 0)
         assertEquals("SIDECAR", paused.marketEvents.single().code)
@@ -250,8 +277,8 @@ class GameServiceTest {
         assertEquals(0, turn.turnIndex)
         assertEquals(2030, turn.turnDate.year)
         assertTrue(turn.simulation)
-        assertEquals(2, turn.simulationVersion)
-        assertEquals(26, turn.gameAssets.size)
+        assertEquals(GameSimulation.CURRENT_VERSION, turn.simulationVersion)
+        assertEquals(60, turn.gameAssets.size)
         assertEquals(GameSessionStatus.ACTIVE, turn.status)
         assertEquals(BigDecimal("10000000.00"), turn.portfolioValue)
     }

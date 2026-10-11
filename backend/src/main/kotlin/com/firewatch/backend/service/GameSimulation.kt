@@ -23,7 +23,14 @@ private val legacyGameAssets = listOf(
     )
 
 object GameSimulation : GameSimulationRules(1, legacyGameAssets) {
-    const val CURRENT_VERSION = 2
+    const val CURRENT_VERSION = 3
+    private val weekly by lazy {
+        val root = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build()
+            .readValue(GameSimulation::class.java.getResourceAsStream("/game-universe-v3.json")!!, Array<GameUniverseDefinition>::class.java).toList()
+        require(root.size == 60 && root.map { it.symbol }.distinct().size == 60 && root.all { it.basePrice > 0 })
+        WeeklyGameSimulation(root.map { VirtualGameAsset(it.symbol, it.name, it.sector, it.basePrice) },
+            root.map { GameAssetMetadata(it.symbol, it.name, it.sector, it.aliases, it.source, it.verifiedAt) })
+    }
     private val expanded by lazy {
         val root = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build()
             .readValue(GameSimulation::class.java.getResourceAsStream("/game-universe-v2.json")!!, Array<GameUniverseDefinition>::class.java).toList()
@@ -35,6 +42,7 @@ object GameSimulation : GameSimulationRules(1, legacyGameAssets) {
     fun forVersion(version: Int): GameSimulationRules = when(version) {
         1 -> this
         2 -> expanded
+        3 -> weekly
         else -> throw com.firewatch.backend.web.ValidationException("이 게임의 규칙 버전을 지원하지 않습니다. 기록을 유지한 채 운영자에게 문의해주세요.", emptyMap())
     }
 }
@@ -86,10 +94,10 @@ open class GameSimulationRules(val version: Int, val assets: List<VirtualGameAss
     private fun isEnergy(symbol: String?) = if (version == 1) symbol == "SOLAR" else assetsBySymbol[symbol]?.sector == "배터리·에너지 저장"
     private fun random(seed: Long, turn: Int) = Random(seed xor (turn.toLong() * 7919L + 104729L))
     private fun scenario(seed: Long, turn: Int) = scenarios[random(seed, turn).nextInt(scenarios.size)]
-    fun dates(seed: Long): List<LocalDate> = (0 until 24).map { LocalDate.of(2030, 1, 1).plusDays(random(seed, it).nextInt(365).toLong()) }
+    open fun dates(seed: Long): List<LocalDate> = (0 until 24).map { LocalDate.of(2030, 1, 1).plusDays(random(seed, it).nextInt(365).toLong()) }
     // A one-turn game rule, not a reproduction of exchange regulations. Index orders pause
     // during a sidecar; an individual halt preserves that stock's last valuation price.
-    fun events(seed: Long, turn: Int): List<GameMarketEvent> {
+    open fun events(seed: Long, turn: Int): List<GameMarketEvent> {
         if (turn == 0) return emptyList()
         val roll = Random(seed xor (turn.toLong() * 31337L)).nextInt(12)
         return when (roll) {
@@ -103,7 +111,7 @@ open class GameSimulationRules(val version: Int, val assets: List<VirtualGameAss
     }
     fun blockedReason(seed: Long, turn: Int, type: GameInstrumentType, symbol: String?): String? =
         events(seed, turn).firstOrNull { (if (type == GameInstrumentType.STOCK) "STOCK:$symbol" else type.name) in it.blockedAssets }?.description
-    fun driver(seed: Long, turn: Int, type: GameInstrumentType, symbol: String?): GamePriceDriver {
+    open fun driver(seed: Long, turn: Int, type: GameInstrumentType, symbol: String?): GamePriceDriver {
         val event = scenario(seed, turn)
         val halted = type == GameInstrumentType.STOCK && blockedReason(seed, turn, type, symbol) != null
         val exposure = when (type) { GameInstrumentType.GOLD -> -.6; GameInstrumentType.USD -> -.25; GameInstrumentType.SILVER -> -.2; else -> 1.0 }
@@ -111,7 +119,7 @@ open class GameSimulationRules(val version: Int, val assets: List<VirtualGameAss
         val noise = Random(seed xor (turn.toLong() * 65537L) xor (symbol ?: type.name).hashCode().toLong()).nextDouble() * .04 - .02
         return GamePriceDriver(type, symbol, event.first, "[가상 뉴스] ${event.second}", if (halted || turn == 0) 0.0 else event.third * exposure * 100, if (halted || turn == 0) 0.0 else sector * 100, if (halted || turn == 0) 0.0 else noise * 100, halted)
     }
-    fun moveReason(seed: Long, turn: Int, type: GameInstrumentType, symbol: String?): String {
+    open fun moveReason(seed: Long, turn: Int, type: GameInstrumentType, symbol: String?): String {
         val d = driver(seed, turn, type, symbol)
         return if (d.halted) "가상 거래정지로 직전 평가 가격을 유지했습니다."
         else "${d.scenario}: 시장 ${"%.2f".format(java.util.Locale.ROOT, d.marketPercent)}%, 업종 ${"%.2f".format(java.util.Locale.ROOT, d.sectorPercent)}%, 자산별 변동 ${"%.2f".format(java.util.Locale.ROOT, d.assetPercent)}%를 반영했습니다."
@@ -120,7 +128,7 @@ open class GameSimulationRules(val version: Int, val assets: List<VirtualGameAss
         "기술주 강세" -> if (version == 1) listOf("AURA", "NEXUS") else assets.filter { isTechnology(it.symbol) }.shuffled(kotlin.random.Random(seed xor turn.toLong())).take(2).map { it.symbol }; "에너지 전환" -> if (version == 1) listOf("SOLAR", "LUMEN") else assets.filter { isEnergy(it.symbol) }.map { it.symbol }
         else -> assets.shuffled(kotlin.random.Random(seed xor turn.toLong())).take(2).map { it.symbol }
     }
-    fun picks(seed: Long, turn: Int): List<GamePick> = pickSymbols(seed, turn).map { symbol ->
+    open fun picks(seed: Long, turn: Int): List<GamePick> = pickSymbols(seed, turn).map { symbol ->
         val asset = assets.first { it.symbol == symbol }; val event = scenario(seed, turn)
         val reason = when {
             event.first == "기술주 강세" -> if (version == 1) "가상 대형 계약 뉴스의 당사자이며 이번 시나리오의 업종 영향을 받는 관찰 후보입니다." else "게임 속 기술 업종 수요 시나리오의 영향을 받는 비교 후보입니다. 실제 기업 소식이나 상승 예측이 아닙니다."
@@ -139,6 +147,10 @@ open class GameSimulationRules(val version: Int, val assets: List<VirtualGameAss
 
     private fun roundedPrice(value: Double) = BigDecimal.valueOf(value.coerceAtLeast(.01)).setScale(4, RoundingMode.HALF_UP)
     private fun advancePrice(seed: Long, turn: Int, type: GameInstrumentType, symbol: String?, value: Double): Double {
+        if (version >= 3) {
+            val change = driver(seed, turn, type, symbol)
+            return value * (1 + (change.marketPercent + change.sectorPercent + change.assetPercent) / 100)
+        }
         if (type == GameInstrumentType.STOCK && blockedReason(seed, turn, type, symbol) != null) return value
         val event = scenario(seed, turn)
         val noise = Random(seed xor (turn.toLong() * 65537L) xor (symbol ?: type.name).hashCode().toLong()).nextDouble() * .04 - .02
@@ -151,10 +163,10 @@ open class GameSimulationRules(val version: Int, val assets: List<VirtualGameAss
         for (index in 1..turn) value = advancePrice(seed, index, type, symbol, value)
         return roundedPrice(value)
     }
-    fun briefing(seed: Long, turn: Int, date: LocalDate): Briefing {
+    open fun briefing(seed: Long, turn: Int, date: LocalDate): Briefing {
         val event = scenario(seed, turn)
         val picks = pickSymbols(seed, turn)
         return Briefing(id = -1, briefingDate = date, marketSummary = "[가상 시나리오: ${event.first}] ${event.second}. 모든 지표·가격·뉴스·픽은 게임용으로 생성되었습니다.", recommendedStocksRaw = picks.joinToString(",") { ticker -> assets.first { it.symbol == ticker }.name }, goldPrice = price(seed, turn, GameInstrumentType.GOLD, null), silverPrice = price(seed, turn, GameInstrumentType.SILVER, null), usdKrw = price(seed, turn, GameInstrumentType.USD, null), kospi = price(seed, turn, GameInstrumentType.KOSPI, null), kosdaq = price(seed, turn, GameInstrumentType.KOSDAQ, null), sp500 = price(seed, turn, GameInstrumentType.SP500, null), nasdaq = price(seed, turn, GameInstrumentType.NASDAQ, null), dow = price(seed, turn, GameInstrumentType.DOW, null), dataSourceStatus = DataSourceStatus.NORMAL)
     }
-    fun news(seed: Long, turn: Int) = listOf(NewsArticle(briefingId = -1, title = "[가상 뉴스] ${scenario(seed, turn).second}", link = "", description = "게임 시나리오에 따른 허구의 사건입니다. 가격은 시장 방향·업종 영향·자산별 변동을 함께 반영합니다.")) + events(seed, turn).map { NewsArticle(briefingId = -1, title = "[가상 뉴스] ${it.title}", link = "", description = it.description) }
+    open fun news(seed: Long, turn: Int) = listOf(NewsArticle(briefingId = -1, title = "[가상 뉴스] ${scenario(seed, turn).second}", link = "", description = "게임 시나리오에 따른 허구의 사건입니다. 가격은 시장 방향·업종 영향·자산별 변동을 함께 반영합니다.")) + events(seed, turn).map { NewsArticle(briefingId = -1, title = "[가상 뉴스] ${it.title}", link = "", description = it.description) }
 }
