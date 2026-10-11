@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "reports": [
+    {
+      "width": 1366,
+      "deleteLinks": true,
+      "backupNotice": true,
+      "overflow": false,
+      "jsErrors": 0
+    },
+    {
+      "width": 390,
+      "deleteLinks": true,
+      "backupNotice": true,
+      "overflow": false,
+      "jsErrors": 0
+    }
+  ],
+  "productionWrites": 0
+}
