@@ -5,6 +5,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { InfoDocument } from '../help/InfoDocument'
 import tokens from '../../../../shared/design-tokens.json'
 import { FirewatchBrand } from '@/components/FirewatchBrand'
+import { LoadingState } from '@/components/LoadingState'
 
 interface ConsentScreenProps {
   onAgree: () => void | Promise<void>
@@ -25,6 +26,7 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
     finally { pending.current = false; setSaving(false) }
   }
 
+  if (saving) return <SafeAreaProvider><SafeAreaView style={{ flex: 1 }}><LoadingState startup message="이용 설정을 저장하고 있어요" /></SafeAreaView></SafeAreaProvider>
   return (
     <SafeAreaProvider><SafeAreaView style={{ flex: 1, backgroundColor: tokens.light.canvas }}><ScrollView className="flex-1" contentContainerClassName="flex-grow justify-between gap-8 p-6">
       <View className="gap-4">

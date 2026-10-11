@@ -1,5 +1,6 @@
+import { LoadingState } from '@/components/LoadingState'
 import { ScreenIntro } from '@/components/ScreenIntro'
-import { ActivityIndicator, Linking, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
+import { Linking, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
 import { fetchPortfolio, fetchRecommendations } from '@/lib/investingApi'
 import { useResource } from '@/lib/useResource'
 import { accountLabels, productChecklist, riskLabels } from '../../../../shared/investing'
@@ -11,7 +12,8 @@ import { CatalogExplorer } from './CatalogExplorer'
 export function CandidatesScreen({ shortTerm = false, ...navigation }: { shortTerm?: boolean; onOpenStock?: (symbol: string) => void; onOpenNews?: (query: string) => void; onOpenPortfolio?: () => void; onSearchStock?: (name: string) => void }) {
   const briefing = useResource(fetchRecommendations)
   const portfolio = useResource(fetchPortfolio)
-  return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5" refreshControl={<RefreshControl refreshing={briefing.loading} onRefresh={() => { void briefing.reload(); void portfolio.reload() }} />}>
+  if (briefing.loading && !briefing.data) return <LoadingState message="살펴볼 기업을 모으고 있어요" />
+  return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5" refreshControl={<RefreshControl refreshing={briefing.refreshing} onRefresh={() => { void briefing.refresh(); void portfolio.reload() }} />}>
     <ScreenIntro eyebrow={shortTerm ? "단기 관찰" : "기업 탐색"} title={shortTerm ? "단기 투자 후보" : "어떤 기업을 살펴볼까요?"} description="분야별 기업을 살펴보고 추천 이유와 내 보유 자산을 함께 비교하세요." />
     <InvestmentNotice />
     <CompanyDiscovery briefing={briefing.data} portfolio={portfolio.data} loading={briefing.loading} {...navigation} />
@@ -21,7 +23,6 @@ export function CandidatesScreen({ shortTerm = false, ...navigation }: { shortTe
     {portfolio.error && <Text className="text-red-600">포트폴리오: {portfolio.error}</Text>}
     {portfolio.data && <View className="gap-2 rounded-xl bg-surface border border-line p-4"><Text>{accountLabels[portfolio.data.accountType]} · {riskLabels[portfolio.data.riskLevel]} · {portfolio.data.horizonMonths}개월</Text>{portfolio.data.insights.map(x => <Text key={x} className="text-sm">• {x}</Text>)}</View>}
     {briefing.error && <Text className="text-red-600">브리핑: {briefing.error}</Text>}
-    {briefing.loading && <ActivityIndicator accessibilityLabel="후보 불러오는 중" />}
     {!briefing.loading && !briefing.data && !briefing.error && <View className="rounded-xl border border-line bg-surface p-5"><Text className="text-muted">아직 저장된 브리핑이 없습니다. 수집 후 투자 후보를 확인할 수 있습니다.</Text></View>}
     {briefing.data && <>
       <Text className="font-semibold">브리핑 기준 {briefing.data.briefingDate}</Text>

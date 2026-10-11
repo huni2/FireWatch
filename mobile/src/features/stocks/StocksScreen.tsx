@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/LoadingState'
 import { ScreenIntro } from '@/components/ScreenIntro'
 // web/src/features/stocks/StocksPage.tsx와 동일 역할의 모바일 종목 화면(APP-8) — 관심 종목 관리 + 차트.
 import { useEffect, useState } from 'react'
@@ -51,13 +52,8 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
     setSelected(symbol)
   }
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-canvas">
-        <Text className="text-base text-muted">불러오는 중...</Text>
-      </View>
-    )
-  }
+  if (loading && !settings) return <LoadingState message="관심 기업을 불러오고 있어요" />
+
 
   return (
     <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">

@@ -1,8 +1,9 @@
+import { LoadingState } from '@/components/LoadingState'
 import { ScreenIntro } from '@/components/ScreenIntro'
 // web/src/features/indices/IndicesPage.tsx에 대응하는 모바일 지수 화면(APP-9) — 금/은/환율 +
 // 국내외 지수·채권 현재값을 보여준다. 웹의 시계열 RateChart는 완료 기준("확인 가능")을 넘어서는
 // 범위라 이번엔 뺀다 — 필요해지면 /api/briefings?from=&to= 히스토리 조회를 추가하면 됨.
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
+import { Pressable, ScrollView, Text, View } from 'react-native'
 
 import { useLatestBriefing } from '../briefing/hooks/useLatestBriefing'
 import { MetricCard } from './components/MetricCard'
@@ -10,13 +11,8 @@ import { MetricCard } from './components/MetricCard'
 export function IndicesScreen() {
   const { briefing, loading, error, reload } = useLatestBriefing()
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-canvas">
-        <ActivityIndicator />
-      </View>
-    )
-  }
+  if (loading && !briefing) return <LoadingState message="시장 지표를 불러오고 있어요" />
+
 
   if (!briefing) {
     return (

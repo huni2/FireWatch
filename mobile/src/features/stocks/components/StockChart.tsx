@@ -1,8 +1,9 @@
+import { LoadingState } from '@/components/LoadingState'
 import tokens from '../../../../../shared/design-tokens.json'
 // web/src/features/stocks/components/StockChart.tsx와 동일 역할 — RN엔 recharts가 없어
 // react-native-gifted-charts의 LineChart(영역 채움)로 대체.
 import { useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
+import { Pressable, ScrollView, Text, View } from 'react-native'
 import { LineChart } from 'react-native-gifted-charts'
 
 import { type StockChartRange } from '@/lib/api'
@@ -78,7 +79,7 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound }: S
         </View>
       </ScrollView>
 
-      {loading && <ActivityIndicator className="py-8" />}
+      {loading && <LoadingState inline message="가격 흐름을 불러오고 있어요" />}
       {!loading && error && <Text className="text-xs text-red-500">{companyName} 시세를 불러오지 못했습니다.</Text>}
       {!loading && !error && chartData.length === 0 && (
         <Text className="text-xs text-muted">표시할 데이터가 없습니다.</Text>
