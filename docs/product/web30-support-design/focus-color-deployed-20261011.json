@@ -1,0 +1,253 @@
+{
+  "passed": true,
+  "fixture": true,
+  "actualAndroid": false,
+  "productionWrites": 0,
+  "results": [
+    {
+      "pathname": "/",
+      "width": 1920,
+      "overflow": false
+    },
+    {
+      "pathname": "/candidates",
+      "width": 1920,
+      "overflow": false
+    },
+    {
+      "pathname": "/news",
+      "width": 1920,
+      "overflow": false
+    },
+    {
+      "pathname": "/stocks",
+      "width": 1920,
+      "overflow": false
+    },
+    {
+      "pathname": "/account",
+      "width": 1920,
+      "overflow": false
+    },
+    {
+      "pathname": "/settings",
+      "width": 1920,
+      "overflow": false
+    },
+    {
+      "pathname": "/guide",
+      "width": 1920,
+      "overflow": false
+    },
+    {
+      "pathname": "/",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "pathname": "/candidates",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "pathname": "/news",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "pathname": "/stocks",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "pathname": "/account",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "pathname": "/settings",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "pathname": "/guide",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "pathname": "/",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "pathname": "/candidates",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "pathname": "/news",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "pathname": "/stocks",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "pathname": "/account",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "pathname": "/settings",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "pathname": "/guide",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "pathname": "/",
+      "width": 900,
+      "overflow": false
+    },
+    {
+      "pathname": "/candidates",
+      "width": 900,
+      "overflow": false
+    },
+    {
+      "pathname": "/news",
+      "width": 900,
+      "overflow": false
+    },
+    {
+      "pathname": "/stocks",
+      "width": 900,
+      "overflow": false
+    },
+    {
+      "pathname": "/account",
+      "width": 900,
+      "overflow": false
+    },
+    {
+      "pathname": "/settings",
+      "width": 900,
+      "overflow": false
+    },
+    {
+      "pathname": "/guide",
+      "width": 900,
+      "overflow": false
+    },
+    {
+      "pathname": "/",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "pathname": "/candidates",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "pathname": "/news",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "pathname": "/stocks",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "pathname": "/account",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "pathname": "/settings",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "pathname": "/guide",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "pathname": "/",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "pathname": "/candidates",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "pathname": "/news",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "pathname": "/stocks",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "pathname": "/account",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "pathname": "/settings",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "pathname": "/guide",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "pathname": "/",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "pathname": "/candidates",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "pathname": "/news",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "pathname": "/stocks",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "pathname": "/account",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "pathname": "/settings",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "pathname": "/guide",
+      "width": 360,
+      "overflow": false
+    }
+  ]
+}
