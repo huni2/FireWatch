@@ -1,6 +1,14 @@
 # Android 설치 검증
 
-**현재 상태(2026-10-11)** — 최신 APK 1회 빌드 완료·다운로드·GitHub 사전 릴리스 공개. 소스 `bcbf354`, 버전 **1.0.1 / versionCode 6**, [EAS preview](https://expo.dev/accounts/huni2/projects/mobile/builds/7989e89f-d886-4a42-8fe1-741dbd507e13) FINISHED. [APK 설치 링크](https://github.com/huni2/FireWatch/releases/download/v1.0.1-android-preview/FireWatch-1.0.1-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.1-android-preview). 파일 내부 패키지 `com.firewatch.mobile`·버전1.0.1·versionCode6·ZIP CRC 무결성을 확인했다. 크기114,084,303바이트, SHA-256 `c8e7d78dd943e5a350999a79722b82a768979d9c6cfbf8cc07fbe8df2cf4fe63`; GitHub 업로드 digest도 일치한다. 실제 기기 설치·로그인·푸시는 미확인이다. 이전 versionCode5도 FINISHED를 확인했다. 자동 EAS 빌드는 활성화하지 않는다. 아래 과거 접수와 [현재 체크리스트](../product/android-preview-20261009/checklist.md)를 구분한다.
+## 최신 설치본 1.0.2 / 빌드7 (2026-10-12)
+
+사용자 재요청으로 소스 b600f97을 PC의 Android SDK36·NDK27.1·Gradle9.3.1로 빌드했다. 첫 도구/캐시 준비와 908개 작업에 35분49초가 걸렸으며 BUILD SUCCESSFUL이다. EAS 클라우드 빌드는 요청하지 않았다. 기존 release 키로 서명한 뒤 1.0.1 APK와 같은 인증서임을 직접 비교했다. 패키지 com.firewatch.mobile·내부 버전1.0.2/7·ZIP 무결성·독립 실행 JS 번들·그라디언트 네이티브 클래스 포함을 확인했다. 113,854,121바이트, SHA-256 `1661e71af4d9a59f0e8b049ebef1628effae00f8eea61661d6fe00bd699374f5`. GitHub 업로드 digest도 일치한다.
+
+[APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.2-android-preview/FireWatch-1.0.2-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.2-android-preview) · [소스 CI](https://github.com/huni2/FireWatch/actions/runs/38149392171).
+
+1.0.1의 종료 제보에 대응한 차트 의존성·시작 오류 화면·명시적 알림 등록·앱 내부 안내·새 아이콘을 포함한다. 사용자 USB 연결이 어려워 실제 기기의 종료 원인 전부와 수정 후 정상 시작·재실행·Google 로그인·푸시는 미검증이다. 기존 앱을 삭제하지 않고 업데이트 설치해서 확인한다. 다음 빌드에는 로컬 JVM 메모리 경고(기본 heap2GiB/meta512MiB)를 고려한다. 아래 1.0.1과 EAS 절차는 이전 설치본 이력/선택 가능한 빌드 방식이다.
+
+**이전 설치본 이력(2026-10-11)** — 최신 APK 1회 빌드 완료·다운로드·GitHub 사전 릴리스 공개. 소스 `bcbf354`, 버전 **1.0.1 / versionCode 6**, [EAS preview](https://expo.dev/accounts/huni2/projects/mobile/builds/7989e89f-d886-4a42-8fe1-741dbd507e13) FINISHED. [APK 설치 링크](https://github.com/huni2/FireWatch/releases/download/v1.0.1-android-preview/FireWatch-1.0.1-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.1-android-preview). 파일 내부 패키지 `com.firewatch.mobile`·버전1.0.1·versionCode6·ZIP CRC 무결성을 확인했다. 크기114,084,303바이트, SHA-256 `c8e7d78dd943e5a350999a79722b82a768979d9c6cfbf8cc07fbe8df2cf4fe63`; GitHub 업로드 digest도 일치한다. 실제 기기 설치·로그인·푸시는 미확인이다. 이전 versionCode5도 FINISHED를 확인했다. 자동 EAS 빌드는 활성화하지 않는다. 아래 과거 접수와 [현재 체크리스트](../product/android-preview-20261009/checklist.md)를 구분한다.
 
 이번 출시 보강의 타입/린트/Android JS 번들은 검증했다. 실제 APK 설치·Google 로그인·푸시·계정 삭제는 별도이며 검증 완료로 표시하지 않는다.
 

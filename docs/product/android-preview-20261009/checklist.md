@@ -1,5 +1,17 @@
 # APP-21 설치본 체크리스트
 
+## 2026-10-12 수정 설치본1.0.2
+
+- [x] 사용자 APK 재요청 확인·1.0.2/versionCode7·소스 b600f97 고정
+- [x] 출시/네이티브 의존성9개 및 웹·모바일·백엔드 CI 통과
+- [x] 로컬 Gradle assembleRelease 성공·EAS 클라우드 요청0
+- [x] 기존 release 서명 키 사용·이전1.0.1 APK와 인증서 일치
+- [x] APK 내부 버전/패키지·ZIP·실행 번들·그라디언트 네이티브 클래스 확인
+- [x] GitHub prerelease·APK/SHA256SUMS 공개·업로드 digest 일치
+- [ ] 실제 Android 동의 후 진입·재실행·로그인·푸시 확인
+
+아래 APK 금지 문단은 당시 이력이다. 이번 사용자 재요청만으로 빌드했으며 자동/추가 APK 빌드는 다시 요청을 기다린다.
+
 ## 2026-10-11 동의 후 반복 종료 후속 (APK 빌드 보류)
 
 - [x] 홈 차트 import 시 그라디언트 제공 패키지 누락 예외 재현, Expo SDK57 호환 expo-linear-gradient 추가
