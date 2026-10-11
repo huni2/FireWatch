@@ -16,6 +16,10 @@ function validate(config, env, readFile) {
   if (!/^\d+-[a-z0-9]+\.apps\.googleusercontent\.com$/.test(env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || '')) {
     errors.push('EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID에 Android 공개 OAuth ID를 설정하세요.');
   }
+  const webClientId = env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || config.extra?.googleWebClientId;
+  if (!/^\d+-[a-z0-9]+\.apps\.googleusercontent\.com$/.test(webClientId || '') || webClientId === env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID) {
+    errors.push('앱 계정 연결에는 Android ID와 별개인 서버용 웹 OAuth 공개 ID가 필요합니다.');
+  }
   if (!config.android?.package || !Number.isInteger(config.android.versionCode) || config.android.versionCode < 1) {
     errors.push('Android 패키지와 양의 정수 versionCode가 필요합니다.');
   }

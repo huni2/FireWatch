@@ -4,6 +4,8 @@ Expo + React Native + Expo Router 기반 앱. 웹과 동일한 백엔드를 사�
 
 ## 설치용 APK
 
+**1.0.2 실기기 후속(2026-10-12):** Google 브라우저 로그인 오류가 보고됐다. 소스는 Android 네이티브 계정 선택 방식으로 변경했으며, 상단 브랜드·게임 시작 화면·주차/자산 고정 요약·다음 주 고정 버튼을 정리했다. 이 변경은 아래 공개 APK에 아직 포함되지 않았다. 추가 APK는 사용자 요청 후 빌드하며, 실제 로그인 성공도 그때 검증한다.
+
 최신 테스트 버전 **1.0.2 / versionCode 7 (2026-10-12)**: [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.2-android-preview/FireWatch-1.0.2-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.2-android-preview). 동의 후 차트 의존성 누락 수정·앱 내부 안내·새 아이콘을 포함한다. 로컬 Gradle로 빌드했으며 EAS 클라우드 횟수는 사용하지 않았다. 기존 설치본과 서명이 같고 Expo Go 없이 설치한다. 실기기 시작·재실행·로그인·푸시 확인과 Play 게시는 별도다.
 
 ## 개발
