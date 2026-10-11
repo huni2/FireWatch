@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/LoadingState'
 import { ScreenIntro } from '@/components/ScreenIntro'
 import { Link } from 'expo-router'
 import { OperatorPushSetup } from '@/components/OperatorPushSetup'
@@ -82,13 +83,8 @@ export function SettingsScreen() {
     }
   }
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-canvas">
-        <Text className="text-base text-muted">불러오는 중...</Text>
-      </View>
-    )
-  }
+  if (loading && !settings) return <LoadingState message="계정 설정을 확인하고 있어요" />
+
 
   if (!settings) return <View className="flex-1 justify-center gap-4 bg-canvas p-6"><Text>설정을 불러오지 못했습니다. 로그인했던 기기라면 Google 계정으로 다시 로그인해주세요.</Text><GoogleLinkButton linkedEmail={null} onLinked={handleLinked} onDeleted={handleDeleted} /><Pressable onPress={() => void reload()} className="min-h-11 items-center justify-center"><Text className="text-brand">설정 다시 불러오기</Text></Pressable></View>
 

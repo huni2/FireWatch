@@ -1,6 +1,8 @@
+import { LoadingState } from '@/components/LoadingState'
+import { AppReadiness } from '@/lib/appReadiness'
 // 저장된 자산 점검을 먼저 보여주고 입력은 Android 전용 화면에서 처리한다.
-import { useRef, useState } from 'react'
-import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
+import { useContext, useEffect, useRef, useState } from 'react'
+import { Alert, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
 import Toast from 'react-native-toast-message'
 import { InvestmentNotice } from '@/components/InvestmentNotice'
 import { PortfolioExposureCard } from './PortfolioExposureCard'
@@ -15,6 +17,8 @@ import { portfolioCoverageText, portfolioFinding } from '../../../../shared/hold
 
 export function PortfolioScreen(navigation: { onOpenStock?: (symbol: string) => void; onOpenNews?: (query: string) => void; onOpenCandidates?: () => void } = {}) {
   const query = useResource(fetchPortfolio)
+  const { markReady, preparing } = useContext(AppReadiness)
+  useEffect(() => { if (!query.loading) markReady() }, [query.loading, markReady])
   const [editing, setEditing] = useState<{ base: PortfolioDraft; initial: Holding; index: number | null } | null>(null)
   const [plan, setPlan] = useState<PortfolioDraft | null>(null)
   const [saving, setSaving] = useState(false)
@@ -40,11 +44,11 @@ export function PortfolioScreen(navigation: { onOpenStock?: (symbol: string) => 
   }
   const portfolio = query.data
   const hasAssets = !!portfolio && (portfolio.holdings.length > 0 || portfolio.cash > 0)
+  if (!portfolio && query.loading) return preparing ? null : <LoadingState message="내 투자 기록을 불러오고 있어요" />
   return <>
-    <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5 pb-10" refreshControl={<RefreshControl refreshing={query.loading} onRefresh={query.reload} />}>
+    <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5 pb-10" refreshControl={<RefreshControl refreshing={query.refreshing} onRefresh={query.refresh} />}>
       <View className="gap-2"><Text className="text-2xl font-bold text-ink">내 자산</Text></View>
       {query.error && <View className="gap-2"><Text>{query.error}</Text><Pressable onPress={query.reload} className="min-h-11 justify-center"><Text className="text-brand">다시 확인</Text></Pressable></View>}
-      {!portfolio && query.loading && <ActivityIndicator />}
       {portfolio && <View className="flex-row flex-wrap gap-3"><Pressable accessibilityRole="button" disabled={saving || portfolio.holdings.length >= 50} onPress={() => openHolding()} className="min-h-11 justify-center rounded-xl bg-brand px-5 py-3"><Text className="font-bold text-white">{hasAssets ? '자산 추가' : '첫 자산 등록하기'}</Text></Pressable><Pressable accessibilityRole="button" disabled={saving} onPress={() => { setError(null); setPlan(toDraft(portfolio)) }} style={hasAssets ? undefined : { display: 'none' }} className="min-h-11 justify-center rounded-xl border border-line px-4"><Text className="text-ink">현금·투자 계획</Text></Pressable></View>}
       {error && !editing && !plan && <Text className="text-red-600">{error}</Text>}
       {!hasAssets && portfolio && <View className="gap-3 py-4"><Text className="text-2xl font-bold text-ink">내 자산이 어디에 몰려 있는지 알아보세요</Text><Text className="text-muted">회사와 수량만 입력하면 시작할 수 있어요. 매입가는 나중에 입력해도 괜찮아요.</Text>{navigation.onOpenCandidates && <Pressable accessibilityRole="button" onPress={navigation.onOpenCandidates} className="min-h-11 justify-center"><Text className="text-brand">분야별 기업 살펴보기</Text></Pressable>}</View>}

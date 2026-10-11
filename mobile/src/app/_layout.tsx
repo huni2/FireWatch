@@ -2,8 +2,11 @@ import tokens from '../../../shared/design-tokens.json'
 import '../global.css'
 
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
-import { Stack, type ErrorBoundaryProps } from 'expo-router'
-import { useEffect, useState } from 'react'
+import { Stack, usePathname, type ErrorBoundaryProps } from 'expo-router'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { View } from 'react-native'
+import { AppReadiness } from '@/lib/appReadiness'
+import { LoadingState } from '@/components/LoadingState'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import Toast from 'react-native-toast-message'
 
@@ -22,10 +25,14 @@ export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
 // 동의 후에는 알림 탭 리스너만 연결한다. 권한·토큰 등록은 설정에서 사용자가 선택한다.
 function AppContent() {
   useNotificationRegistration()
+  const [ready, setReady] = useState(false)
+  const pathname = usePathname()
+  const markReady = useCallback(() => setReady(true), [])
+  const preparation = useMemo(() => ({ markReady, preparing: !ready && pathname === '/' }), [markReady, ready, pathname])
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }} onTouchStart={noteStartupInteraction}>
-      <BottomSheetModalProvider>
+      <AppReadiness.Provider value={preparation}><View style={{ flex: 1 }} importantForAccessibility={preparation.preparing ? 'no-hide-descendants' : 'auto'} accessibilityElementsHidden={preparation.preparing}><BottomSheetModalProvider>
         <Stack
           screenOptions={{
             headerStyle: { backgroundColor: tokens.light.surface },
@@ -42,9 +49,10 @@ function AppContent() {
           <Stack.Screen name="guide" options={{ title: '도움말' }} />
           <Stack.Screen name="investment-info" options={{ title: '투자 정보 이용안내' }} />
         </Stack>
-      </BottomSheetModalProvider>
+      </BottomSheetModalProvider></View></AppReadiness.Provider>
       <Toast config={toastConfig} />
-      <AnnouncementPopup />
+      {ready && <AnnouncementPopup />}
+      {!ready && pathname === '/' && <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, zIndex: 1000 }}><LoadingState startup message="내 투자 기록을 준비하고 있어요" /></View>}
     </GestureHandlerRootView>
   )
 }

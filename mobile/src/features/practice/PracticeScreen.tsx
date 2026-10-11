@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/LoadingState'
 // 주간 시장과 분야·기업 탐색, 주문·회고를 실제 자산과 구분해 안내한다.
 import { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
@@ -40,11 +41,6 @@ export function PracticeScreen() {
   const [lastReplay, setLastReplay] = useState<PracticeReplayState | null>(null)
   const [completionOpen, setCompletionOpen] = useState(false)
   const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false)
-  const [slow, setSlow] = useState(false)
-  useEffect(() => {
-    const timer = setTimeout(() => setSlow(busy || loading), busy || loading ? 3000 : 0)
-    return () => clearTimeout(timer)
-  }, [busy, loading])
   const [error, setError] = useState<string | null>(null)
   const [quantity, setQuantity] = useState('1'), [symbol, setSymbol] = useState(''), [instrument, setInstrument] = useState('KOSPI')
   const [optionsOpen, setOptionsOpen] = useState(false)
@@ -126,6 +122,7 @@ export function PracticeScreen() {
       onRules={() => Alert.alert('게임 규칙', '새 게임은 24개의 주간 관찰 시점이에요. 첫 주 시작 가격에서 다음 주로 23번 이동해요. 실제로 일주일을 기다릴 필요는 없어요. 뉴스·가격·픽은 모두 가상이며 분야별 사건이 몇 주에 걸쳐 이어져요. 기존 게임에는 당시 규칙이 유지돼요. 단가 × 수량을 게임머니로 계산합니다. 새 주간 게임에서는 장중 사이드카를 일주일의 거래 제한으로 사용하지 않아요. 이전 게임의 거래 제한은 당시 규칙을 따르며 제한 중인 자산은 직전 가격으로 평가해요. 실제 거래소 제도를 재현한 게임은 아니에요. 실제 원화 환산·수수료·세금·기업행사는 반영하지 않습니다. 가격이 없으면 평가 미확정이며, 다음 턴의 보유 가격이 없으면 현재 턴을 유지합니다. 공매도 모드는 증거금·강제청산을 반영하지 않습니다.')} onRanking={() => showRanking('board')} onPublish={() => showRanking('publish')}
       onReplay={() => { if (lastReplay) setReplay(lastReplay) }} onEnd={() => Alert.alert('게임을 종료할까요?', '현재 기록은 보관됩니다. 순위 공개는 종료 후 선택합니다.', [{ text: '계속 플레이', style: 'cancel' }, { text: '게임 종료', style: 'destructive', onPress: () => void action('end') }])} />
   }
+  if (loading) return <LoadingState message="가상 시장을 준비하고 있어요" />
   return <View style={s.screen}>
     {turn && <View style={s.sessionHeader}>
       <View style={s.split}><Text style={s.eyebrow}>가상 투자 · {turn.status === 'ACTIVE' ? '진행 중' : '마무리'}</Text><Text style={s.muted}>{turn.turnIndex + 1} / {turn.totalTurns}{period}</Text></View>
@@ -137,8 +134,6 @@ export function PracticeScreen() {
     {rankingOpen && <PracticeRankings turn={turn} initialTab={rankingTab} close={() => setRankingOpen(false)} />}
     {completionOpen && turn?.status === 'ENDED' && <PracticeCompletion turn={turn} close={() => setCompletionOpen(false)} publish={() => { setCompletionOpen(false); showRanking('publish') }} />}
     <PracticeReplay value={replay} close={() => setReplay(null)} />
-    {(busy || loading) && <ActivityIndicator color={accent} />}
-    {slow && (busy || loading) && <Text style={s.muted}>서버 응답 대기 중입니다. 잠든 서버의 첫 요청은 시간이 걸릴 수 있습니다.</Text>}
     {error && <View style={s.panel}><Text style={s.warning}>{error}</Text>{<GameButton label={'현재 상태 확인'} onPress={ () => void reload()} disabled={busy} />}</View>}
     {!loading && !turn && <View style={s.lobby}>
       <View style={s.heroHeading}><View style={{ flex: 1, gap: 12 }}><Text style={s.eyebrow}>돈 걱정 없이, 투자 연습</Text><Text style={s.title}>{'내 선택은\n어떤 결과가 될까?'}</Text></View><Image source={require('../../../../shared/assets/firewatch-scout.png')} accessibilityLabel="FireWatch 불꽃 정찰대" style={{ width: 90, height: 112 }} resizeMode="contain" /></View>
@@ -167,6 +162,7 @@ export function PracticeScreen() {
     {turn && <PracticeAssetDetail target={detail} turn={turn} close={() => setDetail(null)} order={selectOrder} />}
     </ScrollView>
     {turn?.status === 'ACTIVE' && <View style={s.turnDock}><View style={{ flex: 1 }}><Text style={s.text}>{turn.turnIndex + 1}{period}째</Text><Text style={s.muted}>거래를 마쳤다면</Text></View><GameButton tone="next" icon="next-turn" label={`다음 ${period}로`} onPress={() => void action('next-turn')} disabled={busy} /></View>}
+    {busy && !replay && <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, zIndex: 10 }}><LoadingState message={turn ? '선택한 내용을 반영하고 있어요' : '가상 시장을 준비하고 있어요'} /></View>}
   </View>
 }
 function GameButton({ label, onPress, disabled, tone, icon }: { label: string; onPress: () => void; disabled: boolean; tone?: 'primary' | 'next'; icon?: FirewatchIconName }) { return <Pressable accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[s.button, tone === 'primary' && s.primaryButton, tone === 'next' && s.nextButton, disabled && s.disabled]}>{icon && <FirewatchIcon name={icon} size={20} color={tone ? c.surface : c.text} monochrome={!!tone} />}<Text style={[s.buttonText, tone && { color: tone === 'primary' ? '#fff' : c.surface }]}>{label}</Text></Pressable> }
