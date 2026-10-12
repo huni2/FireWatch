@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { View } from 'react-native'
 import { AppReadiness } from '@/lib/appReadiness'
 import { LoadingState } from '@/components/LoadingState'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import Toast from 'react-native-toast-message'
 
@@ -41,6 +42,7 @@ function AppContent() {
             headerTitleStyle: { fontWeight: '800' },
             contentStyle: { backgroundColor: colors.canvas },
             headerShadowVisible: false,
+            headerRight: () => <ThemeToggle />,
           }}
         >
           <Stack.Screen name="index" options={{ title: 'FireWatch' }} />

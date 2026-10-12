@@ -53,6 +53,8 @@
 ## 열린 과제 — 모바일(APP)
 
 ### APP-21. 최신 Android 설치·실수신·출시 제출 검증
+
+**상단 UI 후속(2026-10-12)** — Android 상단 좌우 라이트/다크 스위치·기기 저장, 설정 선택 제거, 순위 고정 헤더/닫기 구현. 타입/lint·테마/로딩9검사·Android JS export·360/390px 격리 화면 통과. 실제 Android/TalkBack은 대기. 공개1.0.3에는 이전 로딩 수정/이번 변경이 미포함, APK/EAS/OTA0. 기존 Issue62 유지·새 과제0.
 **현재 상태(2026-10-12)** — 사용자 최신화 요청으로 APK1.0.3/versionCode8을 로컬 빌드·GitHub Release/README에 반영했다. sourcea6aaa0c·약54MB·기존서명 유지·EAS클라우드 요청0. 이후 자동/추가 APK/EAS/OTA는 별도 요청 전까지 보류한다. 빌드 완료와 실제 휴대폰 실행 확인은 구분한다.
 **구현 완료** — Android OAuth/운영 API/Firebase/EAS 설정·사용자 FCM V1 등록, 출시 검사·타입/lint·Android export·CI. 실제 설치·로그인/푸시/TalkBack 결과는 미확인이다.
 **빌드 기록** — 최신 sourcea6aaa0c / APK1.0.3 / versionCode8. 로컬 Expo prebuild+Gradle16분50초/901작업·기존1.0.2 동일 release 인증서·패키지/버전/ZIP/16KB 정렬·Google/차트 네이티브 모듈·마스코트 이미지 포함 검증 완료. 크기54,303,976bytes(약52% 감소)·SHA256/업로드digest 대조. sourceCI38196432552 전체 성공. 이전1.0.2의 Google 브라우저 오류는 네이티브 계정 선택으로 수정했으며 새 실제 기기 로그인은 아직 미확인이다.

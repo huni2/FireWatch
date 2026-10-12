@@ -1,0 +1,26 @@
+[
+  {
+    "width": 360,
+    "headerThemeToggle": true,
+    "consentToggle": true,
+    "persisted": true,
+    "settingsRadioRemoved": true,
+    "rankingCloseFixed": true,
+    "rankingBodyScrolled": 600,
+    "pageErrors": 0,
+    "writes": 0,
+    "nativeVerified": false
+  },
+  {
+    "width": 390,
+    "headerThemeToggle": true,
+    "consentToggle": true,
+    "persisted": true,
+    "settingsRadioRemoved": true,
+    "rankingCloseFixed": true,
+    "rankingBodyScrolled": 600,
+    "pageErrors": 0,
+    "writes": 0,
+    "nativeVerified": false
+  }
+]

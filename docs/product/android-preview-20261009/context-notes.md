@@ -50,3 +50,13 @@ versionCode5 출시 설정·타입·린트·테스트8개·Android export2162모
 2026-10-12 APK1.0.3 로딩 선 정지 사용자 제보 후속: 설치된 RN0.86.2 AnimatedImplementation.loopImpl을 테스트에서 직접 실행해 stop→start만으로는 내부isFinished가 남아 첫 애니메이션이 실행되지 않음을 재현했다. stop→reset→start로 수정하고 동작 줄이기 설정/조회 실패/늦은 초기 설정 응답/화면 종료를 보호한다. isInteraction=false로 반복 표시가 목록 렌더를 막지 않게 한다. ThemeProvider의 별도 고정 선도 공통 LoadingIndicator로 교체하며 첫 준비·시장/기업/계정·순위/회고/그래프·검색/ETF/분석보관함/주문미리보기·Google/삭제 처리에 같은 표시를 사용한다. 실제 서버 처리 퍼센트를 생성하지 않으며 요청 완료/실패 시 해당 표시를 종료한다.
 
 검증: RN 실제loop 회귀6개 포함 모바일40검사·TypeScript·Expo lint 성공. Android JS export2180모듈/5.2MB 성공. 격리 앱 웹360/390px에서 초기조회 실패 후 준비 화면 해제·시장/기업/게임의 단일 중앙선 위치를180ms 간격3회 측정해 이동4px이상 확인·직접설정진입 해제·JS오류0/운영쓰기0. 미리보기의Android메타데이터/알림/SecureStore/API는 시험 대체이므로 실제APK동작 검증을 대신하지 않는다. 새 APK/EAS/OTA0·현재1.0.3 다운로드 유지·Render/API/DB/버전/키변경0. 기존Issue62/APP21 소스후속으로 기록하며 새로운 과제를 만들지 않는다.
+
+## 2026-10-12 상단 테마 스위치·순위 닫기
+
+사용자 요청으로 Android 공통 헤더와 최초 동의 화면에 해/달 SVG 및 좌우 native Switch를 배치했다. 왼쪽 라이트·오른쪽 다크, 기본 라이트와 기기 저장을 유지한다. 설정의 세 가지 선택 항목을 제거했으며 기존 system 저장값은 읽기 호환을 유지한다. 홈 계정 버튼은 44px 아이콘으로 축소해 360px 헤더에 함께 배치한다.
+
+게임 순위 모달의 제목과 44px 닫기를 SafeAreaView 상단에 고정하고 본문만 스크롤한다. 등록 진행 중 닫기/Android 뒤로가기는 기존 보호를 유지한다. 서버·랭킹 규칙·게임 기록 변경은 없다.
+
+타입/Expo lint 및 테마·로딩 회귀9개 통과. Android JS export2180모듈/5.2MB 성공. 격리된 native-web360/390px에서 동의/홈/설정 전환·오른쪽 thumb 이동·새로고침 후 저장·헤더 겹침/가로 넘침 없음·순위 본문600px 스크롤 후 닫기 위치 유지·주간 우승자 전환/복귀 확인. JS오류·운영 API쓰기0. 검증 결과는 header-theme-ranking-preview.json에 보관한다. 실제 Android Switch 드래그·TalkBack은 미확인이다.
+
+APK/EAS/OTA 실행0. 공개1.0.3에는 이전 로딩 수정과 이번 UI 변경이 포함되지 않으며 새 설치본은 사용자 별도 요청 때 만든다. 기존 Issue#62/APP-21에 기록하고 새 과제는 생성하지 않는다.
