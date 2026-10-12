@@ -23,3 +23,21 @@ export async function googleIdToken(): Promise<string | null> {
     throw error
   }
 }
+
+// No account picker, Play Services dialog, or implicit account creation during restoration.
+export async function silentGoogleIdToken(): Promise<string | null> {
+  if (Platform.OS !== 'android') return null
+  const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || Constants.expoConfig?.extra?.googleWebClientId
+  if (!webClientId) return null
+  const { GoogleSignin } = await import('@react-native-google-signin/google-signin')
+  GoogleSignin.configure({ webClientId, offlineAccess: false })
+  if (!await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: false })) return null
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const response = await Promise.race([
+    GoogleSignin.signInSilently(),
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error('계정 확인이 지연되고 있어요. 설정에서 다시 로그인해주세요.')), 15000)
+    }),
+  ]).finally(() => clearTimeout(timer))
+  return response.type === 'success' ? response.data.idToken : null
+}

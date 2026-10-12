@@ -10,8 +10,9 @@ function fixture({ os = 'android', response = { type: 'success', data: { idToken
   const sdk = {
     GoogleSignin: {
       configure: config => calls.push(['configure', config]),
-      hasPlayServices: async () => { calls.push(['playServices']); if (!available) throw { code: 'PLAY_SERVICES_NOT_AVAILABLE' }; },
+      hasPlayServices: async options => { calls.push(['playServices', options]); if (!available) throw { code: 'PLAY_SERVICES_NOT_AVAILABLE' }; return true; },
       signIn: async () => { calls.push(['signIn']); if (failure) throw failure; return response; },
+      signInSilently: async () => { calls.push(['silent']); if (failure) throw failure; return response; },
     },
     isSuccessResponse: result => result.type === 'success',
     isErrorWithCode: error => typeof error?.code === 'string',
@@ -20,13 +21,13 @@ function fixture({ os = 'android', response = { type: 'success', data: { idToken
   const source = ts.transpileModule(fs.readFileSync('src/lib/googleSignIn.ts', 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
   }).outputText;
-  vm.runInNewContext(source, { module, exports: module.exports, process: { env: {} }, require(name) {
+  vm.runInNewContext(source, { module, exports: module.exports, setTimeout, clearTimeout, process: { env: {} }, require(name) {
     if (name === 'expo-constants') return { expoConfig: { extra: { googleWebClientId: 'test-web-client.apps.googleusercontent.com' } } };
     if (name === 'react-native') return { Platform: { OS: os } };
     if (name === '@react-native-google-signin/google-signin') return sdk;
     throw new Error(`Unexpected dependency: ${name}`);
   } });
-  return { login: module.exports.googleIdToken, calls };
+  return { login: module.exports.googleIdToken, silent: module.exports.silentGoogleIdToken, calls };
 }
 
 test('native login requests an ID token for the server web client after checking Play Services', async () => {
@@ -55,4 +56,13 @@ test('web preview cannot invoke the Android native module', async () => {
   const f = fixture({ os: 'web' });
   await assert.rejects(f.login(), /Android 설치 앱/);
   assert.equal(f.calls.length, 0);
+});
+test('restoration uses only silent sign-in and does not open an account picker', async () => {
+  const f = fixture();
+  assert.equal(await f.silent(), 'test-id-token');
+  assert.deepEqual(f.calls.map(call => call[0]), ['configure', 'playServices', 'silent']);
+  assert.equal(f.calls[1][1].showPlayServicesUpdateDialog, false);
+  assert.equal(await fixture({ response: { type: 'noSavedCredentialFound', data: null } }).silent(), null);
+  const web = fixture({ os: 'web' });
+  assert.equal(await web.silent(), null); assert.equal(web.calls.length, 0);
 });

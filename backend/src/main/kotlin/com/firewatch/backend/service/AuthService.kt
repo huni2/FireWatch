@@ -39,6 +39,13 @@ class AuthService(
     override val auditEventType = AuditEventType.AUTH
 
     @Transactional
+    fun renewGoogleSession(deviceId: String, idToken: String, authorizationToken: String?): com.firewatch.backend.repository.LoginSession {
+        val identity = googleIdentityVerifier.verify(idToken) ?: throw UnauthorizedException()
+        val user = appUserRepository.findByGoogleSub(identity.googleSub) ?: throw UnauthorizedException()
+        return requireNotNull(sessions).renew(deviceId, authorizationToken, requireNotNull(user.id))
+    }
+
+    @Transactional
     fun linkGoogleAccount(deviceId: String, idToken: String): UserSettings {
         val identity = googleIdentityVerifier.verify(idToken)
             ?: throw UnauthorizedException("Google 로그인 확인에 실패했습니다.")

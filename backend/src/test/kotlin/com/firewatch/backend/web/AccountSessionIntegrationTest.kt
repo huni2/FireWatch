@@ -33,6 +33,51 @@ class AccountSessionIntegrationTest {
     private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").responseTimeout(java.time.Duration.ofSeconds(20)).build()
 
     @Test
+    fun `만료 세션은 같은 Google 계정으로만 갱신하고 폐기된 기기와 토큰은 복구하지 않는다`() {
+        val user = users.save(AppUser(googleSub = "renew-owner", email = "renew@example.test"))
+        val other = users.save(AppUser(googleSub = "renew-other"))
+        val device = "renew-device"
+        settings.save(UserSettings(userId = user.id, watchedStocksRaw = "AAPL"))
+        links.save(DeviceLink(device, user.id!!))
+        val expired = sessions.issue(device, Instant.now().minusSeconds(31L * 24 * 3600))
+        `when`(google.verify("renew-proof")).thenReturn(GoogleIdentity(user.googleSub, "renew@example.test", true))
+        `when`(google.verify("other-proof")).thenReturn(GoogleIdentity(other.googleSub, "other@example.test", true))
+        fun renew(token: String, proof: String = "renew-proof", requestedDevice: String = device) =
+            client().post().uri("/api/auth/google/renew").header("X-Device-Id", requestedDevice)
+                .header("Authorization", "Bearer $token").bodyValue(mapOf("idToken" to proof)).exchange()
+        renew(expired.token, "invalid-proof").expectStatus().isUnauthorized
+        renew(expired.token, "other-proof").expectStatus().isUnauthorized
+        renew(expired.token, requestedDevice = "foreign-renew-device").expectStatus().isUnauthorized
+        val renewed = renew(expired.token).expectStatus().isOk.expectBody(LoginSession::class.java).returnResult().responseBody!!
+        assertNotEquals(expired.token, renewed.token)
+        val audit = jdbc.queryForList("SELECT request_payload, response_summary FROM audit_logs WHERE action_name=?", "AuthService.renewGoogleSession")
+        assertTrue(audit.isNotEmpty())
+        for (row in audit) {
+            val stored = row.values.joinToString()
+            assertFalse(stored.contains(expired.token))
+            assertFalse(stored.contains(renewed.token))
+            assertFalse(stored.contains("renew-proof"))
+        }
+        assertEquals(user.id, sessions.authenticate(device, "Bearer ${renewed.token}"))
+        renew(expired.token).expectStatus().isUnauthorized
+        assertEquals("AAPL", settings.findByUserId(user.id!!)!!.watchedStocksRaw)
+        sessions.logout(device, "Bearer ${renewed.token}")
+        renew(renewed.token).expectStatus().isUnauthorized
+        assertFalse(links.existsById(device))
+
+        val revokedDevice = "renew-revoked-device"
+        val controllerDevice = "renew-controller-device"
+        links.save(DeviceLink(revokedDevice, user.id!!))
+        links.save(DeviceLink(controllerDevice, user.id!!))
+        val revoked = sessions.issue(revokedDevice)
+        val controller = sessions.issue(controllerDevice)
+        val target = sessions.devices(controllerDevice, "Bearer ${controller.token}").single { !it.current }.id
+        sessions.revokeDevice(controllerDevice, "Bearer ${controller.token}", target)
+        renew(revoked.token, requestedDevice = revokedDevice).expectStatus().isUnauthorized
+        assertFalse(links.existsById(revokedDevice))
+    }
+
+    @Test
     fun `HTTP 로그아웃과 Google 재로그인은 관심 기업과 보유 종목 및 이력을 보존하고 폐기 토큰을 거절한다`() {
         val device = "record-preservation-device"
         val sub = "record-preservation-user"

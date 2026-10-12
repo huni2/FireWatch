@@ -94,7 +94,7 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
     return (
       <View className="gap-2">
         <Text className="text-center text-sm font-semibold text-brand">{linkedEmail} 계정과 연동되었습니다 ✓</Text>
-        <Text className="text-xs text-muted">로그인은 30일간 유지됩니다. 만료되면 Google 계정으로 다시 로그인해주세요.</Text>
+        <Text className="text-xs text-muted">로그인은 30일간 유지되고, 만료되면 연결된 Google 계정으로 복구를 시도해요. 계정 확인이 필요하면 다시 로그인해주세요.</Text>
         <Pressable disabled={linking || deviceBusy || deleting} onPress={() => void login()} className="min-h-11 items-center justify-center">{linking ? <ActivityIndicator /> : <Text className="text-brand">Google 로그인 갱신</Text>}</Pressable>
         {loginError && <Text accessibilityRole="alert" className="text-sm text-danger">{loginError}</Text>}
         <Pressable disabled={deviceBusy} onPress={manageDevices} className="min-h-11 items-center justify-center"><Text className="text-brand">연결된 기기 확인</Text></Pressable>
