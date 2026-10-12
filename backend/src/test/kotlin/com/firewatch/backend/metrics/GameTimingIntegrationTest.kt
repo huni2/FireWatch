@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.web.reactive.server.WebTestClient
+import java.time.Duration
 import java.util.UUID
 import kotlin.test.*
 
@@ -43,7 +44,10 @@ class GameTimingIntegrationTest {
         logger.detachAppender(appender); appender.stop()
         httpLogger.detachAppender(httpAppender); httpAppender.stop()
     }
-    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
+    // This verifies timing fields and durable state, not a five-second latency SLA.
+    // Match other integration clients so cold/contended CI workers can finish setup.
+    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port")
+        .responseTimeout(Duration.ofSeconds(20)).build()
     private fun start(device: String) = client().post().uri("/api/game/start?compact=true").header("X-Device-Id", device)
         .exchange().expectStatus().isOk.expectHeader().valueMatches("Server-Timing", "application;dur=\\d+, auth_queue;dur=.+")
         .expectBody(GameTurnResponse::class.java).returnResult().responseBody!!
