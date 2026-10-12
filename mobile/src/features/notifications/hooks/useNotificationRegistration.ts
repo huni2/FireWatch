@@ -48,9 +48,12 @@ export async function hasRegisteredPush(): Promise<boolean> { return Boolean(awa
 
 export async function unregisterPushToken(): Promise<void> {
   let token = await SecureStore.getItemAsync('firewatch-push-token')
-  if (!token && (await Notifications.getPermissionsAsync()).granted) {
+  if (!token) {
     const projectId = Constants.expoConfig?.extra?.eas?.projectId
-    if (projectId) token = (await Notifications.getExpoPushTokenAsync({ projectId })).data
+    if (!projectId) throw new Error('이 기기의 알림 등록 정보를 확인하지 못했어요.')
+    // Read the existing device token without requesting permission again. If it cannot
+    // be resolved, do not claim the server subscription was removed.
+    token = (await Notifications.getExpoPushTokenAsync({ projectId })).data
   }
   if (token) await updateSettings({ removeFcmToken: token })
   await SecureStore.deleteItemAsync('firewatch-push-token')
