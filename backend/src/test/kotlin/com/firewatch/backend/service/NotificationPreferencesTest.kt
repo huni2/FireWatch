@@ -29,6 +29,7 @@ class NotificationPreferencesTest {
         assertEquals(listOf("12:00"), SchedulerController.dueSlots(row, LocalTime.of(12,15),15,today))
         assertEquals(listOf("12:00", "18:00"), SchedulerController.dueSlots(row, LocalTime.of(19,0),15,today))
         assertEquals(listOf("08:00"), SchedulerController.dueSlots(row, LocalTime.of(8,0),15,today.plusDays(1)))
+        assertEquals(emptyList(), SchedulerController.dueSlots(UserSettings(pushTimesRaw="23:55"), LocalTime.of(0,5),15,today))
     }
     @Test fun `시간 개수 형식과 키워드 없는 새 소식 설정을 거부한다`() {
         val identity = mockk<SettingsIdentityResolver>(); every { identity.resolveForDevice(any()) } returns UserSettings()

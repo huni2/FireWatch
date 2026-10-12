@@ -110,7 +110,11 @@ class SchedulerController(
         fun dueSlots(row: UserSettings, now: LocalTime, windowMinutes: Long, today: LocalDate): List<String> {
             if (row.pushTimesRaw == null && row.lastNotifiedDate == today) return emptyList()
             val sent = row.notifiedSlotsRaw.orEmpty().split(",")
-            return row.pushTimes().filter { "$today|$it" !in sent && (isDue(it, now, windowMinutes) || now.isAfter(LocalTime.parse(it))) }
+            return row.pushTimes().filter {
+                val target = LocalTime.parse(it)
+                val due = if (row.pushTimesRaw == null) isDue(it, now, windowMinutes) || now.isAfter(target) else !now.isBefore(target)
+                "$today|$it" !in sent && due
+            }
         }
     }
 }
