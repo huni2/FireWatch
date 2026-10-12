@@ -90,7 +90,7 @@ export function HomeScreen() {
           headerStyle: { backgroundColor: colors.accentSoft },
           headerTintColor: colors.text,
           headerShadowVisible: false,
-          headerTitle: () => <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}><FirewatchBrand size={27} /><Text style={{ color: colors.text, fontSize: 20, fontWeight: '700', letterSpacing: -.5 }}>FireWatch</Text></View>,
+          headerTitle: () => <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, flexShrink: 1 }}><FirewatchBrand size={27} /><Text numberOfLines={1} style={{ flexShrink: 1, color: colors.text, fontSize: 20, fontWeight: '700', letterSpacing: -.5 }}>FireWatch</Text></View>,
           headerRight: () => (
             <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
               <ThemeToggle />

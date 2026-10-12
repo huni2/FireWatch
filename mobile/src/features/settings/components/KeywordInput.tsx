@@ -49,10 +49,11 @@ export function KeywordInput({
         {value.map((keyword) => (
           <View
             key={keyword}
-            className="flex-row items-center gap-1 rounded-full bg-canvas py-1 pl-3 pr-2"
+            className="flex-row items-center gap-1 rounded-full bg-canvas pl-3"
+            style={{ maxWidth: '100%' }}
           >
-            <Text className="text-sm text-muted">{labelForValue?.(keyword) ?? keyword}</Text>
-            <Pressable onPress={() => onChange(value.filter((k) => k !== keyword))} hitSlop={8}>
+            <Text className="text-sm text-muted" style={{ flexShrink: 1 }}>{labelForValue?.(keyword) ?? keyword}</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel={`${labelForValue?.(keyword) ?? keyword} 삭제`} onPress={() => onChange(value.filter((k) => k !== keyword))} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
               <Text className="text-sm text-muted">✕</Text>
             </Pressable>
           </View>

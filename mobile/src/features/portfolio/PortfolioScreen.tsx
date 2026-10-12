@@ -1,3 +1,4 @@
+import { ActionButton } from '@/components/ActionButton'
 import { useTheme } from '@/lib/theme'
 import { LoadingState } from '@/components/LoadingState'
 import { AppReadiness } from '@/lib/appReadiness'
@@ -61,7 +62,7 @@ export function PortfolioScreen(navigation: { onOpenStock?: (symbol: string) => 
     <ScrollView ref={scroll} className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5 pb-10" refreshControl={<RefreshControl refreshing={query.refreshing} onRefresh={query.refresh} />}>
       <View className="gap-2"><Text className="text-2xl font-bold text-ink">내 자산</Text></View>
       {query.error && <View className="gap-2"><Text className="text-ink">{query.error}</Text><Pressable onPress={query.reload} className="min-h-11 justify-center"><Text className="text-brand">다시 확인</Text></Pressable></View>}
-      {portfolio && <View className="flex-row flex-wrap gap-3"><Pressable accessibilityRole="button" disabled={saving || portfolio.holdings.length >= 50} onPress={() => openHolding()} className="min-h-11 justify-center rounded-xl bg-brand px-5 py-3"><Text className="font-bold text-onbrand">{hasAssets ? '자산 추가' : '첫 자산 등록하기'}</Text></Pressable><Pressable accessibilityRole="button" disabled={saving} onPress={() => { setError(null); setPlan(toDraft(portfolio)) }} style={hasAssets ? undefined : { display: 'none' }} className="min-h-11 justify-center rounded-xl border border-line px-4"><Text className="text-ink">현금·투자 계획</Text></Pressable></View>}
+      {portfolio && <View className="flex-row flex-wrap gap-3"><ActionButton tone="primary" disabled={saving || portfolio.holdings.length >= 50} label={hasAssets ? '자산 추가' : '첫 자산 등록하기'} onPress={() => openHolding()} /><Pressable accessibilityRole="button" disabled={saving} onPress={() => { setError(null); setPlan(toDraft(portfolio)) }} style={hasAssets ? undefined : { display: 'none' }} className="min-h-11 justify-center rounded-xl border border-line px-4"><Text className="text-ink">현금·투자 계획</Text></Pressable></View>}
       {error && !editing && !plan && <Text className="text-danger">{error}</Text>}
       {!hasAssets && portfolio && <View className="gap-3 py-4"><Text className="text-2xl font-bold text-ink">내 자산이 어디에 몰려 있는지 알아보세요</Text><Text className="text-muted">회사와 수량만 입력하면 시작할 수 있어요. 매입가는 나중에 입력해도 괜찮아요.</Text>{navigation.onOpenCandidates && <Pressable accessibilityRole="button" onPress={navigation.onOpenCandidates} className="min-h-11 justify-center"><Text className="text-brand">분야별 기업 살펴보기</Text></Pressable>}</View>}
       {hasAssets && portfolio && <>

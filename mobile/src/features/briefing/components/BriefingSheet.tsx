@@ -1,8 +1,7 @@
-import { useTheme } from '@/lib/theme'
+import { AppSheet } from '@/components/AppSheet'
 // 알림 터치 시(또는 홈 화면에서) 열리는 브리핑 상세 바텀시트. Design Ref: mobile-app.design.md §5.1/§5.4.
-import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
-import type { ComponentRef, Ref } from 'react'
-import { Text, View } from 'react-native'
+import { useImperativeHandle, useState, type Ref } from 'react'
+import { ScrollView, Text, View } from 'react-native'
 
 import type { Briefing } from '@/lib/api'
 import { qualifiedRecommendations } from '../../../../../shared/discovery'
@@ -10,7 +9,7 @@ import { qualifiedRecommendations } from '../../../../../shared/discovery'
 import { RecommendedStockChip } from './RecommendedStockChip'
 import { InvestmentNotice } from '@/components/InvestmentNotice'
 
-export type BriefingSheetRef = ComponentRef<typeof BottomSheetModal>
+export interface BriefingSheetRef { present(): void; dismiss(): void }
 
 interface BriefingSheetProps {
   ref: Ref<BriefingSheetRef>
@@ -18,11 +17,11 @@ interface BriefingSheetProps {
 }
 
 export function BriefingSheet({ ref, briefing }: BriefingSheetProps) {
-  const { colors } = useTheme()
+  const [open, setOpen] = useState(false)
+  useImperativeHandle(ref, () => ({ present: () => setOpen(true), dismiss: () => setOpen(false) }), [])
   return (
-    <BottomSheetModal ref={ref} snapPoints={['55%', '85%']} enablePanDownToClose backgroundStyle={{ backgroundColor: colors.surface }} handleIndicatorStyle={{ backgroundColor: colors.border }}>
-      <BottomSheetScrollView contentContainerStyle={{ gap: 20, paddingHorizontal: 24, paddingBottom: 40, paddingTop: 12 }}>
-        <Text className="text-xs font-bold text-brand">DAILY MARKET BRIEF</Text>
+    <AppSheet open={open} title="시장 브리핑" close={() => setOpen(false)}>
+      <ScrollView contentContainerStyle={{ gap: 20, padding: 20, paddingBottom: 40 }}>
         <InvestmentNotice />
         <Text className="text-lg font-bold text-ink">
           {`증시 요약 · 자료 기준 ${briefing.briefingDate}`}
@@ -39,7 +38,7 @@ export function BriefingSheet({ ref, briefing }: BriefingSheetProps) {
           </View>
         )}
         {!qualifiedRecommendations(briefing).length && <Text className="text-sm text-muted">선정 이유·위험·근거 기사를 갖춘 후보가 아직 없습니다.</Text>}
-      </BottomSheetScrollView>
-    </BottomSheetModal>
+      </ScrollView>
+    </AppSheet>
   )
 }
