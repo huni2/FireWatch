@@ -60,3 +60,9 @@ versionCode5 출시 설정·타입·린트·테스트8개·Android export2162모
 타입/Expo lint 및 테마·로딩 회귀9개 통과. Android JS export2180모듈/5.2MB 성공. 격리된 native-web360/390px에서 동의/홈/설정 전환·오른쪽 thumb 이동·새로고침 후 저장·헤더 겹침/가로 넘침 없음·순위 본문600px 스크롤 후 닫기 위치 유지·주간 우승자 전환/복귀 확인. JS오류·운영 API쓰기0. 검증 결과는 header-theme-ranking-preview.json에 보관한다. 실제 Android Switch 드래그·TalkBack은 미확인이다.
 
 APK/EAS/OTA 실행0. 공개1.0.3에는 이전 로딩 수정과 이번 UI 변경이 포함되지 않으며 새 설치본은 사용자 별도 요청 때 만든다. 기존 Issue#62/APP-21에 기록하고 새 과제는 생성하지 않는다.
+
+## 2026-10-12 게임 마무리 접근성
+
+진행 중 게임의 규칙·마무리를 더보기/게임 도구에 숨겼던 구성을 제거했다. 웹/Android 메뉴에서 규칙과 `이번 게임 마무리`를 바로 노출한다. 마무리는 ACTIVE일 때만 표시하고 busy 동안 비활성화하며 기존 종료 확인·취소 및 서버 종료 동작을 유지한다. 작은 화면은 버튼을 자연스럽게 다음 줄로 배치한다. 순위 조건/게임 규칙/DB 변경 없음.
+
+웹 타입/빌드/lint 통과(기존 푸시 effect 경고1 유지), Android 타입/Expo lint 및 native-web export 통과. 격리 웹360/390/1366px에서 직접 버튼/확인 취소·가로 넘침 없음, native-web360/390px에서 직접 버튼·규칙/44px 크기/가로 넘침 없음 검증. JS오류·운영쓰기0. Android Alert 취소·실기기 동작은 미확인. 결과는 game-finish-web-preview.json 및 game-finish-native-preview.json에 보관한다. 기존 Issue62/APP-21에 기록하고 새 과제 없음, APK/EAS/OTA0.

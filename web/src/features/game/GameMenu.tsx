@@ -1,4 +1,4 @@
-import { Dropdown, Tooltip } from 'antd'
+import { Tooltip } from 'antd'
 import { FirewatchIcon } from '../../components/FirewatchIcon'
 import mascot from '../../../../shared/assets/firewatch-lobby-scout.png'
 
@@ -22,18 +22,18 @@ export function GameMenu({ lobby, busy, canPublish, canReplay, canEnd, onRules, 
     ...(!lobby ? [
       { name: '완주 기록 등록', label: '등록', description: canPublish ? '동의한 기록만 닉네임으로 공개' : '24주를 끝까지 진행하면 등록할 수 있어요.', icon: <FirewatchIcon name="publish" size={20} />, action: onPublish, disabled: !canPublish },
       { name: '지난 턴 복기', label: '복기', description: canReplay ? '내 거래와 가격 변화 다시보기' : '다음 주로 이동하면 변화를 돌아볼 수 있어요.', icon: <FirewatchIcon name="replay" size={20} />, action: onReplay, disabled: !canReplay },
-      { name: '게임 종료', label: '종료', description: '확인 후 현재 기록으로 마무리', icon: <FirewatchIcon name="exit" size={20} />, action: onEnd, disabled: !canEnd },
+      { name: '이번 게임 마무리', label: '이번 게임 마무리', description: '확인 후 현재 기록으로 마무리', icon: <FirewatchIcon name="exit" size={20} />, action: onEnd, disabled: !canEnd },
     ] : []),
   ]
   return <div className={`game-quick-menu ${lobby ? 'lobby' : 'compact'}`}>
     {lobby && <img className="game-lobby-mascot" src={mascot} alt="FireWatch 불꽃 정찰대" />}
     <nav className="game-quick-actions" aria-label="게임 도구">
-    {actions.filter(item => lobby || item.name === '주간 순위' || item.name === '지난 턴 복기' || (item.name === '완주 기록 등록' && canPublish)).map(item => <Tooltip key={item.name} title={item.description} trigger={['hover', 'focus']}>
+    {actions.filter(item => lobby || item.name === '주간 순위' || item.name === '게임 규칙' || item.name === '지난 턴 복기' || (item.name === '이번 게임 마무리' && canEnd) || (item.name === '완주 기록 등록' && canPublish)).map(item => <Tooltip key={item.name} title={item.description} trigger={['hover', 'focus']}>
         <span><button type="button" aria-label={item.name} disabled={busy || item.disabled} onClick={item.action}>
           <span aria-hidden="true">{item.icon}</span><span>{item.label}</span>
         </button></span>
       </Tooltip>)}
-      {!lobby && <Dropdown trigger={['click']} menu={{ items: [{ key: 'rules', label: '게임 규칙', icon: <FirewatchIcon name="rules" size={18} />, onClick: onRules }, { key: 'end', label: '이번 게임 마무리', icon: <FirewatchIcon name="exit" size={18} />, disabled: !canEnd, onClick: onEnd }] }}><button type="button" disabled={busy} aria-label="게임 더보기"><FirewatchIcon name="more" size={20} /><span>더보기</span></button></Dropdown>}
+
     </nav>
   </div>
 }
