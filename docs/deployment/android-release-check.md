@@ -1,6 +1,14 @@
 # Android 설치 검증
 
-## 최신 설치본 1.0.5 / 빌드10 (2026-10-12)
+## 최신 설치본 1.0.6 / 빌드11 (2026-10-13)
+
+사용자 새 APK/릴리스/README 최신화 요청으로 소스 `b1a67e584f369fc23f4ce9005ccbceec97948b65`를 로컬 Expo prebuild+Gradle로 빌드했다. EAS 클라우드 요청 0. PR#100~102의 버튼 대비·게임 시작 고정·공통 시트/드래그 닫기·관심 해제 상세 유지·설정 저장/작은 화면 메시지·글자/줄바꿈을 포함한다.
+
+기존 1.0.5와 같은 release 인증서, 패키지 `com.firewatch.mobile`, 버전 1.0.6/11, ARM32/64·R8/리소스 축소, ZIP CRC·16KB 정렬, 독립 JS 번들과 Google/그라디언트 네이티브 모듈, 마스코트와 최신 상호작용 코드를 확인했다. 크기 54,324,456 bytes(약 54.3MB), SHA-256 `cd81d1509063f458285dbc1f8e23fd44ecf515d6ca495dc12f752dec93b1e442`. GitHub digest와 공개 HTTP200·크기를 대조했다. [APK](https://github.com/huni2/FireWatch/releases/download/v1.0.6-android-preview/FireWatch-1.0.6-android.apk) · [릴리스](https://github.com/huni2/FireWatch/releases/tag/v1.0.6-android-preview) · [파일 기록](../product/android-preview-20261009/android-106-build.json).
+
+모바일 회귀 48개·type/lint·출시 설정 검사와 [빌드 소스 CI](https://github.com/huni2/FireWatch/actions/runs/38269553999) 통과. 기존 앱을 삭제하지 않고 업데이트 설치한다. 실제 기기의 로그인·푸시·키보드·OS 글자 확대·DateTimePicker·TalkBack·첫 이용자 검증은 미확인이다. 자동 APK/EAS/OTA는 활성화하지 않는다.
+
+## 이전 설치본 1.0.5 / 빌드10 (2026-10-12)
 
 사용자 README APK 통합 테스트 요청과 UX 정리 후속으로 소스 `c8c2fad754e14ec5692803a4edbd461789b6f10f`를 로컬 Expo prebuild+Gradle로 빌드했다. EAS 클라우드 요청0, ARM32/64·R8/리소스 축소 유지. PR#98~99의 규칙/차트/관심 토글/알림과 단일 테마·공통 버튼·고정 주문 총액·저장 상태를 포함한다.
 
