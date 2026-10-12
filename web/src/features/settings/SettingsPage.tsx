@@ -207,7 +207,7 @@ function WebPushCard({ settings, onSubscribed }: { settings: Settings; onSubscri
 
         {settings.webPushSubscribed && <Tag color="success">등록된 브라우저가 있어요</Tag>}
 
-        <Button onClick={currentSubscribed ? () => { setSubscribing(true); void unsubscribe().then(() => { message.success('이 브라우저의 알림을 껐어요.'); onSubscribed() }).catch(() => message.error('알림을 끄지 못했어요. 다시 눌러주세요.')).finally(() => setSubscribing(false)) } : handleSubscribe} loading={subscribing} disabled={status !== 'ready'}>
+        <Button onClick={currentSubscribed ? () => { setSubscribing(true); void unsubscribe().then(() => { message.success('이 브라우저의 알림을 껐어요.'); onSubscribed() }).catch(() => message.error('알림을 끄지 못했어요. 다시 눌러주세요.')).finally(() => setSubscribing(false)) } : handleSubscribe} loading={subscribing} disabled={!currentSubscribed && status !== 'ready'}>
           {currentSubscribed ? '이 브라우저 알림 끄기' : '브라우저 알림 켜기'}
         </Button>
         <details className="support-details"><summary>다른 기기에서도 알림이 오나요?</summary><p>알림을 받을 브라우저마다 등록해주세요. 등록된 브라우저가 있다는 표시만으로 현재 기기의 수신을 확인할 수는 없어요. Android 앱의 알림 권한은 앱에서 설정해요.</p></details>
