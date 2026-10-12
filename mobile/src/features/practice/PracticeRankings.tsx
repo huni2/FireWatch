@@ -1,5 +1,6 @@
+import { ModalHeader } from '@/components/ModalHeader'
 import { LoadingState } from '@/components/LoadingState'
-import { ThemeSurface, useTheme } from '@/lib/theme'
+import { ThemeSurface } from '@/lib/theme'
 import { useEffect, useState } from 'react'
 import { Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -14,7 +15,6 @@ async function rankingRequest<T>(path: string, init?: RequestInit) {
   return request<T>(`/api/game/rankings${path}`, { ...init, headers: { 'X-Device-Id': await getDeviceId(), ...init?.headers } })
 }
 export function PracticeRankings({ turn, initialTab, close }: { turn: RankingGame | null; initialTab: RankingTab; close: () => void }) {
-  const { colors } = useTheme()
   const [tab, setTab] = useState<RankingTab>(initialTab), [offset, setOffset] = useState(0), [page, setPage] = useState(0)
   const [difficulty, setDifficulty] = useState<RankingDifficulty>('NORMAL'), [shortSelling, setShort] = useState(false)
   const kind = 'FINISHED', selectedTurn = 23
@@ -55,10 +55,7 @@ export function PracticeRankings({ turn, initialTab, close }: { turn: RankingGam
   const changeTab = (key: RankingTab) => { setTab(key); setPage(0); setReceipt('') }
   return <Modal visible animationType="slide" onRequestClose={() => { if (!busy) close() }}><ThemeSurface>
     <SafeAreaView className="flex-1 bg-canvas">
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-        <Text accessibilityRole="header" numberOfLines={2} style={{ flex: 1, color: colors.text, fontSize: 18, fontWeight: '700' }}>{tab === 'publish' ? '기록 공개' : initialTab === 'publish' ? '내 공개 기록' : '주간 순위'}</Text>
-        <Pressable accessibilityRole="button" accessibilityLabel="순위 창 닫기" accessibilityHint={tab === 'publish' ? '이 기록을 등록하지 않고 게임으로 돌아가요' : '게임으로 돌아가요'} accessibilityState={{ disabled: busy }} disabled={busy} onPress={close} style={{ minHeight: 44, minWidth: 56, alignItems: 'center', justifyContent: 'center', opacity: busy ? .4 : 1 }}><Text style={{ color: colors.text, fontSize: 15, fontWeight: '600' }}>닫기</Text></Pressable>
-      </View>
+      <ModalHeader title={tab === 'publish' ? '기록 공개' : initialTab === 'publish' ? '내 공개 기록' : '주간 순위'} close={close} disabled={busy} closeLabel="순위 창 닫기" closeHint={tab === 'publish' ? '이 기록을 등록하지 않고 게임으로 돌아가요' : '게임으로 돌아가요'} />
       <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 20, gap: 16 }}>
       {initialTab !== 'publish' && <><Text className="text-muted">게임마다 시장이 달라요. 같은 조건의 수익률을 비교해요.</Text>
       <View className="flex-row flex-wrap gap-2">{([['board', '주간 순위'], ['winners', '주간 우승자'], ['publish', '기록 등록'], ['mine', '내 기록']] as const).map(([key, label]) => <RankButton key={key} label={label} selected={tab === key} disabled={busy} onPress={() => changeTab(key)} />)}</View></>}
