@@ -114,7 +114,7 @@ class CatalogIntegrationTest {
         assertEquals(0, catalog.search("%_'").total)
         assertEquals(5, catalog.search("", "STOCK", "", "chips").total)
         WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").build().get().uri("/api/catalog?assetClass=ETF&region=KR").exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(2)
-        WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").build().get().uri("/api/catalog?page=-1").exchange().expectStatus().isBadRequest
+        WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").build().get().uri("/api/catalog?page=-1").exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
     }
 
     @Test @Transactional

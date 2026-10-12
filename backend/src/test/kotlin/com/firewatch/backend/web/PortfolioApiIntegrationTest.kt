@@ -30,7 +30,7 @@ class PortfolioApiIntegrationTest {
         auditLogs.save(com.firewatch.backend.entity.AuditLog(eventType = com.firewatch.backend.entity.AuditEventType.PORTFOLIO,
             actionName = "privatePortfolio", status = com.firewatch.backend.entity.AuditStatus.SUCCESS,
             responseSummary = "private-owner-secret: holdings=123456", requestPayload = "private-request"))
-        client.get().uri("/api/audit-logs?eventType=PORTFOLIO").exchange().expectStatus().isUnauthorized
+        client.get().uri("/api/audit-logs?eventType=PORTFOLIO").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         client.get().uri("/api/audit-logs?eventType=PORTFOLIO").header("X-API-Key", "portfolio-operator-key").exchange().expectStatus().isOk.expectBody()
             .consumeWith { result ->
                 val body = String(result.responseBody!!)
@@ -62,7 +62,7 @@ class PortfolioApiIntegrationTest {
             .jsonPath("$.total").isEqualTo(1).jsonPath("$.news[0].title").isEqualTo("반도체 과거 뉴스").jsonPath("$.hasMore").isEqualTo(false)
         client.get().uri("/api/news?q=반도체&size=1").exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(2).jsonPath("$.hasMore").isEqualTo(true)
         client.get().uri("/api/news?q=반도체&size=1&page=1").exchange().expectStatus().isOk.expectBody().jsonPath("$.news[0].title").isEqualTo("반도체 과거 뉴스")
-        client.get().uri("/api/news?from=2026-10-07&to=2025-01-01").exchange().expectStatus().isBadRequest
+        client.get().uri("/api/news?from=2026-10-07&to=2025-01-01").exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         kotlin.test.assertEquals(before, feed.count())
     }
 
@@ -83,7 +83,7 @@ class PortfolioApiIntegrationTest {
         val days = listOf(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 2))
         val saved = briefings.saveAll(days.map { Briefing(briefingDate = it, marketSummary = "게임 테스트", goldPrice = BigDecimal("2000"), dataSourceStatus = com.firewatch.backend.entity.DataSourceStatus.NORMAL) })
         gameSessions.save(com.firewatch.backend.entity.GameSession(deviceId = "game-api-a", turnDatesRaw = days.joinToString(","), startingCash = BigDecimal("10000000")))
-        client.get().uri("/api/game/current").header("X-Device-Id", "game-api-a").exchange().expectStatus().isOk
+        client.get().uri("/api/game/current").header("X-Device-Id", "game-api-a").exchange().expectStatus().isOk.expectBody(Void::class.java)
         val order = """{"instrumentType":"GOLD","action":"BUY","quantity":10,"expectedTurnIndex":0,"expectedPrice":2000,"requestId":"game-api-order"}"""
         client.post().uri("/api/game/preview").header("X-Device-Id", "game-api-a").contentType(MediaType.APPLICATION_JSON).bodyValue(order)
             .exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(20000).jsonPath("$.cashAfter").isEqualTo(9980000)
@@ -96,10 +96,10 @@ class PortfolioApiIntegrationTest {
         client.get().uri("/api/game/current").header("X-Device-Id", "game-api-a").exchange().expectStatus().isOk.expectBody()
             .jsonPath("$.holdings[0].currentPrice").isEqualTo(2000).jsonPath("$.portfolioValue").isEqualTo(10000000)
         client.post().uri("/api/game/next-turn").header("X-Device-Id", "game-api-a").contentType(MediaType.APPLICATION_JSON).bodyValue("""{"expectedTurnIndex":0}""")
-            .exchange().expectStatus().isBadRequest
+            .exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         client.get().uri("/api/game/current").header("X-Device-Id", "game-api-a").exchange().expectStatus().isOk.expectBody()
             .jsonPath("$.turnIndex").isEqualTo(0).jsonPath("$.holdings[0].quantity").isEqualTo(10).jsonPath("$.cash").isEqualTo(9980000)
-        client.get().uri("/api/game/current").header("X-Device-Id", "game-api-b").exchange().expectStatus().isNotFound
+        client.get().uri("/api/game/current").header("X-Device-Id", "game-api-b").exchange().expectStatus().isNotFound.expectBody(Void::class.java)
         client.post().uri("/api/game/start").header("X-Device-Id", "game-api-a").exchange().expectStatus().isOk.expectBody()
             .jsonPath("$.simulation").isEqualTo(true).jsonPath("$.holdings.length()").isEqualTo(0)
         kotlin.test.assertTrue(gameSessions.findAll().any { it.deviceId == "game-api-a" && it.status == com.firewatch.backend.entity.GameSessionStatus.ENDED && it.simulationSeed == null })
@@ -138,7 +138,7 @@ class PortfolioApiIntegrationTest {
         for (cost in listOf("0", "-1", "0.12345")) {
             client.put().uri("/api/portfolio").header("X-Device-Id", "optional-cost-invalid-$cost").contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(input(0, "005935.KS").replace("\"averageCost\":70000", "\"averageCost\":$cost"))
-                .exchange().expectStatus().isBadRequest
+                .exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         }
     }
 
@@ -154,20 +154,20 @@ class PortfolioApiIntegrationTest {
 
     @Test
     fun `누락 신원과 공개된 기존 신원은 거부한다`() {
-        client.get().uri("/api/portfolio").exchange().expectStatus().isBadRequest
-        client.get().uri("/api/portfolio").header("X-Device-Id", "legacy-owner-device").exchange().expectStatus().isUnauthorized
+        client.get().uri("/api/portfolio").exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
+        client.get().uri("/api/portfolio").header("X-Device-Id", "legacy-owner-device").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
     }
 
     @Test
     fun `통화가 다른 자산은 합산 전에 거부한다`() {
         val before = portfolios.count()
-        client.put().uri("/api/portfolio").header("X-Device-Id", "portfolio-invalid").contentType(MediaType.APPLICATION_JSON).bodyValue(input(0, "AAPL", "KRW")).exchange().expectStatus().isBadRequest
+        client.put().uri("/api/portfolio").header("X-Device-Id", "portfolio-invalid").contentType(MediaType.APPLICATION_JSON).bodyValue(input(0, "AAPL", "KRW")).exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         kotlin.test.assertEquals(before, portfolios.count(), "잘못된 통화 입력으로 보유 기록을 저장하면 안 됩니다.")
     }
 
     @Test
     fun `푸시 토큰만 등록해도 기존 설정은 유지한다`() {
-        client.put().uri("/api/settings").header("X-Device-Id", "partial-a").contentType(MediaType.APPLICATION_JSON).bodyValue("""{"pushTime":"09:00","interestKeywords":["반도체"],"watchedStocks":["005930.KS"]}""").exchange().expectStatus().isOk
+        client.put().uri("/api/settings").header("X-Device-Id", "partial-a").contentType(MediaType.APPLICATION_JSON).bodyValue("""{"pushTime":"09:00","interestKeywords":["반도체"],"watchedStocks":["005930.KS"]}""").exchange().expectStatus().isOk.expectBody(Void::class.java)
         client.put().uri("/api/settings").header("X-Device-Id", "partial-a").contentType(MediaType.APPLICATION_JSON).bodyValue("""{"fcmToken":"test-token"}""").exchange().expectStatus().isOk.expectBody().jsonPath("$.pushTime").isEqualTo("09:00").jsonPath("$.watchedStocks[0]").isEqualTo("005930.KS")
     }
 }

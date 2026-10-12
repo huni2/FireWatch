@@ -51,19 +51,19 @@ class GameRankingIntegrationTest {
     @Test fun `registration is opt in authenticated owned server scored and idempotent`() {
         val p=login();val g=game(p);val input=RankingSubmission(g.id!!,23,"게임닉네임")
         client().get().uri("/api/game/rankings").exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(0)
-        client().post().uri("/api/game/rankings").bodyValue(input).exchange().expectStatus().isUnauthorized
+        client().post().uri("/api/game/rankings").bodyValue(input).exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         client().post().uri("/api/game/rankings").header("X-Device-Id",p.device).header("Authorization",p.auth).bodyValue(input.copy(expectedTurnIndex=22)).exchange().expectStatus().isEqualTo(409)
         val other=login()
-        client().post().uri("/api/game/rankings").header("X-Device-Id",other.device).header("Authorization",other.auth).bodyValue(input).exchange().expectStatus().isNotFound
+        client().post().uri("/api/game/rankings").header("X-Device-Id",other.device).header("Authorization",other.auth).bodyValue(input).exchange().expectStatus().isNotFound.expectBody(Void::class.java)
         val e=publish(p,g,"게임닉네임");assertEquals(0,e.returnPercent.compareTo(BigDecimal.ZERO));assertEquals("FINISHED",e.board)
         assertEquals(e.id,publish(p,g,"게임닉네임").id)
         client().post().uri("/api/game/rankings").header("X-Device-Id",p.device).header("Authorization",p.auth)
             .bodyValue(mapOf("sessionId" to g.id!!,"expectedTurnIndex" to 23,"nickname" to "게임닉네임","returnPercent" to 999999)).exchange().expectStatus().isOk.expectBody().jsonPath("$.returnPercent").isEqualTo(0.0)
         val raw=client().get().uri("/api/game/rankings").exchange().expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody!!
         assertFalse(raw.contains("@example.com"));assertFalse(raw.contains("userId"));assertFalse(raw.contains("deviceId"));assertFalse(raw.contains("sessionId"))
-        client().get().uri("/api/game/current").header("X-Device-Id",p.device).exchange().expectStatus().isUnauthorized
-        client().delete().uri("/api/game/rankings/${e.id}").header("X-Device-Id",other.device).header("Authorization",other.auth).exchange().expectStatus().isNotFound
-        client().delete().uri("/api/game/rankings/${e.id}").header("X-Device-Id",p.device).header("Authorization",p.auth).exchange().expectStatus().isOk
+        client().get().uri("/api/game/current").header("X-Device-Id",p.device).exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+        client().delete().uri("/api/game/rankings/${e.id}").header("X-Device-Id",other.device).header("Authorization",other.auth).exchange().expectStatus().isNotFound.expectBody(Void::class.java)
+        client().delete().uri("/api/game/rankings/${e.id}").header("X-Device-Id",p.device).header("Authorization",p.auth).exchange().expectStatus().isOk.expectBody(Void::class.java)
         client().get().uri("/api/game/rankings").exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(0)
         assertFalse(publish(p,g,"게임닉네임").visible)
     }
@@ -82,9 +82,9 @@ class GameRankingIntegrationTest {
             .jsonPath("$.holdings[0].currentPrice").isEqualTo(GameSimulation.forVersion(2).price(42L, 1, GameInstrumentType.STOCK, "005930.KS")!!.toDouble())
         // DB의 미지원 저장 버전을 현재 규칙으로 읽거나 종료하면서 덮어쓰지 않는다.
         jdbc.update("UPDATE game_sessions SET simulation_version=999 WHERE id=?", g.id!!)
-        current().expectStatus().isBadRequest
+        current().expectStatus().isBadRequest.expectBody(Void::class.java)
         client().post().uri("/api/game/end").header("X-Device-Id", p.device).header("Authorization", p.auth)
-            .exchange().expectStatus().isBadRequest
+            .exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         val saved = games.findById(g.id!!).orElseThrow()
         assertEquals(999, saved.simulationVersion)
         assertEquals(1, saved.currentTurnIndex)
@@ -98,24 +98,24 @@ class GameRankingIntegrationTest {
     @Test fun `leagues separate completion turn difficulty and short mode with one best place per account`() {
         val p=login();publish(p,game(p),"플레이어하나");publish(p,game(p),"플레이어하나")
         val early=login()
-        client().post().uri("/api/game/rankings").header("X-Device-Id",early.device).header("Authorization",early.auth).bodyValue(RankingSubmission(game(early,4).id!!,4,"중도종료")).exchange().expectStatus().isBadRequest
+        client().post().uri("/api/game/rankings").header("X-Device-Id",early.device).header("Authorization",early.auth).bodyValue(RankingSubmission(game(early,4).id!!,4,"중도종료")).exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         val easy=login();publish(easy,game(easy,cash="20000000"),"쉬움모드")
         val short=login();publish(short,game(short,short=true),"공매도모드")
-        for (turn in listOf(6,23)) { val active=login(); client().post().uri("/api/game/rankings").header("X-Device-Id",active.device).header("Authorization",active.auth).bodyValue(RankingSubmission(game(active,turn,false).id!!,turn,"진행중플레이어")).exchange().expectStatus().isBadRequest }
+        for (turn in listOf(6,23)) { val active=login(); client().post().uri("/api/game/rankings").header("X-Device-Id",active.device).header("Authorization",active.auth).bodyValue(RankingSubmission(game(active,turn,false).id!!,turn,"진행중플레이어")).exchange().expectStatus().isBadRequest.expectBody(Void::class.java) }
         fun count(query: String, expected: Int) { client().get().uri("/api/game/rankings$query").exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(expected) }
         count("",1);count("?difficulty=EASY",1);count("?shortSelling=true",1)
         count("?board=PROGRESS&turn=4",0);count("?board=PROGRESS&turn=6",0);count("?board=PROGRESS&turn=3",0)
         client().get().uri("/api/game/rankings/mine").header("X-Device-Id",p.device).header("Authorization",p.auth).exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(2).jsonPath("$.entries.length()").isEqualTo(2)
         client().get().uri("/api/game/rankings/mine?page=1").header("X-Device-Id",p.device).header("Authorization",p.auth).exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(2).jsonPath("$.entries.length()").isEqualTo(0)
-        client().get().uri("/api/game/rankings/mine").header("X-Device-Id",p.device).header("Authorization",easy.auth).exchange().expectStatus().isUnauthorized
+        client().get().uri("/api/game/rankings/mine").header("X-Device-Id",p.device).header("Authorization",easy.auth).exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         val invalid=game(p,cash="10000001")
-        client().post().uri("/api/game/rankings").header("X-Device-Id",p.device).header("Authorization",p.auth).bodyValue(RankingSubmission(invalid.id!!,23,"플레이어하나")).exchange().expectStatus().isBadRequest
+        client().post().uri("/api/game/rankings").header("X-Device-Id",p.device).header("Authorization",p.auth).bodyValue(RankingSubmission(invalid.id!!,23,"플레이어하나")).exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         val legacy=game(p).also { it.simulationSeed=null };games.saveAndFlush(legacy)
-        client().post().uri("/api/game/rankings").header("X-Device-Id",p.device).header("Authorization",p.auth).bodyValue(RankingSubmission(legacy.id!!,23,"플레이어하나")).exchange().expectStatus().isBadRequest
-        client().get().uri("/api/game/rankings?week=2026-10-06").exchange().expectStatus().isBadRequest
-        client().get().uri("/api/game/rankings?turn=24").exchange().expectStatus().isBadRequest
+        client().post().uri("/api/game/rankings").header("X-Device-Id",p.device).header("Authorization",p.auth).bodyValue(RankingSubmission(legacy.id!!,23,"플레이어하나")).exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
+        client().get().uri("/api/game/rankings?week=2026-10-06").exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
+        client().get().uri("/api/game/rankings?turn=24").exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         client().post().uri("/api/game/rankings").header("X-Device-Id",p.device).header("Authorization",p.auth)
-            .bodyValue(RankingSubmission(game(p,0,false).id!!,0,"플레이어하나")).exchange().expectStatus().isBadRequest
+            .bodyValue(RankingSubmission(game(p,0,false).id!!,0,"플레이어하나")).exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         val collision=login()
         client().post().uri("/api/game/rankings").header("X-Device-Id",collision.device).header("Authorization",collision.auth)
             .bodyValue(RankingSubmission(game(collision).id!!,23,"플레이어하나")).exchange().expectStatus().isEqualTo(409)
@@ -129,7 +129,7 @@ class GameRankingIntegrationTest {
         client().get().uri("/api/game/rankings/winners").exchange().expectStatus().isOk.expectBody().jsonPath("$[0].id").isEqualTo(e.id)
         assertEquals(e.id,publish(p,g,"주간우승자").id)
         client().get().uri("/api/game/rankings").exchange().expectStatus().isOk.expectBody().jsonPath("$.weekStart").isEqualTo("2026-10-12").jsonPath("$.total").isEqualTo(0)
-        client().delete().uri("/api/game/rankings/${e.id}").header("X-Device-Id",p.device).header("Authorization",p.auth).exchange().expectStatus().isOk
+        client().delete().uri("/api/game/rankings/${e.id}").header("X-Device-Id",p.device).header("Authorization",p.auth).exchange().expectStatus().isOk.expectBody(Void::class.java)
         client().get().uri("/api/game/rankings/winners").exchange().expectStatus().isOk.expectBody().json("[]")
         assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM game_ranking_winners",Int::class.java))
         jdbc.update("DELETE FROM app_users WHERE id=?",p.user)

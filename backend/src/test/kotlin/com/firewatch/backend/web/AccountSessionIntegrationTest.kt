@@ -45,9 +45,9 @@ class AccountSessionIntegrationTest {
         fun renew(token: String, proof: String = "renew-proof", requestedDevice: String = device) =
             client().post().uri("/api/auth/google/renew").header("X-Device-Id", requestedDevice)
                 .header("Authorization", "Bearer $token").bodyValue(mapOf("idToken" to proof)).exchange()
-        renew(expired.token, "invalid-proof").expectStatus().isUnauthorized
-        renew(expired.token, "other-proof").expectStatus().isUnauthorized
-        renew(expired.token, requestedDevice = "foreign-renew-device").expectStatus().isUnauthorized
+        renew(expired.token, "invalid-proof").expectStatus().isUnauthorized.expectBody(Void::class.java)
+        renew(expired.token, "other-proof").expectStatus().isUnauthorized.expectBody(Void::class.java)
+        renew(expired.token, requestedDevice = "foreign-renew-device").expectStatus().isUnauthorized.expectBody(Void::class.java)
         val renewed = renew(expired.token).expectStatus().isOk.expectBody(LoginSession::class.java).returnResult().responseBody!!
         assertNotEquals(expired.token, renewed.token)
         val audit = jdbc.queryForList("SELECT request_payload, response_summary FROM audit_logs WHERE action_name=?", "AuthService.renewGoogleSession")
@@ -59,10 +59,10 @@ class AccountSessionIntegrationTest {
             assertFalse(stored.contains("renew-proof"))
         }
         assertEquals(user.id, sessions.authenticate(device, "Bearer ${renewed.token}"))
-        renew(expired.token).expectStatus().isUnauthorized
+        renew(expired.token).expectStatus().isUnauthorized.expectBody(Void::class.java)
         assertEquals("AAPL", settings.findByUserId(user.id!!)!!.watchedStocksRaw)
         sessions.logout(device, "Bearer ${renewed.token}")
-        renew(renewed.token).expectStatus().isUnauthorized
+        renew(renewed.token).expectStatus().isUnauthorized.expectBody(Void::class.java)
         assertFalse(links.existsById(device))
 
         val revokedDevice = "renew-revoked-device"
@@ -73,7 +73,7 @@ class AccountSessionIntegrationTest {
         val controller = sessions.issue(controllerDevice)
         val target = sessions.devices(controllerDevice, "Bearer ${controller.token}").single { !it.current }.id
         sessions.revokeDevice(controllerDevice, "Bearer ${controller.token}", target)
-        renew(revoked.token, requestedDevice = revokedDevice).expectStatus().isUnauthorized
+        renew(revoked.token, requestedDevice = revokedDevice).expectStatus().isUnauthorized.expectBody(Void::class.java)
         assertFalse(links.existsById(revokedDevice))
     }
 
@@ -89,7 +89,7 @@ class AccountSessionIntegrationTest {
         val firstToken = first.session!!.token
         client().put().uri("/api/settings").header("X-Device-Id", device).header("Authorization", "Bearer $firstToken")
             .bodyValue(mapOf("watchedStocks" to listOf("035720.KS"), "interestKeywords" to listOf("반도체")))
-            .exchange().expectStatus().isOk
+            .exchange().expectStatus().isOk.expectBody(Void::class.java)
         val savedPortfolio = client().put().uri("/api/portfolio").header("X-Device-Id", device).header("Authorization", "Bearer $firstToken")
             .bodyValue(PortfolioUpdateRequest(0, "재로그인 보존", 60, "BALANCED", "GENERAL", BigDecimal.ZERO, BigDecimal("10000"),
                 listOf(PortfolioHoldingInput("035720.KS", "카카오", BigDecimal("3"), BigDecimal("50000")))))
@@ -102,7 +102,7 @@ class AccountSessionIntegrationTest {
         assertTrue(revisionsBefore.isNotEmpty())
 
         client().post().uri("/api/auth/logout").header("X-Device-Id", device).header("Authorization", "Bearer $firstToken")
-            .exchange().expectStatus().isNoContent
+            .exchange().expectStatus().isNoContent.expectBody(Void::class.java)
         assertFailsWith<UnauthorizedException> { sessions.authenticate(device, "Bearer $firstToken") }
         assertFalse(links.existsById(device))
         client().get().uri("/api/settings").header("X-Device-Id", device)
@@ -123,7 +123,7 @@ class AccountSessionIntegrationTest {
             .jsonPath("$.holdings[0].holding.symbol").isEqualTo("035720.KS")
             .jsonPath("$.holdings[0].holding.quantity").isEqualTo(3)
         client().get().uri("/api/portfolio").header("X-Device-Id", device).header("Authorization", "Bearer $firstToken")
-            .exchange().expectStatus().isUnauthorized
+            .exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         assertEquals(portfolioBefore, jdbc.queryForList("SELECT * FROM portfolios WHERE owner_id=?", ownerId))
         assertEquals(revisionsBefore, jdbc.queryForList("SELECT * FROM portfolio_revisions WHERE owner_id=? ORDER BY id", ownerId))
     }
@@ -141,10 +141,10 @@ class AccountSessionIntegrationTest {
         client().put().uri("/api/portfolio").header("X-Device-Id", firstDevice).header("Authorization", "Bearer ${first.token}")
             .bodyValue(PortfolioUpdateRequest(0, "롤백 보존", 60, "BALANCED", "GENERAL", BigDecimal.ZERO, BigDecimal("1000"),
                 listOf(PortfolioHoldingInput("035720.KS", "카카오", BigDecimal("3"), null))))
-            .exchange().expectStatus().isOk
+            .exchange().expectStatus().isOk.expectBody(Void::class.java)
         client().post().uri("/api/community/feedback").header("X-Device-Id", firstDevice).header("Authorization", "Bearer ${first.token}")
             .bodyValue(FeedbackInput(java.util.UUID.randomUUID().toString(), "BUG", "롤백 전 문의 기록", "WEB"))
-            .exchange().expectStatus().isOk
+            .exchange().expectStatus().isOk.expectBody(Void::class.java)
         jdbc.update("INSERT INTO notice_preferences(user_id,hidden_until) VALUES (?,?)", account.id, java.sql.Timestamp.from(Instant.now().plusSeconds(3600)))
         val ownerTables = listOf("portfolios", "portfolio_revisions")
         val userTables = listOf("user_feedback", "notice_preferences", "device_links", "auth_sessions")
@@ -167,7 +167,7 @@ class AccountSessionIntegrationTest {
             jdbc.execute("DROP TABLE deletion_rollback_guard")
         }
         client().delete().uri("/api/auth/account").header("X-Device-Id", firstDevice).header("Authorization", "Bearer ${first.token}")
-            .exchange().expectStatus().isNoContent
+            .exchange().expectStatus().isNoContent.expectBody(Void::class.java)
         assertFalse(users.existsById(account.id!!))
         assertNull(settings.findByUserId(account.id!!))
         for (table in ownerTables) assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM $table WHERE owner_id=?", Int::class.java, shared.id))
@@ -190,19 +190,19 @@ class AccountSessionIntegrationTest {
         val otherSession = sessions.issue("deletion-other-device")
         client().put().uri("/api/portfolio").header("X-Device-Id", "deletion-first").header("Authorization", "Bearer ${first.token}")
             .bodyValue(com.firewatch.backend.web.dto.PortfolioUpdateRequest(0, "삭제 검사", 60, "BALANCED", "GENERAL", java.math.BigDecimal.ZERO, java.math.BigDecimal("1000"), emptyList()))
-            .exchange().expectStatus().isOk
+            .exchange().expectStatus().isOk.expectBody(Void::class.java)
         client().post().uri("/api/community/feedback").header("X-Device-Id", "deletion-first").header("Authorization", "Bearer ${first.token}")
             .bodyValue(FeedbackInput(java.util.UUID.randomUUID().toString(), "BUG", "삭제 전 문의 기록 검사", "WEB"))
-            .exchange().expectStatus().isOk
+            .exchange().expectStatus().isOk.expectBody(Void::class.java)
         jdbc.update("INSERT INTO notice_preferences(user_id,hidden_until) VALUES (?,?)", account.id, java.sql.Timestamp.from(Instant.now().plusSeconds(3600)))
         assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM portfolios WHERE owner_id=?", Int::class.java, shared.id))
         assertTrue(jdbc.queryForObject("SELECT COUNT(*) FROM portfolio_revisions WHERE owner_id=?", Int::class.java, shared.id)!! > 0)
         assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM user_feedback WHERE user_id=?", Int::class.java, account.id))
         client().delete().uri("/api/auth/account").header("X-Device-Id", "deletion-first").header("Authorization", "Bearer ${otherSession.token}")
-            .exchange().expectStatus().isUnauthorized
+            .exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         assertTrue(users.existsById(account.id!!))
         client().delete().uri("/api/auth/account").header("X-Device-Id", "deletion-first").header("Authorization", "Bearer ${first.token}")
-            .exchange().expectStatus().isNoContent
+            .exchange().expectStatus().isNoContent.expectBody(Void::class.java)
         assertFalse(users.existsById(account.id!!))
         assertNull(settings.findByUserId(account.id!!))
         for (table in listOf("portfolios", "portfolio_revisions")) {
@@ -225,9 +225,9 @@ class AccountSessionIntegrationTest {
         val routes = listOf("/api/collection/operator", "/api/collection/operator/test", "/api/scheduler/trigger", "/api/scheduler/trigger-if-due", "/api/settings/recover-legacy", "/api/operations/database-pool", "/api/operations/latency")
         for (route in routes) {
             fun request() = if (route.startsWith("/api/operations")) client().get().uri(route) else client().post().uri(route)
-            request().exchange().expectStatus().isUnauthorized
-            request().header("X-API-Key", "session-test-key").header("X-Device-Id", device).exchange().expectStatus().isUnauthorized
-            request().header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").header("X-User-Email", "powerhch@gmail.com").exchange().expectStatus().isForbidden
+            request().exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+            request().header("X-API-Key", "session-test-key").header("X-Device-Id", device).exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+            request().header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").header("X-User-Email", "powerhch@gmail.com").exchange().expectStatus().isForbidden.expectBody(Void::class.java)
         }
         assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM collection_operator", Int::class.java))
     }
@@ -240,21 +240,21 @@ class AccountSessionIntegrationTest {
         links.save(DeviceLink(device, user.id!!))
         val session = sessions.issue(device)
         for (route in listOf("/api/operations/database-pool", "/api/operations/latency")) {
-            client().get().uri(route).header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").exchange().expectStatus().isOk
+            client().get().uri(route).header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").exchange().expectStatus().isOk.expectBody(Void::class.java)
         }
-        client().post().uri("/api/collection/operator").header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").exchange().expectStatus().isOk
+        client().post().uri("/api/collection/operator").header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").exchange().expectStatus().isOk.expectBody(Void::class.java)
         assertEquals(row.id, jdbc.queryForObject("SELECT settings_id FROM collection_operator WHERE id=1", Long::class.java))
         sessions.logout(device, "Bearer ${session.token}")
-        client().post().uri("/api/collection/operator").header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").exchange().expectStatus().isUnauthorized
+        client().post().uri("/api/collection/operator").header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         jdbc.update("DELETE FROM collection_operator")
     }
 
     @Test
     fun `감사로그는 인증된 운영자나 관리 키만 읽을 수 있다`() {
-        client().get().uri("/api/audit-logs").exchange().expectStatus().isUnauthorized
-        client().get().uri("/api/audit-logs").header("X-API-Key", "wrong").exchange().expectStatus().isUnauthorized
-        client().get().uri("/api/audit-logs").header("X-API-Key", "session-test-key").exchange().expectStatus().isUnauthorized
-        client().get().uri("/api/audit-logs").header("X-API-Key", "operator-test-key").exchange().expectStatus().isOk
+        client().get().uri("/api/audit-logs").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+        client().get().uri("/api/audit-logs").header("X-API-Key", "wrong").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+        client().get().uri("/api/audit-logs").header("X-API-Key", "session-test-key").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+        client().get().uri("/api/audit-logs").header("X-API-Key", "operator-test-key").exchange().expectStatus().isOk.expectBody(Void::class.java)
         data class Case(val suffix: String, val email: String, val verified: Boolean, val allowed: Boolean)
         for ((suffix, email, verified, allowed) in listOf(
             Case("owner", "powerhch@gmail.com", true, true),
@@ -265,10 +265,10 @@ class AccountSessionIntegrationTest {
             val user = users.save(AppUser(googleSub = device, email = email, emailVerified = verified))
             links.save(DeviceLink(device, user.id!!))
             val session = sessions.issue(device)
-            client().get().uri("/api/audit-logs").header("X-Device-Id", device).exchange().expectStatus().isUnauthorized
+            client().get().uri("/api/audit-logs").header("X-Device-Id", device).exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
             val response = client().get().uri("/api/audit-logs").header("X-Device-Id", device).header("Authorization", "Bearer ${session.token}").header("X-User-Email", "powerhch@gmail.com").exchange()
-            if (allowed) response.expectStatus().isOk else response.expectStatus().isForbidden
-            client().get().uri("/api/audit-logs").header("X-Device-Id", "other-$device").header("Authorization", "Bearer ${session.token}").exchange().expectStatus().isUnauthorized
+            if (allowed) response.expectStatus().isOk.expectBody(Void::class.java) else response.expectStatus().isForbidden.expectBody(Void::class.java)
+            client().get().uri("/api/audit-logs").header("X-Device-Id", "other-$device").header("Authorization", "Bearer ${session.token}").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         }
     }
 
@@ -285,9 +285,9 @@ class AccountSessionIntegrationTest {
         assertFailsWith<UnauthorizedException> { sessions.authenticate("session-device-one", "Bearer ${replacement.token}", replacement.expiresAt) }
         assertEquals(user.id, sessions.authenticate("session-device-one", "Bearer ${replacement.token}"))
         assertNotEquals(replacement.token, jdbc.queryForObject("SELECT token_hash FROM auth_sessions WHERE device_id=?", String::class.java, "session-device-one"))
-        client().get().uri("/api/settings").header("X-Device-Id", "session-device-one").exchange().expectStatus().isUnauthorized
-        client().get().uri("/api/settings").header("X-Device-Id", "session-device-one").header("Authorization", "Bearer ${replacement.token}").exchange().expectStatus().isOk
-        client().delete().uri("/api/auth/account").header("X-Device-Id", "session-device-one").exchange().expectStatus().isUnauthorized
+        client().get().uri("/api/settings").header("X-Device-Id", "session-device-one").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+        client().get().uri("/api/settings").header("X-Device-Id", "session-device-one").header("Authorization", "Bearer ${replacement.token}").exchange().expectStatus().isOk.expectBody(Void::class.java)
+        client().delete().uri("/api/auth/account").header("X-Device-Id", "session-device-one").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
     }
 
     @Test
@@ -314,9 +314,9 @@ class AccountSessionIntegrationTest {
 
     @Test
     fun `응답 시간 헤더를 제공하고 운영 지표는 관리 키로 보호한다`() {
-        client().get().uri("/api/portfolio").header("X-Device-Id", "latency-anonymous").exchange().expectStatus().isOk.expectHeader().valueMatches("Server-Timing", "application;dur=\\d+")
-        client().get().uri("/api/operations/latency").exchange().expectStatus().isUnauthorized
-        client().get().uri("/api/operations/latency").header("X-API-Key", "session-test-key").exchange().expectStatus().isUnauthorized
+        client().get().uri("/api/portfolio").header("X-Device-Id", "latency-anonymous").exchange().expectStatus().isOk.expectHeader().valueMatches("Server-Timing", "application;dur=\\d+").expectBody(Void::class.java)
+        client().get().uri("/api/operations/latency").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+        client().get().uri("/api/operations/latency").header("X-API-Key", "session-test-key").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         client().get().uri("/api/operations/latency").header("X-API-Key", "operator-test-key").exchange().expectStatus().isOk.expectBody()
             .jsonPath("$[?(@.operation == 'GET portfolio')]").isNotEmpty
             .jsonPath("$[?(@.operation == 'GET portfolio')].failures").isEqualTo(0)

@@ -24,16 +24,16 @@ class LegacyRecoveryIntegrationTest {
         old.watchedStocksRaw = "035720.KS"
         settings.save(old)
         val used = settings.save(UserSettings(deviceId = "used-device", watchedStocksRaw = "AAPL"))
-        client.post().uri("/api/settings/recover-legacy").header("X-Device-Id", "new-device").exchange().expectStatus().isUnauthorized
+        client.post().uri("/api/settings/recover-legacy").header("X-Device-Id", "new-device").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         client.post().uri("/api/settings/recover-legacy").header("X-Device-Id", "used-device").header("X-API-Key", "recovery-test-key").exchange().expectStatus().isEqualTo(409)
         assertEquals("AAPL", settings.findById(used.id).get().watchedStocksRaw)
         val empty = settings.save(UserSettings(deviceId = "new-device"))
         val count = settings.count()
-        client.post().uri("/api/settings/recover-legacy").header("X-Device-Id", "new-device").header("X-API-Key", "recovery-test-key").exchange().expectStatus().isOk
+        client.post().uri("/api/settings/recover-legacy").header("X-Device-Id", "new-device").header("X-API-Key", "recovery-test-key").exchange().expectStatus().isOk.expectBody(Void::class.java)
         assertEquals(old.id, settings.findByDeviceId("new-device")!!.id)
         assertEquals("035720.KS", settings.findByDeviceId("new-device")!!.watchedStocksRaw)
         assertEquals(null, settings.findById(empty.id).get().deviceId)
         assertEquals(count, settings.count())
-        client.post().uri("/api/settings/recover-legacy").header("X-Device-Id", "new-device").header("X-API-Key", "recovery-test-key").exchange().expectStatus().isNotFound
+        client.post().uri("/api/settings/recover-legacy").header("X-Device-Id", "new-device").header("X-API-Key", "recovery-test-key").exchange().expectStatus().isNotFound.expectBody(Void::class.java)
     }
 }
