@@ -1,3 +1,4 @@
+import { useTheme } from '@/lib/theme'
 import { LoadingState } from '@/components/LoadingState'
 // web/src/features/stocks/components/StockSearchInput.tsx와 동일 역할 — RN엔 AntD Select 같은
 // 드롭다운이 없어 TextInput + 결과 목록을 직접 구현.
@@ -17,6 +18,7 @@ interface StockSearchInputProps {
 const DEBOUNCE_MS = 300
 
 export function StockSearchInput({ onSelect, onQueryChange, preserveQueryOnSelect = false, initialQuery = '' }: StockSearchInputProps) {
+  const { colors } = useTheme()
   const [query, setQuery] = useState(initialQuery)
   const [picked, setPicked] = useState(false)
   const [results, setResults] = useState<StockSearchResult[]>([])
@@ -74,8 +76,9 @@ export function StockSearchInput({ onSelect, onQueryChange, preserveQueryOnSelec
         accessibilityLabel="회사·상품 이름 검색"
         value={query}
         onChangeText={handleChange}
+        placeholderTextColor={colors.muted}
         placeholder="종목명으로 검색 (예: 삼성전자, Apple)"
-        className="rounded-lg border border-line bg-surface px-3 py-2 text-base"
+        className="rounded-lg border border-line bg-surface px-3 py-2 text-base text-ink"
       />
       {searching && <LoadingState inline compact message="회사를 찾고 있어요" />}
       {error && <Text className="text-xs text-danger">{error}</Text>}
