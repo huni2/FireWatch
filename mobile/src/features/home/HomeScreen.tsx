@@ -1,5 +1,5 @@
+import { useTheme } from '@/lib/theme'
 // Android의 주요 이동을 하단에 고정하고 알림·상세 탐색 상태를 유지한다.
-import tokens from '../../../../shared/design-tokens.json'
 import { router, Stack } from 'expo-router'
 import * as Notifications from 'expo-notifications'
 import { useEffect, useRef, useState } from 'react'
@@ -34,6 +34,7 @@ const TABS: { key: HomeTab; label: string }[] = [
 ]
 
 export function HomeScreen() {
+  const { colors, dark } = useTheme()
   const insets = useSafeAreaInsets()
   const [activeTab, setActiveTab] = useState<HomeTab>('portfolio')
   const [stockTarget, setStockTarget] = useState<{ symbol?: string; query?: string }>({})
@@ -74,24 +75,24 @@ export function HomeScreen() {
   }, [lastNotificationResponse, briefing])
 
   return (
-    <View style={{ flex: 1, backgroundColor: tokens.light.canvas }}>
-      <StatusBar style="dark" />
+    <View style={{ flex: 1, backgroundColor: colors.canvas }}>
+      <StatusBar style={dark ? "light" : "dark"} />
       <Stack.Screen
         options={{
-          headerStyle: { backgroundColor: tokens.light.surface },
-          headerTintColor: tokens.light.text,
+          headerStyle: { backgroundColor: colors.surface },
+          headerTintColor: colors.text,
           headerShadowVisible: false,
-          headerTitle: () => <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}><FirewatchBrand size={27} /><Text style={{ color: tokens.light.text, fontSize: 20, fontWeight: '700', letterSpacing: -.5 }}>FireWatch</Text></View>,
+          headerTitle: () => <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}><FirewatchBrand size={27} /><Text style={{ color: colors.text, fontSize: 20, fontWeight: '700', letterSpacing: -.5 }}>FireWatch</Text></View>,
           headerRight: () => (
             <View style={{ flexDirection: 'row', gap: 6 }}>
-              <Pressable accessibilityRole="button" accessibilityLabel="계정·설정 열기" onPress={() => router.push('/settings')} style={{ minHeight: 44, minWidth: 64, borderRadius: 22, backgroundColor: tokens.light.canvas, flexDirection: 'row', gap: 5, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="settings" size={18} color={tokens.light.muted} /><Text style={{ fontSize: 13, fontWeight: '600', color: tokens.light.text }}>내 계정</Text></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="계정·설정 열기" onPress={() => router.push('/settings')} style={{ minHeight: 44, minWidth: 64, borderRadius: 22, backgroundColor: colors.canvas, flexDirection: 'row', gap: 5, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="settings" size={18} color={colors.muted} /><Text style={{ fontSize: 13, fontWeight: '600', color: colors.text }}>내 계정</Text></Pressable>
             </View>
           ),
         }}
       />
 
-      {(exploration || market) && <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ backgroundColor: tokens.light.surface, paddingHorizontal: 12, gap: 4 }}>
-        {TABS.filter(tab => (exploration ? ['candidates', 'stocks', 'short-term'] : ['news', 'brief', 'indices']).includes(tab.key)).map(tab => <Pressable key={tab.key} accessibilityRole="tab" accessibilityState={{ selected: activeTab === tab.key }} onPress={() => setActiveTab(tab.key)} style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 12, borderBottomWidth: 2, borderBottomColor: activeTab === tab.key ? tokens.light.accent : 'transparent' }}><Text style={{ fontSize: 13, color: activeTab === tab.key ? tokens.light.accent : tokens.light.muted }}>{tab.key === 'candidates' ? '추천·분야' : tab.key === 'stocks' ? '회사 검색·시세' : tab.key === 'short-term' ? '단기 관찰' : tab.label}</Text></Pressable>)}
+      {(exploration || market) && <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ backgroundColor: colors.surface, paddingHorizontal: 12, gap: 4 }}>
+        {TABS.filter(tab => (exploration ? ['candidates', 'stocks', 'short-term'] : ['news', 'brief', 'indices']).includes(tab.key)).map(tab => <Pressable key={tab.key} accessibilityRole="tab" accessibilityState={{ selected: activeTab === tab.key }} onPress={() => setActiveTab(tab.key)} style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 12, borderBottomWidth: 2, borderBottomColor: activeTab === tab.key ? colors.accent : 'transparent' }}><Text style={{ fontSize: 13, color: activeTab === tab.key ? colors.accent : colors.muted }}>{tab.key === 'candidates' ? '추천·분야' : tab.key === 'stocks' ? '회사 검색·시세' : tab.key === 'short-term' ? '단기 관찰' : tab.label}</Text></Pressable>)}
       </ScrollView>}
 
       <View style={{ flex: 1, display: activeTab === 'portfolio' ? 'flex' : 'none' }}><PortfolioScreen {...discoveryNavigation} onOpenCandidates={() => setActiveTab('candidates')} /></View>
@@ -113,10 +114,10 @@ export function HomeScreen() {
       {activeTab === 'indices' && <IndicesScreen />}
       {activeTab === 'news' && <NewsScreen initialQuery={newsQuery} />}
 
-      <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: tokens.light.border, paddingBottom: insets.bottom, backgroundColor: tokens.light.surface }}>
+      <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.border, paddingBottom: insets.bottom, backgroundColor: colors.surface }}>
         {primaryTabs.map((tab) => (
           <Pressable accessibilityRole="tab" accessibilityLabel={tab.label} accessibilityState={{ selected: tab.selected }} key={tab.key} onPress={() => { if (activeTab !== tab.key) setActiveTab(tab.key) }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 60, paddingVertical: 6, gap: 2 }}>
-            <FirewatchIcon name={tab.icon} size={22} color={tab.selected ? tokens.light.accent : tokens.light.muted} />
+            <FirewatchIcon name={tab.icon} size={22} color={tab.selected ? colors.accent : colors.muted} />
             <Text className={`text-sm font-semibold ${tab.selected ? 'text-brand' : 'text-muted'}`}>
               {tab.label}
             </Text>

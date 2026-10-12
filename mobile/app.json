@@ -9,7 +9,7 @@
       "mobile",
       "com.firewatch.mobile"
     ],
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
     },

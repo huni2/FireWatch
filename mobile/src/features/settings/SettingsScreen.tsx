@@ -1,4 +1,5 @@
 import { LoadingState } from '@/components/LoadingState'
+import { ThemeSettings } from '@/components/ThemeSettings'
 import { ScreenIntro } from '@/components/ScreenIntro'
 import { Link } from 'expo-router'
 import { OperatorPushSetup } from '@/components/OperatorPushSetup'
@@ -83,14 +84,15 @@ export function SettingsScreen() {
     }
   }
 
-  if (loading && !settings) return <LoadingState message="계정 설정을 확인하고 있어요" />
+  if (loading && !settings) return <View className="flex-1 bg-canvas p-5"><ThemeSettings /><LoadingState message="계정 설정을 확인하고 있어요" /></View>
 
 
-  if (!settings) return <View className="flex-1 justify-center gap-4 bg-canvas p-6"><Text>설정을 불러오지 못했습니다. 로그인했던 기기라면 Google 계정으로 다시 로그인해주세요.</Text><GoogleLinkButton linkedEmail={null} onLinked={handleLinked} onDeleted={handleDeleted} /><Pressable onPress={() => void reload()} className="min-h-11 items-center justify-center"><Text className="text-brand">설정 다시 불러오기</Text></Pressable></View>
+  if (!settings) return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5"><ThemeSettings /><Text className="text-ink">설정을 불러오지 못했습니다. 로그인했던 기기라면 Google 계정으로 다시 로그인해주세요.</Text><GoogleLinkButton linkedEmail={null} onLinked={handleLinked} onDeleted={handleDeleted} /><Pressable onPress={() => void reload()} className="min-h-11 items-center justify-center"><Text className="text-brand">설정 다시 불러오기</Text></Pressable></ScrollView>
 
   return (
     <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">
       <ScreenIntro eyebrow="설정" title="나만의 설정" description="관심 키워드와 브리핑 수신 시간을 조정하세요." />
+      <ThemeSettings />
       <View className="gap-2">
         <Text className="text-sm font-semibold text-muted">푸시 수신 시간 · 한국 시간(KST)</Text>
         <Text className="text-xs leading-5 text-muted">발송 여부를 15분 간격으로 확인하므로 설정 시각보다 늦게 도착할 수 있습니다. 브리핑은 한국 시간 07시 이후 준비됩니다.</Text>
@@ -122,7 +124,7 @@ export function SettingsScreen() {
       </View>
 
       <Pressable onPress={handleSave} disabled={saving} className="items-center rounded-full bg-brand py-3">
-        <Text className="text-base font-semibold text-white">{saving ? '저장 중...' : '저장'}</Text>
+        <Text className="text-base font-semibold text-onbrand">{saving ? '저장 중...' : '저장'}</Text>
       </Pressable>
 
       <Text className="text-xs text-muted">관심 종목(주식)은 홈의 {'"종목"'} 탭에서 관리합니다.</Text>

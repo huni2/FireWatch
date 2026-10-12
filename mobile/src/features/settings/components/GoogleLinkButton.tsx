@@ -96,16 +96,16 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
         <Text className="text-center text-sm font-semibold text-brand">{linkedEmail} 계정과 연동되었습니다 ✓</Text>
         <Text className="text-xs text-muted">로그인은 30일간 유지됩니다. 만료되면 Google 계정으로 다시 로그인해주세요.</Text>
         <Pressable disabled={linking || deviceBusy || deleting} onPress={() => void login()} className="min-h-11 items-center justify-center">{linking ? <ActivityIndicator /> : <Text className="text-brand">Google 로그인 갱신</Text>}</Pressable>
-        {loginError && <Text accessibilityRole="alert" className="text-sm text-red-600">{loginError}</Text>}
+        {loginError && <Text accessibilityRole="alert" className="text-sm text-danger">{loginError}</Text>}
         <Pressable disabled={deviceBusy} onPress={manageDevices} className="min-h-11 items-center justify-center"><Text className="text-brand">연결된 기기 확인</Text></Pressable>
         {devices?.map((device, index) => <View key={device.id} className="rounded-xl border border-line p-3">
           <Text className="font-semibold text-ink">{device.current ? '현재 기기' : `연결 기기 ${index + 1}`}</Text>
           <Text className="text-xs text-muted">연결일 · {new Date(device.linkedAt).toLocaleDateString('ko-KR')}</Text>
-          {!device.current && <Pressable disabled={deviceBusy} onPress={() => revokeDevice(device)} className="min-h-11 justify-center"><Text className="text-red-600">연결 해제</Text></Pressable>}
+          {!device.current && <Pressable disabled={deviceBusy} onPress={() => revokeDevice(device)} className="min-h-11 justify-center"><Text className="text-danger">연결 해제</Text></Pressable>}
         </View>)}
         <Pressable disabled={deviceBusy} onPress={logout} className="min-h-11 items-center justify-center"><Text className="text-muted">이 기기에서 로그아웃</Text></Pressable>
         <Pressable onPress={handleDeletePress} disabled={deleting} className="items-center py-2">
-          {deleting ? <ActivityIndicator /> : <Text className="text-sm font-semibold text-red-600">계정 삭제</Text>}
+          {deleting ? <ActivityIndicator /> : <Text className="text-sm font-semibold text-danger">계정 삭제</Text>}
         </Pressable>
       </View>
     )
@@ -122,6 +122,6 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
       ) : (
         <Text className="text-base font-semibold text-muted">Google 계정 연동</Text>
       )}
-    </Pressable>{loginError && <Text accessibilityRole="alert" className="text-sm text-red-600">{loginError}</Text>}</View>
+    </Pressable>{loginError && <Text accessibilityRole="alert" className="text-sm text-danger">{loginError}</Text>}</View>
   )
 }

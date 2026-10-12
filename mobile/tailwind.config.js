@@ -2,15 +2,19 @@
 module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        brand: require('../shared/design-tokens.json').light.accent,
-        canvas: require('../shared/design-tokens.json').light.canvas,
-        surface: require('../shared/design-tokens.json').light.surface,
-        ink: require('../shared/design-tokens.json').light.text,
-        muted: require('../shared/design-tokens.json').light.muted,
-        line: require('../shared/design-tokens.json').light.border,
+        brand: 'rgb(var(--fw-accent) / <alpha-value>)',
+        onbrand: 'rgb(var(--fw-onAccent) / <alpha-value>)',
+        canvas: 'rgb(var(--fw-canvas) / <alpha-value>)',
+        surface: 'rgb(var(--fw-surface) / <alpha-value>)',
+        ink: 'rgb(var(--fw-text) / <alpha-value>)',
+        muted: 'rgb(var(--fw-muted) / <alpha-value>)',
+        line: 'rgb(var(--fw-border) / <alpha-value>)',
+        negative: 'rgb(var(--fw-negative) / <alpha-value>)',
+        danger: 'rgb(var(--fw-danger) / <alpha-value>)',
       },
     },
   },

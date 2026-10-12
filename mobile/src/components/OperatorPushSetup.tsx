@@ -38,7 +38,7 @@ export function OperatorPushSetup({ linkedEmail }: { linkedEmail: string | null 
     {diagnosticsOpen && <CollectionNotice />}
     <Text className="font-bold text-ink">운영자 장애 알림</Text>
     <Text className="text-muted">앱 알림 권한을 허용한 뒤 등록하세요. 서버에서 확인한 운영자 계정의 기기로 수집 실패 알림을 받습니다. 기존 운영자 수신자를 교체합니다.</Text>
-    <Pressable accessibilityRole="button" disabled={busy} onPress={() => Alert.alert('운영자 수신자 등록', '현재 계정으로 기존 운영자 알림 수신자를 교체할까요?', [{ text: '취소', style: 'cancel' }, { text: '등록', onPress: () => void register() }])} className="rounded-lg bg-brand p-3"><Text className="text-center text-white">{busy ? '등록 중...' : '운영자 푸시 등록'}</Text></Pressable>
+    <Pressable accessibilityRole="button" disabled={busy} onPress={() => Alert.alert('운영자 수신자 등록', '현재 계정으로 기존 운영자 알림 수신자를 교체할까요?', [{ text: '취소', style: 'cancel' }, { text: '등록', onPress: () => void register() }])} className="rounded-lg bg-brand p-3"><Text className="text-center text-onbrand">{busy ? '등록 중...' : '운영자 푸시 등록'}</Text></Pressable>
     <Pressable accessibilityRole="button" disabled={busy} onPress={() => void test()} className="min-h-11 justify-center py-3"><Text className="text-brand">수신 확인용 알림 보내기</Text></Pressable><Text className="text-xs text-muted">테스트는 1분에 한 번 직접 발송할 수 있습니다. 실제 기기 수신을 확인해주세요.</Text>
   </View>
 }
