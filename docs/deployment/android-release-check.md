@@ -6,7 +6,7 @@
 
 기존 1.0.5와 같은 release 인증서, 패키지 `com.firewatch.mobile`, 버전 1.0.6/11, ARM32/64·R8/리소스 축소, ZIP CRC·16KB 정렬, 독립 JS 번들과 Google/그라디언트 네이티브 모듈, 마스코트와 최신 상호작용 코드를 확인했다. 크기 54,324,456 bytes(약 54.3MB), SHA-256 `cd81d1509063f458285dbc1f8e23fd44ecf515d6ca495dc12f752dec93b1e442`. GitHub digest와 공개 HTTP200·크기를 대조했다. [APK](https://github.com/huni2/FireWatch/releases/download/v1.0.6-android-preview/FireWatch-1.0.6-android.apk) · [릴리스](https://github.com/huni2/FireWatch/releases/tag/v1.0.6-android-preview) · [파일 기록](../product/android-preview-20261009/android-106-build.json).
 
-모바일 회귀 48개·type/lint·출시 설정 검사와 [빌드 소스 CI](https://github.com/huni2/FireWatch/actions/runs/38269553999) 통과. 기존 앱을 삭제하지 않고 업데이트 설치한다. 실제 기기의 로그인·푸시·키보드·OS 글자 확대·DateTimePicker·TalkBack·첫 이용자 검증은 미확인이다. 자동 APK/EAS/OTA는 활성화하지 않는다.
+모바일 회귀 48개·type/lint·출시 설정 검사와 [빌드 소스 CI](https://github.com/huni2/FireWatch/actions/runs/38269553999) 통과. [PR#104](https://github.com/huni2/FireWatch/pull/104)의 최종 전체 CI도 통과했으며 main40a0637 머지 후 루트/모바일 README의1.0.6 다운로드 링크를 확인했다. 기존 앱을 삭제하지 않고 업데이트 설치한다. 실제 기기의 로그인·푸시·키보드·OS 글자 확대·DateTimePicker·TalkBack·첫 이용자 검증은 미확인이다. 자동 APK/EAS/OTA는 활성화하지 않는다. Play 출시의 계정 유형·금융 선언·심사 접근·AAB 확인은 [제출 가이드](../../mobile/PLAY_STORE.md)를 따른다.
 
 ## 이전 설치본 1.0.5 / 빌드10 (2026-10-12)
 
