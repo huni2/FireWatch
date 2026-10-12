@@ -22,7 +22,7 @@ export function AppSheet({ open, title, close, disabled = false, height = '85%',
       <BottomSheet ref={sheet} index={0} snapPoints={[height]} topInset={insets.top} enableDynamicSizing={false} animateOnMount animationConfigs={animationConfigs} accessible={false} accessibilityRole="none"
         enablePanDownToClose={!disabled} enableHandlePanningGesture={!disabled} enableContentPanningGesture={false}
         backdropComponent={backdrop} onClose={() => { if (!disabled) close(); else sheet.current?.snapToIndex(0) }} backgroundStyle={{ backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
-        handleComponent={() => <View accessible accessibilityRole="text" accessibilityLabel="창 손잡이" accessibilityHint="아래로 끌면 닫아요. 오른쪽 닫기 버튼도 사용할 수 있어요." style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 8 }}><View style={{ backgroundColor: colors.muted, width: 36, height: 4, borderRadius: 2 }} /></View>}>
+        handleComponent={() => <View accessible accessibilityRole="text" accessibilityLabel="창 손잡이" accessibilityHint="아래로 끌면 닫아요. 오른쪽 닫기 버튼도 사용할 수 있어요." style={{ minHeight: 40, alignItems: 'center', justifyContent: 'center' }}><View style={{ backgroundColor: colors.muted, width: 36, height: 4, borderRadius: 2 }} /></View>}>
         <View style={{ flex: 1, paddingBottom: Math.max(12, insets.bottom) }}>
           <ModalHeader title={title} close={dismiss} disabled={disabled} />
           <View style={{ flex: 1 }}>{children}</View>

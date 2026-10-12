@@ -1,3 +1,4 @@
+import { ActionButton } from '@/components/ActionButton'
 import { ModalHeader } from '@/components/ModalHeader'
 import { useTheme, ThemeSurface } from '@/lib/theme'
 // Android에서 키보드와 뒤로가기를 고려한 별도 자산·계획 입력 화면을 제공한다.
@@ -23,8 +24,8 @@ function EditorFrame({ title, saving, error, changed, close, submit, button, chi
   return <Modal visible animationType="slide" onRequestClose={cancel}><ThemeSurface>
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: c.surface, paddingTop: insets.top }}>
       <ModalHeader title={title} close={cancel} disabled={saving} closeLabel="입력 화면 닫기" />
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 24, gap: 24 }} pointerEvents={saving ? 'none' : 'auto'}>{children}{error && <View accessibilityRole="alert" style={{ gap: 8 }}><Text style={{ color: c.danger }}>{error}</Text><Text style={{ color: c.muted }}>입력한 내용은 그대로 있어요. 확인한 뒤 다시 저장해주세요.</Text></View>}</ScrollView>
-      <View style={{ padding: 20, paddingBottom: Math.max(20, insets.bottom), borderTopWidth: 1, borderTopColor: c.border }}><Pressable accessibilityRole="button" accessibilityState={{ disabled: saving }} disabled={saving} onPress={() => { Keyboard.dismiss(); submit() }} style={{ minHeight: 52, borderRadius: 14, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', opacity: saving ? .6 : 1 }}><Text style={{ color: c.onAccent, fontWeight: '700', fontSize: 16 }}>{saving ? '기록 저장 중…' : button}</Text></Pressable></View>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 20, gap: 24 }} pointerEvents={saving ? 'none' : 'auto'}>{children}{error && <View accessibilityRole="alert" style={{ gap: 8 }}><Text style={{ color: c.danger }}>{error}</Text><Text style={{ color: c.muted }}>입력한 내용은 그대로 있어요. 확인한 뒤 다시 저장해주세요.</Text></View>}</ScrollView>
+      <View style={{ padding: 20, paddingBottom: Math.max(20, insets.bottom), borderTopWidth: 1, borderTopColor: c.border }}><ActionButton fullWidth tone="primary" busy={saving} label={saving ? '기록 저장 중' : button} onPress={() => { Keyboard.dismiss(); submit() }} /></View>
     </KeyboardAvoidingView>
   </ThemeSurface></Modal>
 }

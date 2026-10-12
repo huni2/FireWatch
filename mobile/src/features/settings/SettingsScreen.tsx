@@ -1,3 +1,5 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTheme } from '@/lib/theme'
 import { ActionButton } from '@/components/ActionButton'
 import { LoadingState } from '@/components/LoadingState'
 import { ScreenIntro } from '@/components/ScreenIntro'
@@ -25,6 +27,8 @@ function timeStringToDate(hhmm: string): Date {
 }
 
 export function SettingsScreen() {
+  const { colors } = useTheme()
+  const insets = useSafeAreaInsets()
   const { settings, loading, reload } = useSettings()
   const [pushTime, setPushTime] = useState('08:00')
   const [pushTimes, setPushTimes] = useState<string[]>(['08:00'])
@@ -39,6 +43,7 @@ export function SettingsScreen() {
   const form = JSON.stringify({ pushTimes, newsPush, keywords })
   const dirty = form !== savedForm
   const [registeringPush, setRegisteringPush] = useState(false)
+  const [pushAction, setPushAction] = useState<'on' | 'off'>('on')
   const [linkedEmail, setLinkedEmail] = useState<string | null>(null)
 
   // 서버(외부 시스템)에서 비동기로 도착한 값으로 편집 가능한 로컬 상태를 동기화 — web/SettingsPage.tsx와
@@ -110,15 +115,15 @@ export function SettingsScreen() {
   if (!settings) return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5"><Text className="text-ink">설정을 불러오지 못했습니다. 로그인했던 기기라면 Google 계정으로 다시 로그인해주세요.</Text><GoogleLinkButton linkedEmail={null} onLinked={handleLinked} onDeleted={handleDeleted} /><Pressable onPress={() => void reload()} className="min-h-11 items-center justify-center"><Text className="text-brand">설정 다시 불러오기</Text></Pressable></ScrollView>
 
   return (
-    <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">
+    <View style={{ flex: 1, backgroundColor: colors.canvas }}><ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">
       <ScreenIntro eyebrow="설정" title="알림 설정" description="받을 시간과 관심 키워드를 정해주세요." />
       <View className="gap-2">
         <Text className="text-sm font-semibold text-muted">브리핑 수신 시간 · 한국 시간(KST)</Text><Text className="text-xs text-muted">같은 일일 브리핑을 하루 최대 3번 받아요. 아래 저장을 눌러 반영해주세요.</Text><View className="flex-row flex-wrap gap-2">{pushTimes.map(time => <Pressable key={time} accessibilityRole="button" accessibilityLabel={`${time} 수신 시간 삭제`} disabled={pushTimes.length === 1} onPress={() => setPushTimes(values => values.filter(t => t !== time))} className="min-h-11 justify-center rounded-xl bg-surface px-3"><Text className="text-ink">{time} {pushTimes.length > 1 ? '×' : ''}</Text></Pressable>)}</View>
-        <Text className="text-xs leading-5 text-muted">발송은 15분마다 확인해요. 오전 7시 이후 준비된 브리핑을 보내드려요.</Text>
+        <Text className="text-sm leading-6 text-muted">발송은 15분마다 확인해요. 오전 7시 이후 준비된 브리핑을 보내드려요.</Text>
         <Pressable
           accessibilityRole="button" accessibilityLabel="수신 시간 추가" disabled={pushTimes.length >= 3}
           onPress={() => setShowPicker(true)}
-          className="self-start rounded-lg border border-line bg-surface px-4 py-2"
+          className="self-start min-h-12 justify-center rounded-lg border border-line bg-surface px-4 py-2"
         >
           <Text className="text-base text-ink">{pushTimes.length >= 3 ? '시간 3개를 선택했어요' : '+ 수신 시간 추가'}</Text>
         </Pressable>
@@ -139,13 +144,11 @@ export function SettingsScreen() {
       </View>
 
       <View className="gap-2">
-        <View className="flex-row items-center justify-between"><Text className="text-ink">새 소식 알림</Text><Switch accessibilityLabel="관심 키워드 새 소식 알림" value={newsPush} onValueChange={setNewsPush} /></View><Text className="text-xs leading-5 text-muted">관심 키워드의 새 기사를 묶어서 최대 1시간에 한 번 알려드려요. 기존 기사는 다시 보내지 않아요.</Text><Text className="text-sm font-semibold text-muted">관심 키워드</Text>
+        <View className="flex-row items-center justify-between"><Text className="text-ink">새 소식 알림</Text><Switch accessibilityLabel="관심 키워드 새 소식 알림" value={newsPush} onValueChange={setNewsPush} /></View><Text className="text-sm leading-6 text-muted">관심 키워드의 새 기사를 묶어서 최대 1시간에 한 번 알려드려요. 기존 기사는 다시 보내지 않아요.</Text><Text className="text-sm font-semibold text-muted">관심 키워드</Text>
         <KeywordInput value={keywords} onChange={setKeywords} />
       </View>
 
-      <View className="gap-2"><ActionButton label={saving ? '설정 저장 중' : '변경사항 저장'} onPress={() => void handleSave()} busy={saving} disabled={!dirty} tone="primary" fullWidth />
-        <Text accessibilityLiveRegion="polite" className="text-sm leading-6 text-muted">{saving ? '변경사항을 저장하고 있어요.' : dirty ? (saveStatus === '설정을 저장했어요.' ? '아직 저장하지 않은 변경이 있어요.' : saveStatus || '아직 저장하지 않은 변경이 있어요.') : saveStatus || '저장된 설정이에요.'}</Text>
-      </View>
+
 
       <Text className="text-xs text-muted">관심 기업은 기업 탐색의 관심 기업 화면에서 관리해요.</Text>
 
@@ -160,17 +163,22 @@ export function SettingsScreen() {
       <View className="gap-2 rounded-xl bg-surface p-4">
         <Text className="text-base font-bold text-ink">이 기기에서 알림 받기</Text>
         <Text className="text-sm leading-6 text-muted">알림은 선택이에요. 브리핑을 받고 싶다면 기기 권한을 허용하고 등록해주세요.</Text>
-        <Pressable accessibilityRole="button" disabled={registeringPush} accessibilityState={{ disabled: registeringPush, busy: registeringPush }} className="min-h-11 justify-center" onPress={() => {
-          setRegisteringPush(true)
+        <View className="gap-2"><ActionButton fullWidth busy={registeringPush && pushAction === 'on'} disabled={registeringPush} label={registeringPush && pushAction === 'on' ? '알림을 등록하고 있어요' : pushRegistered ? '알림 다시 등록하기' : '알림 등록하기'} onPress={() => {
+          setPushAction('on'); setRegisteringPush(true)
           void registerPushToken().then(registered => { if (registered) setPushRegistered(true); Toast.show({ type: registered ? 'success' : 'info', text1: registered ? '이 기기의 알림을 등록했어요.' : '알림 권한을 허용하면 받을 수 있어요.' }); })
             .catch(() => Toast.show({ type: 'error', text1: '알림을 등록하지 못했어요.', text2: '앱은 계속 사용할 수 있어요. 잠시 후 다시 시도해주세요.' }))
             .finally(() => setRegisteringPush(false))
-        }}><Text className="text-base font-semibold text-brand">{registeringPush ? '알림 등록 중…' : pushRegistered ? '알림 다시 등록하기' : '알림 등록하기'}</Text></Pressable><Pressable accessibilityRole="button" disabled={registeringPush} onPress={() => { setRegisteringPush(true); void unregisterPushToken().then(() => { setPushRegistered(false); Toast.show({ type: 'success', text1: '이 기기의 알림을 껐어요.' }) }).catch(() => Toast.show({ type: 'error', text1: '알림을 끄지 못했어요.', text2: '잠시 후 다시 눌러주세요.' })).finally(() => setRegisteringPush(false)) }} className="min-h-11 justify-center"><Text className="text-base text-ink">이 기기 알림 끄기</Text></Pressable>
+        }} /><ActionButton fullWidth busy={registeringPush && pushAction === 'off'} disabled={registeringPush} label={registeringPush && pushAction === 'off' ? '이 기기의 알림을 끄고 있어요' : '이 기기 알림 끄기'} onPress={() => { setPushAction('off'); setRegisteringPush(true); void unregisterPushToken().then(() => { setPushRegistered(false); Toast.show({ type: 'success', text1: '이 기기의 알림을 껐어요.' }) }).catch(() => Toast.show({ type: 'error', text1: '알림을 끄지 못했어요.', text2: '잠시 후 다시 눌러주세요.' })).finally(() => setRegisteringPush(false)) }} /></View>
       </View>
       <Link href="/community" className="py-3 text-brand">공지사항 · 문제 신고·의견 · 내 문의</Link>
       <Link href="/guide" className="py-3 text-brand">앱 도움말</Link>
       <Link href="/privacy" className="py-3 text-brand">개인정보처리방침</Link>
       <Link href="/investment-info" className="py-3 text-brand">투자 정보 이용안내</Link>
     </ScrollView>
+    <View style={{ padding: 20, paddingBottom: Math.max(20, insets.bottom), borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.surface }}>
+      <View className="gap-2"><ActionButton label={saving ? '설정 저장 중' : '변경사항 저장'} onPress={() => void handleSave()} busy={saving} disabled={!dirty} tone="primary" fullWidth />
+        <Text accessibilityLiveRegion="polite" className="text-sm leading-6 text-muted">{saving ? '변경사항을 저장하고 있어요.' : dirty ? (saveStatus === '설정을 저장했어요.' ? '아직 저장하지 않은 변경이 있어요.' : saveStatus || '아직 저장하지 않은 변경이 있어요.') : saveStatus || '저장된 설정이에요.'}</Text>
+      </View>
+    </View></View>
   )
 }

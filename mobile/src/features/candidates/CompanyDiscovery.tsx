@@ -1,14 +1,13 @@
-import { ModalHeader } from '@/components/ModalHeader'
+import { AppSheet } from '@/components/AppSheet'
 import { ActionButton } from '@/components/ActionButton'
-import { useTheme, ThemeSurface } from '@/lib/theme'
+import { useTheme } from '@/lib/theme'
 import { useSettings } from '../settings/hooks/useSettings'
 import { useState } from 'react'
-import { Linking, Modal, Pressable, ScrollView, Text, View } from 'react-native'
+import { Linking, Pressable, ScrollView, Text, View } from 'react-native'
 import { StockSearchInput } from '../stocks/components/StockSearchInput'
 import { CatalogExplorer } from './CatalogExplorer'
 import { useStockNames } from '../stocks/hooks/useStockNames'
 import Toast from 'react-native-toast-message'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { fetchSettings, updateSettings } from '@/lib/api'
 import { catalogVerifiedAt, companyDefaultVerifiedAt, companyNews, companySector, findCompany, isRecommended, portfolioContext, qualifiedRecommendations, recommendationFor, searchCompanies, sectors, type Company, type DiscoveryBriefing } from '../../../../shared/discovery'
 import type { Portfolio } from '../../../../shared/investing'
@@ -52,7 +51,7 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
   }
   return <View className="gap-5">
     <StockSearchInput preserveQueryOnSelect onQueryChange={setQuery} onSelect={(symbol, name) => { rememberName(symbol, name); onOpenStock?.(symbol) }} />
-    <View className="flex-row gap-2">{[{ key: 'picks', label: '후보' }, { key: 'companies', label: '분야' }, ...(!shortTerm ? [{ key: 'etfs', label: 'ETF' }] : [])].map(item => <Pressable key={item.key} accessibilityRole="tab" accessibilityState={{ selected: view === item.key }} aria-selected={view === item.key} onPress={() => setView(item.key)} className={`min-h-11 justify-center rounded-xl px-4 ${view === item.key ? 'bg-brand' : 'bg-surface'}`}><Text className={view === item.key ? 'text-onbrand' : 'text-ink'}>{item.label}</Text></Pressable>)}</View>
+    <View className="flex-row flex-wrap gap-2">{[{ key: 'picks', label: '후보' }, { key: 'companies', label: '분야' }, ...(!shortTerm ? [{ key: 'etfs', label: 'ETF' }] : [])].map(item => <Pressable key={item.key} accessibilityRole="tab" accessibilityState={{ selected: view === item.key }} aria-selected={view === item.key} onPress={() => setView(item.key)} className={`min-h-11 justify-center rounded-xl px-4 ${view === item.key ? 'bg-brand' : 'bg-surface'}`}><Text className={view === item.key ? 'text-onbrand' : 'text-ink'}>{item.label}</Text></Pressable>)}</View>
     {view === 'etfs' && <CatalogExplorer query={query} onOpenStock={onOpenStock} />}
     {view === 'picks' && <>
     <Text className="text-lg font-bold text-ink">근거가 확인된 후보</Text>
@@ -74,8 +73,7 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
     <Text className="text-xs text-muted">공식 사업 소개 기반의 시작 목록입니다. 전체 상장기업 목록이나 추천 순위가 아닙니다. 정보 확인 {catalogVerifiedAt}.</Text>
     <Pressable accessibilityRole="button" onPress={() => onSearchStock?.(query)} className="min-h-11 justify-center"><Text className="text-brand">이 목록 외 기업 검색하기 →</Text></Pressable>
     </>}
-    <Modal visible={!!selected} animationType="slide" onRequestClose={() => setSelected(null)} presentationStyle="pageSheet"><ThemeSurface>
-      {selected && <SafeAreaView className="flex-1 bg-canvas"><ModalHeader title={selected.name} close={() => setSelected(null)} disabled={saving} closeLabel="기업 상세 닫기" /><ScrollView contentContainerClassName="gap-5 p-5 pb-10">
+    <AppSheet open={!!selected} title={selected?.name ?? '기업 상세'} close={() => setSelected(null)} disabled={saving}>{selected && <ScrollView contentContainerClassName="gap-5 p-5 pb-10">
         <Text className="text-muted">{companySector(selected).name}</Text><Text className="text-ink">{selected.description}</Text><Pressable accessibilityRole="link" onPress={() => openLink(selected.source)}><Text className="text-brand">공식 기업 자료 ↗</Text></Pressable><Text className="text-xs text-muted">기업 정보 확인 {selected.verifiedAt ?? companyDefaultVerifiedAt} · 가격 기준 시각과 달라요.</Text>
         <Text className="text-lg font-bold text-ink">개별 종목 추천 근거</Text>
         {isRecommended(selected, briefing) && detail ? <View className="gap-3"><Text style={{ color: colors.info }} className="text-xs">AI 해석 · 자료 기준 {briefing?.briefingDate}</Text><Text className="text-ink">{detail.reason}</Text><Text className="text-muted">확인할 위험 · {detail.risk}</Text>{!detail.sourceNewsLinks.length && <Text className="text-xs text-muted">직접 연결된 근거 기사 없이 제공된 시장 자료에 대한 AI 해석입니다.</Text>}</View> : <Text className="text-muted">현재 근거가 확인된 추천 후보가 아닙니다. 기업과 뉴스를 탐색할 수 있습니다.</Text>}
@@ -84,7 +82,6 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
         <Pressable accessibilityRole="button" onPress={() => { const name = selected.name; setSelected(null); onOpenNews?.(name) }} className="min-h-11 justify-center"><Text className="text-brand">이 기업의 보관 뉴스 검색 →</Text></Pressable>
         <Pressable accessibilityRole="button" onPress={() => { const symbol = selected.symbol; setSelected(null); onOpenStock?.(symbol) }} className="min-h-11 justify-center rounded-xl bg-canvas p-3"><Text className="text-ink">차트 보기</Text></Pressable><ActionButton fullWidth busy={saving} label={settings?.watchedStocks.includes(selected.symbol) ? '관심 기업 해제' : '관심 기업에 담기'} onPress={() => void watch(selected)} />
         {watchFeedback?.symbol === selected.symbol && <Text accessibilityRole="alert" className={watchFeedback.failed ? 'text-danger' : 'text-brand'}>{watchFeedback.message}</Text>}
-      </ScrollView></SafeAreaView>}
-    </ThemeSurface></Modal>
+      </ScrollView>}</AppSheet>
   </View>
 }
