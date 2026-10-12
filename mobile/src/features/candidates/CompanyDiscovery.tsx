@@ -1,3 +1,4 @@
+import { ActionButton } from '@/components/ActionButton'
 import { useTheme, ThemeSurface } from '@/lib/theme'
 import { useSettings } from '../settings/hooks/useSettings'
 import { useState } from 'react'
@@ -80,7 +81,7 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
         <Text className="text-lg font-bold text-ink">내 포트폴리오와 비교</Text><Text className="text-ink">{portfolioContext(selected, portfolio)}</Text><Pressable accessibilityRole="button" onPress={() => { setSelected(null); onOpenPortfolio?.() }} className="min-h-11 justify-center"><Text className="text-brand">내 보유 자산 확인 →</Text></Pressable>
         <Text className="text-lg font-bold text-ink">관련 기사와 근거 확인</Text>{news.length ? news.map(article => <Pressable key={article.link} accessibilityRole="link" onPress={() => openLink(article.link)} className="py-2"><Text className="text-brand">{article.title} ↗</Text></Pressable>) : <Text className="text-muted">저장된 브리핑에서 연결되는 기사가 없습니다.</Text>}
         <Pressable accessibilityRole="button" onPress={() => { const name = selected.name; setSelected(null); onOpenNews?.(name) }} className="min-h-11 justify-center"><Text className="text-brand">이 기업의 보관 뉴스 검색 →</Text></Pressable>
-        <Pressable accessibilityRole="button" onPress={() => { const symbol = selected.symbol; setSelected(null); onOpenStock?.(symbol) }} className="min-h-11 justify-center rounded-xl bg-canvas p-3"><Text className="text-ink">차트 보기</Text></Pressable><Pressable accessibilityRole="button" disabled={saving} onPress={() => void watch(selected)} className="min-h-11 justify-center rounded-xl bg-brand p-3"><Text className="text-center text-onbrand">{saving ? '저장 중...' : settings?.watchedStocks.includes(selected.symbol) ? '관심 기업 해제' : '관심 기업에 담기'}</Text></Pressable>
+        <Pressable accessibilityRole="button" onPress={() => { const symbol = selected.symbol; setSelected(null); onOpenStock?.(symbol) }} className="min-h-11 justify-center rounded-xl bg-canvas p-3"><Text className="text-ink">차트 보기</Text></Pressable><ActionButton fullWidth busy={saving} label={settings?.watchedStocks.includes(selected.symbol) ? '관심 기업 해제' : '관심 기업에 담기'} onPress={() => void watch(selected)} />
         {watchFeedback?.symbol === selected.symbol && <Text accessibilityRole="alert" className={watchFeedback.failed ? 'text-danger' : 'text-brand'}>{watchFeedback.message}</Text>}
       </ScrollView></SafeAreaView>}
     </ThemeSurface></Modal>

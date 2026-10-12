@@ -1,6 +1,7 @@
+import { AppDrawer as Drawer } from '../../components/AppDrawer'
 import { articleText } from '../../../../shared/article-text'
 import { useEffect, useId, useRef, useState } from 'react'
-import { Alert, Button, Card, Drawer, Empty, Grid, Modal, Segmented, Space, Typography } from 'antd'
+import { Alert, Button, Card, Empty, Grid, Modal, Segmented, Space, Typography } from 'antd'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { catalogVerifiedAt, companies, companySector, findCompany, isRecommended, qualifiedRecommendations, portfolioContext, searchCompanies, sectors, type RecommendationReport } from '../../../../shared/discovery'
 import type { Portfolio } from '../../../../shared/investing'
