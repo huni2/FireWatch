@@ -4,6 +4,7 @@ const key = 'firewatch-login-session'
 export type LoginSession = { token: string; expiresAt: string }
 let generation = 0
 let restoration: Promise<string | null> | null = null
+let restorationToken: string | null = null
 let writes: Promise<void> = Promise.resolve()
 function write(action: () => Promise<void>): Promise<void> {
   writes = writes.catch(() => {}).then(action)
@@ -43,7 +44,10 @@ export async function sessionToken(): Promise<string | null> {
   if (Date.parse(session.expiresAt) > Date.now()) return session.token
   // One attempt per process/session, shared by concurrent requests. Never fall back to
   // anonymous writes when Google or the network is temporarily unavailable.
-  if (!restoration) restoration = restore(session, generation)
+  if (!restoration || restorationToken !== session.token) {
+    restorationToken = session.token
+    restoration = restore(session, generation)
+  }
   return await restoration
 }
 

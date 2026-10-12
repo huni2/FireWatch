@@ -13,10 +13,11 @@ function fixture({ saved, token = 'google-proof', renewFailure } = {}) {
   vm.runInNewContext(source, { module, exports: module.exports, require(name) {
     if (name === 'expo-secure-store') return { getItemAsync: async () => value, setItemAsync: async (_, next) => { value = next; }, deleteItemAsync: async () => { value = null; } };
     if (name === './googleSignIn') return { silentGoogleIdToken: async () => token };
-    if (name === './api') return { renewGoogleSession: async (old, proof) => { calls++; assert.equal(old, 'expired'); assert.equal(proof, 'google-proof'); await barrier; if (renewFailure) throw new Error('offline'); return { token: 'renewed', expiresAt: new Date(Date.now() + 60000).toISOString() }; } };
+    if (name === './api') return { renewGoogleSession: async (old, proof) => { calls++; assert.equal(old, calls === 1 ? 'expired' : 'renewed'); assert.equal(proof, 'google-proof'); await barrier; if (renewFailure) throw new Error('offline'); return { token: calls === 1 ? 'renewed' : 'renewed-again', expiresAt: new Date(Date.now() + 60000).toISOString() }; } };
     throw new Error(name);
   } });
-  return { ...module.exports, release, calls: () => calls, stored: () => value };
+  return { ...module.exports, release, calls: () => calls, stored: () => value,
+    expire: () => { value = JSON.stringify({ ...JSON.parse(value), expiresAt: '2000-01-01T00:00:00Z' }); } };
 }
 const expired = { token: 'expired', expiresAt: '2000-01-01T00:00:00Z' };
 test('valid and anonymous sessions never invoke Google renewal', async () => {
@@ -55,4 +56,9 @@ test('a stale unauthorized response cannot erase the replacement session', async
   const f = fixture({ saved: expired }); f.release(); await f.sessionToken();
   await f.invalidateSession('expired'); assert.equal(await f.sessionToken(), 'renewed');
   await f.invalidateSession('renewed'); assert.equal(await f.sessionToken(), null);
+});
+test('the replacement can renew again on a later expiry in the same process', async () => {
+  const f = fixture({ saved: expired }); f.release();
+  assert.equal(await f.sessionToken(), 'renewed'); f.expire();
+  assert.equal(await f.sessionToken(), 'renewed-again'); assert.equal(f.calls(), 2);
 });
