@@ -1,6 +1,16 @@
 # Android 설치 검증
 
-## 최신 설치본 1.0.3 / 빌드8 (2026-10-12)
+## 최신 설치본 1.0.4 / 빌드9 (2026-10-12)
+
+사용자 최신화 요청으로 소스 `44a2855e7ca50144d90d829beb2e21a0c30bfb2f`를 로컬 Expo prebuild+Gradle로 빌드했다. EAS 클라우드 요청 0. 기존 1.0.3과 동일한 release 인증서, 패키지 `com.firewatch.mobile`, 버전 1.0.4/9, ARM32/64, R8 mapping/DEX의 Google·그라디언트 모듈, 독립 JS 번들·마스코트 원본 픽셀, ZIP CRC·16KB ZIP 정렬을 확인했다.
+
+상단 테마·순위 닫기(PR#94), 로딩 정지 수정(#93), 게임 직접 마무리(#95), 기업 검색·자산 등록·게임 주문 시트(#96)를 포함한다. 모바일 45회귀·타입/lint·출시 설정 검사를 통과했다.
+
+크기 54,316,264 bytes(약54MB), SHA-256 `ef3773ecd522cb20a0b8ee9a5fc593fa549a39ac491922f0af1201eae07f344a`. GitHub 업로드 digest와 공개 다운로드 크기를 대조했다. [APK](https://github.com/huni2/FireWatch/releases/download/v1.0.4-android-preview/FireWatch-1.0.4-android.apk) · [릴리스](https://github.com/huni2/FireWatch/releases/tag/v1.0.4-android-preview) · [소스 CI](https://github.com/huni2/FireWatch/actions/runs/38216051032) · [파일 검증](../product/android-preview-20261009/android-104-build.json).
+
+기존 앱을 삭제하지 않고 업데이트 설치한다. 실제 Android Google 왕복·푸시·키보드·TalkBack은 미확인이다. 이 요청으로 자동 APK/EAS/OTA 빌드를 활성화하지 않는다. APP-21 실제 설치·제출 확인은 계속 열린 상태다.
+
+## 이전 설치본 1.0.3 / 빌드8 (2026-10-12)
 
 사용자의 APK/README 최신화 요청으로 소스 `a6aaa0c469b99ced5d1fa16639b506944bc20297`를 로컬 Expo prebuild+Gradle로 빌드했다. BUILD SUCCESSFUL16분50초·901작업, heap3GiB/meta1GiB·최대 작업자2. EAS 클라우드 요청0. 패키지 `com.firewatch.mobile`·버전1.0.3/8·ARM32/64·독립 실행 JS 번들·Google/그라디언트 네이티브 모듈 포함, R8 mapping/DEX 대조, 16KB ZIP 정렬·ZIP 무결성·기존1.0.2와 같은 release 인증서를 확인했다. 마스코트는 res/BV.png에 포함됐고 흰색/검은색 배경에 합성한 픽셀이 원본과 같았다.
 
