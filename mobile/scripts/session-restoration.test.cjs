@@ -62,3 +62,15 @@ test('the replacement can renew again on a later expiry in the same process', as
   assert.equal(await f.sessionToken(), 'renewed'); f.expire();
   assert.equal(await f.sessionToken(), 'renewed-again'); assert.equal(f.calls(), 2);
 });
+
+
+test('explicit account changes clear retained views, renewal and stale 401 do not', async () => {
+  const f = fixture({ saved: expired }); let changes = 0;
+  const stop = f.watchAccountSession(() => changes++);
+  const restore = f.sessionToken(); f.release(); await restore;
+  assert.equal(changes, 0);
+  await f.invalidateSession('expired'); assert.equal(changes, 0);
+  await f.saveSession({ token: 'manual', expiresAt: new Date(Date.now() + 60000).toISOString() }); assert.equal(changes, 1);
+  await f.clearSession(); assert.equal(changes, 2);
+  stop(); await f.saveSession({ token: 'other', expiresAt: new Date(Date.now() + 60000).toISOString() }); assert.equal(changes, 2);
+});

@@ -66,3 +66,7 @@ APK/EAS/OTA 실행0. 공개1.0.3에는 이전 로딩 수정과 이번 UI 변경�
 진행 중 게임의 규칙·마무리를 더보기/게임 도구에 숨겼던 구성을 제거했다. 웹/Android 메뉴에서 규칙과 `이번 게임 마무리`를 바로 노출한다. 마무리는 ACTIVE일 때만 표시하고 busy 동안 비활성화하며 기존 종료 확인·취소 및 서버 종료 동작을 유지한다. 작은 화면은 버튼을 자연스럽게 다음 줄로 배치한다. 순위 조건/게임 규칙/DB 변경 없음.
 
 웹 타입/빌드/lint 통과(기존 푸시 effect 경고1 유지), Android 타입/Expo lint 및 native-web export 통과. 격리 웹360/390/1366px에서 직접 버튼/확인 취소·가로 넘침 없음, native-web360/390px에서 직접 버튼·규칙/44px 크기/가로 넘침 없음 검증. JS오류·운영쓰기0. Android Alert 취소·실기기 동작은 미확인. 결과는 game-finish-web-preview.json 및 game-finish-native-preview.json에 보관한다. 기존 Issue62/APP-21에 기록하고 새 과제 없음, APK/EAS/OTA0.
+
+## 전체 UI/UX 리뷰 소스 후속
+
+기업 탐색 단일 검색/후보·분야·ETF, 방문 탭 유지·비활성 조회/폴링/로딩 중단·계정 경계 초기화, 기업 상세→사전 선택 등록, 저장 후 발견/강조와 보유 목록 우선, 제목/본문 언급 뉴스 구분·차트 축 단축·폭 조정, 게임 주문 시트/고정 확인·닫기 유지/턴 변경 초기화 및 회고 펼침 적용. 모바일45회귀·계약5·타입/lint·Android JS export2183/5.2MB·격리390px 흐름 통과. 자세한 범위/결과는 docs/product/web30-support-design/ux-review-followup-20261012.md 및 JSON 참조. 실제 Android 키보드/Alert/계정 전환/TalkBack은 미확인. APK/EAS/OTA0.

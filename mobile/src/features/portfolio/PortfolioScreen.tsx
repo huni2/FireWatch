@@ -14,10 +14,11 @@ import { fetchPortfolio, savePortfolio } from '@/lib/investingApi'
 import { useResource } from '@/lib/useResource'
 import { assetLabels, emptyHolding, toDraft } from '../../../../shared/investing'
 import type { Holding, PortfolioDraft } from '../../../../shared/investing'
-import { portfolioCoverageText, portfolioFinding } from '../../../../shared/holding-registration'
+import { portfolioCoverageText, portfolioFinding, selectedHolding } from '../../../../shared/holding-registration'
 
-export function PortfolioScreen(navigation: { onOpenStock?: (symbol: string) => void; onOpenNews?: (query: string) => void; onOpenCandidates?: () => void } = {}) {
+export function PortfolioScreen(navigation: { onOpenStock?: (symbol: string) => void; onOpenNews?: (query: string) => void; onOpenCandidates?: () => void; initialHolding?: { symbol: string; name: string } | null; onHoldingConsumed?: () => void } = {}) {
   const { colors } = useTheme()
+  const { initialHolding, onHoldingConsumed } = navigation
 
   const query = useResource(fetchPortfolio)
   const { markReady, preparing } = useContext(AppReadiness)
@@ -28,10 +29,18 @@ export function PortfolioScreen(navigation: { onOpenStock?: (symbol: string) => 
   const [error, setError] = useState<string | null>(null)
   const [details, setDetails] = useState(false)
   const operation = useRef(false)
-  async function persist(draft: PortfolioDraft) {
+  const scroll = useRef<ScrollView>(null)
+  const [lastSaved, setLastSaved] = useState<string | null>(null)
+  useEffect(() => {
+    if (!query.data || !initialHolding) return
+    const target = initialHolding
+    const timer = setTimeout(() => { const base = toDraft(query.data!), index = base.holdings.findIndex(row => row.symbol === target.symbol); setEditing({ base, initial: index >= 0 ? base.holdings[index] : selectedHolding(emptyHolding(), target.symbol, target.name), index: index >= 0 ? index : null }); onHoldingConsumed?.() }, 0)
+    return () => clearTimeout(timer)
+  }, [query.data, initialHolding, onHoldingConsumed])
+  async function persist(draft: PortfolioDraft, savedSymbol?: string) {
     if (operation.current) return
     operation.current = true; setSaving(true); setError(null)
-    try { const saved = await savePortfolio(draft); query.replaceData(saved); setEditing(null); setPlan(null); Toast.show({ type: 'success', text1: '보유 기록을 저장했어요.', text2: '내 자산 비중과 확인할 점을 살펴보세요.' }) }
+    try { const saved = await savePortfolio(draft); query.replaceData(saved); setLastSaved(savedSymbol ?? null); requestAnimationFrame(() => scroll.current?.scrollTo({ y: 0, animated: true })); setEditing(null); setPlan(null); Toast.show({ type: 'success', text1: '보유 기록을 저장했어요.', text2: '내 자산 비중과 확인할 점을 살펴보세요.' }) }
     catch (e) { setError(e instanceof Error ? e.message : '기록을 저장하지 못했어요.') }
     finally { operation.current = false; setSaving(false) }
   }
@@ -49,7 +58,7 @@ export function PortfolioScreen(navigation: { onOpenStock?: (symbol: string) => 
   const hasAssets = !!portfolio && (portfolio.holdings.length > 0 || portfolio.cash > 0)
   if (!portfolio && query.loading) return preparing ? null : <LoadingState message="내 투자 기록을 불러오고 있어요" />
   return <>
-    <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5 pb-10" refreshControl={<RefreshControl refreshing={query.refreshing} onRefresh={query.refresh} />}>
+    <ScrollView ref={scroll} className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5 pb-10" refreshControl={<RefreshControl refreshing={query.refreshing} onRefresh={query.refresh} />}>
       <View className="gap-2"><Text className="text-2xl font-bold text-ink">내 자산</Text></View>
       {query.error && <View className="gap-2"><Text className="text-ink">{query.error}</Text><Pressable onPress={query.reload} className="min-h-11 justify-center"><Text className="text-brand">다시 확인</Text></Pressable></View>}
       {portfolio && <View className="flex-row flex-wrap gap-3"><Pressable accessibilityRole="button" disabled={saving || portfolio.holdings.length >= 50} onPress={() => openHolding()} className="min-h-11 justify-center rounded-xl bg-brand px-5 py-3"><Text className="font-bold text-onbrand">{hasAssets ? '자산 추가' : '첫 자산 등록하기'}</Text></Pressable><Pressable accessibilityRole="button" disabled={saving} onPress={() => { setError(null); setPlan(toDraft(portfolio)) }} style={hasAssets ? undefined : { display: 'none' }} className="min-h-11 justify-center rounded-xl border border-line px-4"><Text className="text-ink">현금·투자 계획</Text></Pressable></View>}
@@ -58,16 +67,17 @@ export function PortfolioScreen(navigation: { onOpenStock?: (symbol: string) => 
       {hasAssets && portfolio && <>
         <View className="gap-2 border-b border-line pb-4"><Text className="text-sm text-muted">등록한 자산 평가액</Text><Text className="text-4xl font-bold text-ink">{portfolio.totalValueKrw == null ? '일부 가격 확인 필요' : `${portfolio.totalValueKrw.toLocaleString()}원`}</Text><Text className="text-xs text-muted">수집 시세 기준 · 증권사 자동 연동 없음</Text></View>
         <View className="gap-2 rounded-xl bg-surface p-4"><Text className="text-sm text-brand">이번에 확인할 점</Text><Text className="font-bold text-ink">{portfolioFinding(portfolio)}</Text><Text className="text-xs text-muted">등록한 자산 기준이에요. 등록하지 않은 자산은 포함되지 않아요.</Text></View>
+        {lastSaved && <View accessibilityRole="alert" className="gap-2"><Text className="text-ink">{portfolio.holdings.find(row => row.holding.symbol === lastSaved)?.holding.name} 기록을 저장했어요.</Text><Pressable accessibilityRole="button" onPress={() => openHolding()} className="min-h-11 justify-center"><Text className="text-brand">다른 자산도 등록</Text></Pressable></View>}
+        <View className="gap-3"><Text className="text-lg font-bold text-ink">보유 자산</Text><Text className="text-xs text-muted">{portfolioCoverageText(portfolio)}</Text>{portfolio.holdings.map((row, index) => <View key={row.holding.symbol} style={lastSaved === row.holding.symbol ? { backgroundColor: colors.accentSoft } : undefined} className="gap-2 border-b border-line py-3"><Pressable accessibilityRole="button" disabled={!navigation.onOpenStock} onPress={() => navigation.onOpenStock?.(row.holding.symbol)} className="min-h-11 justify-center"><Text className="text-base font-bold text-ink">{row.holding.name}</Text></Pressable><Text className="text-muted">{row.holding.quantity.toLocaleString()}주 · {assetLabels[row.holding.assetClass]}</Text><Text className="font-bold text-ink">{row.valueKrw == null ? '가격·환율 확인 필요' : `${row.valueKrw.toLocaleString()}원`}</Text><Text className="text-xs text-muted">{row.holding.averageCost == null ? '매입가 미입력 · 손익 계산 안 함' : `평균 매입가 ${row.holding.averageCost.toLocaleString()} ${row.holding.currency === 'KRW' ? '원' : '달러'}`}</Text><Text className="text-xs text-muted">{row.quoteAsOf ? `시세 ${new Date(row.quoteAsOf).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}` : '시세 미수집'}</Text><View className="flex-row gap-4"><Pressable accessibilityRole="button" accessibilityLabel={`${row.holding.name} 기록 수정`} disabled={saving} onPress={() => openHolding(index)} className="min-h-11 justify-center"><Text className="text-brand">수정</Text></Pressable><Pressable accessibilityRole="button" accessibilityLabel={`${row.holding.name} 기록 삭제`} disabled={saving} onPress={() => remove(index)} className="min-h-11 justify-center"><Text className="text-danger">삭제</Text></Pressable></View></View>)}<View className="flex-row justify-between"><Text className="text-muted">등록한 현금</Text><Text className="font-bold text-ink">{portfolio.cash.toLocaleString()}원</Text></View></View>
         <View className="gap-3 rounded-2xl bg-surface p-5"><Text className="text-lg font-bold text-ink">내 자산 구성</Text><Text className="text-xs text-muted">{portfolioCoverageText(portfolio)}</Text>{Object.entries(portfolio.allocation).map(([key, value]) => <View key={key} className="gap-2"><View className="flex-row justify-between"><Text className="text-ink">{assetLabels[key]}</Text><Text className="font-bold text-ink">{value.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}%</Text></View><View className="h-2 overflow-hidden rounded-full bg-canvas"><View style={{ width: `${Math.min(100, Math.max(0, value))}%`, backgroundColor: key === 'ETF' ? colors.success : key === 'STOCK' ? colors.info : colors.muted }} className="h-2 rounded-full" /></View></View>)}{!Object.keys(portfolio.allocation).length && <Text className="text-muted">가격·환율을 확인하면 비중을 볼 수 있어요.</Text>}</View>
-        <View className="gap-3"><Text className="text-lg font-bold text-ink">보유 자산</Text><Text className="text-xs text-muted">{portfolioCoverageText(portfolio)}</Text>{portfolio.holdings.map((row, index) => <View key={row.holding.symbol} className="gap-2 border-b border-line py-3"><Pressable accessibilityRole="button" disabled={!navigation.onOpenStock} onPress={() => navigation.onOpenStock?.(row.holding.symbol)} className="min-h-11 justify-center"><Text className="text-base font-bold text-ink">{row.holding.name}</Text></Pressable><Text className="text-muted">{row.holding.quantity.toLocaleString()}주 · {assetLabels[row.holding.assetClass]}</Text><Text className="font-bold text-ink">{row.valueKrw == null ? '가격·환율 확인 필요' : `${row.valueKrw.toLocaleString()}원`}</Text><Text className="text-xs text-muted">{row.holding.averageCost == null ? '매입가 미입력 · 손익 계산 안 함' : `평균 매입가 ${row.holding.averageCost.toLocaleString()} ${row.holding.currency === 'KRW' ? '원' : '달러'}`}</Text><Text className="text-xs text-muted">{row.quoteAsOf ? `시세 ${new Date(row.quoteAsOf).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}` : '시세 미수집'}</Text><View className="flex-row gap-4"><Pressable accessibilityRole="button" accessibilityLabel={`${row.holding.name} 기록 수정`} disabled={saving} onPress={() => openHolding(index)} className="min-h-11 justify-center"><Text className="text-brand">수정</Text></Pressable><Pressable accessibilityRole="button" accessibilityLabel={`${row.holding.name} 기록 삭제`} disabled={saving} onPress={() => remove(index)} className="min-h-11 justify-center"><Text className="text-danger">삭제</Text></Pressable></View></View>)}<View className="flex-row justify-between"><Text className="text-muted">등록한 현금</Text><Text className="font-bold text-ink">{portfolio.cash.toLocaleString()}원</Text></View></View>
-        <PortfolioConnections portfolio={portfolio} {...navigation} />
+        {details && <PortfolioConnections portfolio={portfolio} {...navigation} />}
 
         <Pressable accessibilityRole="button" accessibilityState={{ expanded: details }} onPress={() => setDetails(!details)} className="min-h-11 justify-center"><Text className="text-brand">손익·분야·통화·ETF 중복 {details ? '접기' : '더 보기'}</Text></Pressable>{details && <><View className="gap-3 rounded-xl bg-surface p-4"><Text className="text-muted">투자원금 {portfolio.investedKrw == null ? '매입가·환율 확인 필요' : `${portfolio.investedKrw.toLocaleString()}원`}</Text><Text className="text-muted">가격 변동 수익률 {portfolio.returnPercent == null ? '계산하지 않았어요' : `${portfolio.returnPercent}%`}</Text><Text className="text-xs text-muted">매입가·시세·환율이 확인된 경우 계산해요. 수수료·세금은 포함하지 않아요.</Text><Text className="font-bold text-ink">저장된 조건의 구성 초안</Text>{Object.entries(portfolio.targetAllocation).map(([key, value]) => <Text key={key} className="text-muted">{assetLabels[key]} {value}% · 월 배분 예시 {portfolio.contributionPlan[key]?.toLocaleString()}원</Text>)}<Text className="text-xs text-muted">규칙 기반 예시예요. 실제 상품·계좌 적합성을 별도로 확인해주세요.</Text></View><PortfolioExposureCard portfolio={portfolio} /></>}
         <InvestmentFocus portfolio={portfolio} {...navigation} />
       </>}
       <InvestmentNotice />
     </ScrollView>
-    {editing && <HoldingRegistration initial={editing.initial} others={editing.base.holdings.filter((_, i) => i !== editing.index)} editing={editing.index != null} saving={saving} error={error} close={() => setEditing(null)} save={holding => void persist({ ...editing.base, holdings: editing.index == null ? [...editing.base.holdings, holding] : editing.base.holdings.map((h, i) => i === editing.index ? holding : h) })} />}
+    {editing && <HoldingRegistration initial={editing.initial} others={editing.base.holdings.filter((_, i) => i !== editing.index)} editing={editing.index != null} saving={saving} error={error} close={() => setEditing(null)} save={holding => void persist({ ...editing.base, holdings: editing.index == null ? [...editing.base.holdings, holding] : editing.base.holdings.map((h, i) => i === editing.index ? holding : h) }, holding.symbol)} />}
     {plan && <PortfolioPlanEditor initial={plan} saving={saving} error={error} close={() => setPlan(null)} save={value => void persist(value)} />}
   </>
 }

@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-12",
+  "scope": "isolated local API fixtures, not physical Android",
+  "web": {
+    "desktopWidths": [
+      1280,
+      1366
+    ],
+    "mobileWidths": [
+      390
+    ],
+    "singleSearch": true,
+    "etfSharedQuery": true,
+    "detailNewsHeadlineAndBodyGroups": true,
+    "chartAxisShortLabels": true,
+    "companyToRegistrationPreselection": true,
+    "saveToFindingFocus": true,
+    "savedHoldingHighlight": true,
+    "browserBackRestoresDetailAndView": true,
+    "marketScrollTop": 768,
+    "nextTurnBeforeY": 709.6625366210938,
+    "nextTurnAfterY": 709.6625366210938,
+    "overflow": false
+  },
+  "androidSource": {
+    "width": 390,
+    "slowRecommendationsMs": 3000,
+    "searchDuringRecommendationLoad": true,
+    "searchQueryPreservedAfterDetail": "삼성전자",
+    "sectorPreservedAcrossTabs": true,
+    "companyToRegistrationPreselection": true,
+    "holdingSaveToTop": true,
+    "holdingsBeforeAllocation": true,
+    "orderPickOpensSheet": true,
+    "orderTotalVisible": true,
+    "sheetConfirmFixed": true,
+    "quantityPreservedAcrossTabs": "7",
+    "quantityAfterNextTurn": "",
+    "inactiveResourcesAndMotionPaused": true,
+    "accountBoundaryReset": "unit verified, not real login",
+    "overflow": false
+  },
+  "checks": {
+    "mobileTestsPassed": 45,
+    "dataContractTestsPassed": 5,
+    "webTypeLintBuild": true,
+    "existingWebLintWarnings": 1,
+    "mobileTypeLint": true,
+    "androidExportModules": 2183,
+    "androidExportApproxMb": 5.2,
+    "runtimeErrorsObserved": 0,
+    "physicalAndroidVerified": false,
+    "productionWrites": 0,
+    "apkBuilds": 0,
+    "easBuilds": 0,
+    "otaUpdates": 0
+  }
+}

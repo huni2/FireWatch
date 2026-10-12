@@ -5,7 +5,7 @@ import type { StockChartRange } from '../../../lib/api'
 import { useStockHistory } from '../hooks/useStockHistory'
 import { BRAND_GREEN } from '../../../lib/theme'
 import { stockLabel } from '../../../../../shared/stock-labels'
-import { formatStockPrice } from '../../../../../shared/stock-price'
+import { formatPriceAxis, formatStockPrice } from '../../../../../shared/stock-price'
 import { CompanyNews } from './CompanyNews'
 import { SlowLoadingHint } from '../../../components/SlowLoadingHint'
 
@@ -94,8 +94,8 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.4} />
             <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-            <YAxis domain={['auto', 'auto']} axisLine={false} tickLine={false} tick={{ fontSize: 12 }} width={60} />
-            <Tooltip contentStyle={{ borderRadius: 8, fontSize: 13 }} />
+            <YAxis tickFormatter={formatPriceAxis} domain={['auto', 'auto']} axisLine={false} tickLine={false} tick={{ fontSize: 12 }} width={60} />
+            <Tooltip formatter={(value) => [formatStockPrice(Number(value), currency), "주가"]} contentStyle={{ borderRadius: 8, fontSize: 13 }} />
             <Area
               type="monotone"
               dataKey="value"

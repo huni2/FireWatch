@@ -5,17 +5,20 @@ const vm = require('node:vm');
 const ts = require('typescript');
 
 // Isolated hook-state harness: exercise request ordering without a device or API.
-function fixture(fetcher) {
+function fixture(fetcher, activity = { active: true }) {
+  const effects = [];
   const slots = []; let cursor = 0;
   const react = {
     useState(initial) { const i = cursor++; if (!(i in slots)) slots[i] = initial; return [slots[i], value => { slots[i] = typeof value === 'function' ? value(slots[i]) : value; }]; },
     useRef(initial) { const i = cursor++; if (!(i in slots)) slots[i] = { current: initial }; return slots[i]; },
-    useCallback(fn) { return fn; }, useEffect() {},
+    useContext() { return activity.active; }, useCallback(fn) { return fn; }, useEffect(effect) { effects.push(effect); },
   };
   const module = { exports: {} };
   const code = ts.transpileModule(fs.readFileSync('src/lib/useResource.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
-  vm.runInNewContext(code, { module, exports: module.exports, Error, setTimeout, clearTimeout, require: name => name === 'react' ? react : { AppState: {} } });
-  return () => { cursor = 0; return module.exports.useResource(fetcher); };
+  vm.runInNewContext(code, { module, exports: module.exports, Error, setTimeout, clearTimeout, require: name => name === 'react' ? react : { AppState: { addEventListener() { return { remove() {} }; } } } });
+  const render = () => { cursor = 0; effects.length = 0; return module.exports.useResource(fetcher); };
+  render.startEffect = () => effects[0]?.();
+  return render;
 }
 function deferred() { let resolve, reject; const promise = new Promise((a,b) => { resolve=a; reject=b; }); return { promise, resolve, reject }; }
 
@@ -46,4 +49,16 @@ test('saved replacement clears both indicators and wins over an outstanding requ
   const d = deferred(), render = fixture(() => d.promise);
   const task = render().refresh(); render().replaceData('saved'); d.resolve('old'); await task;
   assert.equal(render().data, 'saved'); assert.equal(render().loading, false); assert.equal(render().refreshing, false);
+});
+
+
+test('retained hidden tabs do not fetch until active, and stop their listener on hide', async () => {
+  const activity = { active: false }; let requests = 0;
+  const render = fixture(async () => ++requests, activity);
+  render(); assert.equal(render.startEffect(), undefined);
+  await new Promise(resolve => setTimeout(resolve, 10)); assert.equal(requests, 0);
+  activity.active = true; render(); const cleanup = render.startEffect();
+  await new Promise(resolve => setTimeout(resolve, 10)); assert.equal(requests, 1);
+  cleanup(); activity.active = false; render(); render.startEffect();
+  await new Promise(resolve => setTimeout(resolve, 10)); assert.equal(requests, 1);
 });

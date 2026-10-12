@@ -31,3 +31,8 @@
 .portfolio-details { scroll-margin-top: 140px; }
 @media (max-width: 899px) { .portfolio-home-grid { grid-template-columns: 1fr; gap: 18px; }.portfolio-allocation { order: 1; }.portfolio-home { gap: 18px; }.portfolio-summary { padding: 18px; flex-wrap: wrap; }.portfolio-summary > div:last-child { font-size: 13px; }.portfolio-finding { padding: 16px 18px; }.portfolio-finding strong { font-size: 16px; } }
 @media (max-width: 599px) { .portfolio-home-heading h2 { font-size: 24px; }.portfolio-home-heading p { font-size: 13px; }.portfolio-holdings,.portfolio-allocation { padding: 18px; }.portfolio-holding-row { grid-template-columns: 1fr; }.portfolio-holding-value { text-align: left; }.portfolio-holding-row > .ant-space { grid-column: 1; grid-row: 2; justify-self: end; }.portfolio-holding-value { grid-row: 3; }.portfolio-summary .ant-statistic-content { font-size: 28px; }.portfolio-summary > div:last-child small:first-of-type { display: none; }.portfolio-summary > div:last-child { gap: 4px; }.portfolio-summary { gap: 8px; } }
+
+.portfolio-summary { border-radius: 16px 16px 0 0; padding-bottom: 12px; }
+.portfolio-summary + .portfolio-finding { margin-top: -20px; border-radius: 0 0 16px 16px; background: var(--ant-color-bg-container); border-top: 1px solid var(--ant-color-border-secondary); }
+.portfolio-saved { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.portfolio-holding-row.just-saved { background: var(--ant-color-primary-bg); border-radius: 10px; padding-inline: 12px; }

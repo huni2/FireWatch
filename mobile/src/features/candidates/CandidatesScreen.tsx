@@ -1,5 +1,4 @@
-import { LoadingState } from '@/components/LoadingState'
-import { ScreenIntro } from '@/components/ScreenIntro'
+import { useState } from 'react'
 import { Linking, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
 import { fetchPortfolio, fetchRecommendations } from '@/lib/investingApi'
 import { useResource } from '@/lib/useResource'
@@ -7,18 +6,17 @@ import { accountLabels, productChecklist, riskLabels } from '../../../../shared/
 import { CompanyDiscovery } from './CompanyDiscovery'
 import { RecommendationHistory } from './RecommendationHistory'
 import { InvestmentNotice } from '@/components/InvestmentNotice'
-import { CatalogExplorer } from './CatalogExplorer'
 
 export function CandidatesScreen({ shortTerm = false, ...navigation }: { shortTerm?: boolean; onOpenStock?: (symbol: string) => void; onOpenNews?: (query: string) => void; onOpenPortfolio?: () => void; onSearchStock?: (name: string) => void }) {
+  const [more, setMore] = useState(false)
   const briefing = useResource(fetchRecommendations)
   const portfolio = useResource(fetchPortfolio)
-  if (briefing.loading && !briefing.data) return <LoadingState message="살펴볼 기업을 모으고 있어요" />
   return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5" refreshControl={<RefreshControl refreshing={briefing.refreshing} onRefresh={() => { void briefing.refresh(); void portfolio.reload() }} />}>
-    <ScreenIntro eyebrow={shortTerm ? "단기 관찰" : "기업 탐색"} title={shortTerm ? "단기 투자 후보" : "어떤 기업을 살펴볼까요?"} description="분야별 기업을 살펴보고 추천 이유와 내 보유 자산을 함께 비교하세요." />
+    <Text accessibilityRole="header" className="text-2xl font-bold text-ink">{shortTerm ? '단기 관찰' : '기업 찾기'}</Text>
+    <CompanyDiscovery shortTerm={shortTerm} briefing={briefing.data} portfolio={portfolio.data} loading={briefing.loading} {...navigation} />
     <InvestmentNotice />
-    <CompanyDiscovery briefing={briefing.data} portfolio={portfolio.data} loading={briefing.loading} {...navigation} />
-    {!shortTerm && <CatalogExplorer onOpenStock={navigation.onOpenStock} />}
-    <RecommendationHistory />
+    <Pressable accessibilityRole="button" accessibilityState={{ expanded: more }} onPress={() => setMore(!more)} className="min-h-11 justify-center"><Text className="text-brand">분석 이력·투자 조건 {more ? "접기" : "더 보기"}</Text></Pressable>
+    {more && <><RecommendationHistory />
     {briefing.data?.analyzedAt && <Text className="text-sm text-muted">분석 {new Date(briefing.data.analyzedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} 한국 시간 · 지표 기준 {briefing.data.sourceBriefingDate}. 추가 소식은 뉴스 메뉴에서 확인하세요.</Text>}
     {portfolio.error && <Text className="text-danger">포트폴리오: {portfolio.error}</Text>}
     {portfolio.data && <View className="gap-2 rounded-xl bg-surface border border-line p-4"><Text className="text-ink">{accountLabels[portfolio.data.accountType]} · {riskLabels[portfolio.data.riskLevel]} · {portfolio.data.horizonMonths}개월</Text>{portfolio.data.insights.map(x => <Text key={x} className="text-sm text-ink">• {x}</Text>)}</View>}
@@ -31,5 +29,6 @@ export function CandidatesScreen({ shortTerm = false, ...navigation }: { shortTe
       {briefing.data.news.slice(0, 5).map(n => <Pressable key={n.link} onPress={() => Linking.openURL(n.link)}><Text className="text-brand">{n.title} ↗</Text></Pressable>)}
     </>}
     {!shortTerm && <View className="gap-3 rounded-xl border border-line bg-surface p-4"><Text className="font-bold text-ink">계좌 → 투자 대상 → 실제 상품</Text><Text className="text-sm text-ink">ISA는 계좌, S&P 500은 투자 대상입니다. 실제 매수할 ETF의 구조와 비용을 비교하세요.</Text>{productChecklist.map(x => <Text key={x} className="text-sm text-ink">• {x}</Text>)}{portfolio.data?.holdings.filter(h => h.holding.assetClass === 'ETF').map(h => <Text key={h.holding.symbol} className="text-ink">{h.holding.name} · {h.holding.underlyingIndex || '지수 미입력'} · {h.holding.currency}</Text>)}</View>}
+    </>}
   </ScrollView>
 }

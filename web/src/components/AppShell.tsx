@@ -88,22 +88,23 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
           </span>
         </Link>
         <nav className="header-tools" aria-label="계정과 이용 도구">
-          <Button className="all-menu-button" aria-label="계정과 전체 메뉴" icon={<FirewatchIcon name="account" monochrome />} aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><span className="header-tool-label">{session ? '내 계정' : '계정·설정'}</span></Button>
+          <div className="header-theme-toggle"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4L19 5" /></svg><Switch aria-label="다크 모드" checked={darkMode} onChange={onToggleDarkMode} /><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.4 14.4A8.8 8.8 0 0 1 9.6 3.6a8.8 8.8 0 1 0 10.8 10.8Z" /></svg></div>
+          <Button className="all-menu-button" aria-label="계정·설정" icon={<FirewatchIcon name="account" monochrome />} aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><span className="header-tool-label">{session ? '내 계정' : '계정·설정'}</span></Button>
         </nav>
         </div>
         <nav className="site-navigation" aria-label="주요 메뉴">
           {CONTENT_ITEMS.filter(item => ['/', '/candidates', '/news', '/game'].includes(item.key)).map(item => <TopNavLink key={item.key} item={item} active={active(item) || (item.key === '/candidates' && exploration) || (item.key === '/news' && market)} />)}
         </nav>
       </Header>
-      <Drawer title="계정과 전체 메뉴" open={menuOpen} onClose={() => setMenuOpen(false)} width="min(360px, 100vw)">
+      <Drawer title="계정·설정" open={menuOpen} onClose={() => setMenuOpen(false)} width="min(360px, 100vw)">
         <p className="account-note">{session ? 'Google 연결 세션으로 이용 중입니다. 내 계정에서 연결 상태와 기기를 확인하세요.' : '현재 브라우저의 익명 기록으로 이용 중입니다. Google 연결 상태는 내 계정에서 확인하세요.'}</p>
         <nav aria-label="계정 메뉴" className="all-menu-list">
           <Link to="/account" aria-current={location.pathname === '/account' ? 'page' : undefined} onClick={() => setMenuOpen(false)}><FirewatchIcon name="account" monochrome /><span>내 계정<small>Google 연결 · 기기 관리</small></span></Link>
           <Link to="/community" aria-current={location.pathname === '/community' ? 'page' : undefined} onClick={() => setMenuOpen(false)}><FirewatchIcon name="news" monochrome /><span>공지사항 · 의견 보내기<small>업데이트 확인 · 문제 신고 · 내 문의</small></span></Link>
-          <Link to="/stocks" onClick={() => setMenuOpen(false)}><FirewatchIcon name="stocks" monochrome /><span>회사 검색·시세<small>가격과 차트 확인</small></span></Link><Link to="/short-term" onClick={() => setMenuOpen(false)}><FirewatchIcon name="short-term" monochrome /><span>단기 관찰<small>장전 자료 기반 후보</small></span></Link>
+
           {[...CONTENT_ITEMS, ...ADMIN_ITEMS].filter(item => ['/settings', '/guide', ...(isOperator ? ['/audit-log'] : [])].includes(item.key)).map(item => <Link key={item.key} to={item.key} aria-current={active(item) ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{item.icon}<span>{item.label}</span></Link>)}
         </nav>
-        <div className="drawer-appearance"><span>다크 모드<small>밝은 화면과 어두운 화면 선택</small></span><Switch aria-label="메뉴 다크 모드" checked={darkMode} onChange={onToggleDarkMode} /></div>
+
       </Drawer>
       <Content id="main-content" tabIndex={-1} className="app-content" style={{ maxWidth: 1400, width: '100%', marginInline: 'auto' }}>
         {market && <nav className="context-navigation" aria-label="시장 소식 화면">{[{ to: '/news', label: '뉴스' }, { to: '/briefing', label: '브리핑' }, { to: '/indices', label: '시장 지표' }].map(item => <Link key={item.to} to={item.to} aria-current={location.pathname === item.to ? 'page' : undefined}>{item.label}</Link>)}</nav>}

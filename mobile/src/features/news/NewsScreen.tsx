@@ -53,7 +53,6 @@ export function NewsScreen({ initialQuery = '' }: { initialQuery?: string }) {
 
 
 
-  if (loading && !response) return <LoadingState message="시장 소식을 불러오고 있어요" />
   return (
     <><ScrollView className="flex-1 bg-canvas" keyboardShouldPersistTaps="handled" contentContainerClassName="gap-4 p-5 pb-10" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
       <Text className="text-2xl font-bold text-ink">{filters.q ? `${filters.q} 관련 소식` : '시장 소식'}</Text>
@@ -63,7 +62,7 @@ export function NewsScreen({ initialQuery = '' }: { initialQuery?: string }) {
       {validation && !filterOpen && <Text accessibilityRole="alert" className="text-danger">{validation}</Text>}
       {loading && !data && <LoadingState inline message="조건에 맞는 소식을 찾고 있어요" />}
       {!loading && !news.length && !error && <Text className="text-muted">이 조건으로 저장된 뉴스가 없습니다.</Text>}
-      {error && <Text className="text-danger">{error}</Text>}
+      {error && <View className="gap-2"><Text accessibilityRole="alert" className="text-danger">{error}</Text><Pressable accessibilityRole="button" onPress={() => void refresh()} className="min-h-11 justify-center"><Text className="text-brand">같은 조건으로 다시 확인</Text></Pressable></View>}
       {news.map((article) => (
         <NewsItem key={article.link} article={article} />
       ))}

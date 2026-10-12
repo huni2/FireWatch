@@ -7,7 +7,6 @@ import { RelatedNewsCard } from '../news/components/RelatedNewsCard'
 import { CompanyDiscovery } from './CompanyDiscovery'
 import { RecommendationHistory } from './RecommendationHistory'
 import { InvestmentNotice } from '../../components/InvestmentNotice'
-import { CatalogExplorer } from './CatalogExplorer'
 
 export function CandidatesPage({ shortTerm = false }: { shortTerm?: boolean }) {
   const briefing = useApi(fetchRecommendations)
@@ -16,11 +15,10 @@ export function CandidatesPage({ shortTerm = false }: { shortTerm?: boolean }) {
   return <Space direction="vertical" size={24} style={{ width: '100%' }}>
     <CompanyDiscovery briefing={briefing.data} portfolio={portfolio.data} loading={briefing.loading} shortTerm={shortTerm} />
     <InvestmentNotice />
-    {!shortTerm && <CatalogExplorer />}
     {!!briefing.data?.excludedCount && <Alert type="info" message={`기업명과 근거 기사 연결을 확인하지 못한 후보 ${briefing.data.excludedCount}개는 제외했습니다.`} description="분석 원본은 보존하며 확인되지 않은 계열사 관계를 추천 근거로 사용하지 않습니다." />}
     {shortTerm ? <Alert type="info" message="실시간 진입·청산 신호는 제공하지 않습니다." description="장전 자료로 선정된 관찰 후보입니다. 장중 뉴스와 가격 변화는 별도로 확인하세요." /> : <Link to="/short-term">단기 관찰 후보 보기 →</Link>}
     {portfolio.error && <Alert type="warning" message="내 포트폴리오를 불러오지 못했습니다." action={<Button onClick={portfolio.reload}>재시도</Button>} />}
-    {portfolio.data && <Card title="내 투자 조건"><Space wrap><Tag>{accountLabels[portfolio.data.accountType]}</Tag><Tag>{riskLabels[portfolio.data.riskLevel]}</Tag><Tag>{portfolio.data.horizonMonths}개월</Tag><Link to="/">포트폴리오 수정</Link></Space><ul>{portfolio.data.insights.map(x => <li key={x}>{x}</li>)}</ul></Card>}
+    {portfolio.data && <details className="disclosure-panel"><summary>내 투자 조건</summary><Card title="내 투자 조건"><Space wrap><Tag>{accountLabels[portfolio.data.accountType]}</Tag><Tag>{riskLabels[portfolio.data.riskLevel]}</Tag><Tag>{portfolio.data.horizonMonths}개월</Tag><Link to="/">포트폴리오 수정</Link></Space><ul>{portfolio.data.insights.map(x => <li key={x}>{x}</li>)}</ul></Card></details>}
     {briefing.error && <Alert type="warning" message="현재 브리핑 후보가 없습니다." description={briefing.error.message} action={<Button onClick={briefing.reload}>재시도</Button>} />}
     {!shortTerm && <details className="disclosure-panel"><summary>보유 ETF 정보 비교</summary><Card title="내가 등록한 ETF 정보 비교">
       <Typography.Paragraph>직접 등록한 ETF의 추종 지수·통화·지역을 비교합니다. 전체 ETF 상품 검색이나 최신 보수 자동 비교는 제공하지 않습니다.</Typography.Paragraph><details><summary>실제 상품에서 추가로 확인할 것</summary><ul>{productChecklist.map(x => <li key={x}>{x}</li>)}</ul></details>

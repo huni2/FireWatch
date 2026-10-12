@@ -125,7 +125,7 @@ export function SettingsScreen() {
         <Text className="text-base font-semibold text-onbrand">{saving ? '저장 중...' : '저장'}</Text>
       </Pressable>
 
-      <Text className="text-xs text-muted">관심 종목(주식)은 홈의 {'"종목"'} 탭에서 관리합니다.</Text>
+      <Text className="text-xs text-muted">관심 기업은 기업 탐색의 관심 기업 화면에서 관리해요.</Text>
 
       <View className="gap-2">
         <Text className="text-sm font-semibold text-muted">계정 (선택)</Text>

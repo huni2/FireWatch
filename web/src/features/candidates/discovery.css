@@ -55,3 +55,13 @@
 .company-card .recommendation-context p,.company-card .recommendation-risk p { margin-bottom: 0; }
 .company-card .candidate-reason { margin: 0 0 4px; line-height: 1.7; }
 @media(max-width:599px) { .discovery-search { gap: 8px; }.discovery-page { gap: 12px; }.discovery-data-status { gap: 6px; }.company-card .ant-card-body { padding: 16px; }.candidate-heading h4 { margin: 6px 0; }.candidate-heading .ant-btn { font-size: 13px; } }
+
+.discovery-filters { display: flex; flex-wrap: wrap; }
+.catalog-filters { display: flex; flex-wrap: wrap; }
+.company-list { gap: 0; }
+.company-row { border-width: 0 0 1px; border-radius: 0; }
+.recommendation-context,.recommendation-risk { border-left: 0; background: transparent; border-radius: 0; padding: 8px 0; }
+.company-detail-pane .discovery-toolbar { position: sticky; top: -20px; z-index: 1; background: var(--ant-color-bg-container); padding-block: 8px; }
+
+.candidate-connection { width: 100%; padding-block: 8px; font-size: 14px; line-height: 1.6; }
+.candidate-connection strong { color: var(--ant-color-text-secondary); font-size: 13px; }

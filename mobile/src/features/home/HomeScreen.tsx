@@ -1,8 +1,10 @@
+import { watchAccountSession } from '@/lib/session'
+import { ScreenActivity } from '@/lib/screenActivity'
 import { useTheme } from '@/lib/theme'
 // Android의 주요 이동을 하단에 고정하고 알림·상세 탐색 상태를 유지한다.
 import { router, Stack } from 'expo-router'
 import * as Notifications from 'expo-notifications'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 import { PortfolioScreen } from '../portfolio/PortfolioScreen'
 import { CandidatesScreen } from '../candidates/CandidatesScreen'
@@ -38,8 +40,13 @@ export function HomeScreen() {
   const { colors, dark } = useTheme()
   const insets = useSafeAreaInsets()
   const [activeTab, setActiveTab] = useState<HomeTab>('portfolio')
+  const [visited, setVisited] = useState<HomeTab[]>(['portfolio'])
+  const changeTab = useCallback((next: HomeTab) => { setVisited(previous => previous.includes(next) ? previous : [...previous, next]); setActiveTab(next) }, [])
   const [stockTarget, setStockTarget] = useState<{ symbol?: string; query?: string }>({})
   const [newsQuery, setNewsQuery] = useState('')
+  const [holdingTarget, setHoldingTarget] = useState<{ symbol: string; name: string } | null>(null)
+  const [accountEpoch, setAccountEpoch] = useState(0)
+  useEffect(() => watchAccountSession(() => { setAccountEpoch(value => value + 1); setVisited(['portfolio']); setStockTarget({}); setNewsQuery(''); setHoldingTarget(null); setActiveTab('portfolio') }), [])
   const exploration = ['candidates', 'stocks', 'short-term'].includes(activeTab)
   const market = ['news', 'brief', 'indices'].includes(activeTab)
   const primaryTabs: { key: HomeTab; label: string; icon: FirewatchIconName; selected: boolean }[] = [
@@ -49,10 +56,10 @@ export function HomeScreen() {
     { key: 'practice', label: '게임', icon: 'game', selected: activeTab === 'practice' },
   ]
   const discoveryNavigation = {
-    onOpenStock: (symbol: string) => { setStockTarget({ symbol }); setActiveTab('stocks') },
-    onSearchStock: (query: string) => { setStockTarget({ query }); setActiveTab('stocks') },
-    onOpenNews: (query: string) => { setNewsQuery(query); setActiveTab('news') },
-    onOpenPortfolio: () => setActiveTab('portfolio'),
+    onOpenStock: (symbol: string) => { setStockTarget({ symbol }); changeTab('stocks') },
+    onSearchStock: (query: string) => { setStockTarget({ query }); changeTab('stocks') },
+    onOpenNews: (query: string) => { setNewsQuery(query); changeTab('news') },
+    onOpenPortfolio: (symbol?: string, name?: string) => { if (symbol && name) setHoldingTarget({ symbol, name }); changeTab('portfolio') },
   }
   const { briefing, cachedAt, loading, error, reload } = useLatestBriefing()
   const sheetRef = useRef<BriefingSheetRef>(null)
@@ -63,17 +70,17 @@ export function HomeScreen() {
   useEffect(() => {
     if (lastNotificationResponse?.notification.request.content.title === 'FireWatch 수집 장애') {
       const id = lastNotificationResponse.notification.request.identifier
-      if (handledNotification.current !== id) { handledNotification.current = id; setActiveTab('portfolio') }
+      if (handledNotification.current !== id) { handledNotification.current = id; changeTab('portfolio') }
       return
     }
     if (lastNotificationResponse && briefing) {
       const id = lastNotificationResponse.notification.request.identifier
       if (handledNotification.current === id) return
       handledNotification.current = id
-      setActiveTab('brief')
+      changeTab('brief')
       sheetRef.current?.present()
     }
-  }, [lastNotificationResponse, briefing])
+  }, [lastNotificationResponse, briefing, changeTab])
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
@@ -97,8 +104,8 @@ export function HomeScreen() {
         <View style={{ flex: 1, flexDirection: 'row', gap: 4, padding: 4, borderRadius: 16, backgroundColor: colors.surface }}>
           {TABS.filter(tab => (exploration ? ['candidates', 'stocks', 'short-term'] : ['news', 'brief', 'indices']).includes(tab.key)).map(tab => {
             const selected = activeTab === tab.key
-            const label = tab.key === 'candidates' ? '추천·분야' : tab.key === 'stocks' ? '회사 찾기' : tab.key === 'short-term' ? '단기 관찰' : tab.label
-            return <Pressable key={tab.key} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected }} aria-selected={selected} onPress={() => setActiveTab(tab.key)} style={{ flex: 1, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 8, paddingVertical: 8, borderRadius: 12, backgroundColor: selected ? colors.accent : 'transparent' }}>
+            const label = tab.key === 'candidates' ? '기업 찾기' : tab.key === 'stocks' ? (stockTarget.symbol ? '기업 상세' : '관심 기업') : tab.key === 'short-term' ? '단기 관찰' : tab.label
+            return <Pressable key={tab.key} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected }} aria-selected={selected} onPress={() => { if (tab.key === 'stocks') setStockTarget({}); changeTab(tab.key) }} style={{ flex: 1, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 8, paddingVertical: 8, borderRadius: 12, backgroundColor: selected ? colors.accent : 'transparent' }}>
               <FirewatchIcon name={tab.icon} size={16} color={selected ? colors.onAccent : colors.muted} monochrome />
               <Text style={{ flexShrink: 1, fontSize: 13, fontWeight: selected ? '700' : '500', color: selected ? colors.onAccent : colors.muted }}>{label}</Text>
             </Pressable>
@@ -106,12 +113,12 @@ export function HomeScreen() {
         </View>
       </ScrollView>}
 
-      <View style={{ flex: 1, display: activeTab === 'portfolio' ? 'flex' : 'none' }}><PortfolioScreen {...discoveryNavigation} onOpenCandidates={() => setActiveTab('candidates')} /></View>
-      {activeTab === 'candidates' && <CandidatesScreen {...discoveryNavigation} />}
-      {activeTab === 'short-term' && <CandidatesScreen shortTerm {...discoveryNavigation} />}
-      {activeTab === 'practice' && <PracticeScreen />}
+      <View key={`portfolio-${accountEpoch}`} style={{ flex: 1, display: activeTab === 'portfolio' ? 'flex' : 'none' }}><ScreenActivity.Provider value={activeTab === 'portfolio'}><PortfolioScreen initialHolding={holdingTarget} onHoldingConsumed={() => setHoldingTarget(null)} {...discoveryNavigation} onOpenCandidates={() => changeTab('candidates')} /></ScreenActivity.Provider></View>
+      {visited.includes('candidates') && <View key={`candidates-${accountEpoch}`} style={{ flex: 1, display: activeTab === 'candidates' ? 'flex' : 'none' }}><ScreenActivity.Provider value={activeTab === 'candidates'}><CandidatesScreen {...discoveryNavigation} /></ScreenActivity.Provider></View>}
+      {visited.includes('short-term') && <View key={`short-term-${accountEpoch}`} style={{ flex: 1, display: activeTab === 'short-term' ? 'flex' : 'none' }}><ScreenActivity.Provider value={activeTab === 'short-term'}><CandidatesScreen shortTerm {...discoveryNavigation} /></ScreenActivity.Provider></View>}
+      {visited.includes('practice') && <View key={`practice-${accountEpoch}`} style={{ flex: 1, display: activeTab === 'practice' ? 'flex' : 'none' }}><ScreenActivity.Provider value={activeTab === 'practice'}><PracticeScreen /></ScreenActivity.Provider></View>}
 
-      {activeTab === 'brief' && (
+      {visited.includes('brief') && <View key={`brief-${accountEpoch}`} style={{ flex: 1, display: activeTab === 'brief' ? 'flex' : 'none' }}><ScreenActivity.Provider value={activeTab === 'brief'}>{(
         <BriefingScreen
           briefing={briefing}
           cachedAt={cachedAt}
@@ -120,14 +127,14 @@ export function HomeScreen() {
           onReload={reload}
           onOpenSheet={() => sheetRef.current?.present()}
         />
-      )}
-      {activeTab === 'stocks' && <StocksScreen initialSymbol={stockTarget.symbol} initialQuery={stockTarget.query} onOpenPortfolio={discoveryNavigation.onOpenPortfolio} />}
-      {activeTab === 'indices' && <IndicesScreen />}
-      {activeTab === 'news' && <NewsScreen initialQuery={newsQuery} />}
+      )}</ScreenActivity.Provider></View>}
+      {visited.includes('stocks') && <View key={`stocks-${accountEpoch}`} style={{ flex: 1, display: activeTab === 'stocks' ? 'flex' : 'none' }}><ScreenActivity.Provider value={activeTab === 'stocks'}><StocksScreen key={stockTarget.symbol ?? stockTarget.query ?? 'watchlist'} onBack={() => changeTab('candidates')} initialSymbol={stockTarget.symbol} initialQuery={stockTarget.query} onOpenPortfolio={discoveryNavigation.onOpenPortfolio} /></ScreenActivity.Provider></View>}
+      {visited.includes('indices') && <View key={`indices-${accountEpoch}`} style={{ flex: 1, display: activeTab === 'indices' ? 'flex' : 'none' }}><ScreenActivity.Provider value={activeTab === 'indices'}><IndicesScreen /></ScreenActivity.Provider></View>}
+      {visited.includes('news') && <View key={`news-${accountEpoch}`} style={{ flex: 1, display: activeTab === 'news' ? 'flex' : 'none' }}><ScreenActivity.Provider value={activeTab === 'news'}><NewsScreen key={newsQuery} initialQuery={newsQuery} /></ScreenActivity.Provider></View>}
 
       <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.border, paddingBottom: insets.bottom, backgroundColor: colors.surface }}>
         {primaryTabs.map((tab) => (
-          <Pressable accessibilityRole="tab" accessibilityLabel={tab.label} accessibilityState={{ selected: tab.selected }} key={tab.key} onPress={() => { if (activeTab !== tab.key) setActiveTab(tab.key) }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 60, paddingVertical: 6, gap: 2 }}>
+          <Pressable accessibilityRole="tab" accessibilityLabel={tab.label} accessibilityState={{ selected: tab.selected }} aria-selected={tab.selected} key={tab.key} onPress={() => { if (activeTab !== tab.key) changeTab(tab.key) }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 60, paddingVertical: 6, gap: 2 }}>
             <FirewatchIcon name={tab.icon} size={22} color={tab.selected ? colors.accent : colors.muted} />
             <Text className={`text-sm font-semibold ${tab.selected ? 'text-brand' : 'text-muted'}`}>
               {tab.label}
