@@ -1,7 +1,8 @@
+import { AppDrawer as Drawer } from '../../components/AppDrawer'
 // 회사 검색과 수량 중심의 자산 등록·수정을 별도 패널에서 처리한다.
 import { useId, useRef, useState } from 'react'
 import type { ElementRef } from 'react'
-import { Alert, App, Button, ConfigProvider, Drawer, Input, InputNumber, Select, Space, Typography } from 'antd'
+import { Alert, App, Button, ConfigProvider, Input, InputNumber, Select, Space, Typography } from 'antd'
 import type { Holding } from '../../../../shared/investing'
 import { assetLabels } from '../../../../shared/investing'
 import { holdingError, selectedHolding } from '../../../../shared/holding-registration'

@@ -41,7 +41,7 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
     const previous = watchedStocks
     const previousSelected = selected
     setWatchedStocks(next)
-    if (!initialSymbol && selected && !next.includes(selected)) setSelected(next[0] ?? null)
+    // 해제해도 읽던 기업 상세를 유지해 차트 로딩과 화면 이동을 만들지 않는다.
     if (!settings) return
     try { await updateSettings({ watchedStocks: next }) }
     catch (e) { setWatchedStocks(previous); setSelected(previousSelected); Toast.show({ type: 'error', text1: '관심종목 저장 실패', text2: e instanceof Error ? e.message : '다시 시도해주세요.' }) }
@@ -96,7 +96,7 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
             </View>
           </ScrollView></>}
           {selected && <StockChart showNews={!initialSymbol} key={selected} symbol={selected} name={labelForValue(selected)} onNameFound={rememberName} />}
-          {selected && <View className="flex-row flex-wrap gap-2"><ActionButton label="보유 기록 등록" tone="primary" onPress={() => onOpenPortfolio?.(selected, labelForValue(selected))} /><ActionButton label={watchedStocks.includes(selected) ? '관심 기업 해제' : '관심 기업에 담기'} disabled={!settings} busy={savingWatch} onPress={() => void handleChange(watchedStocks.includes(selected) ? watchedStocks.filter(s => s !== selected) : [...watchedStocks, selected])} /></View>}
+          {selected && <View className="flex-row flex-wrap gap-2"><ActionButton label="보유 기록 등록" tone="next" onPress={() => onOpenPortfolio?.(selected, labelForValue(selected))} /><ActionButton label={watchedStocks.includes(selected) ? '관심 기업 해제' : '관심 기업에 담기'} disabled={!settings} busy={savingWatch} onPress={() => void handleChange(watchedStocks.includes(selected) ? watchedStocks.filter(s => s !== selected) : [...watchedStocks, selected])} /></View>}
           {initialSymbol && selected && <CompanyNews name={labelForValue(selected)} />}
           {selected && <InvestmentContext symbol={selected} name={labelForValue(selected)} onOpenPortfolio={onOpenPortfolio} />}
         </View>

@@ -1,3 +1,4 @@
+import { ModalHeader } from '@/components/ModalHeader'
 import { useTheme, ThemeSurface } from '@/lib/theme'
 // 최초 동의와 개인정보 전문 읽기를 앱 안에서 완료하며 동의 전 서버 등록은 시작하지 않는다.
 import { useRef, useState } from 'react'
@@ -70,10 +71,7 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
     </ScrollView></SafeAreaView>
       <Modal visible={policyOpen} animationType="slide" onRequestClose={() => setPolicyOpen(false)}><ThemeSurface>
         <SafeAreaProvider><SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }}>
-          <View className="flex-row items-center justify-between gap-3 border-b border-line px-5 py-2">
-            <Text accessibilityRole="header" className="flex-1 text-lg font-bold text-ink">개인정보처리방침</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel="개인정보처리방침 닫기" onPress={() => setPolicyOpen(false)} className="min-h-11 min-w-11 items-center justify-center"><Text className="text-base font-semibold text-brand">닫기</Text></Pressable>
-          </View>
+          <ModalHeader title="개인정보처리방침" close={() => setPolicyOpen(false)} />
           <ScrollView contentContainerClassName="p-5 pb-10"><InfoDocument kind="privacy" /></ScrollView>
         </SafeAreaView></SafeAreaProvider>
       </ThemeSurface></Modal>

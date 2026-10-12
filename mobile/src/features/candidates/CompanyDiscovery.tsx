@@ -1,3 +1,5 @@
+import { ModalHeader } from '@/components/ModalHeader'
+import { ActionButton } from '@/components/ActionButton'
 import { useTheme, ThemeSurface } from '@/lib/theme'
 import { useSettings } from '../settings/hooks/useSettings'
 import { useState } from 'react'
@@ -73,14 +75,14 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
     <Pressable accessibilityRole="button" onPress={() => onSearchStock?.(query)} className="min-h-11 justify-center"><Text className="text-brand">이 목록 외 기업 검색하기 →</Text></Pressable>
     </>}
     <Modal visible={!!selected} animationType="slide" onRequestClose={() => setSelected(null)} presentationStyle="pageSheet"><ThemeSurface>
-      {selected && <SafeAreaView className="flex-1 bg-canvas"><View className="flex-row items-center justify-between border-b border-line bg-surface px-5 py-3"><Text className="flex-1 text-lg font-bold text-ink">{selected.name}</Text><Pressable accessibilityRole="button" accessibilityLabel="기업 상세 닫기" onPress={() => setSelected(null)} className="min-h-11 justify-center px-4"><Text className="text-brand">닫기</Text></Pressable></View><ScrollView contentContainerClassName="gap-5 p-5 pb-10">
+      {selected && <SafeAreaView className="flex-1 bg-canvas"><ModalHeader title={selected.name} close={() => setSelected(null)} disabled={saving} closeLabel="기업 상세 닫기" /><ScrollView contentContainerClassName="gap-5 p-5 pb-10">
         <Text className="text-muted">{companySector(selected).name}</Text><Text className="text-ink">{selected.description}</Text><Pressable accessibilityRole="link" onPress={() => openLink(selected.source)}><Text className="text-brand">공식 기업 자료 ↗</Text></Pressable><Text className="text-xs text-muted">기업 정보 확인 {selected.verifiedAt ?? companyDefaultVerifiedAt} · 가격 기준 시각과 달라요.</Text>
         <Text className="text-lg font-bold text-ink">개별 종목 추천 근거</Text>
         {isRecommended(selected, briefing) && detail ? <View className="gap-3"><Text style={{ color: colors.info }} className="text-xs">AI 해석 · 자료 기준 {briefing?.briefingDate}</Text><Text className="text-ink">{detail.reason}</Text><Text className="text-muted">확인할 위험 · {detail.risk}</Text>{!detail.sourceNewsLinks.length && <Text className="text-xs text-muted">직접 연결된 근거 기사 없이 제공된 시장 자료에 대한 AI 해석입니다.</Text>}</View> : <Text className="text-muted">현재 근거가 확인된 추천 후보가 아닙니다. 기업과 뉴스를 탐색할 수 있습니다.</Text>}
         <Text className="text-lg font-bold text-ink">내 포트폴리오와 비교</Text><Text className="text-ink">{portfolioContext(selected, portfolio)}</Text><Pressable accessibilityRole="button" onPress={() => { setSelected(null); onOpenPortfolio?.() }} className="min-h-11 justify-center"><Text className="text-brand">내 보유 자산 확인 →</Text></Pressable>
         <Text className="text-lg font-bold text-ink">관련 기사와 근거 확인</Text>{news.length ? news.map(article => <Pressable key={article.link} accessibilityRole="link" onPress={() => openLink(article.link)} className="py-2"><Text className="text-brand">{article.title} ↗</Text></Pressable>) : <Text className="text-muted">저장된 브리핑에서 연결되는 기사가 없습니다.</Text>}
         <Pressable accessibilityRole="button" onPress={() => { const name = selected.name; setSelected(null); onOpenNews?.(name) }} className="min-h-11 justify-center"><Text className="text-brand">이 기업의 보관 뉴스 검색 →</Text></Pressable>
-        <Pressable accessibilityRole="button" onPress={() => { const symbol = selected.symbol; setSelected(null); onOpenStock?.(symbol) }} className="min-h-11 justify-center rounded-xl bg-canvas p-3"><Text className="text-ink">차트 보기</Text></Pressable><Pressable accessibilityRole="button" disabled={saving} onPress={() => void watch(selected)} className="min-h-11 justify-center rounded-xl bg-brand p-3"><Text className="text-center text-onbrand">{saving ? '저장 중...' : settings?.watchedStocks.includes(selected.symbol) ? '관심 기업 해제' : '관심 기업에 담기'}</Text></Pressable>
+        <Pressable accessibilityRole="button" onPress={() => { const symbol = selected.symbol; setSelected(null); onOpenStock?.(symbol) }} className="min-h-11 justify-center rounded-xl bg-canvas p-3"><Text className="text-ink">차트 보기</Text></Pressable><ActionButton fullWidth busy={saving} label={settings?.watchedStocks.includes(selected.symbol) ? '관심 기업 해제' : '관심 기업에 담기'} onPress={() => void watch(selected)} />
         {watchFeedback?.symbol === selected.symbol && <Text accessibilityRole="alert" className={watchFeedback.failed ? 'text-danger' : 'text-brand'}>{watchFeedback.message}</Text>}
       </ScrollView></SafeAreaView>}
     </ThemeSurface></Modal>

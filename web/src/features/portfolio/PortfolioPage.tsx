@@ -1,6 +1,7 @@
+import { AppDrawer as Drawer } from '../../components/AppDrawer'
 // 등록과 점검을 분리하고 저장 응답을 즉시 홈에 반영한다.
 import { useEffect, useRef, useState } from 'react'
-import { Alert, App, Button, Card, Drawer, Dropdown, Input, InputNumber, Modal, Progress, Select, Space, Statistic, Tag, Typography } from 'antd'
+import { Alert, App, Button, Card, Dropdown, Input, InputNumber, Modal, Progress, Select, Space, Statistic, Tag, Typography } from 'antd'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useApi } from '../../lib/useApi'
 import { fetchPortfolio, savePortfolio } from '../../lib/investingApi'

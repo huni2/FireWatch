@@ -1,3 +1,4 @@
+import { ModalHeader } from '@/components/ModalHeader'
 import { ThemeSurface } from '@/lib/theme'
 // 모바일 종료 결과를 세로로 읽고 하단에서 공개 여부를 선택한다.
 import { useState } from 'react'
@@ -11,7 +12,7 @@ export function PracticeCompletion({ turn, close, publish }: { turn: PracticeTur
   const result = gameCompletion(turn)
   const [expanded, setExpanded] = useState(false)
   return <Modal visible animationType="slide" onRequestClose={close}><ThemeSurface><SafeAreaView className="flex-1 bg-surface">
-    <View className="px-5 py-3 flex-row justify-between items-center"><Text className="text-lg font-bold text-ink" accessibilityRole="header">게임 결과</Text><Pressable accessibilityRole="button" onPress={close} className="p-3"><Text className="text-ink">닫기</Text></Pressable></View>
+    <ModalHeader title="게임 결과" close={close} />
     <ScrollView contentContainerStyle={{ padding: 24, gap: 24 }}>
       <View className="flex-row items-center gap-3"><FirewatchIcon name="turn-result" size={36} /><Text className="text-muted">가상투자 결과 · {result.progress}</Text></View>
       <Text className="text-2xl font-bold text-ink" accessibilityRole="header">{result.title}</Text>

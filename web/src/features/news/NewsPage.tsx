@@ -1,5 +1,6 @@
+import { AppDrawer as Drawer } from '../../components/AppDrawer'
 import { useState } from 'react'
-import { Alert, Button, Drawer, Grid, Input, Pagination, Typography } from 'antd'
+import { Alert, Button, Grid, Input, Pagination, Typography } from 'antd'
 import { Link, useSearchParams } from 'react-router-dom'
 import { RelatedNewsCard } from './components/RelatedNewsCard'
 import { useApi } from '../../lib/useApi'
