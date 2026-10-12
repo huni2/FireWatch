@@ -30,7 +30,7 @@ EAS 프로젝트는 이미 app.json에 연결되어 있다. eas.json은 운영 A
 
 ### 웹·서버 배포와 별도 실행
 
-이번 사용자 요청으로 소스 `a6aaa0c`의 1.0.3/versionCode8을 로컬에서 빌드한다. 자동 APK/EAS 빌드는 계속 비활성이다. 웹·서버 배포나 Git push만으로 APK를 생성하지 않으며 이후 설치본도 별도 요청이 있어야 만든다.
+이번 사용자 요청으로 소스 `a6aaa0c`의 1.0.3/versionCode8을 로컬에서 빌드했다. 자동 APK/EAS 빌드는 계속 비활성이다. 웹·서버 배포나 Git push만으로 APK를 생성하지 않으며 이후 설치본도 별도 요청이 있어야 만든다.
 
 로컬 빌드는 `npx expo prebuild --platform android --no-install`로 네이티브 프로젝트를 갱신한 뒤 Gradle `:app:assembleRelease`를 실행한다. preview의 ARM32/64 및 R8/리소스 축소 설정이 실제 gradle.properties에 반영되는지 확인한다. 생성 프로젝트는 기본 debug 서명이므로 공개 전에 기존 release 키로 서명하고 이전 APK와 인증서를 비교한다. 이번 PC 빌드는 heap3GiB/meta1GiB·최대 작업자2로 실행한다. 키·비밀번호·Firebase 파일·생성 android 폴더는 커밋하지 않는다.
 
@@ -55,7 +55,7 @@ EAS 프로젝트는 이미 app.json에 연결되어 있다. eas.json은 운영 A
 
 ### 1.0.3 용량·로그인 복구 확인
 
-- 사용자 최신화 요청으로1.0.3을 빌드한다. 이번 요청이 자동 빌드 재활성화나 이후 반복 빌드 승인은 아니다.
+- 사용자 최신화 요청으로1.0.3을 빌드했다. 이번 요청이 자동 빌드 재활성화나 이후 반복 빌드 승인은 아니다.
 - preview APK는ARM32/64 휴대폰을 지원하고 x86 에뮬레이터는development 프로필로 빌드한다. 로컬 prebuild는 FIREWATCH_ANDROID_PROFILE로 프로필 선택(기본preview), EAS는 EAS_BUILD_PROFILE 사용. 생성된 android 폴더를 사용하는 로컬 빌드는 다음 승인 시 prebuild로 설정을 다시 반영해야 한다.
 - release R8/리소스 축소 후 첫 실행, 차트, Google SDK, 푸시, 테마를 실제 기기로 확인한다. 용량 감소량은 새 APK 측정 전 확정하지 않는다.
 - 만료된 기존 세션 복구는 서버의 /api/auth/google/renew 배포가 필요하다. 네트워크/Google 증명 실패는 자동 반복 없이 설정의 수동 로그인으로 복구한다. 로그아웃·기기 해제는 자동 로그인하지 않는다.
