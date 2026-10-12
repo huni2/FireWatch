@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { ScreenActivity } from './screenActivity'
 import { AppState } from 'react-native'
 
 export function useResource<T>(fetcher: () => Promise<T>) {
+  const active = useContext(ScreenActivity)
   const [data, setData] = useState<T | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -18,11 +20,12 @@ export function useResource<T>(fetcher: () => Promise<T>) {
   const reload = useCallback(() => load(false), [load])
   const refresh = useCallback(() => load(true), [load])
   useEffect(() => {
+    if (!active) return
     const initial = setTimeout(() => { void reload() }, 0)
     const requestGeneration = generation
     const listener = AppState.addEventListener('change', state => { if (state === 'active') void reload() })
     return () => { clearTimeout(initial); requestGeneration.current++; listener.remove() }
-  }, [reload])
+  }, [reload, active])
   const replaceData = useCallback((value: T) => { generation.current++; setData(value); setError(null); setLoading(false); setRefreshing(false) }, [])
   return { data, error, loading, refreshing, refresh, reload, replaceData }
 }

@@ -13,11 +13,12 @@ import { StockChart } from './components/StockChart'
 import { StockSearchInput } from './components/StockSearchInput'
 import { stockLabel } from '../../../../shared/stock-labels'
 import { useStockNames } from './hooks/useStockNames'
+import { CompanyNews } from './components/CompanyNews'
 import { InvestmentContext } from './components/InvestmentContext'
 
 const TICKER_PATTERN = /^[A-Za-z0-9]+(\.[A-Za-z0-9]+)?$/
 
-export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio }: { initialSymbol?: string; initialQuery?: string; onOpenPortfolio?: () => void }) {
+export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio, onBack }: { initialSymbol?: string; initialQuery?: string; onOpenPortfolio?: (symbol?: string, name?: string) => void; onBack?: () => void }) {
   const { settings, loading } = useSettings()
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
   const [selected, setSelected] = useState<string | null>(initialSymbol && TICKER_PATTERN.test(initialSymbol) ? initialSymbol : null)
@@ -52,27 +53,28 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
     setSelected(symbol)
   }
 
-  if (loading && !settings) return <LoadingState message="관심 기업을 불러오고 있어요" />
+  if (loading && !settings && !initialSymbol) return <LoadingState message="관심 기업을 불러오고 있어요" />
 
 
   return (
     <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">
-      <ScreenIntro eyebrow="기업·상품" title="관심 종목" description="지켜볼 회사를 모으고 가격 흐름을 비교하세요." />
-      <View className="gap-3">
-        <Text className="text-sm font-semibold text-muted">관심 종목</Text>
+      {initialSymbol && onBack && <Pressable accessibilityRole="button" onPress={onBack} className="min-h-11 justify-center"><Text className="text-brand">← 기업 탐색으로</Text></Pressable>}
+      {!initialSymbol && <ScreenIntro eyebrow="기업·상품" title="관심 기업" description="지켜볼 회사를 모으고 가격 흐름을 비교하세요." />}
+      {!initialSymbol && <View className="gap-3">
+        <Text className="text-sm font-semibold text-muted">관심 기업</Text>
 
           <StockSearchInput onSelect={handleAddFromSearch} initialQuery={initialQuery} />
             <Text className="text-xs text-muted">
               국내 대형주는 한글명(예: 삼성전자)으로 찾을 수 있고, 그 외는 영문 사명(예: Tesla)으로 검색하세요.
             </Text>
             <KeywordInput value={watchedStocks} onChange={handleChange} showInput={false} labelForValue={labelForValue} />
-      </View>
+      </View>}
 
       {watchedStocks.length === 0 && !selected ? (
         <Text className="text-xs text-muted">관심 종목을 추가하면 차트가 표시됩니다.</Text>
       ) : (
         <View className="gap-3">
-          <Text className="text-sm font-semibold text-muted">차트</Text>
+          {!initialSymbol && <><Text className="text-sm font-semibold text-muted">차트</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View className="flex-row gap-2">
               {[...new Set([...watchedStocks, ...(selected ? [selected] : [])])].map((symbol) => (
@@ -87,8 +89,10 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
                 </Pressable>
               ))}
             </View>
-          </ScrollView>
-          {selected && <StockChart key={selected} symbol={selected} name={labelForValue(selected)} onNameFound={rememberName} />}
+          </ScrollView></>}
+          {selected && <StockChart showNews={!initialSymbol} key={selected} symbol={selected} name={labelForValue(selected)} onNameFound={rememberName} />}
+          {selected && <View className="flex-row flex-wrap gap-2"><Pressable accessibilityRole="button" onPress={() => onOpenPortfolio?.(selected, labelForValue(selected))} className="min-h-11 justify-center rounded-xl bg-brand px-4"><Text className="font-bold text-onbrand">보유 기록 등록</Text></Pressable><Pressable accessibilityRole="button" disabled={!settings || watchedStocks.includes(selected)} onPress={() => void handleChange([...watchedStocks, selected])} className="min-h-11 justify-center px-4"><Text className="text-brand">{watchedStocks.includes(selected) ? "관심 기업에 저장됨" : "관심 기업에 담기"}</Text></Pressable></View>}
+          {initialSymbol && selected && <CompanyNews name={labelForValue(selected)} />}
           {selected && <InvestmentContext symbol={selected} name={labelForValue(selected)} onOpenPortfolio={onOpenPortfolio} />}
         </View>
       )}

@@ -1,4 +1,4 @@
-import { ThemeSurface } from '@/lib/theme'
+import { ThemeSurface, useTheme } from '@/lib/theme'
 import { LoadingState } from '@/components/LoadingState'
 // Android 뉴스는 목록을 먼저 보여주고 날짜 입력을 별도 시트에서 처리한다.
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -35,6 +35,7 @@ function NewsItem({ article }: { article: NewsArticle }) {
 }
 
 export function NewsScreen({ initialQuery = '' }: { initialQuery?: string }) {
+  const { colors } = useTheme()
   const [dateField, setDateField] = useState<'from' | 'to' | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
   const [validation, setValidation] = useState('')
@@ -53,17 +54,16 @@ export function NewsScreen({ initialQuery = '' }: { initialQuery?: string }) {
 
 
 
-  if (loading && !response) return <LoadingState message="시장 소식을 불러오고 있어요" />
   return (
     <><ScrollView className="flex-1 bg-canvas" keyboardShouldPersistTaps="handled" contentContainerClassName="gap-4 p-5 pb-10" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
       <Text className="text-2xl font-bold text-ink">{filters.q ? `${filters.q} 관련 소식` : '시장 소식'}</Text>
-      <TextInput accessibilityLabel="뉴스 검색어" placeholder="종목명·키워드 (예: 반도체)" maxLength={100} value={draft.q} onChangeText={q => setDraft(v => ({ ...v, q }))} className="rounded-xl border border-line bg-surface p-3" />
+      <TextInput placeholderTextColor={colors.muted} accessibilityLabel="뉴스 검색어" placeholder="종목명·키워드 (예: 반도체)" maxLength={100} value={draft.q} onChangeText={q => setDraft(v => ({ ...v, q }))} className="rounded-xl border border-line bg-surface p-3 text-ink" />
       <View className="flex-row gap-3"><Pressable onPress={apply} className="rounded-xl bg-brand p-3"><Text className="text-onbrand">뉴스 찾기</Text></Pressable><Pressable onPress={() => { setValidation(''); setDraft({ q: '', from: '', to: '' }); setFilters({ page: 0, size: 20 }) }} className="p-3"><Text className="text-ink">전체 보기</Text></Pressable><Pressable accessibilityRole="button" onPress={() => setFilterOpen(true)} className="min-h-11 justify-center px-2"><Text className="text-ink">필터</Text></Pressable></View>
       {(filters.from || filters.to) && <Text className="text-xs text-muted">한국 날짜 · {filters.from || '처음부터'} ~ {filters.to || '최근까지'}</Text>}
       {validation && !filterOpen && <Text accessibilityRole="alert" className="text-danger">{validation}</Text>}
       {loading && !data && <LoadingState inline message="조건에 맞는 소식을 찾고 있어요" />}
       {!loading && !news.length && !error && <Text className="text-muted">이 조건으로 저장된 뉴스가 없습니다.</Text>}
-      {error && <Text className="text-danger">{error}</Text>}
+      {error && <View className="gap-2"><Text accessibilityRole="alert" className="text-danger">{error}</Text><Pressable accessibilityRole="button" onPress={() => void refresh()} className="min-h-11 justify-center"><Text className="text-brand">같은 조건으로 다시 확인</Text></Pressable></View>}
       {news.map((article) => (
         <NewsItem key={article.link} article={article} />
       ))}

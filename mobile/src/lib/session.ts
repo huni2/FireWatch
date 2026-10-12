@@ -1,6 +1,9 @@
 import * as SecureStore from 'expo-secure-store'
 
 const key = 'firewatch-login-session'
+const accountListeners = new Set<() => void>()
+export function watchAccountSession(listener: () => void) { accountListeners.add(listener); return () => { accountListeners.delete(listener) } }
+function accountChanged() { accountListeners.forEach(listener => listener()) }
 export type LoginSession = { token: string; expiresAt: string }
 let generation = 0
 let restoration: Promise<string | null> | null = null
@@ -13,10 +16,12 @@ function write(action: () => Promise<void>): Promise<void> {
 export async function saveSession(session: LoginSession) {
   generation++; restoration = null
   await write(() => SecureStore.setItemAsync(key, JSON.stringify(session)))
+  accountChanged()
 }
 export async function clearSession() {
   generation++; restoration = null
   await write(() => SecureStore.deleteItemAsync(key))
+  accountChanged()
 }
 // A late 401 from an older request must not erase a newer login/renewal.
 export async function invalidateSession(token: string) {
@@ -27,6 +32,7 @@ export async function invalidateSession(token: string) {
     if (current?.token !== token) return
     generation++; restoration = null
     await SecureStore.deleteItemAsync(key)
+    accountChanged()
   })
 }
 export async function sessionToken(): Promise<string | null> {

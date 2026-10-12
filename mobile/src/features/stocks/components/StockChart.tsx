@@ -3,20 +3,21 @@ import { LoadingState } from '@/components/LoadingState'
 // web/src/features/stocks/components/StockChart.tsx와 동일 역할 — RN엔 recharts가 없어
 // react-native-gifted-charts의 LineChart(영역 채움)로 대체.
 import { useEffect, useMemo, useState } from 'react'
-import { Pressable, ScrollView, Text, View } from 'react-native'
+import { Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native'
 import { LineChart } from 'react-native-gifted-charts'
 
 import { type StockChartRange } from '@/lib/api'
 
 import { useStockHistory } from '../hooks/useStockHistory'
 import { stockLabel } from '../../../../../shared/stock-labels'
-import { formatStockPrice } from '../../../../../shared/stock-price'
+import { formatPriceAxis, formatStockPrice } from '../../../../../shared/stock-price'
 import { CompanyNews } from './CompanyNews'
 
 
 interface StockChartProps {
   symbol: string
   name?: string
+  showNews?: boolean
   onNameFound?: (symbol: string, name: string) => void
 }
 
@@ -37,8 +38,9 @@ function formatLabel(timestamp: string, range: StockChartRange): string {
   return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-export function StockChart({ symbol, name = stockLabel(symbol), onNameFound }: StockChartProps) {
+export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, showNews = true }: StockChartProps) {
   const { colors } = useTheme()
+  const { width } = useWindowDimensions()
   const [range, setRange] = useState<StockChartRange>('6mo')
   const { data, loading, error } = useStockHistory(symbol, range)
   const currentData = data?.symbol === symbol ? data : null
@@ -88,6 +90,8 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound }: S
         <LineChart
           data={chartData}
           height={220}
+          width={Math.max(220, width - 96)}
+          adjustToWidth
           color={colors.accent}
           thickness={2}
           areaChart
@@ -97,6 +101,7 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound }: S
           endOpacity={0}
           curved
           hideDataPoints
+          formatYLabel={value => formatPriceAxis(Number(value))}
           yAxisTextStyle={{ fontSize: 10, color: colors.muted }}
           xAxisLabelTextStyle={{ fontSize: 10, color: colors.muted }}
           noOfSections={4}
@@ -107,7 +112,7 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound }: S
           initialSpacing={8}
         />
       )}
-      {companyName !== '회사명 확인 필요' && <CompanyNews key={companyName} name={companyName} />}
+      {showNews && companyName !== '회사명 확인 필요' && <CompanyNews key={companyName} name={companyName} />}
     </View>
   )
 }

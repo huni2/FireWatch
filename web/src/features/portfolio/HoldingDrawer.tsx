@@ -15,6 +15,8 @@ export function HoldingDrawer({ initial, others, editing, saving, error, close, 
   const quantity = useRef<ElementRef<typeof InputNumber>>(null)
   const formId = useId()
   const errorId = `${formId}-error`
+  const quantityErrorId = `${formId}-quantity-error`
+  const activeErrorId = validation?.includes("수량") ? quantityErrorId : errorId
   const { modal } = App.useApp()
   function cancel() {
     if (saving) return
@@ -30,8 +32,8 @@ export function HoldingDrawer({ initial, others, editing, saving, error, close, 
     <ConfigProvider componentDisabled={saving}><form id={formId} aria-label="자산 기록 입력" onSubmit={e => { e.preventDefault(); submit() }}><Space direction="vertical" size={24} style={{ width: '100%' }}>
       <Typography.Text type="secondary">실제 구매가 아닌 보유 기록이에요. 매입가는 나중에 입력해도 돼요.</Typography.Text>
       {search ? <div><label htmlFor={`${formId}-search`}>회사·상품 이름으로 찾기</label><StockSearchInput fullWidth id={`${formId}-search`} onSelect={(symbol, name) => { setHolding(current => selectedHolding(current, symbol, name)); setSearch(false); setValidation(null); requestAnimationFrame(() => quantity.current?.focus()) }} /></div> : <div className="holding-selected"><div><strong>{holding.name}</strong><small>{holding.currency === 'KRW' ? '원화' : '달러'} · {assetLabels[holding.assetClass]}</small></div><Button disabled={saving} onClick={() => setSearch(true)}>다시 선택</Button></div>}
-      <label className="holding-field">몇 주를 갖고 있나요?<InputNumber ref={quantity} aria-label="보유 수량" aria-invalid={!!validation && holding.quantity <= 0} aria-describedby={validation || error ? errorId : undefined} size="large" disabled={saving} min={0.0001} max={1e9} precision={4} value={holding.quantity || null} onChange={value => change({ quantity: value ?? 0 })} addonAfter="주" style={{ width: '100%' }} /></label>
-      {costOpen ? <div><label className="holding-field">평균 매입가 · 선택<InputNumber aria-label="평균 매입가" aria-describedby={validation || error ? errorId : undefined} size="large" disabled={saving} min={0.0001} max={1e9} precision={4} value={holding.averageCost} onChange={value => change({ averageCost: value })} addonAfter={holding.currency === 'KRW' ? '원' : '달러'} style={{ width: '100%' }} /></label><Button type="link" disabled={saving} onClick={() => { change({ averageCost: null }); setCostOpen(false) }}>매입가 없이 기록하기</Button></div> : <Button style={{ alignSelf: 'flex-start' }} disabled={saving} onClick={() => setCostOpen(true)}>매입가도 기록하기</Button>}
+      <label className="holding-field">몇 주를 갖고 있나요?<InputNumber ref={quantity} aria-label="보유 수량" aria-invalid={!!validation && holding.quantity <= 0} aria-describedby={validation || error ? activeErrorId : undefined} size="large" disabled={saving} min={0.0001} max={1e9} precision={4} value={holding.quantity || null} onChange={value => change({ quantity: value ?? 0 })} addonAfter="주" style={{ width: '100%' }} /></label>{validation?.includes("수량") && <Typography.Text id={quantityErrorId} role="alert" type="danger">{validation}</Typography.Text>}
+      {costOpen ? <div><label className="holding-field">평균 매입가 · 선택<InputNumber aria-label="평균 매입가" aria-describedby={validation || error ? activeErrorId : undefined} size="large" disabled={saving} min={0.0001} max={1e9} precision={4} value={holding.averageCost} onChange={value => change({ averageCost: value })} addonAfter={holding.currency === 'KRW' ? '원' : '달러'} style={{ width: '100%' }} /></label><Button type="link" disabled={saving} onClick={() => { change({ averageCost: null }); setCostOpen(false) }}>매입가 없이 기록하기</Button></div> : <Button style={{ alignSelf: 'flex-start' }} disabled={saving} onClick={() => setCostOpen(true)}>매입가도 기록하기</Button>}
       <details><summary>상품 정보 더 확인하기</summary><div className="holding-advanced">
         <label>자산 이름<Input aria-label="자산 이름" disabled={saving} value={holding.name} onChange={e => change({ name: e.target.value })} /></label>
         <label>자산 분류<Select aria-label="자산 분류" disabled={saving} value={holding.assetClass} options={Object.entries(assetLabels).filter(([key]) => key !== 'CASH').map(([value, label]) => ({ value, label }))} onChange={assetClass => change({ assetClass })} /></label>
@@ -40,7 +42,7 @@ export function HoldingDrawer({ initial, others, editing, saving, error, close, 
         <label>분야<Input aria-label="분야" disabled={saving} value={holding.sector} onChange={e => change({ sector: e.target.value })} /></label>
         {holding.assetClass === 'ETF' && <label>추종 지수<Input aria-label="추종 지수" disabled={saving} value={holding.underlyingIndex} placeholder="예: S&P 500" onChange={e => change({ underlyingIndex: e.target.value })} /></label>}
       </div></details>
-      {(validation || error) && <Alert id={errorId} type="error" showIcon message={validation || error} description="입력한 내용은 그대로 있어요. 확인한 뒤 다시 저장해주세요." />}
+      {((validation && !validation.includes("수량")) || error) && <Alert id={errorId} type="error" showIcon message={validation?.includes("수량") ? error : validation || error} description="입력한 내용은 그대로 있어요. 확인한 뒤 다시 저장해주세요." />}
       <Typography.Text type="secondary">비중은 수집 시세 기준으로 계산해요. 매입가가 없으면 손익은 표시하지 않아요.</Typography.Text>
     </Space></form></ConfigProvider>
   </Drawer>

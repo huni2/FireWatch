@@ -204,3 +204,8 @@
 .ranking-rules dl { margin: 16px 0; display: grid; gap: 16px; }.ranking-rules dt { font-weight: 600; }.ranking-rules dd { margin: 6px 0 0; color: var(--ant-color-text-secondary); overflow-wrap: anywhere; }
 .ranking-loading { box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-height: 200px; width: 100%; padding: 24px 16px; color: var(--ant-color-text-secondary); text-align: center; }
 .ranking-loading > span { line-height: 1.6; }
+
+.game-start-group { display: flex; align-items: center; gap: 16px; }
+.game-start-mascot { width: 76px; height: 90px; object-fit: contain; }
+.game-lobby .game-quick-menu { margin-top: 12px; }
+.game-lobby-path li { padding-block: 16px; }

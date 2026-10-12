@@ -1,6 +1,5 @@
 import { Tooltip } from 'antd'
 import { FirewatchIcon } from '../../components/FirewatchIcon'
-import mascot from '../../../../shared/assets/firewatch-lobby-scout.png'
 
 interface Props {
   lobby?: boolean
@@ -26,7 +25,6 @@ export function GameMenu({ lobby, busy, canPublish, canReplay, canEnd, onRules, 
     ] : []),
   ]
   return <div className={`game-quick-menu ${lobby ? 'lobby' : 'compact'}`}>
-    {lobby && <img className="game-lobby-mascot" src={mascot} alt="FireWatch 불꽃 정찰대" />}
     <nav className="game-quick-actions" aria-label="게임 도구">
     {actions.filter(item => lobby || item.name === '주간 순위' || item.name === '게임 규칙' || item.name === '지난 턴 복기' || (item.name === '이번 게임 마무리' && canEnd) || (item.name === '완주 기록 등록' && canPublish)).map(item => <Tooltip key={item.name} title={item.description} trigger={['hover', 'focus']}>
         <span><button type="button" aria-label={item.name} disabled={busy || item.disabled} onClick={item.action}>

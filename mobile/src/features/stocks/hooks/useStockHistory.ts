@@ -1,7 +1,8 @@
 // web/src/features/stocks/hooks/useStockHistory.ts와 동일 역할 — 선택 종목의 시세 이력 조회.
 // range='1d'일 때는 POLL_INTERVAL_MS마다 다시 불러와 실시간처럼 보이게 한다(웹과 동일 절충).
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
+import { ScreenActivity } from '@/lib/screenActivity'
 import { fetchStockHistory, type StockChartRange, type StockHistory } from '@/lib/api'
 
 const POLL_INTERVAL_MS = 30_000
@@ -13,9 +14,11 @@ interface StockHistoryState {
 }
 
 export function useStockHistory(symbol: string | null, range: StockChartRange) {
+  const active = useContext(ScreenActivity)
   const [state, setState] = useState<StockHistoryState>({ data: null, loading: true, error: null })
 
   useEffect(() => {
+    if (!active) return
     if (!symbol) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setState({ data: null, loading: false, error: null })
@@ -41,7 +44,7 @@ export function useStockHistory(symbol: string | null, range: StockChartRange) {
       cancelled = true
       if (timer) clearInterval(timer)
     }
-  }, [symbol, range])
+  }, [symbol, range, active])
 
   return state
 }

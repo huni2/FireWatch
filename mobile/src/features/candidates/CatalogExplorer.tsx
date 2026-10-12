@@ -1,20 +1,21 @@
 import { LoadingState } from '@/components/LoadingState'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Linking, Pressable, Text, TextInput, View } from 'react-native'
 import { request } from '@/lib/api'
 import { useResource } from '@/lib/useResource'
 import { catalogQuery, type CatalogPage } from '../../../../shared/catalog'
 
-export function CatalogExplorer({ onOpenStock }: { onOpenStock?: (symbol: string) => void }) {
+export function CatalogExplorer({ onOpenStock, query }: { onOpenStock?: (symbol: string) => void; query?: string }) {
   const [text, setText] = useState('')
   const [q, setQ] = useState('')
   const [region, setRegion] = useState('')
+  useEffect(() => { if (query == null) return; const timer = setTimeout(() => setQ(query.trim()), 300); return () => clearTimeout(timer) }, [query])
   const load = useCallback(() => request<CatalogPage>(`/api/catalog?${catalogQuery(q, 'ETF', region)}`), [q, region])
   const catalog = useResource(load)
   return <View className="gap-3 rounded-xl border border-line bg-surface p-4">
     <Text className="text-lg font-bold text-ink">ETF 상품 비교</Text><Text className="text-sm text-muted">ISA는 계좌, S&P500은 지수입니다. 같은 지수를 추종하는 상품의 거래 통화와 운용사를 확인하세요.</Text>
-    <TextInput accessibilityLabel="저장된 ETF 검색" placeholder="예: S&P500, 타이거" value={text} onChangeText={setText} onSubmitEditing={() => setQ(text)} returnKeyType="search" className="rounded-lg border border-line p-3 text-ink" />
-    <Pressable accessibilityRole="button" onPress={() => setQ(text)} className="min-h-11 justify-center"><Text className="text-brand">ETF 검색</Text></Pressable>
+    {query == null && <><TextInput accessibilityLabel="저장된 ETF 검색" placeholder="예: S&P500, 타이거" value={text} onChangeText={setText} onSubmitEditing={() => setQ(text)} returnKeyType="search" className="rounded-lg border border-line p-3 text-ink" />
+    <Pressable accessibilityRole="button" onPress={() => setQ(text)} className="min-h-11 justify-center"><Text className="text-brand">ETF 검색</Text></Pressable></>}
     <View className="flex-row flex-wrap gap-2">{[{ key: '', name: '전체' }, { key: 'KR', name: '한국 상장' }, { key: 'US', name: '미국 상장' }].map(item => <Pressable accessibilityRole="button" accessibilityState={{ selected: region === item.key }} key={item.key} onPress={() => setRegion(item.key)} className={`min-h-11 justify-center rounded-lg p-3 ${region === item.key ? 'bg-brand' : 'bg-canvas'}`}><Text className={region === item.key ? 'text-onbrand' : 'text-ink'}>{item.name}</Text></Pressable>)}</View>
     {catalog.loading && <LoadingState inline compact message="ETF 목록을 불러오고 있어요" />}
     {catalog.error && <><Text className="text-muted">ETF 목록: {catalog.error}</Text><Pressable accessibilityRole="button" onPress={() => void catalog.reload()} className="py-3"><Text className="text-brand">다시 시도</Text></Pressable></>}

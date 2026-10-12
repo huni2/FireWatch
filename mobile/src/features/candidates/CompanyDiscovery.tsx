@@ -1,15 +1,20 @@
 import { useTheme, ThemeSurface } from '@/lib/theme'
 import { useState } from 'react'
-import { Linking, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
+import { Linking, Modal, Pressable, ScrollView, Text, View } from 'react-native'
+import { StockSearchInput } from '../stocks/components/StockSearchInput'
+import { CatalogExplorer } from './CatalogExplorer'
+import { useStockNames } from '../stocks/hooks/useStockNames'
 import Toast from 'react-native-toast-message'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { fetchSettings, updateSettings } from '@/lib/api'
-import { catalogVerifiedAt, companyDefaultVerifiedAt, companies, companyNews, companySector, findCompany, isRecommended, portfolioContext, qualifiedRecommendations, recommendationFor, searchCompanies, sectors, type Company, type DiscoveryBriefing } from '../../../../shared/discovery'
+import { catalogVerifiedAt, companyDefaultVerifiedAt, companyNews, companySector, findCompany, isRecommended, portfolioContext, qualifiedRecommendations, recommendationFor, searchCompanies, sectors, type Company, type DiscoveryBriefing } from '../../../../shared/discovery'
 import type { Portfolio } from '../../../../shared/investing'
 
-interface Props { briefing?: DiscoveryBriefing | null; portfolio?: Portfolio | null; loading?: boolean; onOpenStock?: (symbol: string) => void; onOpenNews?: (query: string) => void; onOpenPortfolio?: () => void; onSearchStock?: (name: string) => void }
-export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenStock, onOpenNews, onOpenPortfolio, onSearchStock }: Props) {
+interface Props { shortTerm?: boolean; briefing?: DiscoveryBriefing | null; portfolio?: Portfolio | null; loading?: boolean; onOpenStock?: (symbol: string) => void; onOpenNews?: (query: string) => void; onOpenPortfolio?: () => void; onSearchStock?: (name: string) => void }
+export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenStock, onOpenNews, onOpenPortfolio, onSearchStock, shortTerm = false }: Props) {
   const { colors } = useTheme()
+  const { rememberName } = useStockNames()
+  const [view, setView] = useState('picks')
 
   const [sectorId, setSectorId] = useState('all')
   const [region, setRegion] = useState('all')
@@ -39,23 +44,29 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
     finally { setSaving(false) }
   }
   return <View className="gap-5">
-    <View className="gap-2"><Text className="text-muted">{sectors.length}개 분야 · 탐색 기업 {companies.length}개 · 근거 있는 후보 {picks.length}개</Text>{briefing && <Text className="text-xs text-muted">자료 기준 {briefing.briefingDate}</Text>}</View>
+    <StockSearchInput preserveQueryOnSelect onQueryChange={setQuery} onSelect={(symbol, name) => { rememberName(symbol, name); onOpenStock?.(symbol) }} />
+    <View className="flex-row gap-2">{[{ key: 'picks', label: '후보' }, { key: 'companies', label: '분야' }, ...(!shortTerm ? [{ key: 'etfs', label: 'ETF' }] : [])].map(item => <Pressable key={item.key} accessibilityRole="tab" accessibilityState={{ selected: view === item.key }} aria-selected={view === item.key} onPress={() => setView(item.key)} className={`min-h-11 justify-center rounded-xl px-4 ${view === item.key ? 'bg-brand' : 'bg-surface'}`}><Text className={view === item.key ? 'text-onbrand' : 'text-ink'}>{item.label}</Text></Pressable>)}</View>
+    {view === 'etfs' && <CatalogExplorer query={query} onOpenStock={onOpenStock} />}
+    {view === 'picks' && <>
     <Text className="text-lg font-bold text-ink">근거가 확인된 후보</Text>
     {loading && !picks.length ? <Text className="text-muted">브리핑 추천 자료를 불러오는 중이에요. 분야와 기업은 먼저 탐색할 수 있어요.</Text> : picks.length ? picks.map(pick => {
       const company = findCompany(pick.stockName)
-      return <View key={pick.stockName} className="gap-3 border-b border-line py-4"><Text style={{ color: colors.info }} className="text-xs">AI 해석 · {briefing?.briefingDate}</Text><Text className="text-lg font-bold text-ink">{company?.name ?? pick.stockName}</Text><Text numberOfLines={company ? 3 : undefined} className="text-ink">{pick.reason}</Text><Text numberOfLines={company ? 2 : undefined} className="text-muted">확인할 위험 · {pick.risk}</Text><Pressable accessibilityRole="button" onPress={() => company ? setSelected(company) : onSearchStock?.(pick.stockName)} className="min-h-11 justify-center rounded-xl bg-canvas p-3"><Text className="text-brand">{company ? '기업과 근거 살펴보기' : '종목명으로 확인'}</Text></Pressable></View>
+      return <View key={pick.stockName} className="gap-3 border-b border-line py-4"><Text style={{ color: colors.info }} className="text-xs">AI 해석 · {briefing?.briefingDate}</Text><Text className="text-lg font-bold text-ink">{company?.name ?? pick.stockName}</Text><Text numberOfLines={company ? 3 : undefined} className="text-ink">{pick.reason}</Text><Text numberOfLines={company ? 2 : undefined} className="text-muted">확인할 위험 · {pick.risk}</Text><Pressable accessibilityRole="button" onPress={() => company ? (onOpenStock ? onOpenStock(company.symbol) : setSelected(company)) : onSearchStock?.(pick.stockName)} className="min-h-11 justify-center rounded-xl bg-canvas p-3"><Text className="text-brand">{company ? '기업과 근거 살펴보기' : '종목명으로 확인'}</Text></Pressable></View>
     }) : <View className="rounded-xl border border-line bg-surface p-4"><Text className="text-ink">종목별 근거가 확인된 추천을 기다리고 있어요.</Text><Text className="mt-2 text-muted">기업 탐색은 계속할 수 있어요. 근거가 없는 과거 추천은 이 목록에 포함하지 않습니다.</Text></View>}
+    </>}
+    {view === 'companies' && <>
     <Text className="text-lg font-bold text-ink">어떤 분야가 궁금하세요?</Text>
-    <View className="flex-row flex-wrap gap-2">{sectors.map(item => <Pressable key={item.id} accessibilityRole="button" accessibilityState={{ selected: sectorId === item.id }} onPress={() => setSectorId(sectorId === item.id ? 'all' : item.id)}  className={`gap-2 rounded-xl border p-3 ${sectorId === item.id ? 'border-brand bg-orange-50' : 'border-line bg-surface'}`}><Text className="font-bold text-ink">{item.name}</Text></Pressable>)}</View>
+    <View className="flex-row flex-wrap gap-2">{sectors.map(item => <Pressable key={item.id} accessibilityRole="button" accessibilityState={{ selected: sectorId === item.id }} onPress={() => setSectorId(sectorId === item.id ? 'all' : item.id)} style={sectorId === item.id ? { backgroundColor: colors.accentSoft } : undefined} className={`gap-2 rounded-xl border p-3 ${sectorId === item.id ? 'border-brand' : 'border-line bg-surface'}`}><Text className="font-bold text-ink">{item.name}</Text></Pressable>)}</View>
     <Text className="text-lg font-bold text-ink">{sector?.name ?? '분야별 기업'} · {visible.length}개</Text>
-    <TextInput accessibilityLabel="기업과 분야 검색" placeholder="기업명·분야로 검색" value={query} onChangeText={setQuery} className="rounded-xl border border-line bg-surface p-3 text-ink" />
+
     <View className="flex-row flex-wrap gap-2">{[{ id: 'all', label: '전체' }, { id: 'KR', label: '한국' }, { id: 'US', label: '미국' }].map(item => <Pressable accessibilityRole="button" accessibilityState={{ selected: region === item.id }} key={item.id} onPress={() => setRegion(item.id)} className={`min-h-11 justify-center rounded-xl px-4 ${region === item.id ? 'bg-brand' : 'bg-canvas'}`}><Text className={region === item.id ? 'text-onbrand' : 'text-ink'}>{item.label}</Text></Pressable>)}<Pressable accessibilityRole="button" accessibilityState={{ selected: onlyRecommended }} onPress={() => setOnlyRecommended(!onlyRecommended)} className="min-h-11 justify-center rounded-xl bg-canvas px-3"><Text className="text-brand">{onlyRecommended ? '✓ ' : ''}근거 있는 추천만</Text></Pressable></View>
     {sector && <View className="gap-2 border-b border-line py-4"><Text className="font-bold text-ink">이 분야를 볼 때 확인할 것</Text>{sector.checks.map(check => <Text className="text-muted" key={check}>• {check}</Text>)}<Pressable accessibilityRole="button" onPress={() => onOpenNews?.(sector.keywords[0])} className="min-h-11 justify-center"><Text className="text-brand">이 분야 뉴스 보기 →</Text></Pressable></View>}
-    {visible.map(company => <View key={company.symbol} className="gap-2 rounded-xl border border-line bg-surface p-4"><Text className="text-xs text-muted">{company.region === 'KR' ? '한국' : '미국'} · {companySector(company).name}</Text><Text className="text-lg font-bold text-ink">{company.name}</Text><Text className="text-xs text-muted">{isRecommended(company, briefing) ? ' · 브리핑 추천' : ''}{portfolio?.holdings.some(row => row.holding.symbol === company.symbol) ? ' · 보유 중' : ''}</Text><Text className="text-ink">{company.description}</Text><Pressable accessibilityRole="button" accessibilityLabel={`${company.name} 기업 살펴보기`} onPress={() => setSelected(company)} className="min-h-11 justify-center rounded-xl bg-canvas p-3"><Text className="text-brand">기업 살펴보기 →</Text></Pressable></View>)}
+    {visible.map(company => <View key={company.symbol} className="gap-2 border-b border-line py-4"><Text className="text-xs text-muted">{company.region === 'KR' ? '한국' : '미국'} · {companySector(company).name}</Text><Text className="text-lg font-bold text-ink">{company.name}</Text><Text className="text-xs text-muted">{isRecommended(company, briefing) ? ' · 브리핑 추천' : ''}{portfolio?.holdings.some(row => row.holding.symbol === company.symbol) ? ' · 보유 중' : ''}</Text><Text className="text-ink">{company.description}</Text><Pressable accessibilityRole="button" accessibilityLabel={`${company.name} 기업 살펴보기`} onPress={() => onOpenStock ? onOpenStock(company.symbol) : setSelected(company)} className="min-h-11 justify-center rounded-xl bg-canvas p-3"><Text className="text-brand">기업 살펴보기 →</Text></Pressable></View>)}
     {!visible.length && <Text className="text-muted">조건에 맞는 기업이 없어요. 분야나 국가 필터를 바꿔보세요.</Text>}
     <Pressable accessibilityRole="button" onPress={() => { setSectorId('all'); setRegion('all'); setQuery(''); setOnlyRecommended(false) }} className="min-h-11 justify-center"><Text className="text-brand">필터 초기화</Text></Pressable>
     <Text className="text-xs text-muted">공식 사업 소개 기반의 시작 목록입니다. 전체 상장기업 목록이나 추천 순위가 아닙니다. 정보 확인 {catalogVerifiedAt}.</Text>
     <Pressable accessibilityRole="button" onPress={() => onSearchStock?.(query)} className="min-h-11 justify-center"><Text className="text-brand">이 목록 외 기업 검색하기 →</Text></Pressable>
+    </>}
     <Modal visible={!!selected} animationType="slide" onRequestClose={() => setSelected(null)} presentationStyle="pageSheet"><ThemeSurface>
       {selected && <SafeAreaView className="flex-1 bg-canvas"><View className="flex-row items-center justify-between border-b border-line bg-surface px-5 py-3"><Text className="flex-1 text-lg font-bold text-ink">{selected.name}</Text><Pressable accessibilityRole="button" accessibilityLabel="기업 상세 닫기" onPress={() => setSelected(null)} className="min-h-11 justify-center px-4"><Text className="text-brand">닫기</Text></Pressable></View><ScrollView contentContainerClassName="gap-5 p-5 pb-10">
         <Text className="text-muted">{companySector(selected).name}</Text><Text className="text-ink">{selected.description}</Text><Pressable accessibilityRole="link" onPress={() => openLink(selected.source)}><Text className="text-brand">공식 기업 자료 ↗</Text></Pressable><Text className="text-xs text-muted">기업 정보 확인 {selected.verifiedAt ?? companyDefaultVerifiedAt} · 가격 기준 시각과 달라요.</Text>

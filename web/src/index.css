@@ -298,3 +298,8 @@ button:focus-visible,a:focus-visible { outline: 2px solid var(--ant-color-primar
  .news-search-line { display: grid; grid-template-columns: minmax(0,1fr) auto auto; }.news-search-line .ant-input-affix-wrapper { grid-column: auto; min-width: 0; }.news-search-line .ant-btn { padding-inline: 10px; font-size: 13px; }
  .news-filter-panel { padding: 12px; }.news-controls details summary { min-height: 28px; }.news-results .ant-card-body { padding: 0 14px; }.company-price-chart .ant-card-body { padding: 16px; }
 }
+
+.all-menu-list > a { padding-block: 12px; min-height: 52px; }
+.news-link strong { display: -webkit-box !important; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.header-theme-toggle { display: flex; align-items: center; gap: 6px; color: var(--ant-color-text-secondary); min-height: 44px; }

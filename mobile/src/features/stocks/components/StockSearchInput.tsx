@@ -1,7 +1,8 @@
+import { useTheme } from '@/lib/theme'
 import { LoadingState } from '@/components/LoadingState'
 // web/src/features/stocks/components/StockSearchInput.tsx와 동일 역할 — RN엔 AntD Select 같은
 // 드롭다운이 없어 TextInput + 결과 목록을 직접 구현.
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Pressable, Text, TextInput, View } from 'react-native'
 
 import { searchStocks, type StockSearchResult } from '@/lib/api'
@@ -9,13 +10,17 @@ import { stockLabel } from '../../../../../shared/stock-labels'
 
 interface StockSearchInputProps {
   onSelect: (symbol: string, name?: string) => void
+  preserveQueryOnSelect?: boolean
+  onQueryChange?: (query: string) => void
   initialQuery?: string
 }
 
 const DEBOUNCE_MS = 300
 
-export function StockSearchInput({ onSelect, initialQuery = '' }: StockSearchInputProps) {
+export function StockSearchInput({ onSelect, onQueryChange, preserveQueryOnSelect = false, initialQuery = '' }: StockSearchInputProps) {
+  const { colors } = useTheme()
   const [query, setQuery] = useState(initialQuery)
+  const [picked, setPicked] = useState(false)
   const [results, setResults] = useState<StockSearchResult[]>([])
   const [searching, setSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -26,8 +31,9 @@ export function StockSearchInput({ onSelect, initialQuery = '' }: StockSearchInp
     return () => { clearTimeout(debounceRef.current); current.current++ }
   }, [])
 
-  const handleChange = (text: string) => {
-    setQuery(text)
+  const handleChange = useCallback((text: string) => {
+    setPicked(false); setQuery(text)
+    onQueryChange?.(text)
     clearTimeout(debounceRef.current)
     const id = ++generation.current
     setResults([])
@@ -47,34 +53,36 @@ export function StockSearchInput({ onSelect, initialQuery = '' }: StockSearchInp
         if (id === generation.current) setSearching(false)
       }
     }, DEBOUNCE_MS)
-  }
+  }, [onQueryChange])
 
   const handleSelect = (symbol: string) => {
     clearTimeout(debounceRef.current)
     generation.current++
     setSearching(false)
     onSelect(symbol, results.find(result => result.symbol === symbol)?.name)
-    setQuery('')
+    setPicked(true)
+    if (!preserveQueryOnSelect) { setQuery(''); onQueryChange?.('') }
     setResults([])
   }
 
   useEffect(() => {
     const initialSearch = setTimeout(() => { if (initialQuery) handleChange(initialQuery) }, 0)
     return () => clearTimeout(initialSearch)
-  }, [initialQuery])
+  }, [initialQuery, handleChange])
 
   return (
     <View className="gap-2">
       <TextInput
-        accessibilityLabel="관심종목 이름 검색"
+        accessibilityLabel="회사·상품 이름 검색"
         value={query}
         onChangeText={handleChange}
+        placeholderTextColor={colors.muted}
         placeholder="종목명으로 검색 (예: 삼성전자, Apple)"
-        className="rounded-lg border border-line bg-surface px-3 py-2 text-base"
+        className="rounded-lg border border-line bg-surface px-3 py-2 text-base text-ink"
       />
       {searching && <LoadingState inline compact message="회사를 찾고 있어요" />}
       {error && <Text className="text-xs text-danger">{error}</Text>}
-      {!searching && !error && query.trim() && results.length === 0 && (
+      {!searching && !error && !picked && query.trim() && results.length === 0 && (
         <Text className="text-xs text-muted">검색 결과 없음 — 영문 사명으로도 시도해보세요</Text>
       )}
       {results.length > 0 && (
