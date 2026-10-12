@@ -1,0 +1,35 @@
+[
+  {
+    "platform": "web",
+    "width": 360,
+    "directFinish": true,
+    "rulesDirect": true,
+    "confirmationCancel": true,
+    "overflow": false,
+    "pageErrors": 0,
+    "writes": 0,
+    "nativeVerified": false
+  },
+  {
+    "platform": "web",
+    "width": 390,
+    "directFinish": true,
+    "rulesDirect": true,
+    "confirmationCancel": true,
+    "overflow": false,
+    "pageErrors": 0,
+    "writes": 0,
+    "nativeVerified": false
+  },
+  {
+    "platform": "web",
+    "width": 1366,
+    "directFinish": true,
+    "rulesDirect": true,
+    "confirmationCancel": true,
+    "overflow": false,
+    "pageErrors": 0,
+    "writes": 0,
+    "nativeVerified": false
+  }
+]

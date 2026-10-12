@@ -1,0 +1,24 @@
+[
+  {
+    "platform": "native-web",
+    "width": 360,
+    "directFinish": true,
+    "rulesDirect": true,
+    "confirmationCancel": false,
+    "overflow": false,
+    "pageErrors": 0,
+    "writes": 0,
+    "nativeVerified": false
+  },
+  {
+    "platform": "native-web",
+    "width": 390,
+    "directFinish": true,
+    "rulesDirect": true,
+    "confirmationCancel": false,
+    "overflow": false,
+    "pageErrors": 0,
+    "writes": 0,
+    "nativeVerified": false
+  }
+]
