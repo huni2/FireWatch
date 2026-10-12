@@ -29,7 +29,7 @@ export function SettingsScreen() {
   const [pushTimes, setPushTimes] = useState<string[]>(['08:00'])
   const [newsPush, setNewsPush] = useState(false)
   const [pushRegistered, setPushRegistered] = useState(false)
-  useEffect(() => { void hasRegisteredPush().then(setPushRegistered) }, [])
+  useEffect(() => { void hasRegisteredPush().then(setPushRegistered).catch(() => setPushRegistered(false)) }, [])
   const [keywords, setKeywords] = useState<string[]>([])
   const [showPicker, setShowPicker] = useState(false)
   const [saving, setSaving] = useState(false)
