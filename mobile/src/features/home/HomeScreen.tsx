@@ -22,15 +22,15 @@ import type { FirewatchIconName } from '../../../../shared/firewatch-icons'
 
 type HomeTab = 'portfolio' | 'candidates' | 'brief' | 'stocks' | 'indices' | 'news' | 'short-term' | 'practice'
 
-const TABS: { key: HomeTab; label: string }[] = [
-  { key: 'portfolio', label: '내 포트폴리오' },
-  { key: 'candidates', label: '투자 후보' },
-  { key: 'brief', label: '브리핑' },
-  { key: 'stocks', label: '종목' },
-  { key: 'indices', label: '지수' },
-  { key: 'news', label: '뉴스' },
-  { key: 'short-term', label: '단기 투자' },
-  { key: 'practice', label: '가상투자 게임' },
+const TABS: { key: HomeTab; label: string; icon: FirewatchIconName }[] = [
+  { key: 'portfolio', label: '내 포트폴리오', icon: 'record' },
+  { key: 'candidates', label: '투자 후보', icon: 'companies' },
+  { key: 'brief', label: '브리핑', icon: 'briefing' },
+  { key: 'stocks', label: '종목', icon: 'stocks' },
+  { key: 'indices', label: '지수', icon: 'indices' },
+  { key: 'news', label: '뉴스', icon: 'news' },
+  { key: 'short-term', label: '단기 투자', icon: 'short-term' },
+  { key: 'practice', label: '가상투자 게임', icon: 'game' },
 ]
 
 export function HomeScreen() {
@@ -79,20 +79,29 @@ export function HomeScreen() {
       <StatusBar style={dark ? "light" : "dark"} />
       <Stack.Screen
         options={{
-          headerStyle: { backgroundColor: colors.surface },
+          headerStyle: { backgroundColor: colors.accentSoft },
           headerTintColor: colors.text,
           headerShadowVisible: false,
           headerTitle: () => <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}><FirewatchBrand size={27} /><Text style={{ color: colors.text, fontSize: 20, fontWeight: '700', letterSpacing: -.5 }}>FireWatch</Text></View>,
           headerRight: () => (
             <View style={{ flexDirection: 'row', gap: 6 }}>
-              <Pressable accessibilityRole="button" accessibilityLabel="계정·설정 열기" onPress={() => router.push('/settings')} style={{ minHeight: 44, minWidth: 64, borderRadius: 22, backgroundColor: colors.canvas, flexDirection: 'row', gap: 5, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="settings" size={18} color={colors.muted} /><Text style={{ fontSize: 13, fontWeight: '600', color: colors.text }}>내 계정</Text></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="계정·설정 열기" onPress={() => router.push('/settings')} style={{ minHeight: 44, minWidth: 64, borderRadius: 22, backgroundColor: colors.surface, flexDirection: 'row', gap: 5, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="account" size={18} color={colors.muted} /><Text style={{ fontSize: 13, fontWeight: '600', color: colors.text }}>내 계정</Text></Pressable>
             </View>
           ),
         }}
       />
 
-      {(exploration || market) && <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ backgroundColor: colors.surface, paddingHorizontal: 12, gap: 4 }}>
-        {TABS.filter(tab => (exploration ? ['candidates', 'stocks', 'short-term'] : ['news', 'brief', 'indices']).includes(tab.key)).map(tab => <Pressable key={tab.key} accessibilityRole="tab" accessibilityState={{ selected: activeTab === tab.key }} onPress={() => setActiveTab(tab.key)} style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 12, borderBottomWidth: 2, borderBottomColor: activeTab === tab.key ? colors.accent : 'transparent' }}><Text style={{ fontSize: 13, color: activeTab === tab.key ? colors.accent : colors.muted }}>{tab.key === 'candidates' ? '추천·분야' : tab.key === 'stocks' ? '회사 검색·시세' : tab.key === 'short-term' ? '단기 관찰' : tab.label}</Text></Pressable>)}
+      {(exploration || market) && <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, backgroundColor: colors.accentSoft }} contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 12 }}>
+        <View style={{ flex: 1, flexDirection: 'row', gap: 4, padding: 4, borderRadius: 16, backgroundColor: colors.surface }}>
+          {TABS.filter(tab => (exploration ? ['candidates', 'stocks', 'short-term'] : ['news', 'brief', 'indices']).includes(tab.key)).map(tab => {
+            const selected = activeTab === tab.key
+            const label = tab.key === 'candidates' ? '추천·분야' : tab.key === 'stocks' ? '회사 찾기' : tab.key === 'short-term' ? '단기 관찰' : tab.label
+            return <Pressable key={tab.key} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected }} aria-selected={selected} onPress={() => setActiveTab(tab.key)} style={{ flex: 1, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 8, paddingVertical: 8, borderRadius: 12, backgroundColor: selected ? colors.accent : 'transparent' }}>
+              <FirewatchIcon name={tab.icon} size={16} color={selected ? colors.onAccent : colors.muted} monochrome />
+              <Text style={{ flexShrink: 1, fontSize: 13, fontWeight: selected ? '700' : '500', color: selected ? colors.onAccent : colors.muted }}>{label}</Text>
+            </Pressable>
+          })}
+        </View>
       </ScrollView>}
 
       <View style={{ flex: 1, display: activeTab === 'portfolio' ? 'flex' : 'none' }}><PortfolioScreen {...discoveryNavigation} onOpenCandidates={() => setActiveTab('candidates')} /></View>

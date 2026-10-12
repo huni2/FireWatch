@@ -36,7 +36,7 @@ function AppContent() {
       <AppReadiness.Provider value={preparation}><View style={{ flex: 1 }} importantForAccessibility={preparation.preparing ? 'no-hide-descendants' : 'auto'} accessibilityElementsHidden={preparation.preparing}><BottomSheetModalProvider>
         <Stack
           screenOptions={{
-            headerStyle: { backgroundColor: colors.surface },
+            headerStyle: { backgroundColor: colors.accentSoft },
             headerTintColor: colors.text,
             headerTitleStyle: { fontWeight: '800' },
             contentStyle: { backgroundColor: colors.canvas },

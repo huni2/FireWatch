@@ -7,7 +7,6 @@ export function ScreenIntro({ eyebrow, title, description }: { eyebrow: string; 
   const styles = createStyles(c)
 
   return <View style={styles.card}>
-    <View style={styles.signal} />
     <Text style={styles.eyebrow}>{eyebrow}</Text>
     <Text accessibilityRole="header" style={styles.title}>{title}</Text>
     <Text style={styles.description}>{description}</Text>
@@ -15,8 +14,7 @@ export function ScreenIntro({ eyebrow, title, description }: { eyebrow: string; 
 }
 const createStyles = (c: ThemeColors) => StyleSheet.create({
   card: { backgroundColor: c.surface, borderColor: c.border, borderWidth: 1, borderRadius: 22, padding: 22, gap: 12, overflow: 'hidden' },
-  signal: { position: 'absolute', height: 5, width: 48, backgroundColor: c.accent, right: 22, top: 22, borderRadius: 8 },
-  eyebrow: { color: c.accent, fontSize: 10, fontWeight: '700', letterSpacing: 1.5, paddingRight: 54 },
+  eyebrow: { color: c.muted, fontSize: 11, fontWeight: '600', letterSpacing: .3 },
   title: { color: c.text, fontSize: tokens.typography.title, fontWeight: '800', letterSpacing: -.7 },
   description: { color: c.muted, fontSize: tokens.typography.body, lineHeight: 23 },
 })
