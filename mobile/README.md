@@ -58,3 +58,10 @@ CI의 타입·린트·출시 설정 테스트와 로컬 `expo export`는 EAS APK
 - scripts/release-check.cjs: Android 출시 설정 검사
 
 웹 배포가 완료되어도 APK는 자동 갱신되지 않는다. 현재 남은 확인은 설치 앱 Google 왕복·실제 푸시·공지/문의/삭제와 Play 제출 양식이다.
+
+### 다음 설치본의 용량·로그인 복구 확인
+
+- 기존 README APK는1.0.2이며 이번 소스 변경을 포함하지 않는다. 사용자 요청 전 추가 빌드 금지.
+- preview APK는ARM32/64 휴대폰을 지원하고 x86 에뮬레이터는development 프로필로 빌드한다. 로컬 prebuild는 FIREWATCH_ANDROID_PROFILE로 프로필 선택(기본preview), EAS는 EAS_BUILD_PROFILE 사용. 생성된 android 폴더를 사용하는 로컬 빌드는 다음 승인 시 prebuild로 설정을 다시 반영해야 한다.
+- release R8/리소스 축소 후 첫 실행, 차트, Google SDK, 푸시, 테마를 실제 기기로 확인한다. 용량 감소량은 새 APK 측정 전 확정하지 않는다.
+- 만료된 기존 세션 복구는 서버의 /api/auth/google/renew 배포가 필요하다. 네트워크/Google 증명 실패는 자동 반복 없이 설정의 수동 로그인으로 복구한다. 로그아웃·기기 해제는 자동 로그인하지 않는다.

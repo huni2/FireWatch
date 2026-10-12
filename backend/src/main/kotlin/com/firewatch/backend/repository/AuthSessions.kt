@@ -32,6 +32,18 @@ class AuthSessions(private val jdbc: JdbcTemplate) {
 
     fun linkedUser(deviceId: String): Long? = jdbc.query("SELECT user_id FROM device_links WHERE device_id=?", { row, _ -> row.getLong(1) }, deviceId).firstOrNull()
 
+    /** Renewal requires the previous session AND fresh Google proof. Never recreate a revoked link. */
+    @Transactional
+    fun renew(deviceId: String, authorization: String?, userId: Long): LoginSession {
+        val token = authorization?.takeIf { it.startsWith("Bearer ") }?.substring(7)
+            ?.takeIf { it.length in 40..64 } ?: throw UnauthorizedException()
+        val linked = jdbc.query("SELECT user_id FROM device_links WHERE device_id=? FOR UPDATE", { row, _ -> row.getLong(1) }, deviceId).firstOrNull()
+        if (linked != userId) throw UnauthorizedException()
+        val previous = jdbc.query("SELECT user_id FROM auth_sessions WHERE token_hash=? AND device_id=? FOR UPDATE", { row, _ -> row.getLong(1) }, hash(token), deviceId).firstOrNull()
+        if (previous != userId) throw UnauthorizedException()
+        return issue(deviceId)
+    }
+
     fun authenticate(deviceId: String, authorization: String?, now: Instant = Instant.now()): Long {
         val token = authorization?.takeIf { it.startsWith("Bearer ") }?.substring(7)
             ?.takeIf { it.length in 40..64 } ?: throw UnauthorizedException("로그인이 만료되었습니다. Google 계정으로 다시 로그인해주세요.")

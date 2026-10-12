@@ -25,6 +25,15 @@ class AuthController(
     private val identityResolver: SettingsIdentityResolver,
     private val sessions: com.firewatch.backend.repository.AuthSessions,
 ) {
+    @PostMapping("/google/renew")
+    suspend fun renewGoogleSession(
+        @RequestHeader("X-Device-Id", required = false) deviceId: String?,
+        @RequestHeader("Authorization", required = false) authorization: String?,
+        @RequestBody request: GoogleLinkRequest,
+    ): com.firewatch.backend.repository.LoginSession = withContext(Dispatchers.IO) {
+        authService.renewGoogleSession(deviceId.requireDeviceId(), request.idToken, authorization)
+    }
+
     @PostMapping("/google/link")
     suspend fun linkGoogleAccount(
         @RequestHeader("X-Device-Id", required = false) deviceId: String?,

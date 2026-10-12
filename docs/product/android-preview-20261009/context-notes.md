@@ -34,3 +34,11 @@ versionCode5 출시 설정·타입·린트·테스트8개·Android export2162모
 2026-10-12 장식선/상단 후속: 사용자가 지적한 웹 내 기록의 왼쪽 강조선과 연결 지도의 상단 강조선을 제거했다. APK 소스의 연결 목록 왼쪽 색 선과 ScreenIntro의 모서리 장식선도 제거했다. 실제 비중 막대·관계 도식과 중립 구획선/포커스 표시는 유지한다. 앱 상단은 옅은 브랜드 배경과 메뉴 트레이로 연결하고 선택 메뉴만 오렌지 채움/글자 대비/커스텀 아이콘으로 구분한다. 회사 검색·시세는 회사 찾기로 줄였고 계정 동작은 계정 아이콘으로 표시한다. 하단 이동·데이터/계정/거래 규칙은 변경하지 않는다.
 
 검증: 모바일 타입/대상 린트, 앱 웹 export, 웹 production build 통과. 격리된 앱 360/390px 라이트/다크4조건에서 연결 색 선0·선택 메뉴 채움·전환·44px 터치 영역·가로 넘침0·페이지 오류0·실제 API 쓰기0 확인. 웹390/1366px 라이트/다크4조건에서 발견 카드 왼쪽/지도 상단 border0, 비중 막대 유지·분류 선택·기업 링크 확인·페이지 오류0·실제 API 쓰기0. 앱 미리보기의 Android 메타데이터/알림/SecureStore/API는 시험 대체이므로 실제 Android 검증을 대신하지 않는다. 기존62에 기록하며 새 과제/APK/EAS/OTA는 실행하지 않는다.
+
+2026-10-12 출시 준비 후속(기존 APP-21/BE-21/WEB-38): Next-Tasks의 이전 APK/다크 모드 상태를 실제 소스와 사용자 설치 기록에 맞췄다. preview/local 기본 APK는 ARM32/64 두 ABI를 유지하고 x86/x86_64를 제외하는 Expo config plugin을 추가했다. development와 production AAB는 전체 ABI 유지. release R8와 리소스 축소를 켜며 실제 APK 용량·reflection/native 동작은 다음 사용자 승인 빌드에서 검증한다. APK/EAS/OTA는 실행하지 않는다. 버전/서명/README 다운로드는 기존1.0.2 유지.
+
+로그인 복구: SecureStore의 유효 세션은 그대로 사용한다. 만료된 세션은 Google silent sign-in과 /api/auth/google/renew를 한 번 시도하며 동시 요청은 같은 promise를 공유한다. 서버는 기존 토큰 해시+기기 연결+Google 계정을 모두 확인하고 토큰만 회전한다. 최초 계정/새 기기를 자동 생성하거나 해제된 연결을 재생성하지 않는다. 일반 API의401은 로컬 세션을 정리한다. 복구 실패는 익명 쓰기로 전환하지 않고 안내하며 기존 토큰을 보존한다. 수동 로그인은 복구 실패 상태를 해제한다. logout/manual-login과 복구 완료 경합은 generation+SecureStore 쓰기 직렬화로 보호한다. Google SDK 캐시 계정이 달라져도 서버에서 거절한다. 서버 배포와 새 설치본이 필요하며 Google/휴대폰 실검증 성공을 주장하지 않는다.
+
+검증 완료: 모바일 회귀34개 실패0, TypeScript/대상 ESLint 성공. Expo config introspect에서 실제 gradle properties에 ARM32/64 및 minify/shrink=true 반영 확인(prebuild/Gradle APK 실행0). Android JS export2178모듈/5.2MB 성공. 백엔드 전체222검사 실패0/skip1, AccountSessionIntegrationTest의 같은 Google 계정 만료 갱신·다른 계정/기기/폐기 토큰·로그아웃/기기해제 거절 통과. 늦게 도착한 기존 토큰401이 새 세션을 삭제하지 않도록 현재 토큰 일치 시에만 정리한다. Google silent 단계는15초 제한을 둔다. GitHub CI/머지/Render 배포/새 APK 실기기 확인은 별도로 확인한다.
+
+추가 회귀: 같은 앱 프로세스에서 갱신된 세션이 다시 만료돼도 새 토큰별로 복구를 실행한다. 이전 성공 promise를 재사용해 만료 토큰을 보내지 않는다. 첫 PR CI38195044177은 새 테스트 첫 invalid-proof 요청이20초 제한을 넘겨 실패했고 소스CI38195013564 전체는 성공했다. 서버/테스트 제한을 늘리지 않고 실패 작업1회 재검증하며 원인은 미확정이다. 실패 보고서의 첫 요청 위치를 확인했다.

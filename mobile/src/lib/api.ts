@@ -1,7 +1,7 @@
 // 백엔드(FireWatch backend) REST API 클라이언트. web/src/lib/api.ts와 동일 스타일 —
 // Design Ref: docs/02-design/features/mobile-app.design.md §4.
 import { getDeviceId } from './deviceId'
-import { sessionToken, saveSession, clearSession, type LoginSession } from './session'
+import { sessionToken, saveSession, clearSession, invalidateSession, type LoginSession } from './session'
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -90,7 +90,7 @@ export class ApiRequestError extends Error {
 }
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = path === '/api/auth/google/link' ? null : await sessionToken()
+  const token = path === '/api/auth/google/link' || path === '/api/auth/google/renew' ? null : await sessionToken()
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), 45000)
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -100,6 +100,7 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }).finally(() => clearTimeout(timer))
 
   if (!response.ok) {
+    if (response.status === 401 && token) await invalidateSession(token)
     const body = (await response.json().catch(() => null)) as { error?: ApiErrorBody } | null
     const apiError: ApiErrorBody = body?.error ?? {
       code: 'UNKNOWN',
@@ -144,6 +145,16 @@ export async function linkGoogleAccount(idToken: string): Promise<Settings> {
   if (!settings.session) throw new Error('로그인 세션을 받지 못했습니다.')
   await saveSession(settings.session)
   return settings
+}
+
+export async function renewGoogleSession(previousToken: string, idToken: string): Promise<LoginSession> {
+  const session = await request<LoginSession>('/api/auth/google/renew', {
+    method: 'POST', headers: { 'X-Device-Id': await getDeviceId(), Authorization: `Bearer ${previousToken}` },
+    body: JSON.stringify({ idToken }),
+  })
+  if (!session.token || !Number.isFinite(Date.parse(session.expiresAt)) || Date.parse(session.expiresAt) <= Date.now())
+    throw new Error('로그인을 복구하지 못했어요. 설정에서 다시 로그인해주세요.')
+  return session
 }
 
 // Play 스토어 계정 삭제 요건(2026-10-06) — 연동된 계정·공유 설정을 서버에서 완전히 삭제한다.
