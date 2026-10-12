@@ -29,7 +29,7 @@ class BackupReportIntegrationTest {
     companion object {
         @JvmStatic @DynamicPropertySource fun database(registry: DynamicPropertyRegistry) = TestDatabase.configure(registry)
     }
-    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").responseTimeout(Duration.ofSeconds(20)).build()
+    private fun client() = WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").responseTimeout(Duration.ofSeconds(20)).build()
     @Test fun `외부 보고는 비밀 키가 필요하고 입력에 원문 예외나 DB 주소를 허용하지 않는다`() {
         val path = "/api/operations/backup/report"
         val request = BackupReportInput("100-1", "DUMP_FAILED")

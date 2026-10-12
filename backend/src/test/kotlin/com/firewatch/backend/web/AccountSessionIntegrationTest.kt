@@ -30,7 +30,7 @@ class AccountSessionIntegrationTest {
     @Autowired lateinit var settings: UserSettingsRepository
     @Autowired lateinit var jdbc: org.springframework.jdbc.core.JdbcTemplate
     @MockitoBean lateinit var google: GoogleIdentityVerifier
-    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").responseTimeout(java.time.Duration.ofSeconds(20)).build()
+    private fun client() = WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").responseTimeout(java.time.Duration.ofSeconds(20)).build()
 
     @Test
     fun `만료 세션은 같은 Google 계정으로만 갱신하고 폐기된 기기와 토큰은 복구하지 않는다`() {

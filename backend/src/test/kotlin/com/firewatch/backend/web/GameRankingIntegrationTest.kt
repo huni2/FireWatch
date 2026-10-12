@@ -31,7 +31,7 @@ class GameRankingIntegrationTest {
     @Autowired lateinit var transactions: GameTransactionRepository
     @Autowired lateinit var jdbc: JdbcTemplate
     @MockitoBean lateinit var clock: GameRankingClock
-    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
+    private fun client() = WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").build()
     private data class Player(val user: Long, val device: String, val auth: String)
     private fun login(): Player {
         val device = UUID.randomUUID().toString()

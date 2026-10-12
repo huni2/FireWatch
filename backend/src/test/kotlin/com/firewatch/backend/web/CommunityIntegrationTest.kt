@@ -26,7 +26,7 @@ class CommunityIntegrationTest {
     @Autowired lateinit var sessions: AuthSessions
     @Autowired lateinit var jdbc: JdbcTemplate
     @Autowired lateinit var settings: UserSettingsRepository
-    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").responseTimeout(java.time.Duration.ofSeconds(20)).build()
+    private fun client() = WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").responseTimeout(java.time.Duration.ofSeconds(20)).build()
     private fun login(email: String = "test@example.com"): Pair<String, String> {
         val device = UUID.randomUUID().toString()
         val account = users.save(AppUser(googleSub = device, email = email, emailVerified = true))

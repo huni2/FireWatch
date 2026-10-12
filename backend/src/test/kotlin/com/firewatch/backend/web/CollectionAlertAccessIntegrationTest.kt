@@ -19,7 +19,7 @@ class CollectionAlertAccessIntegrationTest {
     @Autowired lateinit var sessions: AuthSessions
 
     @Test fun `수집 장애 상세는 익명 일반 계정 위조 운영자를 차단하고 운영자만 조회한다`() {
-        val client = WebTestClient.bindToServer().baseUrl("http://localhost:$port").responseTimeout(Duration.ofSeconds(20)).build()
+        val client = WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").responseTimeout(Duration.ofSeconds(20)).build()
         val path = "/api/collection/alerts"
         client.get().uri(path).exchange().expectStatus().isUnauthorized
         fun account(email: String, verified: Boolean): Pair<String, String> {

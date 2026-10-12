@@ -46,7 +46,7 @@ class GameTimingIntegrationTest {
     }
     // This verifies timing fields and durable state, not a five-second latency SLA.
     // Match other integration clients so cold/contended CI workers can finish setup.
-    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port")
+    private fun client() = WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port")
         .responseTimeout(Duration.ofSeconds(20)).build()
     private fun start(device: String) = client().post().uri("/api/game/start?compact=true").header("X-Device-Id", device)
         .exchange().expectStatus().isOk.expectHeader().valueMatches("Server-Timing", "application;dur=\\d+, auth_queue;dur=.+")

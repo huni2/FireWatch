@@ -22,7 +22,7 @@ class PortfolioApiIntegrationTest {
     @Autowired private lateinit var portfolios: com.firewatch.backend.repository.PortfolioRepository
     @LocalServerPort private var port: Int = 0
     // 기능 통합 검사는 CI 첫 초기화 대기를 허용하며 운영 응답 속도 검사는 별도로 유지한다.
-    private val client get() = WebTestClient.bindToServer().baseUrl("http://localhost:$port")
+    private val client get() = WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port")
         .responseTimeout(java.time.Duration.ofSeconds(20)).build()
 
     @Test

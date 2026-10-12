@@ -19,7 +19,7 @@ class LegacyRecoveryIntegrationTest {
 
     @Test
     fun `관리 키 없이는 이전할 수 없고 현재 데이터는 덮어쓰지 않으며 이전 행은 보존한다`() {
-        val client = WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
+        val client = WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").build()
         val old = settings.findByDeviceId("legacy-owner-device") ?: settings.save(UserSettings(deviceId = "legacy-owner-device"))
         old.watchedStocksRaw = "035720.KS"
         settings.save(old)

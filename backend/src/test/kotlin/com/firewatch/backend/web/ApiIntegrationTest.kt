@@ -72,7 +72,7 @@ class ApiIntegrationTest @Autowired constructor(
     }
 
     private val webTestClient: WebTestClient by lazy {
-        WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
+        WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").build()
     }
 
     @Test
