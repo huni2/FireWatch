@@ -253,7 +253,7 @@ button:focus-visible,a:focus-visible { outline: 2px solid var(--ant-color-primar
 .record-status { margin-top: 12px; padding-top: 10px; gap: 6px; }
 .record-status summary { min-height: 32px; padding-block: 4px; }
 .record-status > strong { line-height: 1.6; }
-.portfolio-key-finding { display: flex; gap: 10px 16px; align-items: center; flex-wrap: wrap; padding: 12px 16px; border-left: 3px solid var(--ant-color-primary); background: var(--ant-color-bg-container); }
+.portfolio-key-finding { display: flex; gap: 10px 16px; align-items: center; flex-wrap: wrap; padding: 12px 16px; border: 0; background: var(--ant-color-bg-container); }
 .portfolio-key-finding span { flex: 1; min-width: 180px; line-height: 1.6; }
 .portfolio-key-finding a { min-height: 44px; display: inline-flex; align-items: center; }
 .stock-search-panel { display: flex; align-items: start; gap: 8px 12px; flex-wrap: wrap; }

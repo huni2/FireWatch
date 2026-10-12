@@ -12,7 +12,7 @@
 .app-content .portfolio-summary { padding: 8px 0 20px; background: transparent; border-radius: 0; border-bottom: 1px solid var(--ant-color-border-secondary); }
 .app-content .portfolio-summary .ant-statistic-content { font-size: clamp(36px, 4vw, 44px); letter-spacing: -.04em; line-height: 1.2; }
 .app-content .portfolio-summary .ant-statistic-content-suffix { font-size: 18px; font-weight: 500; }
-.app-content .portfolio-finding { padding: 16px 18px; gap: 4px; border-radius: 12px; background: var(--ant-color-bg-container); border-left: 3px solid var(--ant-color-primary); }
+.app-content .portfolio-finding { padding: 16px 18px; gap: 4px; border-radius: 12px; background: var(--ant-color-bg-container); border: 0; }
 .app-content .portfolio-finding strong { font-size: 17px; }
 .app-content .portfolio-finding-actions { gap: 4px 16px; }
 .app-content .portfolio-finding-actions .ant-btn { padding-inline: 0; }
@@ -140,8 +140,8 @@
 .welcome-connection i { width: 60px; height: 1px; background: var(--fw-connection); }
 .sample-connection { display: grid; gap: 0; padding: 24px 0; text-align: center; color: var(--fw-connection); }
 .sample-connection span { border: 1px solid var(--ant-color-border-secondary); border-radius: 10px; padding: 16px; }.sample-connection b { background: var(--fw-connection-bg); padding: 18px; }
-.app-content .portfolio-finding { border-left-color: var(--fw-connection); }.app-content .portfolio-finding .page-eyebrow { color: var(--fw-connection); }
-.app-content .investment-map { border-top: 3px solid var(--fw-connection); }
+.app-content .portfolio-finding .page-eyebrow { color: var(--fw-connection); }
+.app-content .investment-map { border: 0; }
 .investment-map-groups button[aria-pressed=true] { background: var(--fw-connection-bg); border-color: transparent; }
 .investment-map-detail > h4 { display: none; }
 .connection-network { display: grid; grid-template-columns: minmax(110px,.8fr) minmax(0,1fr); align-items: center; gap: 30px; padding: 18px 0; }
