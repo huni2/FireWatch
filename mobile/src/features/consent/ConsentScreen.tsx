@@ -6,6 +6,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { InfoDocument } from '../help/InfoDocument'
 import { FirewatchBrand } from '@/components/FirewatchBrand'
 import { LoadingState } from '@/components/LoadingState'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 interface ConsentScreenProps {
   onAgree: () => void | Promise<void>
@@ -31,7 +32,7 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
   return (
     <SafeAreaProvider><SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }}><ScrollView className="flex-1" contentContainerClassName="gap-6 px-6 py-5">
       <View className="gap-3">
-        <View className="flex-row items-center gap-2"><FirewatchBrand size={36} /><Text className="text-lg font-bold text-ink">FireWatch</Text></View>
+        <View className="flex-row items-center justify-between gap-2"><View className="flex-row items-center gap-2"><FirewatchBrand size={36} /><Text className="text-lg font-bold text-ink">FireWatch</Text></View><ThemeToggle /></View>
         <Text className="text-2xl font-bold leading-8 text-ink">내 투자 기록을{ '\n' }한눈에 살펴보세요</Text>
         <Text className="text-sm font-semibold text-muted">시작하기 전에 · 자료 보관 안내</Text>
         <Text className="text-base leading-6 text-muted">

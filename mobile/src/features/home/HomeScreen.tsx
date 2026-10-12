@@ -18,6 +18,7 @@ import { NewsScreen } from '../news/NewsScreen'
 import { StocksScreen } from '../stocks/StocksScreen'
 import { FirewatchIcon } from '../../components/FirewatchIcon'
 import { FirewatchBrand } from '../../components/FirewatchBrand'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import type { FirewatchIconName } from '../../../../shared/firewatch-icons'
 
 type HomeTab = 'portfolio' | 'candidates' | 'brief' | 'stocks' | 'indices' | 'news' | 'short-term' | 'practice'
@@ -84,8 +85,9 @@ export function HomeScreen() {
           headerShadowVisible: false,
           headerTitle: () => <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}><FirewatchBrand size={27} /><Text style={{ color: colors.text, fontSize: 20, fontWeight: '700', letterSpacing: -.5 }}>FireWatch</Text></View>,
           headerRight: () => (
-            <View style={{ flexDirection: 'row', gap: 6 }}>
-              <Pressable accessibilityRole="button" accessibilityLabel="계정·설정 열기" onPress={() => router.push('/settings')} style={{ minHeight: 44, minWidth: 64, borderRadius: 22, backgroundColor: colors.surface, flexDirection: 'row', gap: 5, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="account" size={18} color={colors.muted} /><Text style={{ fontSize: 13, fontWeight: '600', color: colors.text }}>내 계정</Text></Pressable>
+            <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+              <ThemeToggle />
+              <Pressable accessibilityRole="button" accessibilityLabel="계정·설정 열기" onPress={() => router.push('/settings')} style={{ height: 44, width: 44, borderRadius: 22, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name="account" size={20} color={colors.muted} /></Pressable>
             </View>
           ),
         }}

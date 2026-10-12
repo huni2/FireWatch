@@ -1,5 +1,5 @@
 import { LoadingState } from '@/components/LoadingState'
-import { ThemeSurface } from '@/lib/theme'
+import { ThemeSurface, useTheme } from '@/lib/theme'
 import { useEffect, useState } from 'react'
 import { Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -14,6 +14,7 @@ async function rankingRequest<T>(path: string, init?: RequestInit) {
   return request<T>(`/api/game/rankings${path}`, { ...init, headers: { 'X-Device-Id': await getDeviceId(), ...init?.headers } })
 }
 export function PracticeRankings({ turn, initialTab, close }: { turn: RankingGame | null; initialTab: RankingTab; close: () => void }) {
+  const { colors } = useTheme()
   const [tab, setTab] = useState<RankingTab>(initialTab), [offset, setOffset] = useState(0), [page, setPage] = useState(0)
   const [difficulty, setDifficulty] = useState<RankingDifficulty>('NORMAL'), [shortSelling, setShort] = useState(false)
   const kind = 'FINISHED', selectedTurn = 23
@@ -53,8 +54,12 @@ export function PracticeRankings({ turn, initialTab, close }: { turn: RankingGam
   const eligible = canPublishGame(turn)
   const changeTab = (key: RankingTab) => { setTab(key); setPage(0); setReceipt('') }
   return <Modal visible animationType="slide" onRequestClose={() => { if (!busy) close() }}><ThemeSurface>
-    <SafeAreaView className="flex-1 bg-canvas"><ScrollView contentContainerStyle={{ padding: 20, gap: 16 }}>
-      <Text className="text-2xl font-bold text-ink">{tab === 'publish' ? '이 기록을 순위에 공개할까요?' : initialTab === 'publish' ? '내 공개 기록' : 'FireWatch 주간 순위'}</Text>
+    <SafeAreaView className="flex-1 bg-canvas">
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+        <Text accessibilityRole="header" numberOfLines={2} style={{ flex: 1, color: colors.text, fontSize: 18, fontWeight: '700' }}>{tab === 'publish' ? '기록 공개' : initialTab === 'publish' ? '내 공개 기록' : '주간 순위'}</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel="순위 창 닫기" accessibilityHint={tab === 'publish' ? '이 기록을 등록하지 않고 게임으로 돌아가요' : '게임으로 돌아가요'} accessibilityState={{ disabled: busy }} disabled={busy} onPress={close} style={{ minHeight: 44, minWidth: 56, alignItems: 'center', justifyContent: 'center', opacity: busy ? .4 : 1 }}><Text style={{ color: colors.text, fontSize: 15, fontWeight: '600' }}>닫기</Text></Pressable>
+      </View>
+      <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 20, gap: 16 }}>
       {initialTab !== 'publish' && <><Text className="text-muted">게임마다 시장이 달라요. 같은 조건의 수익률을 비교해요.</Text>
       <View className="flex-row flex-wrap gap-2">{([['board', '주간 순위'], ['winners', '주간 우승자'], ['publish', '기록 등록'], ['mine', '내 기록']] as const).map(([key, label]) => <RankButton key={key} label={label} selected={tab === key} disabled={busy} onPress={() => changeTab(key)} />)}</View></>}
       {tab === 'publish' && <PracticeRankingRules />}
@@ -68,7 +73,6 @@ export function PracticeRankings({ turn, initialTab, close }: { turn: RankingGam
       {tab === 'mine' && logged && !loading && (mine?.entries.length ? mine.entries.map(e => <View key={e.id} className="gap-3 rounded-2xl bg-surface p-4"><Text className="font-bold text-ink">{e.nickname} · {rankingScore(e.returnPercent)}</Text><Text className="text-muted">{e.weekStart} 시작 주 · {rankingLeague(e)} · {e.board === 'FINISHED' ? '완주 기록' : `${e.turnIndex + 1}턴 기록`}</Text>{e.visible ? <RankButton label="공개 철회" disabled={busy} onPress={() => Alert.alert('순위에서 숨길까요?', '철회한 기록은 다시 공개할 수 없습니다.', [{ text: '취소', style: 'cancel' }, { text: '철회', onPress: () => void withdraw(e.id) }])} /> : <Text className="text-muted">공개 철회됨</Text>}</View>) : !error && <Text className="text-muted">공개한 기록이 없습니다.</Text>)}
       {tab === 'mine' && logged && <View className="flex-row gap-3"><RankButton label="이전 페이지" disabled={loading || page === 0} onPress={() => setPage(v => v - 1)} /><RankButton label="다음 페이지" disabled={loading || !mine || (page + 1) * 20 >= mine.total} onPress={() => setPage(v => v + 1)} /></View>}
       {tab !== 'publish' && <PracticeRankingRules />}
-      <RankButton label={tab === 'publish' ? '공개하지 않고 닫기' : '닫기'} onPress={close} disabled={busy} />
     </ScrollView></SafeAreaView>
   </ThemeSurface></Modal>
 }
