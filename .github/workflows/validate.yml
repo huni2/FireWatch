@@ -100,7 +100,7 @@ jobs:
         run: node --test scripts/release-check.test.cjs
       - name: Android native login behavior
         if: matrix.client == 'mobile'
-        run: node --test scripts/google-sign-in.test.cjs scripts/session-restoration.test.cjs scripts/android-release-size.test.cjs scripts/resource-loading.test.cjs scripts/theme.test.cjs
+        run: node --test scripts/google-sign-in.test.cjs scripts/session-restoration.test.cjs scripts/android-release-size.test.cjs scripts/resource-loading.test.cjs scripts/loading-motion.test.cjs scripts/theme.test.cjs
       - name: Android chart runtime dependency contract
         if: matrix.client == 'mobile'
         run: node --test scripts/native-dependencies.test.cjs

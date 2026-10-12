@@ -1,6 +1,7 @@
+import { LoadingState } from '@/components/LoadingState'
 import { ThemeSurface } from '@/lib/theme'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
+import { Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Link } from 'expo-router'
 import { request } from '@/lib/api'
@@ -48,7 +49,7 @@ export function PracticeRankings({ turn, initialTab, close }: { turn: RankingGam
     try { await rankingRequest(`/${id}`, { method: 'DELETE' }); setRevision(v => v + 1); setReceipt('순위와 우승자 목록에서 숨겼습니다.') }
     catch (e) { setError((e as Error).message) } finally { setBusy(false) }
   }
-  const loadingView = <View style={{ minHeight: 200, alignItems: 'center', justifyContent: 'center', gap: 16 }} accessibilityLiveRegion="polite"><ActivityIndicator accessibilityLabel="순위 조회 중" /><Text className="text-muted">{tab === 'winners' ? '주간 우승자를 불러오고 있어요.' : tab === 'mine' || tab === 'publish' ? '내 공개 기록을 확인하고 있어요.' : '순위표를 불러오고 있어요.'}</Text></View>
+  const loadingView = <LoadingState inline message={tab === 'winners' ? '주간 우승자를 불러오고 있어요' : tab === 'mine' || tab === 'publish' ? '내 공개 기록을 확인하고 있어요' : '순위표를 불러오고 있어요'} />
   const eligible = canPublishGame(turn)
   const changeTab = (key: RankingTab) => { setTab(key); setPage(0); setReceipt('') }
   return <Modal visible animationType="slide" onRequestClose={() => { if (!busy) close() }}><ThemeSurface>

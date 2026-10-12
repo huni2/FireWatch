@@ -46,3 +46,7 @@ versionCode5 출시 설정·타입·린트·테스트8개·Android export2162모
 2026-10-12 사용자 최신화 요청으로1.0.3/versionCode8을 로컬 빌드했다. sourcea6aaa0c·CI38196432552 success·release assemble16분50초/901작업. ARM32/64+R8/리소스 축소·heap3GiB/meta1GiB/workers2. 기존1.0.2와 동일 release 인증서, 패키지/버전/ZIP/16KB 정렬·R8 mapping/DEX에서Google/gradient 모듈 확인. APK마스코트res/BV.png는 양쪽 배경 합성 RGB가 원본과 일치한다.54,303,976bytes·기존대비약52% 감소·SHA256 c42582846d1893f29a66c8208948ba4f5e6c4b55c7d28882d717634511913044. 공개 다운로드/README·업로드digest 대조는 별도 결과로 기록하며 실제Android 로그인/푸시/접근성/최적화 후 실행과 Render갱신 배포를 완료로 주장하지 않는다. EAS클라우드요청0·신규과제0·원래버전/서명/데이터삭제0.
 
 1.0.3 공개 확인: GitHub release410096656·APK asset632483326·서버digest 로컬SHA256일치·다운로드HEAD 최종HTTP200/54,303,976bytes 확인. 체크섬 파일도 공개했다. 실제휴대폰실행/로그인/푸시는 미확인 유지. README/문서PR와최종CI/머지결과는 기존Issue62에기록한다.
+
+2026-10-12 APK1.0.3 로딩 선 정지 사용자 제보 후속: 설치된 RN0.86.2 AnimatedImplementation.loopImpl을 테스트에서 직접 실행해 stop→start만으로는 내부isFinished가 남아 첫 애니메이션이 실행되지 않음을 재현했다. stop→reset→start로 수정하고 동작 줄이기 설정/조회 실패/늦은 초기 설정 응답/화면 종료를 보호한다. isInteraction=false로 반복 표시가 목록 렌더를 막지 않게 한다. ThemeProvider의 별도 고정 선도 공통 LoadingIndicator로 교체하며 첫 준비·시장/기업/계정·순위/회고/그래프·검색/ETF/분석보관함/주문미리보기·Google/삭제 처리에 같은 표시를 사용한다. 실제 서버 처리 퍼센트를 생성하지 않으며 요청 완료/실패 시 해당 표시를 종료한다.
+
+검증: RN 실제loop 회귀6개 포함 모바일40검사·TypeScript·Expo lint 성공. Android JS export2180모듈/5.2MB 성공. 격리 앱 웹360/390px에서 초기조회 실패 후 준비 화면 해제·시장/기업/게임의 단일 중앙선 위치를180ms 간격3회 측정해 이동4px이상 확인·직접설정진입 해제·JS오류0/운영쓰기0. 미리보기의Android메타데이터/알림/SecureStore/API는 시험 대체이므로 실제APK동작 검증을 대신하지 않는다. 새 APK/EAS/OTA0·현재1.0.3 다운로드 유지·Render/API/DB/버전/키변경0. 기존Issue62/APP21 소스후속으로 기록하며 새로운 과제를 만들지 않는다.

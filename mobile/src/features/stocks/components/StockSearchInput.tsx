@@ -1,7 +1,8 @@
+import { LoadingState } from '@/components/LoadingState'
 // web/src/features/stocks/components/StockSearchInput.tsx와 동일 역할 — RN엔 AntD Select 같은
 // 드롭다운이 없어 TextInput + 결과 목록을 직접 구현.
 import { useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native'
+import { Pressable, Text, TextInput, View } from 'react-native'
 
 import { searchStocks, type StockSearchResult } from '@/lib/api'
 import { stockLabel } from '../../../../../shared/stock-labels'
@@ -71,7 +72,7 @@ export function StockSearchInput({ onSelect, initialQuery = '' }: StockSearchInp
         placeholder="종목명으로 검색 (예: 삼성전자, Apple)"
         className="rounded-lg border border-line bg-surface px-3 py-2 text-base"
       />
-      {searching && <ActivityIndicator className="self-start" />}
+      {searching && <LoadingState inline compact message="회사를 찾고 있어요" />}
       {error && <Text className="text-xs text-danger">{error}</Text>}
       {!searching && !error && query.trim() && results.length === 0 && (
         <Text className="text-xs text-muted">검색 결과 없음 — 영문 사명으로도 시도해보세요</Text>

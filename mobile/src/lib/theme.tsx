@@ -3,6 +3,7 @@ import { useColorScheme, vars } from 'nativewind'
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Text, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
+import { LoadingIndicator } from '@/components/LoadingIndicator'
 import { parseThemePreference, resolveTheme, themePalettes, type ThemePreference } from './themeColors'
 export type { ThemePreference, ThemeColors } from './themeColors'
 
@@ -49,6 +50,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try { await AsyncStorage.setItem(themeStorageKey, mode); setColorScheme(mode); setMode(mode) }
     finally { pending.current = false; setSaving(false) }
   }
-  if (!ready) return <View style={{ flex: 1, backgroundColor: light.canvas, alignItems: 'center', justifyContent: 'center', gap: 18 }}><Text style={{ color: light.muted }}>화면 설정을 확인하고 있어요</Text><View accessibilityRole="progressbar" accessibilityLabel="화면 설정 확인 중" style={{ width: 180, height: 4, borderRadius: 2, backgroundColor: light.border }}><View style={{ width: 60, height: 4, backgroundColor: light.accent }} /></View></View>
+  if (!ready) return <View style={{ flex: 1, backgroundColor: light.canvas, alignItems: 'center', justifyContent: 'center', gap: 18 }}><Text style={{ color: light.muted }}>화면 설정을 확인하고 있어요</Text><LoadingIndicator color={light.accent} trackColor={light.border} label="화면 설정 확인 중" /></View>
   return <ThemeContext.Provider value={{ preference, dark: isDark, colors, saving, setPreference }}><View style={[variables, { flex: 1, backgroundColor: colors.canvas }]}><StatusBar style={isDark ? 'light' : 'dark'} />{children}</View></ThemeContext.Provider>
 }
