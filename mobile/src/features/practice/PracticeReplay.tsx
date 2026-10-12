@@ -1,8 +1,9 @@
+import { LoadingState } from '@/components/LoadingState'
 import { ThemeSurface } from '@/lib/theme'
 // 주간 투자 선택과 결과를 관련 가상 뉴스부터 차분하게 돌아보도록 안내한다.
 import { gamePeriod, gameNews } from '../../../../shared/game-week'
 import { assetsForGame } from '../../../../shared/game-assets'
-import { ActivityIndicator, Image, Modal, Pressable, ScrollView, Text, View } from 'react-native'
+import { Image, Modal, Pressable, ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import type { PracticeTurn } from '@/lib/investingApi'
 import { replayChoices, replayIndicators, replayPicks, replayResults } from '../../../../shared/game-replay'
@@ -20,7 +21,7 @@ export function PracticeReplay({ value, close }: { value: PracticeReplayState | 
     {value && <>
       <View className="flex-row items-center gap-4"><Image source={require('../../../../shared/assets/firewatch-scout.png')} accessibilityLabel="FireWatch 불꽃 정찰대" style={{ width: 92, height: 110 }} resizeMode="contain" /><View className="flex-1"><Text className="text-xs text-muted">{period} {value.before.turnIndex + 1} → {value.after ? value.after.turnIndex + 1 : '?'}</Text><Text className="text-xl font-bold text-ink">{value.after ? `이번 ${period} 돌아보기` : '내 선택을 돌아보는 중'}</Text></View></View>
       <View className="gap-2 rounded-xl border border-line bg-surface p-4"><Text className="font-semibold text-ink">내가 남긴 선택</Text>{replayChoices(value.before).length ? replayChoices(value.before).map((t, i) => <Text key={i} className="text-ink">{t.name} · {t.action === 'BUY' ? '매수' : '매도'} {t.quantity}개 · 총 {money(t.total)}</Text>) : <Text className="text-muted">새 거래 없이 보유 포지션을 유지했습니다.</Text>}</View>
-      {!value.after ? <><ActivityIndicator /><Text className="text-muted">지난 픽: {value.before.briefing.recommendedStocks.join(', ') || '없음'}</Text><Text className="text-muted">서버 요청은 진행 중입니다. 새 사건·가격은 확정 후 표시하며, 건너뛰어도 진행은 계속됩니다.</Text></> : <>
+      {!value.after ? <><LoadingState inline compact message="다음 주의 사건과 가격을 준비하고 있어요" /><Text className="text-muted">지난 픽: {value.before.briefing.recommendedStocks.join(', ') || '없음'}</Text><Text className="text-muted">서버 요청은 진행 중입니다. 새 사건·가격은 확정 후 표시하며, 건너뛰어도 진행은 계속됩니다.</Text></> : <>
         <View className="gap-5 border-l border-line pl-4" accessibilityLabel="내 선택과 결과의 연결">{[
           ['01 · 내 선택', replayChoices(value.before).length ? `${replayChoices(value.before).length}건의 가상 거래` : '새 거래 없이 지켜봤어요'],
           ['02 · 가상 사건', mainDriver?.driver?.newsTitle ?? '시장과 분야의 흐름을 확인해요'],

@@ -1,7 +1,9 @@
 // 선택적 Google 계정 연결(APP-6). 커스텀 Android 빌드에서 서명/OAuth 왕복을 검증한다.
 // Expo Go와 JS export는 설치 앱의 로그인 검증을 대신하지 않는다.
 import { useRef, useState } from 'react'
-import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native'
+import { Alert, Pressable, Text, View } from 'react-native'
+import { LoadingIndicator } from '@/components/LoadingIndicator'
+import { useTheme } from '@/lib/theme'
 import { googleIdToken } from '@/lib/googleSignIn'
 import Toast from 'react-native-toast-message'
 
@@ -22,6 +24,7 @@ export function GoogleLinkButton(props: GoogleLinkButtonProps) {
 }
 
 function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: GoogleLinkButtonProps) {
+  const { colors } = useTheme()
   const [linking, setLinking] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [devices, setDevices] = useState<LinkedDevice[] | null>(null)
@@ -95,7 +98,7 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
       <View className="gap-2">
         <Text className="text-center text-sm font-semibold text-brand">{linkedEmail} 계정과 연동되었습니다 ✓</Text>
         <Text className="text-xs text-muted">로그인은 30일간 유지되고, 만료되면 연결된 Google 계정으로 복구를 시도해요. 계정 확인이 필요하면 다시 로그인해주세요.</Text>
-        <Pressable disabled={linking || deviceBusy || deleting} onPress={() => void login()} className="min-h-11 items-center justify-center">{linking ? <ActivityIndicator /> : <Text className="text-brand">Google 로그인 갱신</Text>}</Pressable>
+        <Pressable disabled={linking || deviceBusy || deleting} onPress={() => void login()} className="min-h-11 items-center justify-center">{linking ? <LoadingIndicator color={colors.accent} trackColor={colors.border} label="Google 로그인 확인 중" width={60} /> : <Text className="text-brand">Google 로그인 갱신</Text>}</Pressable>
         {loginError && <Text accessibilityRole="alert" className="text-sm text-danger">{loginError}</Text>}
         <Pressable disabled={deviceBusy} onPress={manageDevices} className="min-h-11 items-center justify-center"><Text className="text-brand">연결된 기기 확인</Text></Pressable>
         {devices?.map((device, index) => <View key={device.id} className="rounded-xl border border-line p-3">
@@ -104,8 +107,8 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
           {!device.current && <Pressable disabled={deviceBusy} onPress={() => revokeDevice(device)} className="min-h-11 justify-center"><Text className="text-danger">연결 해제</Text></Pressable>}
         </View>)}
         <Pressable disabled={deviceBusy} onPress={logout} className="min-h-11 items-center justify-center"><Text className="text-muted">이 기기에서 로그아웃</Text></Pressable>
-        <Pressable onPress={handleDeletePress} disabled={deleting} className="items-center py-2">
-          {deleting ? <ActivityIndicator /> : <Text className="text-sm font-semibold text-danger">계정 삭제</Text>}
+        <Pressable onPress={handleDeletePress} disabled={deleting} className="min-h-11 items-center justify-center py-2">
+          {deleting ? <LoadingIndicator color={colors.accent} trackColor={colors.border} label="계정 삭제 처리 중" width={60} /> : <Text className="text-sm font-semibold text-danger">계정 삭제</Text>}
         </Pressable>
       </View>
     )
@@ -118,7 +121,7 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
       className="flex-row items-center justify-center gap-2 rounded-full border border-line bg-surface py-3"
     >
       {linking ? (
-        <ActivityIndicator />
+        <LoadingIndicator color={colors.accent} trackColor={colors.border} label="Google 계정 연결 중" width={60} />
       ) : (
         <Text className="text-base font-semibold text-muted">Google 계정 연동</Text>
       )}

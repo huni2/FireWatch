@@ -1,0 +1,22 @@
+[
+  {
+    "width": 360,
+    "consentToHomeReady": true,
+    "initialFailureReleasedStartup": true,
+    "menusSingleCenteredMovingBar": true,
+    "directSettingsNotBlocked": true,
+    "pageErrors": 0,
+    "writes": 0,
+    "nativeVerified": false
+  },
+  {
+    "width": 390,
+    "consentToHomeReady": true,
+    "initialFailureReleasedStartup": true,
+    "menusSingleCenteredMovingBar": true,
+    "directSettingsNotBlocked": true,
+    "pageErrors": 0,
+    "writes": 0,
+    "nativeVerified": false
+  }
+]

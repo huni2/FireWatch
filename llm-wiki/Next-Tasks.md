@@ -59,6 +59,7 @@
 **1.0.3 포함 소스** — PR#86 네이티브 로그인·브랜드/게임 상단·마스코트, #87 통합 준비/로딩, #88 기본 라이트+선택 다크/기기 테마 저장, #89 동의 여백, #90 정보와 무관한 장식선 제거·상단 메뉴 개편, #91 만료 세션 복구/용량 설정. 소스·APK 포함 검증과 실제 휴대폰 동작을 구분한다.
 **이번 후속** — APK ARM32/64 유지·x86 제외와 R8/리소스 축소 실제 빌드 완료. development/production AAB는 전체 ABI 유지. 만료 세션+새 Google 증명으로 기존 기기 연결만 갱신하며 로그아웃/연결 해제/다른 계정은 자동 복구하지 않는다. 네트워크 실패 시 익명 쓰기로 전환하지 않는다. 실제 R8 이후 기기 실행과 Render 갱신 API 배포 확인은 남아 있다. [최신 설치 기록](../docs/deployment/android-release-check.md)·[릴리스](https://github.com/huni2/FireWatch/releases/tag/v1.0.3-android-preview).
 
+**1.0.3 이후 소스 후속(2026-10-12)** — 로딩 선 정지(RN loop stop 후 reset 누락) 재현/수정 및 최초 테마 고정 선·조회/검색/순위/주문/계정 표시 공통화. 실제 RN 회귀 포함40검사·타입/lint·Android JS export·360/390px 시간별 이동 검증 성공. 현재 공개APK에 미포함이며 추가 APK/EAS/OTA는 사용자 요청 전 보류한다. 기존 과제 안의 수정이며 새 과제번호 없음.
 **남은 일** — 보류 해제 후 필요한 소스/서명·SHA-1 확인, 설치 Google 로그인·푸시·아래 전체 흐름 검증, production AAB/테스트 트랙·실제 target SDK·Data Safety 대조.
 **근거** — [설치 체크리스트·과거 접수 기록](../docs/product/android-preview-20261009/checklist.md), [설치 검증 절차](../docs/deployment/android-release-check.md), [Play 제출 가이드](../mobile/PLAY_STORE.md). 과거 EAS 사용량은 해당 조회일의 기록이며 현재 잔여량을 의미하지 않는다.
 **완료 기준** — 설치 기기에서 아래 항목을 확인·기록하고 AAB/테스트 트랙 검증. JS 번들·설정 검사 성공만으로 종료하지 않는다.
