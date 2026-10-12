@@ -90,7 +90,7 @@ class PushService(
         return result
     }
 
-    fun notifyDueUsers(briefing: Briefing, now: LocalTime, pollWindowMinutes: Long, today: LocalDate): PushSendResult {
+    fun notifyDueUsers(briefing: Briefing, now: LocalTime, pollWindowMinutes: Long, today: LocalDate): PushSendResult = synchronized(NotificationDispatchLock.monitor) {
         val dueRows = userSettingsRepository.findAll()
             .filter { SchedulerController.isRowDue(it, now, pollWindowMinutes, today) }
         if (dueRows.isEmpty()) {
@@ -111,7 +111,11 @@ class PushService(
             totalSuccess += result.successCount
             totalWebSubscribers += result.webPushSubscriberCount
             totalWebSuccess += result.webPushSuccessCount
-            if (result.successCount + result.webPushSuccessCount > 0 || result.tokenCount + result.webPushSubscriberCount == 0) {
+            if (result.successCount + result.webPushSuccessCount > 0 || result.tokenCount + result.webPushSubscriberCount == 0 || settings.pushTimesRaw != null) {
+                // New multi-slot schedules attempt each slot once; do not retry every poll.
+                val slots = SchedulerController.dueSlots(settings, now, pollWindowMinutes, today)
+                val existing = settings.notifiedSlotsRaw.orEmpty().split(",").filter { it.startsWith("$today|") }
+                settings.notifiedSlotsRaw = (existing + slots.map { "$today|$it" }).distinct().joinToString(",")
                 settings.lastNotifiedDate = today
             }
         }
@@ -126,6 +130,8 @@ class PushService(
             webPushSuccessCount = totalWebSuccess,
         )
     }
+
+    fun notifyNews(settings: UserSettings, body: String): PushSendResult = sendToOne(settings, "FireWatch 관심 소식", body.take(NOTIFICATION_BODY_MAX_LENGTH))
 
     // 모바일 앱(FCM)과 브라우저(Web Push) 두 채널을 각각 시도하고, 한쪽이 비어있어도(등록된
     // 토큰/구독이 없어도) 나머지 채널은 정상 발송한다 — 앱만 쓰거나 브라우저만 구독한 경우 둘 다 흔하다.

@@ -1,5 +1,6 @@
 package com.firewatch.backend.web
 
+import com.firewatch.backend.entity.pushTimes
 import com.firewatch.backend.entity.UserSettings
 import com.firewatch.backend.repository.BriefingRepository
 import com.firewatch.backend.repository.UserSettingsRepository
@@ -30,6 +31,7 @@ import java.time.ZoneId
 @RestController
 @RequestMapping("/api/scheduler")
 class SchedulerController(
+    private val newsPushService: com.firewatch.backend.service.NewsPushService,
     private val schedulerJob: SchedulerJob,
     private val pushService: PushService,
     private val briefingRepository: BriefingRepository,
@@ -70,7 +72,7 @@ class SchedulerController(
         val now = LocalTime.now(zone)
         val today = LocalDate.now(zone)
         val briefing = briefingRepository.findByBriefingDate(today)
-        triggerScope.launch { marketCollection.collectIfDue(); recommendations.collectIfDue(); operationsPush.flush(java.time.Instant.now()) }
+        triggerScope.launch { marketCollection.collectIfDue(); newsPushService.notifyNewArticles(java.time.Instant.now()); recommendations.collectIfDue(); operationsPush.flush(java.time.Instant.now()) }
 
         var triggered = false
         if (briefing == null) {
@@ -103,7 +105,12 @@ class SchedulerController(
         // 2026-08-31 도입한 "그날 안에 놓친 창을 따라잡는다" 규칙을 행 단위로 일반화한 버전
         // (PushService·이 컨트롤러의 사전 확인 양쪽에서 재사용) — 이미 오늘 보낸 행은 항상 제외한다.
         fun isRowDue(row: UserSettings, now: LocalTime, windowMinutes: Long, today: LocalDate): Boolean =
-            row.lastNotifiedDate != today &&
-                (isDue(row.pushTime, now, windowMinutes) || now.isAfter(LocalTime.parse(row.pushTime)))
+            dueSlots(row, now, windowMinutes, today).isNotEmpty()
+
+        fun dueSlots(row: UserSettings, now: LocalTime, windowMinutes: Long, today: LocalDate): List<String> {
+            if (row.pushTimesRaw == null && row.lastNotifiedDate == today) return emptyList()
+            val sent = row.notifiedSlotsRaw.orEmpty().split(",")
+            return row.pushTimes().filter { "$today|$it" !in sent && (isDue(it, now, windowMinutes) || now.isAfter(LocalTime.parse(it))) }
+        }
     }
 }

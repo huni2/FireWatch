@@ -1,3 +1,4 @@
+import { updateSettings } from '../../../lib/api'
 // 브라우저 알림(Web Push) 구독 처리 — 권한 요청 → Service Worker 등록 → 구독 정보 생성까지만 담당.
 // 백엔드 저장(updateSettings 호출)은 호출부(SettingsPage)가 한다 — 저장 안 된 편집 초안 값을
 // 여기서 실수로 같이 저장해버리지 않기 위해서다.
@@ -21,6 +22,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
 export type WebPushStatus = 'unsupported' | 'denied' | 'ready'
 
 export function useWebPushSubscription() {
+  const [currentSubscribed, setCurrentSubscribed] = useState(false)
   const [status, setStatus] = useState<WebPushStatus>('ready')
 
   useEffect(() => {
@@ -30,6 +32,15 @@ export function useWebPushSubscription() {
       setStatus('denied')
     }
   }, [])
+
+  useEffect(() => { if ('serviceWorker' in navigator) void navigator.serviceWorker.getRegistration('/sw.js').then(r => r?.pushManager.getSubscription()).then(s => setCurrentSubscribed(Boolean(s))).catch(() => {}) }, [])
+
+  async function unsubscribe() {
+    const registration = await navigator.serviceWorker.getRegistration('/sw.js')
+    const subscription = await registration?.pushManager.getSubscription()
+    if (subscription) { await updateSettings({ removeWebPushEndpoint: subscription.endpoint }); await subscription.unsubscribe() }
+    setCurrentSubscribed(false)
+  }
 
   async function subscribe(): Promise<WebPushSubscriptionPayload> {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -46,8 +57,9 @@ export function useWebPushSubscription() {
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
     })
+    setCurrentSubscribed(true)
     return subscription.toJSON() as WebPushSubscriptionPayload
   }
 
-  return { status, subscribe }
+  return { status, subscribe, unsubscribe, currentSubscribed }
 }

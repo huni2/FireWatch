@@ -3,6 +3,7 @@ package com.firewatch.backend.web.dto
 import com.firewatch.backend.entity.UserSettings
 import com.firewatch.backend.entity.WebPushSubscription
 import com.firewatch.backend.entity.interestKeywords
+import com.firewatch.backend.entity.pushTimes
 import com.firewatch.backend.entity.watchedStocks
 import com.firewatch.backend.entity.webPushSubscriptions
 import jakarta.validation.constraints.Pattern
@@ -13,6 +14,13 @@ import java.time.Instant
 data class SettingsUpdateRequest(
     @field:Pattern(regexp = "^([01]\\d|2[0-3]):[0-5]\\d$", message = "HH:mm 형식이어야 합니다")
     val pushTime: String? = null,
+    @field:Size(min = 1, max = 3)
+    val pushTimes: List<String>? = null,
+    val newsPushEnabled: Boolean? = null,
+    @field:Size(max = 512)
+    val removeFcmToken: String? = null,
+    @field:Size(max = 2000)
+    val removeWebPushEndpoint: String? = null,
     @field:Size(max = 20, message = "관심 키워드는 최대 20개까지입니다")
     val interestKeywords: List<@Size(max = 30, message = "키워드는 30자를 넘을 수 없습니다") String>? = null,
     // 개별 티커 형식(정규식) 검증은 여기 애노테이션이 아니라 SettingsService.update()에서 직접 한다 —
@@ -31,6 +39,8 @@ data class SettingsUpdateRequest(
 
 data class SettingsResponse(
     val pushTime: String,
+    val pushTimes: List<String>,
+    val newsPushEnabled: Boolean,
     val interestKeywords: List<String>,
     val watchedStocks: List<String>,
     val webPushSubscribed: Boolean,
@@ -45,6 +55,7 @@ data class SettingsResponse(
 
 fun UserSettings.toResponse(linkedEmail: String? = null) = SettingsResponse(
     pushTime = pushTime,
+    pushTimes = pushTimes(), newsPushEnabled = newsPushEnabled,
     interestKeywords = interestKeywords(),
     watchedStocks = watchedStocks(),
     webPushSubscribed = webPushSubscriptions().isNotEmpty(),

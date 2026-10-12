@@ -31,6 +31,13 @@ class UserSettings(
 
     @Column(name = "push_time", nullable = false, length = 5)
     var pushTime: String = "08:00",
+    @Column(name = "push_times") var pushTimesRaw: String? = null,
+    @Column(name = "notified_slots") var notifiedSlotsRaw: String? = null,
+    @Column(name = "news_push_enabled", nullable = false) var newsPushEnabled: Boolean = false,
+    @Column(name = "news_push_cursor") var newsPushCursor: Instant? = null,
+    @Column(name = "news_push_attempt_at") var newsPushAttemptAt: Instant? = null,
+    @Column(name = "news_push_seen_ids") var newsPushSeenIds: String? = null,
+
 
     @Column(name = "interest_keywords")
     var interestKeywordsRaw: String? = null,
@@ -60,3 +67,5 @@ fun UserSettings.fcmTokens(): List<String> = fcmTokensRaw.toStringList()
 fun UserSettings.watchedStocks(): List<String> = watchedStocksRaw.toStringList()
 
 fun UserSettings.webPushSubscriptions(): List<WebPushSubscription> = webPushSubscriptionsRaw.toWebPushSubscriptions()
+
+fun UserSettings.pushTimes(): List<String> = pushTimesRaw?.split(",")?.filter { it.isNotBlank() } ?: listOf(pushTime)

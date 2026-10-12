@@ -47,6 +47,8 @@ class SettingsController(
         val command = SettingsUpdateCommand(
             deviceId = deviceId.requireDeviceId(),
             pushTime = request.pushTime,
+            pushTimes = request.pushTimes, newsPushEnabled = request.newsPushEnabled,
+            removeFcmToken = request.removeFcmToken, removeWebPushEndpoint = request.removeWebPushEndpoint,
             interestKeywords = request.interestKeywords,
             watchedStocks = request.watchedStocks,
             fcmToken = request.fcmToken,

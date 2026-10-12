@@ -1,4 +1,5 @@
 // FCM(Expo Push Service) 토큰 등록 + 알림 탭 시 홈으로 이동. Design Ref: mobile-app.design.md §2.2.
+import * as SecureStore from 'expo-secure-store'
 import Constants from 'expo-constants'
 import * as Notifications from 'expo-notifications'
 import { router } from 'expo-router'
@@ -39,8 +40,22 @@ export async function registerPushToken(): Promise<boolean> {
   await updateSettings({
     fcmToken: expoPushToken,
   })
+  await SecureStore.setItemAsync('firewatch-push-token', expoPushToken)
   return true
 }
+
+export async function hasRegisteredPush(): Promise<boolean> { return Boolean(await SecureStore.getItemAsync('firewatch-push-token')) }
+
+export async function unregisterPushToken(): Promise<void> {
+  let token = await SecureStore.getItemAsync('firewatch-push-token')
+  if (!token && (await Notifications.getPermissionsAsync()).granted) {
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId
+    if (projectId) token = (await Notifications.getExpoPushTokenAsync({ projectId })).data
+  }
+  if (token) await updateSettings({ removeFcmToken: token })
+  await SecureStore.deleteItemAsync('firewatch-push-token')
+}
+
 
 export function useNotificationRegistration() {
   useEffect(() => {

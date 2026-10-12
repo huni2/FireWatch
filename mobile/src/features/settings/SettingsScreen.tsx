@@ -6,7 +6,7 @@ import { OperatorPushSetup } from '@/components/OperatorPushSetup'
 // (관심 종목은 이 화면이 아니라 홈의 "종목" 탭에서 관리, 그대로 넘겨서 덮어쓰지 않음).
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import { useCallback, useEffect, useState } from 'react'
-import { Platform, Pressable, ScrollView, Text, View } from 'react-native'
+import { Platform, Pressable, ScrollView, Text, View, Switch } from 'react-native'
 import Toast from 'react-native-toast-message'
 
 import { ApiRequestError, updateSettings, type Settings } from '@/lib/api'
@@ -14,7 +14,7 @@ import { ApiRequestError, updateSettings, type Settings } from '@/lib/api'
 import { GoogleLinkButton } from './components/GoogleLinkButton'
 import { KeywordInput } from './components/KeywordInput'
 import { useSettings } from './hooks/useSettings'
-import { registerPushToken } from '@/features/notifications/hooks/useNotificationRegistration'
+import { registerPushToken, unregisterPushToken, hasRegisteredPush } from '@/features/notifications/hooks/useNotificationRegistration'
 
 function timeStringToDate(hhmm: string): Date {
   const [hours, minutes] = hhmm.split(':').map(Number)
@@ -26,6 +26,10 @@ function timeStringToDate(hhmm: string): Date {
 export function SettingsScreen() {
   const { settings, loading, reload } = useSettings()
   const [pushTime, setPushTime] = useState('08:00')
+  const [pushTimes, setPushTimes] = useState<string[]>(['08:00'])
+  const [newsPush, setNewsPush] = useState(false)
+  const [pushRegistered, setPushRegistered] = useState(false)
+  useEffect(() => { void hasRegisteredPush().then(setPushRegistered) }, [])
   const [keywords, setKeywords] = useState<string[]>([])
   const [showPicker, setShowPicker] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -38,6 +42,8 @@ export function SettingsScreen() {
     if (settings) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setPushTime(settings.pushTime)
+      setPushTimes(settings.pushTimes ?? [settings.pushTime])
+      setNewsPush(settings.newsPushEnabled ?? false)
       setKeywords(settings.interestKeywords)
       setLinkedEmail(settings.linkedEmail)
     }
@@ -47,6 +53,8 @@ export function SettingsScreen() {
   // 편집 중인 화면을 즉시 갱신한다 — 완료 기준이 바로 이 반영이다.
   const handleLinked = useCallback((settings: Settings) => {
     setPushTime(settings.pushTime)
+      setPushTimes(settings.pushTimes ?? [settings.pushTime])
+      setNewsPush(settings.newsPushEnabled ?? false)
     setKeywords(settings.interestKeywords)
     setLinkedEmail(settings.linkedEmail)
     void reload()
@@ -70,7 +78,7 @@ export function SettingsScreen() {
   async function handleSave() {
     setSaving(true)
     try {
-      await updateSettings({ pushTime, interestKeywords: keywords })
+      await updateSettings({ pushTimes, newsPushEnabled: newsPush, interestKeywords: keywords })
       Toast.show({ type: 'success', text1: '저장 완료', text2: '설정을 저장했습니다.' })
     } catch (error) {
       if (error instanceof ApiRequestError) {
@@ -92,14 +100,16 @@ export function SettingsScreen() {
     <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">
       <ScreenIntro eyebrow="설정" title="나만의 설정" description="관심 키워드와 브리핑 수신 시간을 조정하세요." />
       <View className="gap-2">
-        <Text className="text-sm font-semibold text-muted">푸시 수신 시간 · 한국 시간(KST)</Text>
+        <Text className="text-sm font-semibold text-muted">브리핑 수신 시간 · 한국 시간(KST)</Text><Text className="text-xs text-muted">같은 일일 브리핑을 하루 최대 3번 받아요. 아래 저장을 눌러 반영해주세요.</Text><View className="flex-row flex-wrap gap-2">{pushTimes.map(time => <Pressable key={time} accessibilityRole="button" accessibilityLabel={`${time} 수신 시간 삭제`} disabled={pushTimes.length === 1} onPress={() => setPushTimes(values => values.filter(t => t !== time))} className="min-h-11 justify-center rounded-xl bg-surface px-3"><Text className="text-ink">{time} {pushTimes.length > 1 ? '×' : ''}</Text></Pressable>)}</View>
         <Text className="text-xs leading-5 text-muted">발송 여부를 15분 간격으로 확인하므로 설정 시각보다 늦게 도착할 수 있습니다. 브리핑은 한국 시간 07시 이후 준비됩니다.</Text>
         <Pressable
+          accessibilityRole="button" accessibilityLabel="새 수신 시간 고르기"
           onPress={() => setShowPicker(true)}
           className="self-start rounded-lg border border-line bg-surface px-4 py-2"
         >
           <Text className="text-base text-ink">{pushTime}</Text>
         </Pressable>
+<Pressable accessibilityRole="button" disabled={pushTimes.length >= 3 || pushTimes.includes(pushTime)} onPress={() => setPushTimes(values => [...values, pushTime].sort())} className="min-h-11 justify-center"><Text className="text-brand">선택한 시간 추가</Text></Pressable>
         {showPicker && (
           <DateTimePicker
             value={timeStringToDate(pushTime)}
@@ -117,11 +127,11 @@ export function SettingsScreen() {
       </View>
 
       <View className="gap-2">
-        <Text className="text-sm font-semibold text-muted">관심 키워드</Text>
+        <View className="flex-row items-center justify-between"><Text className="text-ink">새 소식 알림</Text><Switch accessibilityLabel="관심 키워드 새 소식 알림" value={newsPush} onValueChange={setNewsPush} /></View><Text className="text-xs leading-5 text-muted">관심 키워드의 새 기사를 묶어서 최대 1시간에 한 번 알려드려요. 기존 기사는 다시 보내지 않아요.</Text><Text className="text-sm font-semibold text-muted">관심 키워드</Text>
         <KeywordInput value={keywords} onChange={setKeywords} />
       </View>
 
-      <Pressable onPress={handleSave} disabled={saving} className="items-center rounded-full bg-brand py-3">
+      <Pressable accessibilityRole="button" onPress={handleSave} disabled={saving} className="items-center rounded-full bg-brand py-3">
         <Text className="text-base font-semibold text-onbrand">{saving ? '저장 중...' : '저장'}</Text>
       </Pressable>
 
@@ -140,10 +150,10 @@ export function SettingsScreen() {
         <Text className="text-sm leading-6 text-muted">알림은 선택이에요. 브리핑을 받고 싶다면 기기 권한을 허용하고 등록해주세요.</Text>
         <Pressable accessibilityRole="button" disabled={registeringPush} accessibilityState={{ disabled: registeringPush, busy: registeringPush }} className="min-h-11 justify-center" onPress={() => {
           setRegisteringPush(true)
-          void registerPushToken().then(registered => Toast.show({ type: registered ? 'success' : 'info', text1: registered ? '이 기기의 알림을 등록했어요.' : '알림 권한을 허용하면 받을 수 있어요.' }))
+          void registerPushToken().then(registered => { if (registered) setPushRegistered(true); Toast.show({ type: registered ? 'success' : 'info', text1: registered ? '이 기기의 알림을 등록했어요.' : '알림 권한을 허용하면 받을 수 있어요.' }); })
             .catch(() => Toast.show({ type: 'error', text1: '알림을 등록하지 못했어요.', text2: '앱은 계속 사용할 수 있어요. 잠시 후 다시 시도해주세요.' }))
             .finally(() => setRegisteringPush(false))
-        }}><Text className="text-base font-semibold text-brand">{registeringPush ? '알림 등록 중…' : '알림 등록하기'}</Text></Pressable>
+        }}><Text className="text-base font-semibold text-brand">{registeringPush ? '알림 등록 중…' : pushRegistered ? '알림 다시 등록하기' : '알림 등록하기'}</Text></Pressable><Pressable accessibilityRole="button" disabled={registeringPush} onPress={() => { setRegisteringPush(true); void unregisterPushToken().then(() => { setPushRegistered(false); Toast.show({ type: 'success', text1: '이 기기의 알림을 껐어요.' }) }).catch(() => Toast.show({ type: 'error', text1: '알림을 끄지 못했어요.', text2: '잠시 후 다시 눌러주세요.' })).finally(() => setRegisteringPush(false)) }} className="min-h-11 justify-center"><Text className="text-base text-ink">이 기기 알림 끄기</Text></Pressable>
       </View>
       <Link href="/community" className="py-3 text-brand">공지사항 · 문제 신고·의견 · 내 문의</Link>
       <Link href="/guide" className="py-3 text-brand">앱 도움말</Link>

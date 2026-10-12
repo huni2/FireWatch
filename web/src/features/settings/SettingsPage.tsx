@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Alert, App, Button, Card, Form, Skeleton, Space, Tag, TimePicker, Typography } from 'antd'
+import { Alert, App, Button, Card, Form, Skeleton, Space, Tag, Switch, TimePicker, Typography } from 'antd'
 import { CheckCircleFilled } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { KeywordInput } from './components/KeywordInput'
@@ -31,16 +31,19 @@ export function SettingsPage() {
   const { data, loading, error, isSlow, reload, replaceData } = useSettings()
   const latestBriefing = useLatestBriefing()
   const [pushTime, setPushTime] = useState<string>('08:00')
+  const [pushTimes, setPushTimes] = useState<string[]>(['08:00'])
+  const [newsPush, setNewsPush] = useState(false)
   const [keywords, setKeywords] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false)
   const editing = useRef(false)
-  const dirty = Boolean(data && (pushTime !== data.pushTime || JSON.stringify(keywords) !== JSON.stringify(data.interestKeywords)))
+  const dirty = Boolean(data && (JSON.stringify(pushTimes) !== JSON.stringify(data.pushTimes ?? [data.pushTime]) || newsPush !== (data.newsPushEnabled ?? false) || JSON.stringify(keywords) !== JSON.stringify(data.interestKeywords)))
 
   // 서버(외부 시스템)에서 비동기로 도착한 값으로 편집 가능한 로컬 상태를 동기화 — 정당한 effect 용례.
   useEffect(() => {
     if (data && !editing.current) {
       setPushTime(data.pushTime)
+      setPushTimes(data.pushTimes ?? [data.pushTime]); setNewsPush(data.newsPushEnabled ?? false)
       setKeywords(data.interestKeywords)
     }
   }, [data])
@@ -50,7 +53,7 @@ export function SettingsPage() {
     setSaving(true)
     try {
       // 관심 종목은 이 화면이 아니라 종목 화면에서 관리 — 여기서는 그대로 넘겨서 덮어쓰지 않는다.
-      const saved = await updateSettings({ pushTime, interestKeywords: keywords })
+      const saved = await updateSettings({ pushTimes, newsPushEnabled: newsPush, interestKeywords: keywords })
       editing.current = false
       replaceData(saved)
       message.success({ content: '설정을 저장했습니다.', icon: successIcon })
@@ -93,17 +96,18 @@ export function SettingsPage() {
 
           <Form layout="vertical" disabled={saving}>
             <Form.Item label="브리핑 받을 시간" extra="한국 시간(KST) 기준이에요.">
-              <TimePicker
+              <Space wrap>{pushTimes.map(time => <Tag key={time} closable={pushTimes.length > 1} onClose={() => { editing.current = true; setPushTimes(v => v.filter(t => t !== time)) }}>{time}</Tag>)}</Space><p>한국 시간 기준 하루 최대 3번 · 변경 후 저장해주세요.</p><TimePicker
                 aria-label="브리핑 받을 시간"
                 allowClear={false}
                 value={dayjs(pushTime, 'HH:mm')}
                 format="HH:mm"
                 onChange={(value) => { editing.current = true; setPushTime(value ? value.format('HH:mm') : '08:00') }}
               />
+              <Button disabled={pushTimes.length >= 3 || pushTimes.includes(pushTime)} onClick={() => { editing.current = true; setPushTimes(v => [...v, pushTime].sort()) }}>시간 추가</Button>
             </Form.Item>
             <details className="support-details"><summary>알림이 도착하는 시간 안내</summary><p>브리핑은 오전 7시 이후 준비해요. 발송을 15분마다 확인하므로 설정한 시간보다 늦게 도착할 수 있어요. 설정한 시각에 정확히 도착하는 알림은 아니에요.</p></details>
             <Form.Item label="관심 키워드">
-              <KeywordInput value={keywords} disabled={saving} onChange={next => { editing.current = true; setKeywords(next) }} />
+              <p>새 소식 알림 <Switch checked={newsPush} aria-label="새 소식 알림" onChange={value => { editing.current = true; setNewsPush(value) }} /></p><p>관심 키워드의 새 기사를 묶어서 최대 1시간에 한 번 알려드려요.</p><KeywordInput value={keywords} disabled={saving} onChange={next => { editing.current = true; setKeywords(next) }} />
               <TrendingKeywordSuggestions
                 trendingKeywords={latestBriefing.data?.trendingKeywords ?? []}
                 current={keywords}
@@ -168,7 +172,7 @@ function TrendingKeywordSuggestions({
 // 저장된 값(settings)을 그대로 같이 보낸다.
 function WebPushCard({ settings, onSubscribed }: { settings: Settings; onSubscribed: () => void }) {
   const { message } = App.useApp()
-  const { status, subscribe } = useWebPushSubscription()
+  const { status, subscribe, unsubscribe, currentSubscribed } = useWebPushSubscription()
   const [subscribing, setSubscribing] = useState(false)
 
   const handleSubscribe = async () => {
@@ -203,8 +207,8 @@ function WebPushCard({ settings, onSubscribed }: { settings: Settings; onSubscri
 
         {settings.webPushSubscribed && <Tag color="success">등록된 브라우저가 있어요</Tag>}
 
-        <Button onClick={handleSubscribe} loading={subscribing} disabled={status !== 'ready'}>
-          {settings.webPushSubscribed ? '이 브라우저도 알림 받기' : '브라우저 알림 켜기'}
+        <Button onClick={currentSubscribed ? () => { setSubscribing(true); void unsubscribe().then(() => { message.success('이 브라우저의 알림을 껐어요.'); onSubscribed() }).catch(() => message.error('알림을 끄지 못했어요. 다시 눌러주세요.')).finally(() => setSubscribing(false)) } : handleSubscribe} loading={subscribing} disabled={status !== 'ready'}>
+          {currentSubscribed ? '이 브라우저 알림 끄기' : '브라우저 알림 켜기'}
         </Button>
         <details className="support-details"><summary>다른 기기에서도 알림이 오나요?</summary><p>알림을 받을 브라우저마다 등록해주세요. 등록된 브라우저가 있다는 표시만으로 현재 기기의 수신을 확인할 수는 없어요. Android 앱의 알림 권한은 앱에서 설정해요.</p></details>
       </Space>
