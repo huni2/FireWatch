@@ -2,19 +2,17 @@ import { useTheme, type ThemeColors } from '@/lib/theme'
 import { StyleSheet, Text, View } from 'react-native'
 import tokens from '../../../shared/design-tokens.json'
 
-export function ScreenIntro({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
+export function ScreenIntro({ title, description }: { eyebrow: string; title: string; description: string }) {
   const { colors: c } = useTheme()
   const styles = createStyles(c)
 
   return <View style={styles.card}>
-    <Text style={styles.eyebrow}>{eyebrow}</Text>
     <Text accessibilityRole="header" style={styles.title}>{title}</Text>
     <Text style={styles.description}>{description}</Text>
   </View>
 }
 const createStyles = (c: ThemeColors) => StyleSheet.create({
-  card: { backgroundColor: c.surface, borderColor: c.border, borderWidth: 1, borderRadius: 22, padding: 22, gap: 12, overflow: 'hidden' },
-  eyebrow: { color: c.muted, fontSize: 11, fontWeight: '600', letterSpacing: .3 },
-  title: { color: c.text, fontSize: tokens.typography.title, fontWeight: '800', letterSpacing: -.7 },
+  card: { gap: 8 },
+  title: { color: c.text, fontSize: tokens.typography.title, fontWeight: '700', letterSpacing: -.5 },
   description: { color: c.muted, fontSize: tokens.typography.body, lineHeight: 23 },
 })

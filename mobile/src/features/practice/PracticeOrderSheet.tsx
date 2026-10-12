@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { KeyboardAvoidingView, Modal, Pressable, ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ThemeSurface, useTheme } from '@/lib/theme'
-import { LoadingState } from '@/components/LoadingState'
 
 export function PracticeOrderSheet({ open, busy, error, close, footer, children }: {
   open: boolean; busy: boolean; error: string | null; close: () => void; footer: ReactNode; children: ReactNode
@@ -21,7 +20,6 @@ export function PracticeOrderSheet({ open, busy, error, close, footer, children 
             {error && <Text accessibilityRole="alert" style={{ color: colors.danger }}>{error} · 입력은 그대로 있어요.</Text>}
           </ScrollView>
           <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: colors.border }}>{footer}</View>
-          {busy && <View style={{ position: 'absolute', inset: 0 }}><LoadingState message="주문을 반영하고 있어요" /></View>}
         </KeyboardAvoidingView>
       </SafeAreaView>
     </View></ThemeSurface>

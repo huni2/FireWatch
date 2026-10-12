@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { GuidedTour } from './GuidedTour'
 import { AnnouncementPopup } from './AnnouncementPopup'
 import { showFirstVisitGuide } from './guideEvents'
-import { Button, Drawer, Layout, Switch } from 'antd'
+import { Button, Drawer, Layout, Tooltip } from 'antd'
 import { FirewatchIcon } from './FirewatchIcon'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { setAccountOperator, useIsOperator } from '../lib/operatorAccess'
@@ -88,7 +88,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: AppShellProps) {
           </span>
         </Link>
         <nav className="header-tools" aria-label="계정과 이용 도구">
-          <div className="header-theme-toggle"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4L19 5" /></svg><Switch aria-label="다크 모드" checked={darkMode} onChange={onToggleDarkMode} /><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.4 14.4A8.8 8.8 0 0 1 9.6 3.6a8.8 8.8 0 1 0 10.8 10.8Z" /></svg></div>
+          <Tooltip title={darkMode ? '라이트 모드로 바꾸기' : '다크 모드로 바꾸기'}><Button type="text" className="header-theme-toggle" aria-label={darkMode ? '라이트 모드로 바꾸기' : '다크 모드로 바꾸기'} onClick={() => onToggleDarkMode(!darkMode)}><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">{darkMode ? <><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4L19 5" strokeLinecap="round" /></> : <path d="M20.4 14.4A8.8 8.8 0 0 1 9.6 3.6a8.8 8.8 0 1 0 10.8 10.8Z" strokeLinejoin="round" />}</svg></Button></Tooltip>
           <Button className="all-menu-button" aria-label="계정·설정" icon={<FirewatchIcon name="account" monochrome />} aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><span className="header-tool-label">{session ? '내 계정' : '계정·설정'}</span></Button>
         </nav>
         </div>
