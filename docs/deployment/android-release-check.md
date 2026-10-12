@@ -1,6 +1,14 @@
 # Android 설치 검증
 
-## 최신 설치본 1.0.2 / 빌드7 (2026-10-12)
+## 최신 설치본 1.0.3 / 빌드8 (2026-10-12)
+
+사용자의 APK/README 최신화 요청으로 소스 `a6aaa0c469b99ced5d1fa16639b506944bc20297`를 로컬 Expo prebuild+Gradle로 빌드했다. BUILD SUCCESSFUL16분50초·901작업, heap3GiB/meta1GiB·최대 작업자2. EAS 클라우드 요청0. 패키지 `com.firewatch.mobile`·버전1.0.3/8·ARM32/64·독립 실행 JS 번들·Google/그라디언트 네이티브 모듈 포함, R8 mapping/DEX 대조, 16KB ZIP 정렬·ZIP 무결성·기존1.0.2와 같은 release 인증서를 확인했다. 마스코트는 res/BV.png에 포함됐고 흰색/검은색 배경에 합성한 픽셀이 원본과 같았다.
+
+54,303,976bytes(약54MB), 이전113,854,121bytes보다 약52% 감소. SHA-256 `c42582846d1893f29a66c8208948ba4f5e6c4b55c7d28882d717634511913044`. [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.3-android-preview/FireWatch-1.0.3-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.3-android-preview) · [빌드 근거](../product/android-preview-20261009/android-103-build.json) · [소스 CI](https://github.com/huni2/FireWatch/actions/runs/38196432552).
+
+네이티브 Google 계정 선택·만료 세션 복구·기본 라이트+다크/기기 선택 저장·중앙 준비/로딩·게임 시작 마스코트/상단/고정 요약·동의 여백·장식선 정리를 포함한다. 실제 기기의 정상 시작/재실행·Google 로그인·푸시·접근성/R8 이후 동작과 Play 제출은 미확인이다. 서버 갱신 API에는 최신 Render 배포가 필요하다. 기존 앱을 삭제하지 않고 업데이트 설치한다. 이번 요청 외에 자동/추가 APK 빌드를 활성화하지 않았다.
+
+## 이전 설치본 1.0.2 / 빌드7 (2026-10-12)
 
 사용자 재요청으로 소스 b600f97을 PC의 Android SDK36·NDK27.1·Gradle9.3.1로 빌드했다. 첫 도구/캐시 준비와 908개 작업에 35분49초가 걸렸으며 BUILD SUCCESSFUL이다. EAS 클라우드 빌드는 요청하지 않았다. 기존 release 키로 서명한 뒤 1.0.1 APK와 같은 인증서임을 직접 비교했다. 패키지 com.firewatch.mobile·내부 버전1.0.2/7·ZIP 무결성·독립 실행 JS 번들·그라디언트 네이티브 클래스 포함을 확인했다. 113,854,121바이트, SHA-256 `1661e71af4d9a59f0e8b049ebef1628effae00f8eea61661d6fe00bd699374f5`. GitHub 업로드 digest도 일치한다.
 

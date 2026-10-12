@@ -42,3 +42,7 @@ versionCode5 출시 설정·타입·린트·테스트8개·Android export2162모
 검증 완료: 모바일 회귀34개 실패0, TypeScript/대상 ESLint 성공. Expo config introspect에서 실제 gradle properties에 ARM32/64 및 minify/shrink=true 반영 확인(prebuild/Gradle APK 실행0). Android JS export2178모듈/5.2MB 성공. 백엔드 전체222검사 실패0/skip1, AccountSessionIntegrationTest의 같은 Google 계정 만료 갱신·다른 계정/기기/폐기 토큰·로그아웃/기기해제 거절 통과. 늦게 도착한 기존 토큰401이 새 세션을 삭제하지 않도록 현재 토큰 일치 시에만 정리한다. Google silent 단계는15초 제한을 둔다. GitHub CI/머지/Render 배포/새 APK 실기기 확인은 별도로 확인한다.
 
 추가 회귀: 같은 앱 프로세스에서 갱신된 세션이 다시 만료돼도 새 토큰별로 복구를 실행한다. 이전 성공 promise를 재사용해 만료 토큰을 보내지 않는다. 첫 PR CI38195044177은 새 테스트 첫 invalid-proof 요청이20초 제한을 넘겨 실패했고 소스CI38195013564 전체는 성공했다. 서버/테스트 제한을 늘리지 않고 실패 작업1회 재검증하며 원인은 미확정이다. 실패 보고서의 첫 요청 위치를 확인했다.
+
+2026-10-12 사용자 최신화 요청으로1.0.3/versionCode8을 로컬 빌드했다. sourcea6aaa0c·CI38196432552 success·release assemble16분50초/901작업. ARM32/64+R8/리소스 축소·heap3GiB/meta1GiB/workers2. 기존1.0.2와 동일 release 인증서, 패키지/버전/ZIP/16KB 정렬·R8 mapping/DEX에서Google/gradient 모듈 확인. APK마스코트res/BV.png는 양쪽 배경 합성 RGB가 원본과 일치한다.54,303,976bytes·기존대비약52% 감소·SHA256 c42582846d1893f29a66c8208948ba4f5e6c4b55c7d28882d717634511913044. 공개 다운로드/README·업로드digest 대조는 별도 결과로 기록하며 실제Android 로그인/푸시/접근성/최적화 후 실행과 Render갱신 배포를 완료로 주장하지 않는다. EAS클라우드요청0·신규과제0·원래버전/서명/데이터삭제0.
+
+1.0.3 공개 확인: GitHub release410096656·APK asset632483326·서버digest 로컬SHA256일치·다운로드HEAD 최종HTTP200/54,303,976bytes 확인. 체크섬 파일도 공개했다. 실제휴대폰실행/로그인/푸시는 미확인 유지. README/문서PR와최종CI/머지결과는 기존Issue62에기록한다.

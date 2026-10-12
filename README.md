@@ -10,11 +10,11 @@
 
 ## Android 설치
 
-**최신 테스트 버전: 1.0.2 · Android 빌드 7 · 2026-10-12**
+**최신 테스트 버전: 1.0.3 · Android 빌드 8 · 2026-10-12 · 약54MB**
 
-동의 후 홈 차트의 필수 패키지 누락을 수정하고, 앱 내부 개인정보·도움말 화면과 새 아이콘·실행 로고를 포함했습니다. PC에서 로컬로 빌드해 EAS 클라우드 빌드 횟수를 사용하지 않았습니다. 기존 설치본과 서명 일치를 확인했으며, 실제 휴대폰의 정상 진입·재실행 확인은 남아 있습니다.
+Android 네이티브 Google 계정 연결, 만료 로그인 복구, 기본 라이트와 선택형 다크 모드, 중앙 로딩 화면을 포함했습니다. 게임 시작 마스코트·상단 메뉴·고정 자산 요약/다음 주 버튼과 동의 화면 여백을 정리했습니다. 휴대폰용 ARM32/64와 코드·리소스 최적화를 적용한 로컬 빌드이며 EAS 클라우드 빌드 횟수는 사용하지 않았습니다. 실제 Google 로그인·푸시 수신은 설치 후 확인합니다.
 
-[**APK 다운로드**](https://github.com/huni2/FireWatch/releases/download/v1.0.2-android-preview/FireWatch-1.0.2-android.apk) · [변경 내용·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.2-android-preview)
+[**APK 다운로드**](https://github.com/huni2/FireWatch/releases/download/v1.0.3-android-preview/FireWatch-1.0.3-android.apk) · [변경 내용·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.3-android-preview)
 
 1. Android 휴대폰에서 APK를 다운로드하고 파일을 엽니다.
 2. 설치가 차단되면 다운로드에 사용한 브라우저의 ‘이 출처의 앱 설치 허용’을 켭니다.
@@ -24,7 +24,7 @@ Play 스토어 출시 전 테스트용 설치본입니다. 최신 자산 요약�
 
 ## 현재 상태
 
-2026-10-12 기준. 앱 내부 안내와 시작 오류·브랜드 후속조치까지 포함한 Android 1.0.2 설치본 소스는 `b600f97`입니다.
+2026-10-12 기준. Android 1.0.3 / 빌드8 설치본 소스는 `a6aaa0c`입니다. 실제 기기의 Google 로그인·푸시·접근성·최적화 후 동작은 별도로 확인합니다.
 
 2026-10-09 후속으로 [BE-40 PR](https://github.com/huni2/FireWatch/pull/30)에서 KIND 공식 한국 상장법인2,651개의 회사명·업종 검색을 추가했습니다. 기존 편집 목록과 시세는 보존하며 가격을 생성하지 않습니다. [출처·범위·갱신 문서](docs/product/krx-company-directory/data-source.md)를 참고하세요. 서버·PostgreSQL·복원·웹/앱 CI 통과 후 웹·Render 배포를 확인했습니다. 공개 API에서 총2,669상품·새 기업의 한국어 검색·기존 분류·ETF·페이지 경계를 검증했습니다.
 
@@ -33,7 +33,7 @@ Play 스토어 출시 전 테스트용 설치본입니다. 최신 자산 요약�
 | 웹·백엔드 | Cloudflare Pages·Render에 배포. 운영 데이터는 Supabase PostgreSQL에 저장 |
 | Google 로그인 | 웹 실제 로그인 성공 확인. 계정 연결·세션·연결 기기 관리 구현 |
 | Android | Expo 기반 주요 기능과 빌드 설정 구현. 최신 APK의 로그인·푸시·삭제 등 실기기 검증과 Play 출시 준비 진행 중 |
-| 디자인 | 기본 라이트 모드·오렌지 포인트, 선택형 웹 다크 모드. 자산 요약·탐색 여백·계정 화면·게임 순위 로딩 개선 반영 |
+| 디자인 | 기본 라이트 모드·오렌지 포인트, 선택형 웹·Android 다크 모드. 자산 요약·탐색 여백·계정 화면·게임 순위 로딩 개선 반영 |
 | 운영 | 수집 실패 기록·제한된 재시도·운영자 진단 구현. 외부 금융 데이터 수집 장애의 실제 복구 확인은 남아 있음 |
 
 구현, 배포, 실기기 검증은 서로 다른 단계로 관리합니다. 웹 배포가 기존 설치 APK를 갱신하지는 않습니다.
