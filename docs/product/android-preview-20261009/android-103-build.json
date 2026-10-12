@@ -1,0 +1,31 @@
+{
+  "version": "1.0.3",
+  "versionCode": 8,
+  "bytes": 54303976,
+  "sha256": "c42582846d1893f29a66c8208948ba4f5e6c4b55c7d28882d717634511913044",
+  "sameSigningCertificate": true,
+  "package": "com.firewatch.mobile",
+  "versionName": "1.0.3",
+  "zipIntegrity": "passed",
+  "gradientNativeModuleIncluded": true,
+  "googleNativeModuleIncluded": true,
+  "abis": [
+    "arm64-v8a",
+    "armeabi-v7a"
+  ],
+  "r8Optimized": true,
+  "mascotResource": "res/BV.png",
+  "source": "a6aaa0c469b99ced5d1fa16639b506944bc20297",
+  "buildDuration": "16m 50s",
+  "gradleTasks": 901,
+  "easCloudBuildRequests": 0,
+  "sourceCi": 38196432552,
+  "deviceLoginVerified": false,
+  "devicePushVerified": false,
+  "zipAlignment16KB": "passed",
+  "releaseId": 410096656,
+  "apkAssetId": 632483326,
+  "uploadDigestMatched": true,
+  "publicDownloadStatus": 200,
+  "releaseUrl": "https://github.com/huni2/FireWatch/releases/tag/v1.0.3-android-preview"
+}
