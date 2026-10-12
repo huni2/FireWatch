@@ -7,6 +7,8 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:8
 
 export interface Settings {
   pushTime: string
+  pushTimes?: string[]
+  newsPushEnabled?: boolean
   interestKeywords: string[]
   watchedStocks: string[]
   updatedAt: string
@@ -177,10 +179,18 @@ export async function logoutAccount() {
 // fetchSettings()로 먼저 현재 값을 읽어 함께 넘겨야 한다(백엔드는 값을 그대로 덮어씀).
 export async function updateSettings(input: {
   pushTime?: string
+  pushTimes?: string[]
+  newsPushEnabled?: boolean
+  removeFcmToken?: string
+  removeWebPushEndpoint?: string
   interestKeywords?: string[]
   watchedStocks?: string[]
   fcmToken?: string
 }): Promise<Settings> {
+  if (input.pushTimes || input.newsPushEnabled !== undefined || input.removeFcmToken || input.removeWebPushEndpoint) {
+    const current = await fetchSettings()
+    if (!current.pushTimes) throw new Error('알림 설정 서버 업데이트가 필요해요. 잠시 후 다시 시도해주세요.')
+  }
   const deviceId = await getDeviceId()
   return request<Settings>('/api/settings', {
     method: 'PUT',

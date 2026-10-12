@@ -20,6 +20,7 @@ const TICKER_PATTERN = /^[A-Za-z0-9]+(\.[A-Za-z0-9]+)?$/
 
 export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio, onBack }: { initialSymbol?: string; initialQuery?: string; onOpenPortfolio?: (symbol?: string, name?: string) => void; onBack?: () => void }) {
   const { settings, loading } = useSettings()
+  const [savingWatch, setSavingWatch] = useState(false)
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
   const [selected, setSelected] = useState<string | null>(initialSymbol && TICKER_PATTERN.test(initialSymbol) ? initialSymbol : null)
   const { names, rememberName } = useStockNames()
@@ -34,13 +35,16 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
   }, [settings])
 
   async function handleChange(next: string[]) {
+    if (savingWatch || !settings) return
+    setSavingWatch(true)
     const previous = watchedStocks
     const previousSelected = selected
     setWatchedStocks(next)
-    if (selected && !next.includes(selected)) setSelected(next[0] ?? null)
+    if (!initialSymbol && selected && !next.includes(selected)) setSelected(next[0] ?? null)
     if (!settings) return
     try { await updateSettings({ watchedStocks: next }) }
     catch (e) { setWatchedStocks(previous); setSelected(previousSelected); Toast.show({ type: 'error', text1: '관심종목 저장 실패', text2: e instanceof Error ? e.message : '다시 시도해주세요.' }) }
+    finally { setSavingWatch(false) }
   }
 
   function handleAddFromSearch(symbol: string, name?: string) {
@@ -91,7 +95,7 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
             </View>
           </ScrollView></>}
           {selected && <StockChart showNews={!initialSymbol} key={selected} symbol={selected} name={labelForValue(selected)} onNameFound={rememberName} />}
-          {selected && <View className="flex-row flex-wrap gap-2"><Pressable accessibilityRole="button" onPress={() => onOpenPortfolio?.(selected, labelForValue(selected))} className="min-h-11 justify-center rounded-xl bg-brand px-4"><Text className="font-bold text-onbrand">보유 기록 등록</Text></Pressable><Pressable accessibilityRole="button" disabled={!settings || watchedStocks.includes(selected)} onPress={() => void handleChange([...watchedStocks, selected])} className="min-h-11 justify-center px-4"><Text className="text-brand">{watchedStocks.includes(selected) ? "관심 기업에 저장됨" : "관심 기업에 담기"}</Text></Pressable></View>}
+          {selected && <View className="flex-row flex-wrap gap-2"><Pressable accessibilityRole="button" onPress={() => onOpenPortfolio?.(selected, labelForValue(selected))} className="min-h-11 justify-center rounded-xl bg-brand px-4"><Text className="font-bold text-onbrand">보유 기록 등록</Text></Pressable><Pressable accessibilityRole="button" disabled={!settings || savingWatch} accessibilityState={{ selected: watchedStocks.includes(selected), busy: savingWatch }} onPress={() => void handleChange(watchedStocks.includes(selected) ? watchedStocks.filter(s => s !== selected) : [...watchedStocks, selected])} className="min-h-11 justify-center px-4"><Text className="text-brand">{watchedStocks.includes(selected) ? "관심 기업 해제" : "관심 기업에 담기"}</Text></Pressable></View>}
           {initialSymbol && selected && <CompanyNews name={labelForValue(selected)} />}
           {selected && <InvestmentContext symbol={selected} name={labelForValue(selected)} onOpenPortfolio={onOpenPortfolio} />}
         </View>

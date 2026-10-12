@@ -1,0 +1,27 @@
+{
+  "mobileViewport": "390x844",
+  "webViewport": "1366x768",
+  "isolatedFixture": true,
+  "productionWrites": 0,
+  "observed": [
+    "rule section wrapping and close",
+    "difficulty and start on mobile viewport",
+    "short-selling popover",
+    "watch add/remove retains company detail",
+    "chart pointer KRW200000 + KST date",
+    "external news destination label",
+    "centered feedback without colored left border",
+    "web 0800+1200 schedule and news enabled saved"
+  ],
+  "mobileTests": 48,
+  "notificationPolicyTests": 4,
+  "androidDevicePushDateTimePickerTalkBackVerified": false,
+  "apkBuildRequests": 0,
+  "screenshots": [
+    "game-rules-polish.jpg",
+    "game-start-mobile-polish.jpg",
+    "game-start-web-polish.jpg",
+    "company-chart-pointer.jpg",
+    "centered-feedback-polish.jpg"
+  ]
+}

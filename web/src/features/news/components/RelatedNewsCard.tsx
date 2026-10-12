@@ -49,6 +49,7 @@ export function RelatedNewsCard({
                 href={article.link}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={`${articleText(article.title)} · 원문 새 탭에서 열기`}
                 className="news-link"
                 style={{ display: 'block', color: 'inherit' }}
               >
@@ -58,6 +59,7 @@ export function RelatedNewsCard({
                       새 탭 안내로 안 읽힌다는 지적(2026-10-05) */}
                   <ExportOutlined style={{ fontSize: 12, color: 'var(--ant-color-text-tertiary)' }} />
                 </Typography.Text>
+                <Typography.Text style={{ display: 'block', fontSize: 12 }}>뉴스 원문 보기 ↗ · 새 탭에서 열려요</Typography.Text>
                 <Typography.Text className="article-meta" style={{ display: 'block', marginTop: 6 }}>{(() => { try { return new URL(article.link).hostname.replace(/^www\./, '') } catch { return '원문 출처 확인 필요' } })()}{article.pubDate ? ' · ' + new Date(article.pubDate).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + ' KST' : ' · 발행 시각 미확인'}</Typography.Text>
                 {article.description && (
                   <Typography.Paragraph

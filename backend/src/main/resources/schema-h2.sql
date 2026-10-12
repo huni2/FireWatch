@@ -132,3 +132,11 @@ CREATE TABLE IF NOT EXISTS game_transactions (
   price DECIMAL(16,4) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Additive notification preferences: preserve existing daily schedules and tokens.
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS push_times TEXT;
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS notified_slots TEXT;
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS news_push_enabled BOOLEAN DEFAULT FALSE NOT NULL;
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS news_push_cursor TIMESTAMP WITH TIME ZONE;
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS news_push_attempt_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS news_push_seen_ids TEXT;

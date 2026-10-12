@@ -20,6 +20,7 @@ import { fetchNewsFeed } from '@/lib/investingApi'
 function NewsItem({ article }: { article: NewsArticle }) {
   return (
     <Pressable
+      accessibilityRole="link" accessibilityHint="외부 브라우저에서 뉴스 원문을 열어요"
       onPress={() => Linking.openURL(article.link)}
       className="gap-2 border-b border-line py-4"
     >
@@ -29,6 +30,7 @@ function NewsItem({ article }: { article: NewsArticle }) {
           {articleText(article.description)}
         </Text>
       )}
+      <Text className="text-xs text-brand">뉴스 원문 보기 ↗ · 외부 브라우저로 이동해요</Text>
       {article.pubDate && <Text className="text-xs text-muted">{new Date(article.pubDate).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + ' KST'}</Text>}
     </Pressable>
   )

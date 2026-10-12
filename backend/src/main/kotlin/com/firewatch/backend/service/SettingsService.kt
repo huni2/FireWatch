@@ -21,6 +21,10 @@ import java.time.Instant
 data class SettingsUpdateCommand(
     val deviceId: String,
     val pushTime: String? = null,
+    val pushTimes: List<String>? = null,
+    val newsPushEnabled: Boolean? = null,
+    val removeFcmToken: String? = null,
+    val removeWebPushEndpoint: String? = null,
     val interestKeywords: List<String>? = null,
     val watchedStocks: List<String>? = null,
     val fcmToken: String? = null,
@@ -50,7 +54,19 @@ class SettingsService(
         }
 
         val settings = identityResolver.resolveForDevice(command.deviceId)
-        command.pushTime?.let { settings.pushTime = it }
+        command.pushTime?.let { settings.pushTime = it; if (command.pushTimes == null) settings.pushTimesRaw = null }
+        command.pushTimes?.let { times ->
+            if (times.size !in 1..3 || times.any { !Regex("^([01]\\d|2[0-3]):[0-5]\\d$").matches(it) }) throw ValidationException("수신 시간은 HH:mm 형식으로 1~3개를 선택해주세요.", mapOf("pushTimes" to "시간 확인"))
+            settings.pushTimesRaw = times.distinct().sorted().joinToString(",")
+            settings.pushTime = times.first()
+        }
+        command.newsPushEnabled?.let {
+            if (it && (command.interestKeywords ?: settings.interestKeywordsRaw.orEmpty().split(",").filter { k -> k.isNotBlank() }).isEmpty()) throw ValidationException("새 소식 알림에 사용할 관심 키워드를 먼저 추가해주세요.", mapOf("interestKeywords" to "키워드 필요"))
+            if (it && !settings.newsPushEnabled) settings.newsPushCursor = Instant.now()
+            settings.newsPushEnabled = it
+        }
+        command.removeFcmToken?.let { token -> settings.fcmTokensRaw = settings.fcmTokens().filterNot { it == token }.toCommaSeparated() }
+        command.removeWebPushEndpoint?.let { endpoint -> settings.webPushSubscriptionsRaw = settings.webPushSubscriptions().filterNot { it.endpoint == endpoint }.toJsonString() }
         command.interestKeywords?.let {
             if (it.any { keyword -> keyword.isBlank() || keyword.length > 30 || keyword.contains(',') }) throw ValidationException("키워드는 1~30자이며 쉼표를 포함할 수 없습니다.", mapOf("interestKeywords" to "형식 확인"))
             settings.interestKeywordsRaw = it.distinct().toCommaSeparated()

@@ -54,7 +54,7 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
   }, [name, currentData?.companyName, symbol, onNameFound])
 
   const chartData = useMemo(
-    () => (data?.points ?? []).map((point) => ({ value: point.close, label: formatLabel(point.timestamp, range) })),
+    () => (data?.points ?? []).map((point) => ({ value: point.close, timestamp: point.timestamp, label: formatLabel(point.timestamp, range) })),
     [data, range],
   )
 
@@ -87,8 +87,9 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
         <Text className="text-xs text-muted">표시할 데이터가 없습니다.</Text>
       )}
       {!loading && !error && chartData.length > 0 && (
-        <LineChart
+        <><Text className="text-xs text-muted">차트를 누르거나 좌우로 움직이면 그날의 가격을 볼 수 있어요.</Text><LineChart
           data={chartData}
+          pointerConfig={{ activatePointersInstantlyOnTouch: true, activatePointersOnLongPress: false, persistPointer: true, autoAdjustPointerLabelPosition: true, pointerColor: colors.accent, pointerStripColor: colors.muted, pointerLabelWidth: 180, pointerLabelHeight: 70, pointerLabelComponent: (items: { value: number; timestamp: string }[]) => items[0] ? <View style={{ padding: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12 }}><Text style={{ color: colors.text, fontWeight: '700' }}>{formatStockPrice(items[0].value, currency)}</Text><Text style={{ color: colors.muted, fontSize: 12 }}>{new Date(items[0].timestamp).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} KST</Text></View> : null }}
           height={220}
           width={Math.max(220, width - 96)}
           adjustToWidth
@@ -110,7 +111,7 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
           yAxisColor="transparent"
           xAxisColor={colors.border}
           initialSpacing={8}
-        />
+        /></>
       )}
       {showNews && companyName !== '회사명 확인 필요' && <CompanyNews key={companyName} name={companyName} />}
     </View>

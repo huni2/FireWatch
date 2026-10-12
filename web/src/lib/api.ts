@@ -69,6 +69,8 @@ export interface Settings {
   linkedEmail?: string | null
   session?: { token: string; expiresAt: string } | null
   pushTime: string
+  pushTimes?: string[]
+  newsPushEnabled?: boolean
   interestKeywords: string[]
   watchedStocks: string[]
   webPushSubscribed: boolean
@@ -192,12 +194,20 @@ export function fetchSettings(signal?: AbortSignal): Promise<Settings> {
   return request<Settings>('/api/settings', { headers: { 'X-Device-Id': getDeviceId() }, signal })
 }
 
-export function updateSettings(input: {
+export async function updateSettings(input: {
   pushTime?: string
+  pushTimes?: string[]
+  newsPushEnabled?: boolean
+  removeFcmToken?: string
+  removeWebPushEndpoint?: string
   interestKeywords?: string[]
   watchedStocks?: string[]
   webPushSubscription?: WebPushSubscriptionPayload
 }): Promise<Settings> {
+  if (input.pushTimes || input.newsPushEnabled !== undefined || input.removeWebPushEndpoint) {
+    const current = await fetchSettings()
+    if (!current.pushTimes) throw new Error('알림 설정 서버 업데이트가 필요해요. 잠시 후 다시 시도해주세요.')
+  }
   return request<Settings>('/api/settings', {
     method: 'PUT',
     headers: { 'X-Device-Id': getDeviceId() },
