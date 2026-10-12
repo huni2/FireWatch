@@ -1,3 +1,4 @@
+import { ActionButton } from '@/components/ActionButton'
 import { LoadingState } from '@/components/LoadingState'
 import { ScreenIntro } from '@/components/ScreenIntro'
 import { Link } from 'expo-router'
@@ -33,6 +34,10 @@ export function SettingsScreen() {
   const [keywords, setKeywords] = useState<string[]>([])
   const [showPicker, setShowPicker] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [savedForm, setSavedForm] = useState('')
+  const [saveStatus, setSaveStatus] = useState('')
+  const form = JSON.stringify({ pushTimes, newsPush, keywords })
+  const dirty = form !== savedForm
   const [registeringPush, setRegisteringPush] = useState(false)
   const [linkedEmail, setLinkedEmail] = useState<string | null>(null)
 
@@ -46,6 +51,7 @@ export function SettingsScreen() {
       setNewsPush(settings.newsPushEnabled ?? false)
       setKeywords(settings.interestKeywords)
       setLinkedEmail(settings.linkedEmail)
+      setSavedForm(JSON.stringify({ pushTimes: settings.pushTimes ?? [settings.pushTime], newsPush: settings.newsPushEnabled ?? false, keywords: settings.interestKeywords }))
     }
   }, [settings])
 
@@ -57,6 +63,7 @@ export function SettingsScreen() {
       setNewsPush(settings.newsPushEnabled ?? false)
     setKeywords(settings.interestKeywords)
     setLinkedEmail(settings.linkedEmail)
+      setSavedForm(JSON.stringify({ pushTimes: settings.pushTimes ?? [settings.pushTime], newsPush: settings.newsPushEnabled ?? false, keywords: settings.interestKeywords }))
     void reload()
   }, [reload])
 
@@ -71,16 +78,22 @@ export function SettingsScreen() {
     if (event.type === 'set' && date) {
       const hh = String(date.getHours()).padStart(2, '0')
       const mm = String(date.getMinutes()).padStart(2, '0')
-      setPushTime(`${hh}:${mm}`)
+      const time = `${hh}:${mm}`
+      setPushTime(time)
+      if (Platform.OS === 'android') setPushTimes(values => values.length < 3 && !values.includes(time) ? [...values, time].sort() : values)
     }
   }
 
   async function handleSave() {
-    setSaving(true)
+    if (saving || !dirty) return
+    const submitted = form
+    setSaving(true); setSaveStatus('')
     try {
       await updateSettings({ pushTimes, newsPushEnabled: newsPush, interestKeywords: keywords })
+      setSavedForm(submitted); setSaveStatus('설정을 저장했어요.')
       Toast.show({ type: 'success', text1: '저장 완료', text2: '설정을 저장했습니다.' })
     } catch (error) {
+      setSaveStatus(error instanceof Error ? error.message : '저장하지 못했어요. 입력은 그대로 있어요.')
       if (error instanceof ApiRequestError) {
         Toast.show({ type: 'error', text1: '저장 실패', text2: error.apiError.message })
       } else {
@@ -98,18 +111,17 @@ export function SettingsScreen() {
 
   return (
     <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">
-      <ScreenIntro eyebrow="설정" title="나만의 설정" description="관심 키워드와 브리핑 수신 시간을 조정하세요." />
+      <ScreenIntro eyebrow="설정" title="알림 설정" description="받을 시간과 관심 키워드를 정해주세요." />
       <View className="gap-2">
         <Text className="text-sm font-semibold text-muted">브리핑 수신 시간 · 한국 시간(KST)</Text><Text className="text-xs text-muted">같은 일일 브리핑을 하루 최대 3번 받아요. 아래 저장을 눌러 반영해주세요.</Text><View className="flex-row flex-wrap gap-2">{pushTimes.map(time => <Pressable key={time} accessibilityRole="button" accessibilityLabel={`${time} 수신 시간 삭제`} disabled={pushTimes.length === 1} onPress={() => setPushTimes(values => values.filter(t => t !== time))} className="min-h-11 justify-center rounded-xl bg-surface px-3"><Text className="text-ink">{time} {pushTimes.length > 1 ? '×' : ''}</Text></Pressable>)}</View>
-        <Text className="text-xs leading-5 text-muted">발송 여부를 15분 간격으로 확인하므로 설정 시각보다 늦게 도착할 수 있습니다. 브리핑은 한국 시간 07시 이후 준비됩니다.</Text>
+        <Text className="text-xs leading-5 text-muted">발송은 15분마다 확인해요. 오전 7시 이후 준비된 브리핑을 보내드려요.</Text>
         <Pressable
-          accessibilityRole="button" accessibilityLabel="새 수신 시간 고르기"
+          accessibilityRole="button" accessibilityLabel="수신 시간 추가" disabled={pushTimes.length >= 3}
           onPress={() => setShowPicker(true)}
           className="self-start rounded-lg border border-line bg-surface px-4 py-2"
         >
-          <Text className="text-base text-ink">{pushTime}</Text>
+          <Text className="text-base text-ink">{pushTimes.length >= 3 ? '시간 3개를 선택했어요' : '+ 수신 시간 추가'}</Text>
         </Pressable>
-<Pressable accessibilityRole="button" disabled={pushTimes.length >= 3 || pushTimes.includes(pushTime)} onPress={() => setPushTimes(values => [...values, pushTime].sort())} className="min-h-11 justify-center"><Text className="text-brand">선택한 시간 추가</Text></Pressable>
         {showPicker && (
           <DateTimePicker
             value={timeStringToDate(pushTime)}
@@ -120,7 +132,7 @@ export function SettingsScreen() {
           />
         )}
         {showPicker && Platform.OS === 'ios' && (
-          <Pressable onPress={() => setShowPicker(false)} className="self-end">
+          <Pressable onPress={() => { setPushTimes(values => values.length < 3 && !values.includes(pushTime) ? [...values, pushTime].sort() : values); setShowPicker(false) }} className="self-end">
             <Text className="text-sm font-semibold text-brand">완료</Text>
           </Pressable>
         )}
@@ -131,9 +143,9 @@ export function SettingsScreen() {
         <KeywordInput value={keywords} onChange={setKeywords} />
       </View>
 
-      <Pressable accessibilityRole="button" onPress={handleSave} disabled={saving} className="items-center rounded-full bg-brand py-3">
-        <Text className="text-base font-semibold text-onbrand">{saving ? '저장 중...' : '저장'}</Text>
-      </Pressable>
+      <View className="gap-2"><ActionButton label={saving ? '설정 저장 중' : '변경사항 저장'} onPress={() => void handleSave()} busy={saving} disabled={!dirty} tone="primary" fullWidth />
+        <Text accessibilityLiveRegion="polite" className="text-sm leading-6 text-muted">{saving ? '변경사항을 저장하고 있어요.' : dirty ? (saveStatus === '설정을 저장했어요.' ? '아직 저장하지 않은 변경이 있어요.' : saveStatus || '아직 저장하지 않은 변경이 있어요.') : saveStatus || '저장된 설정이에요.'}</Text>
+      </View>
 
       <Text className="text-xs text-muted">관심 기업은 기업 탐색의 관심 기업 화면에서 관리해요.</Text>
 

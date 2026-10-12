@@ -35,3 +35,8 @@
   .support-page .account-email { font-size: 18px; }
   .support-empty { flex-direction: column; gap: 4px; }
 }
+
+.settings-layout .ant-btn { min-height: 44px; height: auto; border-radius: 12px; }
+.settings-layout .ant-form-item-label { padding-bottom: 8px; }
+.settings-layout .ant-form-item-extra,.settings-layout p { line-height: 1.65; }
+.settings-layout .ant-tag { margin-block: 4px; padding: 4px 10px; font-size: 14px; }

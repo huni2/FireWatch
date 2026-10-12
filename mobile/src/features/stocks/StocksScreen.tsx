@@ -1,3 +1,4 @@
+import { ActionButton } from '@/components/ActionButton'
 import { LoadingState } from '@/components/LoadingState'
 import { ScreenIntro } from '@/components/ScreenIntro'
 // web/src/features/stocks/StocksPage.tsx와 동일 역할의 모바일 종목 화면(APP-8) — 관심 종목 관리 + 차트.
@@ -95,7 +96,7 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
             </View>
           </ScrollView></>}
           {selected && <StockChart showNews={!initialSymbol} key={selected} symbol={selected} name={labelForValue(selected)} onNameFound={rememberName} />}
-          {selected && <View className="flex-row flex-wrap gap-2"><Pressable accessibilityRole="button" onPress={() => onOpenPortfolio?.(selected, labelForValue(selected))} className="min-h-11 justify-center rounded-xl bg-brand px-4"><Text className="font-bold text-onbrand">보유 기록 등록</Text></Pressable><Pressable accessibilityRole="button" disabled={!settings || savingWatch} accessibilityState={{ selected: watchedStocks.includes(selected), busy: savingWatch }} onPress={() => void handleChange(watchedStocks.includes(selected) ? watchedStocks.filter(s => s !== selected) : [...watchedStocks, selected])} className="min-h-11 justify-center px-4"><Text className="text-brand">{watchedStocks.includes(selected) ? "관심 기업 해제" : "관심 기업에 담기"}</Text></Pressable></View>}
+          {selected && <View className="flex-row flex-wrap gap-2"><ActionButton label="보유 기록 등록" tone="primary" onPress={() => onOpenPortfolio?.(selected, labelForValue(selected))} /><ActionButton label={watchedStocks.includes(selected) ? '관심 기업 해제' : '관심 기업에 담기'} disabled={!settings} busy={savingWatch} onPress={() => void handleChange(watchedStocks.includes(selected) ? watchedStocks.filter(s => s !== selected) : [...watchedStocks, selected])} /></View>}
           {initialSymbol && selected && <CompanyNews name={labelForValue(selected)} />}
           {selected && <InvestmentContext symbol={selected} name={labelForValue(selected)} onOpenPortfolio={onOpenPortfolio} />}
         </View>

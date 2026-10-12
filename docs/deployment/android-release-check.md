@@ -1,6 +1,14 @@
 # Android 설치 검증
 
-## 최신 설치본 1.0.4 / 빌드9 (2026-10-12)
+## 최신 설치본 1.0.5 / 빌드10 (2026-10-12)
+
+사용자 README APK 통합 테스트 요청과 UX 정리 후속으로 소스 `c8c2fad754e14ec5692803a4edbd461789b6f10f`를 로컬 Expo prebuild+Gradle로 빌드했다. EAS 클라우드 요청0, ARM32/64·R8/리소스 축소 유지. PR#98~99의 규칙/차트/관심 토글/알림과 단일 테마·공통 버튼·고정 주문 총액·저장 상태를 포함한다.
+
+기존1.0.4와 같은 release 인증서, 패키지 `com.firewatch.mobile`, 버전1.0.5/10, ZIP CRC·16KB 정렬·독립 JS 번들·R8/DEX의 Google/그라디언트 모듈·마스코트 원본 픽셀·최신 테마/차트/규칙/알림 코드 포함을 확인했다. 크기 54,328,552 bytes(약54MB), SHA-256 `7205515d751b9b114f6da60ca337743c94f705d94d19c70090b379d871cbee24`. GitHub digest/공개HTTP200·크기 대조. [APK](https://github.com/huni2/FireWatch/releases/download/v1.0.5-android-preview/FireWatch-1.0.5-android.apk) · [릴리스](https://github.com/huni2/FireWatch/releases/tag/v1.0.5-android-preview) · [파일 기록](../product/android-preview-20261009/android-105-build.json).
+
+모바일48회귀·타입/lint·출시 검사와 [소스 CI](https://github.com/huni2/FireWatch/actions/runs/38248253718) 검증. 실제 Android Google 로그인·푸시·키보드/글꼴 확대/DateTimePicker/TalkBack은 미확인으로 남긴다. 기존 앱을 삭제하지 않고 업데이트 설치한다. 이후 자동 APK/EAS/OTA는 활성화하지 않는다.
+
+## 이전 설치본 1.0.4 / 빌드9 (2026-10-12)
 
 사용자 최신화 요청으로 소스 `44a2855e7ca50144d90d829beb2e21a0c30bfb2f`를 로컬 Expo prebuild+Gradle로 빌드했다. EAS 클라우드 요청 0. 기존 1.0.3과 동일한 release 인증서, 패키지 `com.firewatch.mobile`, 버전 1.0.4/9, ARM32/64, R8 mapping/DEX의 Google·그라디언트 모듈, 독립 JS 번들·마스코트 원본 픽셀, ZIP CRC·16KB ZIP 정렬을 확인했다.
 

@@ -2,7 +2,7 @@
   "expo": {
     "name": "FireWatch",
     "slug": "mobile",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": [
@@ -15,7 +15,7 @@
     },
     "android": {
       "package": "com.firewatch.mobile",
-      "versionCode": 9,
+      "versionCode": 10,
       "adaptiveIcon": {
         "backgroundColor": "#B94D0B",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
