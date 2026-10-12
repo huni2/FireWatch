@@ -29,10 +29,10 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
 
   if (saving) return <SafeAreaProvider><SafeAreaView style={{ flex: 1 }}><LoadingState startup message="이용 설정을 저장하고 있어요" /></SafeAreaView></SafeAreaProvider>
   return (
-    <SafeAreaProvider><SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }}><ScrollView className="flex-1" contentContainerClassName="flex-grow justify-between gap-8 p-6">
-      <View className="gap-4">
+    <SafeAreaProvider><SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }}><ScrollView className="flex-1" contentContainerClassName="gap-6 px-6 py-5">
+      <View className="gap-3">
         <View className="flex-row items-center gap-2"><FirewatchBrand size={36} /><Text className="text-lg font-bold text-ink">FireWatch</Text></View>
-        <Text className="text-3xl font-bold leading-10 text-ink">내 투자 기록을{ '\n' }한눈에 살펴보세요</Text>
+        <Text className="text-2xl font-bold leading-8 text-ink">내 투자 기록을{ '\n' }한눈에 살펴보세요</Text>
         <Text className="text-sm font-semibold text-muted">시작하기 전에 · 자료 보관 안내</Text>
         <Text className="text-base leading-6 text-muted">
           직접 입력한 투자 기록과 관심 기업을 저장해 점검에 사용해요. Google 계정 연결과 알림은 선택이며, 알림을 켜면 푸시 토큰을 사용해요. 어떤 자료를 보관하는지 아래에서 확인할 수 있어요.
@@ -42,7 +42,7 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
         </Pressable>
       </View>
 
-      <View className="gap-4">
+      <View className="gap-3 border-t border-line pt-4">
         <Pressable accessibilityRole="checkbox" accessibilityState={{ checked, disabled: saving }} disabled={saving} onPress={() => setChecked((value) => !value)} className="min-h-11 flex-row items-center gap-3">
           <View
             className={`h-6 w-6 items-center justify-center rounded border ${
