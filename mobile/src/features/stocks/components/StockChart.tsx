@@ -71,9 +71,9 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
             <Pressable
               key={option.value}
               onPress={() => setRange(option.value)}
-              className={`min-h-11 justify-center rounded-xl px-4 py-3 ${range === option.value ? 'bg-brand' : 'bg-canvas'}`}
+              className={`min-h-11 justify-center rounded-xl px-4 py-3 ${range === option.value ? 'bg-selection' : 'bg-canvas'}`}
             >
-              <Text className={`text-xs font-medium ${range === option.value ? 'text-onbrand' : 'text-muted'}`}>
+              <Text className={`text-xs font-medium ${range === option.value ? 'text-onselection' : 'text-muted'}`}>
                 {option.label}
               </Text>
             </Pressable>

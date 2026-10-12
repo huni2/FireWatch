@@ -5,6 +5,12 @@ import { sessionToken, saveSession, clearSession, invalidateSession, type LoginS
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:8080'
 
+const settingsListeners = new Set<() => void>()
+export function onSettingsChanged(listener: () => void) {
+  settingsListeners.add(listener)
+  return () => { settingsListeners.delete(listener) }
+}
+
 export interface Settings {
   pushTime: string
   pushTimes?: string[]
@@ -121,6 +127,10 @@ export function fetchLatestBriefing(): Promise<Briefing> {
   return request<Briefing>('/api/briefings/latest')
 }
 
+export function fetchBriefingHistory(from: string, to: string): Promise<Briefing[]> {
+  return request<Briefing[]>(`/api/briefings?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+}
+
 // 조회 전용 + 인증 불필요(web/src/lib/api.ts의 searchStocks와 동일 엔드포인트) — 추천종목 칩 클릭(APP-7) 전용.
 export function searchStocks(query: string): Promise<StockSearchResult[]> {
   return request<StockSearchResult[]>(`/api/stocks/search?q=${encodeURIComponent(query)}`)
@@ -192,9 +202,11 @@ export async function updateSettings(input: {
     if (!current.pushTimes) throw new Error('알림 설정 서버 업데이트가 필요해요. 잠시 후 다시 시도해주세요.')
   }
   const deviceId = await getDeviceId()
-  return request<Settings>('/api/settings', {
+  const saved = await request<Settings>('/api/settings', {
     method: 'PUT',
     headers: { 'X-Device-Id': deviceId },
     body: JSON.stringify(input),
   })
+  settingsListeners.forEach(listener => listener())
+  return saved
 }

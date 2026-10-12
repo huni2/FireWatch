@@ -7,7 +7,8 @@ module.exports = {
     extend: {
       colors: {
         brand: 'rgb(var(--fw-accent) / <alpha-value>)',
-        onbrand: 'rgb(var(--fw-onAccent) / <alpha-value>)',
+        onselection: 'rgb(var(--fw-actionText) / <alpha-value>)',
+        selection: 'rgb(var(--fw-actionBackground) / <alpha-value>)',
         canvas: 'rgb(var(--fw-canvas) / <alpha-value>)',
         surface: 'rgb(var(--fw-surface) / <alpha-value>)',
         ink: 'rgb(var(--fw-text) / <alpha-value>)',

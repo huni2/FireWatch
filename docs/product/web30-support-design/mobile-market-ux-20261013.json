@@ -1,0 +1,35 @@
+{
+  "environment": "React Native web with isolated API; not physical Android",
+  "results": [
+    {
+      "mode": "light",
+      "watchAddedAndLastRemoved": true,
+      "briefingScroll": {
+        "top": 912,
+        "height": 600,
+        "total": 1512
+      },
+      "historyGroupsAndPeriod": true,
+      "chartTouch": {
+        "date": "2026-10-10",
+        "value": 1359
+      },
+      "errors": []
+    },
+    {
+      "mode": "dark",
+      "watchAddedAndLastRemoved": true,
+      "briefingScroll": {
+        "top": 912,
+        "height": 600,
+        "total": 1512
+      },
+      "historyGroupsAndPeriod": true,
+      "chartTouch": {
+        "date": "2026-10-10",
+        "value": 1359
+      },
+      "errors": []
+    }
+  ]
+}

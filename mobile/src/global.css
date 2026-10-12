@@ -6,7 +6,8 @@
 @layer base {
   :root {
     --fw-accent: 185 77 11;
-    --fw-onAccent: 255 255 255;
+    --fw-actionBackground: 255 196 155;
+    --fw-actionText: 23 32 46;
     --fw-canvas: 244 245 247;
     --fw-surface: 255 255 255;
     --fw-text: 23 32 46;

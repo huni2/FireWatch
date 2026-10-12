@@ -20,7 +20,7 @@ import { InvestmentContext } from './components/InvestmentContext'
 const TICKER_PATTERN = /^[A-Za-z0-9]+(\.[A-Za-z0-9]+)?$/
 
 export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio, onBack }: { initialSymbol?: string; initialQuery?: string; onOpenPortfolio?: (symbol?: string, name?: string) => void; onBack?: () => void }) {
-  const { settings, loading } = useSettings()
+  const { settings, loading, reload } = useSettings(true)
   const [savingWatch, setSavingWatch] = useState(false)
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
   const [selected, setSelected] = useState<string | null>(initialSymbol && TICKER_PATTERN.test(initialSymbol) ? initialSymbol : null)
@@ -31,9 +31,9 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
     if (settings) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setWatchedStocks(settings.watchedStocks)
-      setSelected((current) => current ?? settings.watchedStocks[0] ?? null)
+      setSelected((current) => initialSymbol ? current ?? initialSymbol : current && settings.watchedStocks.includes(current) ? current : settings.watchedStocks[0] ?? null)
     }
-  }, [settings])
+  }, [settings, initialSymbol])
 
   async function handleChange(next: string[]) {
     if (savingWatch || !settings) return
@@ -41,8 +41,8 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
     const previous = watchedStocks
     const previousSelected = selected
     setWatchedStocks(next)
-    // 해제해도 읽던 기업 상세를 유지해 차트 로딩과 화면 이동을 만들지 않는다.
-    if (!settings) return
+    // 기업 상세에서는 계속 읽지만 관심 목록에는 해제한 기업을 남기지 않는다.
+    if (!initialSymbol && selected && !next.includes(selected)) setSelected(next[0] ?? null)
     try { await updateSettings({ watchedStocks: next }) }
     catch (e) { setWatchedStocks(previous); setSelected(previousSelected); Toast.show({ type: 'error', text1: '관심종목 저장 실패', text2: e instanceof Error ? e.message : '다시 시도해주세요.' }) }
     finally { setSavingWatch(false) }
@@ -65,6 +65,7 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
     <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">
       {initialSymbol && onBack && <Pressable accessibilityRole="button" onPress={onBack} className="min-h-11 justify-center"><Text className="text-brand">← 기업 탐색으로</Text></Pressable>}
       {!initialSymbol && <ScreenIntro eyebrow="기업·상품" title="관심 기업" description="지켜볼 회사를 모으고 가격 흐름을 비교하세요." />}
+      {!loading && !settings && <View style={{ gap: 8 }}><Text className="text-muted">관심 목록을 확인하지 못했어요. 연결을 확인한 뒤 다시 눌러주세요.</Text><ActionButton label="관심 목록 다시 확인" onPress={() => void reload()} /></View>}
       {!initialSymbol && <View className="gap-3">
         <Text className="text-sm font-semibold text-muted">관심 기업</Text>
 
@@ -72,7 +73,7 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
             <Text className="text-xs text-muted">
               국내 대형주는 한글명(예: 삼성전자)으로 찾을 수 있고, 그 외는 영문 사명(예: Tesla)으로 검색하세요.
             </Text>
-            <KeywordInput value={watchedStocks} onChange={handleChange} showInput={false} labelForValue={labelForValue} />
+            <KeywordInput value={watchedStocks} onChange={handleChange} disabled={savingWatch || !settings} showInput={false} labelForValue={labelForValue} />
       </View>}
 
       {watchedStocks.length === 0 && !selected ? (
@@ -82,13 +83,13 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
           {!initialSymbol && <><Text className="text-sm font-semibold text-muted">차트</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View className="flex-row gap-2">
-              {[...new Set([...watchedStocks, ...(selected ? [selected] : [])])].map((symbol) => (
+              {watchedStocks.map((symbol) => (
                 <Pressable
                   key={symbol}
                   onPress={() => setSelected(symbol)}
-                  className={`min-h-11 justify-center rounded-xl px-4 py-3 ${selected === symbol ? 'bg-brand' : 'bg-canvas'}`}
+                  className={`min-h-11 justify-center rounded-xl px-4 py-3 ${selected === symbol ? 'bg-selection' : 'bg-canvas'}`}
                 >
-                  <Text className={`text-xs font-medium ${selected === symbol ? 'text-onbrand' : 'text-muted'}`}>
+                  <Text className={`text-xs font-medium ${selected === symbol ? 'text-onselection' : 'text-muted'}`}>
                     {labelForValue(symbol)}
                   </Text>
                 </Pressable>

@@ -105,9 +105,9 @@ export function HomeScreen() {
           {TABS.filter(tab => (exploration ? ['candidates', 'stocks', 'short-term'] : ['news', 'brief', 'indices']).includes(tab.key)).map(tab => {
             const selected = activeTab === tab.key
             const label = tab.key === 'candidates' ? '기업 찾기' : tab.key === 'stocks' ? (stockTarget.symbol ? '기업 상세' : '관심 기업') : tab.key === 'short-term' ? '단기 관찰' : tab.label
-            return <Pressable key={tab.key} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected }} aria-selected={selected} onPress={() => { if (tab.key === 'stocks') setStockTarget({}); changeTab(tab.key) }} style={{ flex: 1, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 8, paddingVertical: 8, borderRadius: 12, backgroundColor: selected ? colors.accent : 'transparent' }}>
-              <FirewatchIcon name={tab.icon} size={16} color={selected ? colors.onAccent : colors.muted} monochrome />
-              <Text style={{ flexShrink: 1, fontSize: 13, fontWeight: selected ? '700' : '500', color: selected ? colors.onAccent : colors.muted }}>{label}</Text>
+            return <Pressable key={tab.key} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected }} aria-selected={selected} onPress={() => { if (tab.key === 'stocks') setStockTarget({}); changeTab(tab.key) }} style={{ flex: 1, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 8, paddingVertical: 8, borderRadius: 12, backgroundColor: selected ? colors.actionBackground : 'transparent' }}>
+              <FirewatchIcon name={tab.icon} size={16} color={selected ? colors.actionText : colors.muted} monochrome />
+              <Text style={{ flexShrink: 1, fontSize: 13, fontWeight: selected ? '700' : '500', color: selected ? colors.actionText : colors.muted }}>{label}</Text>
             </Pressable>
           })}
         </View>
