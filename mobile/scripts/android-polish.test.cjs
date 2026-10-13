@@ -3,7 +3,7 @@ function load(file,requireModule=()=>({})){const module={exports:{}};vm.runInNew
 const {parsePortfolioNumber,portfolioNumberHint}=load('../shared/portfolio-input.ts');
 const {portfolioAsOf}=load('../shared/portfolio-asof.ts');
 test('portfolio input accepts correctly grouped pasted values and four decimals without changing raw text',()=>{
-  for(const [input,expected] of [[' 100,000 ',100000],['1,000.1234',1000.1234],['0.25',.25],['',0]])assert.equal(parsePortfolioNumber(input),expected);
+  for(const [input,expected] of [[' 100,000 ',100000],['1,000.1234',1000.1234],['0.25',.25],['.5',.5],['1.',1],['',0]])assert.equal(parsePortfolioNumber(input),expected);
   assert.match(portfolioNumberHint('100,000','원'),/100,000원/);
   for(const input of ['10,00','1,00,000','1e5','-1','1.12345','1 000','0x10'])assert.ok(Number.isNaN(parsePortfolioNumber(input)),input);
 });

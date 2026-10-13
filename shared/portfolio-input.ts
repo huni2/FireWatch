@@ -2,7 +2,7 @@
 export function parsePortfolioNumber(input: string): number {
   const text = input.trim()
   if (!text) return 0
-  if (!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{1,4})?$/.test(text)) return NaN
+  if (!/^(?:(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{0,4})?|\.\d{1,4})$/.test(text)) return NaN
   return Number(text.replaceAll(',', ''))
 }
 
