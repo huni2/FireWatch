@@ -1,9 +1,9 @@
-import { AppSheet } from '@/components/AppSheet'
+import { AppSheet, AppSheetScrollView } from '@/components/AppSheet'
 import { ActionButton } from '@/components/ActionButton'
 import { useTheme } from '@/lib/theme'
 import { useSettings } from '../settings/hooks/useSettings'
-import { useState } from 'react'
-import { Linking, Pressable, ScrollView, Text, View } from 'react-native'
+import { useRef, useState } from 'react'
+import { Linking, Pressable, Text, View } from 'react-native'
 import { StockSearchInput } from '../stocks/components/StockSearchInput'
 import { CatalogExplorer } from './CatalogExplorer'
 import { useStockNames } from '../stocks/hooks/useStockNames'
@@ -15,7 +15,7 @@ import type { Portfolio } from '../../../../shared/investing'
 interface Props { shortTerm?: boolean; briefing?: DiscoveryBriefing | null; portfolio?: Portfolio | null; loading?: boolean; onOpenStock?: (symbol: string) => void; onOpenNews?: (query: string) => void; onOpenPortfolio?: () => void; onSearchStock?: (name: string) => void }
 export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenStock, onOpenNews, onOpenPortfolio, onSearchStock, shortTerm = false }: Props) {
   const { colors } = useTheme()
-  const { settings, reload } = useSettings()
+  const { settings, accept } = useSettings(true)
   const { rememberName } = useStockNames()
   const [view, setView] = useState('picks')
 
@@ -25,6 +25,7 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
   const [onlyRecommended, setOnlyRecommended] = useState(false)
   const [selected, setSelected] = useState<Company | null>(null)
   const [saving, setSaving] = useState(false)
+  const watchLock = useRef(false)
   const [watchFeedback, setWatchFeedback] = useState<{ symbol: string; message: string; failed: boolean } | null>(null)
   const picks = qualifiedRecommendations(briefing)
   const visible = searchCompanies(query, sectorId, region, onlyRecommended, briefing)
@@ -33,6 +34,8 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
   const news = selected ? companyNews(selected, briefing) : []
   const openLink = (url: string) => { void Linking.openURL(url).catch(() => Toast.show({ type: 'error', text1: '링크를 열지 못했습니다.' })) }
   const watch = async (company: Company) => {
+    if (watchLock.current) return
+    watchLock.current = true
     setSaving(true)
     setWatchFeedback(null)
     try {
@@ -42,12 +45,12 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
         if (current.watchedStocks.length >= 20) throw new Error('관심 종목은 최대 20개입니다.')
 
       }
-      await updateSettings({ watchedStocks: removing ? current.watchedStocks.filter(s => s !== company.symbol) : [...current.watchedStocks, company.symbol] })
-      await reload()
+      const saved = await updateSettings({ watchedStocks: removing ? current.watchedStocks.filter(s => s !== company.symbol) : [...current.watchedStocks, company.symbol] })
+      accept(saved)
       Toast.show({ type: 'success', text1: removing ? '관심 기업에서 해제했어요.' : '관심 기업에 담았어요.' })
       setWatchFeedback({ symbol: company.symbol, message: removing ? '관심 기업에서 해제했어요.' : '관심 기업에 담았어요.', failed: false })
     } catch (error) { const message = error instanceof Error ? error.message : '다시 시도해주세요.'; setWatchFeedback({ symbol: company.symbol, message, failed: true }); Toast.show({ type: 'error', text1: '관심 종목 저장 실패', text2: message }) }
-    finally { setSaving(false) }
+    finally { watchLock.current = false; setSaving(false) }
   }
   return <View className="gap-5">
     <StockSearchInput preserveQueryOnSelect onQueryChange={setQuery} onSelect={(symbol, name) => { rememberName(symbol, name); onOpenStock?.(symbol) }} />
@@ -73,7 +76,7 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
     <Text className="text-xs text-muted">공식 사업 소개 기반의 시작 목록입니다. 전체 상장기업 목록이나 추천 순위가 아닙니다. 정보 확인 {catalogVerifiedAt}.</Text>
     <Pressable accessibilityRole="button" onPress={() => onSearchStock?.(query)} className="min-h-11 justify-center"><Text className="text-brand">이 목록 외 기업 검색하기 →</Text></Pressable>
     </>}
-    <AppSheet open={!!selected} title={selected?.name ?? '기업 상세'} close={() => setSelected(null)} disabled={saving}>{selected && <ScrollView contentContainerClassName="gap-5 p-5 pb-10">
+    <AppSheet open={!!selected} title={selected?.name ?? '기업 상세'} close={() => setSelected(null)} disabled={saving}>{selected && <AppSheetScrollView >
         <Text className="text-muted">{companySector(selected).name}</Text><Text className="text-ink">{selected.description}</Text><Pressable accessibilityRole="link" onPress={() => openLink(selected.source)}><Text className="text-brand">공식 기업 자료 ↗</Text></Pressable><Text className="text-xs text-muted">기업 정보 확인 {selected.verifiedAt ?? companyDefaultVerifiedAt} · 가격 기준 시각과 달라요.</Text>
         <Text className="text-lg font-bold text-ink">개별 종목 추천 근거</Text>
         {isRecommended(selected, briefing) && detail ? <View className="gap-3"><Text style={{ color: colors.info }} className="text-xs">AI 해석 · 자료 기준 {briefing?.briefingDate}</Text><Text className="text-ink">{detail.reason}</Text><Text className="text-muted">확인할 위험 · {detail.risk}</Text>{!detail.sourceNewsLinks.length && <Text className="text-xs text-muted">직접 연결된 근거 기사 없이 제공된 시장 자료에 대한 AI 해석입니다.</Text>}</View> : <Text className="text-muted">현재 근거가 확인된 추천 후보가 아닙니다. 기업과 뉴스를 탐색할 수 있습니다.</Text>}
@@ -82,6 +85,6 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
         <Pressable accessibilityRole="button" onPress={() => { const name = selected.name; setSelected(null); onOpenNews?.(name) }} className="min-h-11 justify-center"><Text className="text-brand">이 기업의 보관 뉴스 검색 →</Text></Pressable>
         <Pressable accessibilityRole="button" onPress={() => { const symbol = selected.symbol; setSelected(null); onOpenStock?.(symbol) }} className="min-h-11 justify-center rounded-xl bg-canvas p-3"><Text className="text-ink">차트 보기</Text></Pressable><ActionButton fullWidth busy={saving} label={settings?.watchedStocks.includes(selected.symbol) ? '관심 기업 해제' : '관심 기업에 담기'} onPress={() => void watch(selected)} />
         {watchFeedback?.symbol === selected.symbol && <Text accessibilityRole="alert" className={watchFeedback.failed ? 'text-danger' : 'text-brand'}>{watchFeedback.message}</Text>}
-      </ScrollView>}</AppSheet>
+      </AppSheetScrollView>}</AppSheet>
   </View>
 }

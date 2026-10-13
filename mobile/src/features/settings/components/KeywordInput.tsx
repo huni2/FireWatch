@@ -1,6 +1,7 @@
 // web/src/features/settings/components/KeywordInput.tsx와 동일 동작(추가/삭제, 최대 20개) — RN 버전.
 import { useState } from 'react'
-import { Pressable, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native'
+import { useTheme } from '@/lib/theme'
 
 interface KeywordInputProps {
   value: string[]
@@ -13,6 +14,7 @@ interface KeywordInputProps {
   showInput?: boolean
   labelForValue?: (value: string) => string
   disabled?: boolean
+  busyValue?: string | null
 }
 
 export function KeywordInput({
@@ -24,11 +26,14 @@ export function KeywordInput({
   showInput = true,
   labelForValue,
   disabled = false,
+  busyValue = null,
 }: KeywordInputProps) {
+  const { colors } = useTheme()
   const [draft, setDraft] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   const addKeyword = () => {
+    if (disabled) return
     const trimmed = draft.trim()
     if (!trimmed || value.includes(trimmed) || value.length >= maxCount) {
       setDraft('')
@@ -56,7 +61,7 @@ export function KeywordInput({
           >
             <Text className="text-sm text-muted" style={{ flexShrink: 1 }}>{labelForValue?.(keyword) ?? keyword}</Text>
             <Pressable accessibilityRole="button" accessibilityLabel={`${labelForValue?.(keyword) ?? keyword} 삭제`} accessibilityState={{ disabled }} disabled={disabled} onPress={() => onChange(value.filter((k) => k !== keyword))} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-              <Text className="text-sm text-muted">✕</Text>
+              {busyValue === keyword ? <ActivityIndicator size="small" color={colors.text} accessibilityLabel="관심 해제 중" /> : <Text className="text-sm text-muted">✕</Text>}
             </Pressable>
           </View>
         ))}
@@ -75,7 +80,7 @@ export function KeywordInput({
             placeholder={value.length >= maxCount ? `최대 ${maxCount}개까지 등록 가능` : placeholder}
             maxLength={30}
             returnKeyType="done"
-            className="rounded-lg border border-line bg-surface px-3 py-2 text-base"
+            className="rounded-lg border border-line bg-surface px-3 py-2 text-base text-ink"
           />
           {error && <Text className="text-xs text-danger">{error}</Text>}
         </>
