@@ -56,7 +56,7 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
   }, [name, currentData?.companyName, symbol, onNameFound])
 
   const chartData = useMemo(
-    () => (data?.points ?? []).map((point) => ({ value: point.close, timestamp: point.timestamp, label: formatLabel(point.timestamp, range) })),
+    () => (data?.points ?? []).map((point, index, points) => ({ value: point.close, timestamp: point.timestamp, label: formatLabel(point.timestamp, range), spacing: index === points.length - 1 ? 0 : undefined })),
     [data, range],
   )
 
@@ -92,10 +92,12 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
         <><Text className="text-xs text-muted">차트를 누르면 가격이 보여요. 바깥을 누르면 표시가 닫혀요.</Text><View onTouchStart={selection.onTouchStart}><LineChart
           key={`${symbol}:${range}:${selection.version}`}
           data={chartData}
-          pointerConfig={{ activatePointersInstantlyOnTouch: true, activatePointersOnLongPress: false, persistPointer: true, autoAdjustPointerLabelPosition: true, pointerColor: colors.accent, pointerStripColor: colors.muted, pointerLabelWidth: 180, pointerLabelHeight: 70, pointerLabelComponent: (items: { value: number; timestamp: string }[]) => items[0] ? <View style={{ padding: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12 }}><Text style={{ color: colors.text, fontWeight: '700' }}>{formatStockPrice(items[0].value, currency)}</Text><Text style={{ color: colors.muted, fontSize: 12 }}>{new Date(items[0].timestamp).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} KST</Text></View> : null }}
+          pointerConfig={{ activatePointersInstantlyOnTouch: true, activatePointersOnLongPress: false, persistPointer: true, autoAdjustPointerLabelPosition: true, pointerColor: colors.accent, pointerStripColor: colors.muted, pointerLabelWidth: 150, pointerLabelHeight: 90, pointerLabelComponent: (items: { value: number; timestamp: string }[]) => items[0] ? <View style={{ width: 150, padding: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12 }}><Text style={{ color: colors.text, fontWeight: '700' }}>{formatStockPrice(items[0].value, currency)}</Text><Text style={{ color: colors.muted, fontSize: 12 }}>{new Date(items[0].timestamp).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} KST</Text></View> : null }}
           height={220}
           width={Math.max(220, width - 96)}
           adjustToWidth
+          spacing={(Math.max(220, width - 96) - 32) / Math.max(chartData.length - 1, 1)}
+          endSpacing={24}
           color={colors.accent}
           thickness={2}
           areaChart

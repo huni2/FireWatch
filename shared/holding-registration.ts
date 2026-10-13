@@ -30,7 +30,7 @@ export function portfolioFinding(portfolio: import('./investing').Portfolio): st
   const coverage = portfolio.valuationCoverage
   if (coverage && coverage.pricedHoldings < coverage.totalHoldings) return `${coverage.totalHoldings - coverage.pricedHoldings}개 자산은 가격·환율 확인이 필요해요. 계산된 범위를 확인해주세요.`
   const largest = portfolio.exposure?.largestHoldings[0]
-  if (largest && portfolio.holdings.length > 1) return `평가 가능한 등록 자산과 현금에서 ${largest.name} 비중이 ${largest.weightPercent}%예요.`
+  if (largest && portfolio.holdings.length > 1) return `계산된 자산과 현금에서 ${largest.name} 비중이 ${largest.weightPercent.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}%예요.`
   if (portfolio.holdings.length === 1) return `${portfolio.holdings[0].holding.name} 보유 기록을 추가했어요. 다른 보유 자산도 추가하면 구성을 비교할 수 있어요.`
   return portfolio.holdings.length ? '등록한 자산의 비중과 겹치는 투자를 확인해보세요.' : '등록한 현금과 보유 자산을 함께 점검할 수 있어요.'
 }

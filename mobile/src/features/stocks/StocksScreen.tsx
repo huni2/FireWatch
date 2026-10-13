@@ -69,7 +69,7 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
 
   return (
     <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">
-      {initialSymbol && onBack && <Pressable accessibilityRole="button" onPress={onBack} className="min-h-11 justify-center"><Text className="text-brand">← 기업 탐색으로</Text></Pressable>}
+      {initialSymbol && onBack && <Pressable accessibilityRole="button" onPress={onBack} className="min-h-11 justify-center"><Text className="text-brand">← 이전 화면으로</Text></Pressable>}
       {!initialSymbol && <ScreenIntro eyebrow="기업·상품" title="관심 기업" description="지켜볼 회사를 모으고 가격 흐름을 비교하세요." />}
       {!loading && !settings && <View style={{ gap: 8 }}><Text className="text-muted">관심 목록을 확인하지 못했어요. 연결을 확인한 뒤 다시 눌러주세요.</Text><ActionButton label="관심 목록 다시 확인" onPress={() => void reload()} /></View>}
       {!initialSymbol && <View className="gap-3">
@@ -103,7 +103,7 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
             </View>
           </ScrollView></>}
           {selected && <StockChart showNews={!initialSymbol} key={selected} symbol={selected} name={labelForValue(selected)} onNameFound={rememberName} />}
-          {selected && <View className="flex-row flex-wrap gap-2"><ActionButton label="보유 기록 등록" tone="next" onPress={() => onOpenPortfolio?.(selected, labelForValue(selected))} /><ActionButton label={watchedStocks.includes(selected) ? '관심 기업 해제' : '관심 기업에 담기'} disabled={!settings} busy={savingWatch} onPress={() => void handleChange(watchedStocks.includes(selected) ? watchedStocks.filter(s => s !== selected) : [...watchedStocks, selected])} /></View>}
+          {selected && <View className="flex-row flex-wrap gap-2"><ActionButton tone="primary" label={watchedStocks.includes(selected) ? '관심 기업 해제' : '관심 기업에 담기'} disabled={!settings} busy={savingWatch} onPress={() => void handleChange(watchedStocks.includes(selected) ? watchedStocks.filter(s => s !== selected) : [...watchedStocks, selected])} /><ActionButton label="보유 기록 등록" disabled={!onOpenPortfolio} onPress={() => onOpenPortfolio?.(selected, labelForValue(selected))} /></View>}
           {initialSymbol && selected && <CompanyNews name={labelForValue(selected)} />}
           {selected && <InvestmentContext symbol={selected} name={labelForValue(selected)} onOpenPortfolio={onOpenPortfolio} />}
         </View>

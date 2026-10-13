@@ -1,9 +1,10 @@
 import { AppSheet, AppSheetScrollView } from '@/components/AppSheet'
+import { ChoiceTabs } from '@/components/ChoiceTabs'
 import { ActionButton } from '@/components/ActionButton'
 import { useTheme } from '@/lib/theme'
 import { useSettings } from '../settings/hooks/useSettings'
 import { useRef, useState } from 'react'
-import { Linking, Pressable, Text, View } from 'react-native'
+import { Linking, Pressable, ScrollView, Switch, Text, View } from 'react-native'
 import { StockSearchInput } from '../stocks/components/StockSearchInput'
 import { CatalogExplorer } from './CatalogExplorer'
 import { useStockNames } from '../stocks/hooks/useStockNames'
@@ -18,6 +19,9 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
   const { settings, accept } = useSettings(true)
   const { rememberName } = useStockNames()
   const [view, setView] = useState('picks')
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [draftRegion, setDraftRegion] = useState('all')
+  const [draftRecommended, setDraftRecommended] = useState(false)
 
   const [sectorId, setSectorId] = useState('all')
   const [region, setRegion] = useState('all')
@@ -54,7 +58,7 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
   }
   return <View className="gap-5">
     <StockSearchInput preserveQueryOnSelect onQueryChange={setQuery} onSelect={(symbol, name) => { rememberName(symbol, name); onOpenStock?.(symbol) }} />
-    <View className="flex-row flex-wrap gap-2">{[{ key: 'picks', label: '후보' }, { key: 'companies', label: '분야' }, ...(!shortTerm ? [{ key: 'etfs', label: 'ETF' }] : [])].map(item => <Pressable key={item.key} accessibilityRole="tab" accessibilityState={{ selected: view === item.key }} aria-selected={view === item.key} onPress={() => setView(item.key)} className={`min-h-11 justify-center rounded-xl px-4 ${view === item.key ? 'bg-selection' : 'bg-surface'}`}><Text className={view === item.key ? 'text-onselection' : 'text-ink'}>{item.label}</Text></Pressable>)}</View>
+    <ChoiceTabs label="기업 탐색 보기" value={view} onChange={setView} options={[{ value: 'picks', label: '후보' }, { value: 'companies', label: '분야' }, ...(!shortTerm ? [{ value: 'etfs', label: 'ETF' }] : [])]} />
     {view === 'etfs' && <CatalogExplorer query={query} onOpenStock={onOpenStock} />}
     {view === 'picks' && <>
     <Text className="text-lg font-bold text-ink">근거가 확인된 후보</Text>
@@ -65,17 +69,20 @@ export function CompanyDiscovery({ briefing, portfolio, loading = false, onOpenS
     </>}
     {view === 'companies' && <>
     <Text className="text-lg font-bold text-ink">어떤 분야가 궁금하세요?</Text>
-    <View className="flex-row flex-wrap gap-2">{sectors.map(item => <Pressable key={item.id} accessibilityRole="button" accessibilityState={{ selected: sectorId === item.id }} onPress={() => setSectorId(sectorId === item.id ? 'all' : item.id)} style={sectorId === item.id ? { backgroundColor: colors.accentSoft } : undefined} className={`gap-2 rounded-xl border p-3 ${sectorId === item.id ? 'border-brand' : 'border-line bg-surface'}`}><Text className="font-bold text-ink">{item.name}</Text></Pressable>)}</View>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}><View className="flex-row gap-2"><Pressable accessibilityRole="button" accessibilityState={{ selected: sectorId === 'all' }} onPress={() => setSectorId('all')} className={`min-h-11 justify-center rounded-xl px-3 ${sectorId === 'all' ? 'bg-selection' : 'bg-surface'}`}><Text className="text-ink">전체 분야</Text></Pressable>{sectors.map(item => <Pressable key={item.id} accessibilityRole="button" accessibilityState={{ selected: sectorId === item.id }} onPress={() => setSectorId(sectorId === item.id ? 'all' : item.id)} className={`min-h-11 justify-center rounded-xl px-3 ${sectorId === item.id ? 'bg-selection' : 'bg-surface'}`}><Text className="text-ink">{item.name}</Text></Pressable>)}</View></ScrollView>
     <Text className="text-lg font-bold text-ink">{sector?.name ?? '분야별 기업'} · {visible.length}개</Text>
 
-    <View className="flex-row flex-wrap gap-2">{[{ id: 'all', label: '전체' }, { id: 'KR', label: '한국' }, { id: 'US', label: '미국' }].map(item => <Pressable accessibilityRole="button" accessibilityState={{ selected: region === item.id }} key={item.id} onPress={() => setRegion(item.id)} className={`min-h-11 justify-center rounded-xl px-4 ${region === item.id ? 'bg-selection' : 'bg-canvas'}`}><Text className={region === item.id ? 'text-onselection' : 'text-ink'}>{item.label}</Text></Pressable>)}<Pressable accessibilityRole="button" accessibilityState={{ selected: onlyRecommended }} onPress={() => setOnlyRecommended(!onlyRecommended)} className="min-h-11 justify-center rounded-xl bg-canvas px-3"><Text className="text-brand">{onlyRecommended ? '✓ ' : ''}근거 있는 추천만</Text></Pressable></View>
+    <View className="flex-row flex-wrap items-center justify-between gap-2"><Text className="text-sm text-muted">{region === 'all' ? '모든 국가' : region === 'KR' ? '한국' : '미국'}{onlyRecommended ? ' · 추천 근거 있음' : ''}</Text><ActionButton label={`필터${(region !== 'all' ? 1 : 0) + Number(onlyRecommended) ? ` · ${(region !== 'all' ? 1 : 0) + Number(onlyRecommended)}` : ''}`} onPress={() => { setDraftRegion(region); setDraftRecommended(onlyRecommended); setFiltersOpen(true) }} /></View>
     {sector && <View className="gap-2 border-b border-line py-4"><Text className="font-bold text-ink">이 분야를 볼 때 확인할 것</Text>{sector.checks.map(check => <Text className="text-muted" key={check}>• {check}</Text>)}<Pressable accessibilityRole="button" onPress={() => onOpenNews?.(sector.keywords[0])} className="min-h-11 justify-center"><Text className="text-brand">이 분야 뉴스 보기 →</Text></Pressable></View>}
-    {visible.map(company => <View key={company.symbol} className="gap-2 border-b border-line py-4"><Text className="text-xs text-muted">{company.region === 'KR' ? '한국' : '미국'} · {companySector(company).name}</Text><Text className="text-lg font-bold text-ink">{company.name}</Text><Text className="text-xs text-muted">{isRecommended(company, briefing) ? ' · 브리핑 추천' : ''}{portfolio?.holdings.some(row => row.holding.symbol === company.symbol) ? ' · 보유 중' : ''}</Text><Text className="text-ink">{company.description}</Text><Pressable accessibilityRole="button" accessibilityLabel={`${company.name} 기업 살펴보기`} onPress={() => onOpenStock ? onOpenStock(company.symbol) : setSelected(company)} className="min-h-11 justify-center rounded-xl bg-canvas p-3"><Text className="text-brand">기업 살펴보기 →</Text></Pressable></View>)}
+    {visible.map(company => <Pressable key={company.symbol} accessibilityRole="button" accessibilityLabel={`${company.name} 기업 살펴보기`} onPress={() => onOpenStock ? onOpenStock(company.symbol) : setSelected(company)} className="gap-2 border-b border-line py-4"><View className="flex-row items-center justify-between gap-3"><Text className="text-lg font-bold text-ink">{company.name}</Text><Text className="text-muted">→</Text></View><Text className="text-xs text-muted">{companySector(company).name} · {company.region === 'KR' ? '한국' : '미국'}{isRecommended(company, briefing) ? ' · 추천 근거 있음' : ''}{portfolio?.holdings.some(row => row.holding.symbol === company.symbol) ? ' · 보유 중' : ''}</Text><Text numberOfLines={2} className="text-sm text-muted">{company.description}</Text></Pressable>)}
     {!visible.length && <Text className="text-muted">조건에 맞는 기업이 없어요. 분야나 국가 필터를 바꿔보세요.</Text>}
     <Pressable accessibilityRole="button" onPress={() => { setSectorId('all'); setRegion('all'); setQuery(''); setOnlyRecommended(false) }} className="min-h-11 justify-center"><Text className="text-brand">필터 초기화</Text></Pressable>
     <Text className="text-xs text-muted">공식 사업 소개 기반의 시작 목록입니다. 전체 상장기업 목록이나 추천 순위가 아닙니다. 정보 확인 {catalogVerifiedAt}.</Text>
     <Pressable accessibilityRole="button" onPress={() => onSearchStock?.(query)} className="min-h-11 justify-center"><Text className="text-brand">이 목록 외 기업 검색하기 →</Text></Pressable>
     </>}
+    <AppSheet open={filtersOpen} title="기업 필터" close={() => setFiltersOpen(false)} height="60%" footer={<ActionButton fullWidth tone="primary" label="이 조건으로 보기" onPress={() => { setRegion(draftRegion); setOnlyRecommended(draftRecommended); setFiltersOpen(false) }} />}>
+      <AppSheetScrollView><Text className="font-bold text-ink">어느 나라 기업을 볼까요?</Text><ChoiceTabs label="기업 국가" value={draftRegion} onChange={setDraftRegion} options={[{ value: 'all', label: '전체' }, { value: 'KR', label: '한국' }, { value: 'US', label: '미국' }]} /><View className="flex-row items-center justify-between gap-3"><Text className="text-ink">추천 근거가 있는 기업만</Text><Switch accessibilityLabel="추천 근거가 있는 기업만" value={draftRecommended} onValueChange={setDraftRecommended} trackColor={{ false: colors.border, true: colors.accent }} /></View><ActionButton label="조건 초기화" onPress={() => { setDraftRegion('all'); setDraftRecommended(false) }} /></AppSheetScrollView>
+    </AppSheet>
     <AppSheet open={!!selected} title={selected?.name ?? '기업 상세'} close={() => setSelected(null)} disabled={saving}>{selected && <AppSheetScrollView >
         <Text className="text-muted">{companySector(selected).name}</Text><Text className="text-ink">{selected.description}</Text><Pressable accessibilityRole="link" onPress={() => openLink(selected.source)}><Text className="text-brand">공식 기업 자료 ↗</Text></Pressable><Text className="text-xs text-muted">기업 정보 확인 {selected.verifiedAt ?? companyDefaultVerifiedAt} · 가격 기준 시각과 달라요.</Text>
         <Text className="text-lg font-bold text-ink">개별 종목 추천 근거</Text>
