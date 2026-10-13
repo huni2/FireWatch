@@ -1,5 +1,6 @@
 import { useTheme } from '@/lib/theme'
 import { LoadingState } from '@/components/LoadingState'
+import { ActionButton } from '@/components/ActionButton'
 import { useChartSelection } from '@/lib/chartSelection'
 // web/src/features/stocks/components/StockChart.tsx와 동일 역할 — RN엔 recharts가 없어
 // react-native-gifted-charts의 LineChart로 가격과 선택 기간 변화를 표시.
@@ -44,7 +45,7 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
   const { colors } = useTheme()
   const { width } = useWindowDimensions()
   const [range, setRange] = useState<StockChartRange>('6mo')
-  const { data, loading, error } = useStockHistory(symbol, range)
+  const { data, loading, refreshing, error, reload } = useStockHistory(symbol, range)
   const currentData = data?.symbol === symbol ? data : null
   const companyName = name === '회사명 확인 필요' ? currentData?.companyName ?? name : name
   const latest = currentData?.points.at(-1)
@@ -65,7 +66,7 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
   return (
     <View className="gap-3">
       <Text className="text-xl font-bold text-ink">{companyName}</Text>
-      {price != null && !error && <View className="gap-1">
+      {price != null && <View className="gap-1">
         <Text className="text-3xl font-bold text-ink">{formatStockPrice(price, currency)}</Text>
         <Text className="text-xs text-muted">{currentData?.quotePrice != null ? '최근 제공 시세' : '마지막 기록 가격'}{priceAt ? ` · ${new Date(priceAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} (한국 시간)` : ''}</Text>
       </View>}
@@ -74,8 +75,9 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
           {RANGE_OPTIONS.map((option) => (
             <Pressable
               key={option.value}
+              accessibilityRole="tab" accessibilityLabel={option.label} accessibilityState={{ selected: range === option.value }} aria-selected={range === option.value}
               onPress={() => setRange(option.value)}
-              className={`min-h-11 justify-center rounded-xl px-4 py-3 ${range === option.value ? 'bg-selection' : 'bg-canvas'}`}
+              className={`min-h-12 justify-center rounded-xl px-4 py-3 ${range === option.value ? 'bg-selection' : 'bg-canvas'}`}
             >
               <Text className={`text-xs font-medium ${range === option.value ? 'text-onselection' : 'text-muted'}`}>
                 {option.label}
@@ -86,12 +88,13 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
       </ScrollView>
 
       {loading && <LoadingState inline message="가격 흐름을 불러오고 있어요" />}
-      {!loading && error && <Text className="text-xs text-danger">{companyName} 시세를 불러오지 못했습니다.</Text>}
+      {refreshing && <Text accessibilityLiveRegion="polite" className="text-sm text-muted">가격을 갱신하고 있어요. 마지막 기록을 보여드려요.</Text>}
+      {!loading && error && <View className="gap-2"><Text accessibilityRole="alert" className="text-sm text-muted">{currentData ? '새 가격을 확인하지 못했어요. 마지막으로 받은 기록을 보여드려요.' : `${companyName} 시세를 확인하지 못했어요.`}</Text><ActionButton label="시세 다시 확인" onPress={reload} /></View>}
       {!loading && !error && chartData.length === 0 && (
-        <Text className="text-xs text-muted">표시할 데이터가 없습니다.</Text>
+        <View className="gap-2"><Text className="text-sm text-muted">선택한 기간에 가격 기록이 없어요.</Text><ActionButton label={range === '1mo' ? '시세 다시 확인' : '1개월로 보기'} onPress={range === '1mo' ? reload : () => setRange('1mo')} /></View>
       )}
-      {!loading && !error && chartData.length === 1 && <Text className="text-xs text-muted">가격 기록이 1개예요. 더 모이면 상승·하락 흐름을 볼 수 있어요.</Text>}
-      {!loading && !error && chartData.length > 1 && window && (
+      {!loading && chartData.length === 1 && <Text className="text-xs text-muted">가격 기록이 1개예요. 더 모이면 상승·하락 흐름을 볼 수 있어요.</Text>}
+      {!loading && chartData.length > 1 && window && (
         <><Text accessibilityLiveRegion="polite" style={{ color: lineColor, fontWeight: '600' }}>{formatPriceChange(window.change, window.percent, currency)}</Text>
         <Text className="text-xs text-muted">점선은 기간 첫 가격이에요. 차트를 누르면 가격이 보이고, 바깥을 누르면 닫혀요.</Text><View onTouchStart={selection.onTouchStart}><LineChart
           key={`${symbol}:${range}:${selection.version}`}

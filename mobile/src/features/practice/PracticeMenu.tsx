@@ -40,6 +40,6 @@ export function PracticeMenu({ lobby, busy, canPublish, canReplay, canEnd, onRul
 const createStyles = (c: ThemeColors) => StyleSheet.create({
   lobby: { alignItems: 'center', gap: 8 }, image: { width: 164, height: 164 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  button: { minHeight: 44, minWidth: 44, paddingHorizontal: 7, flexDirection: 'row', gap: 4, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: c.border, borderRadius: 12, backgroundColor: c.surface },
+  button: { minHeight: 48, minWidth: 48, paddingHorizontal: 7, flexDirection: 'row', gap: 4, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: c.border, borderRadius: 12, backgroundColor: c.surface },
   label: { color: c.muted, fontSize: 12, fontWeight: '600' }, disabled: { opacity: .4 },
 })

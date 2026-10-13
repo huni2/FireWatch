@@ -60,6 +60,7 @@ test('rendered stock chart retains exact tooltip prices with a truncated axis an
     if(name==='../hooks/useStockHistory')return {useStockHistory:()=>({data:{symbol:'TEST',currency:'KRW',points:[{timestamp:'2026-10-01',close:100000},{timestamp:'2026-10-02',close:99900}]},loading:false,error:null})};
     if(name==='./CompanyNews')return {CompanyNews:'News'};
     if(name==='@/components/LoadingState')return {LoadingState:'Loading'};
+    if(name==='@/components/ActionButton')return {ActionButton:'ActionButton'};
     if(name.endsWith('/stock-labels'))return {stockLabel:()=> '시험 기업'};
     if(name.endsWith('/stock-price'))return load('../shared/stock-price.ts');
     return require(name);

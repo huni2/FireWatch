@@ -60,7 +60,7 @@ export function KeywordInput({
             style={{ maxWidth: '100%' }}
           >
             <Text className="text-sm text-muted" style={{ flexShrink: 1 }}>{labelForValue?.(keyword) ?? keyword}</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel={`${labelForValue?.(keyword) ?? keyword} 삭제`} accessibilityState={{ disabled }} disabled={disabled} onPress={() => onChange(value.filter((k) => k !== keyword))} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
+            <Pressable accessibilityRole="button" accessibilityLabel={`${labelForValue?.(keyword) ?? keyword} 삭제`} accessibilityState={{ disabled }} disabled={disabled} onPress={() => onChange(value.filter((k) => k !== keyword))} style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' }}>
               {busyValue === keyword ? <ActivityIndicator size="small" color={colors.text} accessibilityLabel="관심 해제 중" /> : <Text className="text-sm text-muted">✕</Text>}
             </Pressable>
           </View>

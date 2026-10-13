@@ -112,13 +112,13 @@ export function SettingsScreen() {
   if (loading && !settings) return <View className="flex-1 bg-canvas p-5"><LoadingState message="계정 설정을 확인하고 있어요" /></View>
 
 
-  if (!settings) return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5"><Text className="text-ink">설정을 불러오지 못했습니다. 로그인했던 기기라면 Google 계정으로 다시 로그인해주세요.</Text><GoogleLinkButton linkedEmail={null} onLinked={handleLinked} onDeleted={handleDeleted} /><Pressable onPress={() => void reload()} className="min-h-11 items-center justify-center"><Text className="text-brand">설정 다시 불러오기</Text></Pressable></ScrollView>
+  if (!settings) return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5"><Text className="text-ink">설정을 불러오지 못했습니다. 로그인했던 기기라면 Google 계정으로 다시 로그인해주세요.</Text><GoogleLinkButton linkedEmail={null} onLinked={handleLinked} onDeleted={handleDeleted} /><Pressable onPress={() => void reload()} className="min-h-12 items-center justify-center"><Text className="text-brand">설정 다시 불러오기</Text></Pressable></ScrollView>
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}><ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">
       <ScreenIntro eyebrow="설정" title="알림 설정" description="받을 시간과 관심 키워드를 정해주세요." />
       <View className="gap-2">
-        <Text className="text-sm font-semibold text-muted">브리핑 수신 시간 · 한국 시간(KST)</Text><Text className="text-xs text-muted">같은 일일 브리핑을 하루 최대 3번 받아요. 아래 저장을 눌러 반영해주세요.</Text><View className="flex-row flex-wrap gap-2">{pushTimes.map(time => <Pressable key={time} accessibilityRole="button" accessibilityLabel={`${time} 수신 시간 삭제`} disabled={pushTimes.length === 1} onPress={() => setPushTimes(values => values.filter(t => t !== time))} className="min-h-11 justify-center rounded-xl bg-surface px-3"><Text className="text-ink">{time} {pushTimes.length > 1 ? '×' : ''}</Text></Pressable>)}</View>
+        <Text className="text-sm font-semibold text-muted">브리핑 수신 시간 · 한국 시간(KST)</Text><Text className="text-xs text-muted">같은 일일 브리핑을 하루 최대 3번 받아요. 아래 저장을 눌러 반영해주세요.</Text><View className="flex-row flex-wrap gap-2">{pushTimes.map(time => <Pressable key={time} accessibilityRole="button" accessibilityLabel={`${time} 수신 시간 삭제`} disabled={pushTimes.length === 1} onPress={() => setPushTimes(values => values.filter(t => t !== time))} className="min-h-12 justify-center rounded-xl bg-surface px-3"><Text className="text-ink">{time} {pushTimes.length > 1 ? '×' : ''}</Text></Pressable>)}</View>
         <Text className="text-sm leading-6 text-muted">발송은 15분마다 확인해요. 오전 7시 이후 준비된 브리핑을 보내드려요.</Text>
         <Pressable
           accessibilityRole="button" accessibilityLabel="수신 시간 추가" disabled={pushTimes.length >= 3}
