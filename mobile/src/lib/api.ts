@@ -147,12 +147,12 @@ export async function fetchSettings(): Promise<Settings> {
 }
 
 // ADR 0020 — Google ID 토큰 검증 후 발급된 기기별 로그인 세션을 SecureStore에 저장한다.
-export async function linkGoogleAccount(idToken: string): Promise<Settings> {
+export async function linkGoogleAccount(idToken: string, recordChoice?: import('../../../shared/account-record-link').AccountRecordChoice): Promise<Settings> {
   const deviceId = await getDeviceId()
   const settings = await request<Settings>('/api/auth/google/link', {
     method: 'POST',
     headers: { 'X-Device-Id': deviceId },
-    body: JSON.stringify({ idToken }),
+    body: JSON.stringify({ idToken, recordChoice }),
   })
   if (!settings.session) throw new Error('로그인 세션을 받지 못했습니다.')
   await saveSession(settings.session)

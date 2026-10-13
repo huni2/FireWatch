@@ -24,7 +24,7 @@ import com.firewatch.backend.repository.PortfolioRevisionRepository
  * 최초로 이 계정에 연동하는 기기의 기존 설정(관심 종목 등)을 그대로 그 계정의 공유 행으로
  * 승격시킨다 — "연동하면 지금까지 쓰던 게 사라진다"는 걱정을 없애려는 의도(사용자 요청 배경).
  * 이미 다른 기기가 먼저 연동해 공유 행이 있으면(두 번째 이후 기기), 이 기기의 기존 데이터는
- * 유지한 채 계정의 공유 행에 합류한다. 별도 포트폴리오가 있으면 덮어쓰지 않고 충돌로 중단한다.
+ * 유지한 채 계정의 공유 행에 합류한다. 다른 보유·관심 기록은 비교 후 명시적으로 선택한다.
  */
 @Service
 class AuthService(
@@ -35,6 +35,7 @@ class AuthService(
     private val portfolios: PortfolioRepository? = null,
     private val revisions: PortfolioRevisionRepository? = null,
     private val sessions: com.firewatch.backend.repository.AuthSessions? = null,
+    private val accountRecords: AccountRecordLinkService? = null,
 ) : AuditedComponent {
     override val auditEventType = AuditEventType.AUTH
 
@@ -46,7 +47,7 @@ class AuthService(
     }
 
     @Transactional
-    fun linkGoogleAccount(deviceId: String, idToken: String): UserSettings {
+    fun linkGoogleAccount(deviceId: String, idToken: String, recordChoice: com.firewatch.backend.web.dto.AccountRecordChoice? = null): UserSettings {
         val identity = googleIdentityVerifier.verify(idToken)
             ?: throw UnauthorizedException("Google 로그인 확인에 실패했습니다.")
 
@@ -59,8 +60,8 @@ class AuthService(
         if (linked != null && linked.userId != userId) throw UnauthorizedException("현재 연결된 Google 계정으로 로그인해주세요.")
         val anonymous = userSettingsRepository.findByDeviceId(deviceId)
         val existingAccount = userSettingsRepository.findByUserId(userId)
-        if (anonymous != null && existingAccount != null && anonymous.id != existingAccount.id && portfolios?.existsById(anonymous.id) == true) {
-            throw com.firewatch.backend.web.ConflictException("이 기기와 계정의 포트폴리오를 먼저 확인해주세요. 기기 데이터를 덮어쓰지 않도록 연동을 중단했습니다.")
+        if (linked == null && anonymous != null && existingAccount != null && anonymous.id != existingAccount.id) {
+            accountRecords?.resolve(anonymous, existingAccount, recordChoice)
         }
 
         val settings = existingAccount

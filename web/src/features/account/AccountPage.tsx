@@ -7,6 +7,9 @@ import { loadGoogleSignIn } from '../../lib/googleSignIn'
 import { useSettings } from '../settings/hooks/useSettings'
 import { useIsOperator } from '../../lib/operatorAccess'
 import '../support-pages.css'
+import { ApiRequestError } from '../../lib/api'
+import { AccountRecordLinkModal } from './AccountRecordLinkModal'
+import { accountRecordComparison, accountRecordErrorMessage, type AccountRecordChoice, type AccountRecordComparison } from '../../../../shared/account-record-link'
 
 const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '').trim()
 const accountCheckOptions = { timeoutMs: 20000, retryDelaysMs: [] as readonly number[] }
@@ -73,20 +76,41 @@ function GoogleLoginButton({ onBusy, onError }: { onBusy: (busy: boolean) => voi
   const operation = useRef(false)
   const [retry, setRetry] = useState(0)
   const [failed, setFailed] = useState(false)
+  const [comparison, setComparison] = useState<AccountRecordComparison | null>(null)
+  const [comparisonError, setComparisonError] = useState('')
+  const [linking, setLinking] = useState(false)
+  const pendingToken = useRef<string | null>(null)
+  useEffect(() => () => { pendingToken.current = null }, [])
+  async function confirmRecords(choice: AccountRecordChoice) {
+    if (operation.current || !pendingToken.current) return
+    operation.current = true; setLinking(true); setComparisonError(''); onBusy(true)
+    try { await linkGoogleAccount(pendingToken.current, choice); pendingToken.current = null; window.location.replace('/account') }
+    catch (e) {
+      const records = e instanceof ApiRequestError ? accountRecordComparison(e.apiError) : null
+      if (records) { setComparison(records); setComparisonError('기록이 변경됐어요. 최신 내용을 다시 확인해주세요.') }
+      else setComparisonError(e instanceof ApiRequestError ? accountRecordErrorMessage(e.apiError) : e instanceof Error ? e.message : '연결하지 못했어요. 다시 시도해주세요.')
+      onBusy(false)
+    } finally { operation.current = false; setLinking(false) }
+  }
   useEffect(() => {
     let active = true
     loadGoogleSignIn().then(id => {
       if (!active || !container.current) return
       id.initialize({ client_id: clientId, auto_select: false, ux_mode: 'popup', callback: async response => {
-        if (!active || operation.current) return
+        if (!active || operation.current || pendingToken.current) return
         operation.current = true; onBusy(true); onError('')
         try { await linkGoogleAccount(response.credential); window.location.replace('/account') }
-        catch (e) { if (active) { onError(e instanceof Error ? e.message : '로그인에 실패했습니다.'); onBusy(false) } }
+        catch (e) { if (active) {
+          const records = e instanceof ApiRequestError ? accountRecordComparison(e.apiError) : null
+          if (records) { pendingToken.current = response.credential; setComparison(records); setComparisonError('') }
+          else onError(e instanceof Error ? e.message : '로그인에 실패했습니다.')
+          onBusy(false)
+        } }
         finally { operation.current = false }
       } })
       id.renderButton(container.current, { type: 'standard', theme: 'outline', size: 'large', text: 'continue_with', width: Math.min(320, container.current.clientWidth || 320), locale: 'ko' })
     }).catch(e => { if (active) { onError(e.message); setFailed(true) } })
     return () => { active = false }
   }, [retry, onBusy, onError])
-  return <div>{failed && <Button onClick={() => { setFailed(false); onError(''); setRetry(v => v + 1) }}>로그인 화면 다시 불러오기</Button>}<div ref={container} style={{ minHeight: 44, maxWidth: '100%' }} aria-label="Google 로그인" /></div>
+  return <div>{comparison && <AccountRecordLinkModal key={comparison.fingerprint} comparison={comparison} busy={linking} error={comparisonError} confirm={choice => void confirmRecords(choice)} close={() => { if (!linking) { pendingToken.current = null; setComparison(null); setComparisonError(''); onBusy(false) } }} />}{failed && <Button onClick={() => { setFailed(false); onError(''); setRetry(v => v + 1) }}>로그인 화면 다시 불러오기</Button>}<div ref={container} style={{ minHeight: 44, maxWidth: '100%' }} aria-label="Google 로그인" /></div>
 }
