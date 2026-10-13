@@ -19,9 +19,9 @@ class CollectionAlertAccessIntegrationTest {
     @Autowired lateinit var sessions: AuthSessions
 
     @Test fun `수집 장애 상세는 익명 일반 계정 위조 운영자를 차단하고 운영자만 조회한다`() {
-        val client = WebTestClient.bindToServer().baseUrl("http://localhost:$port").responseTimeout(Duration.ofSeconds(20)).build()
+        val client = WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").responseTimeout(Duration.ofSeconds(20)).build()
         val path = "/api/collection/alerts"
-        client.get().uri(path).exchange().expectStatus().isUnauthorized
+        client.get().uri(path).exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         fun account(email: String, verified: Boolean): Pair<String, String> {
             val device = UUID.randomUUID().toString()
             val user = users.save(AppUser(googleSub = device, email = email, emailVerified = verified))
@@ -29,12 +29,12 @@ class CollectionAlertAccessIntegrationTest {
             return device to "Bearer ${sessions.issue(device).token}"
         }
         val (device, auth) = account("ordinary@example.com", true)
-        client.get().uri(path).header("X-Device-Id", device).header("Authorization", auth).exchange().expectStatus().isForbidden
+        client.get().uri(path).header("X-Device-Id", device).header("Authorization", auth).exchange().expectStatus().isForbidden.expectBody(Void::class.java)
         val (unverified, unverifiedAuth) = account("powerhch@gmail.com", false)
-        client.get().uri(path).header("X-Device-Id", unverified).header("Authorization", unverifiedAuth).exchange().expectStatus().isForbidden
+        client.get().uri(path).header("X-Device-Id", unverified).header("Authorization", unverifiedAuth).exchange().expectStatus().isForbidden.expectBody(Void::class.java)
         val (operator, operatorAuth) = account("powerhch@gmail.com", true)
-        client.get().uri(path).header("X-Device-Id", operator).header("Authorization", operatorAuth).exchange().expectStatus().isOk
-        client.get().uri(path).header("X-Device-Id", device).header("Authorization", operatorAuth).exchange().expectStatus().isUnauthorized
-        client.get().uri(path).header("X-API-Key", "collection-test-key").exchange().expectStatus().isOk
+        client.get().uri(path).header("X-Device-Id", operator).header("Authorization", operatorAuth).exchange().expectStatus().isOk.expectBody(Void::class.java)
+        client.get().uri(path).header("X-Device-Id", device).header("Authorization", operatorAuth).exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+        client.get().uri(path).header("X-API-Key", "collection-test-key").exchange().expectStatus().isOk.expectBody(Void::class.java)
     }
 }

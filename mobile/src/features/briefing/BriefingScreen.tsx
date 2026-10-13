@@ -7,7 +7,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native'
 
 import type { Briefing } from '@/lib/api'
 
-import { RecommendedStockChip } from './components/RecommendedStockChip'
+import { RecommendedStockList } from './components/RecommendedStockChip'
 import { qualifiedRecommendations } from '../../../../shared/discovery'
 
 function minutesAgoLabel(isoString: string): string {
@@ -59,11 +59,7 @@ export function BriefingScreen({ briefing, cachedAt, loading, onOpenSheet, error
             </Text>
           </Pressable>
           {qualifiedRecommendations(briefing).length > 0 && (
-            <View className="flex-row flex-wrap gap-2">
-              {qualifiedRecommendations(briefing).map(({ stockName: symbol }) => (
-                <RecommendedStockChip key={symbol} symbol={symbol} />
-              ))}
-            </View>
+            <RecommendedStockList stocks={qualifiedRecommendations(briefing).map(pick => pick.stockName)} />
           )}
           {!qualifiedRecommendations(briefing).length && <View className="rounded-2xl border border-line bg-surface p-5"><Text className="text-muted">선정 이유·위험·근거 기사를 갖춘 AI 후보가 아직 없습니다.</Text></View>}
         </>

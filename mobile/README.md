@@ -6,6 +6,8 @@ Expo + React Native + Expo Router 기반 앱. 웹과 동일한 백엔드를 사�
 
 최신 테스트 버전 **1.0.6 / versionCode 11 (2026-10-13)**: [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.6-android-preview/FireWatch-1.0.6-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.6-android-preview).
 
+후속 소스의 버튼 대비·브리핑 관심 추가/마지막 해제·스크롤·시장 지표 그래프는 위 APK에 아직 포함되지 않는다. [후속 검증 기록](../docs/product/web30-support-design/mobile-market-ux-20261013.md). 추가 APK 빌드는 별도 사용자 요청을 따른다.
+
 PR#100~102의 보유 등록 대비/오른쪽 닫기/관심 해제 상세 유지, 게임 시작 하단 고정/드래그 닫기 시트, 공통 버튼 상태/설정 저장 고정/뉴스·키워드·메시지 작은 화면 개선을 포함합니다. 기존 차트 터치 가격·KST 시각, 알림 시간·키워드 새 소식·기기별 해제도 포함합니다.
 
 소스 `b1a67e5`를 로컬 Expo prebuild+Gradle로 빌드했습니다. 크기 54,324,456 bytes(약 54.3MB), SHA-256 `cd81d1509063f458285dbc1f8e23fd44ecf515d6ca495dc12f752dec93b1e442`. 이전 1.0.5와 같은 release 서명, 패키지/버전·ZIP CRC·16KB 정렬·Google/그라디언트 네이티브 모듈·마스코트·최신 시트/버튼/설정 번들·GitHub 업로드/공개 다운로드를 확인했습니다. EAS 클라우드 요청 0. [설치 검증](../docs/deployment/android-release-check.md).

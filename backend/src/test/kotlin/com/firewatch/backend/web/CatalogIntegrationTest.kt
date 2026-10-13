@@ -100,7 +100,7 @@ class CatalogIntegrationTest {
         catalog.run(DefaultApplicationArguments())
         assertEquals(edited, catalog.search("ㄱㅈㅍㅈㅂㅇ").items.single().instrument)
         assertEquals(editedRows, jdbc.queryForList("SELECT symbol, name, normalized_name, search_text, metadata_json, verified_at FROM instrument_catalog ORDER BY symbol"))
-        WebTestClient.bindToServer().baseUrl("http://localhost:$port").build().get().uri { it.path("/api/stocks/search").queryParam("q", "ㅅㅅㅈㅈ").build() }.exchange().expectStatus().isOk.expectBody().jsonPath("$[0].name").isEqualTo("삼성전자")
+        WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").build().get().uri { it.path("/api/stocks/search").queryParam("q", "ㅅㅅㅈㅈ").build() }.exchange().expectStatus().isOk.expectBody().jsonPath("$[0].name").isEqualTo("삼성전자")
     }
     @Test
     fun `한국어 별칭 지수 검색과 상장국 필터를 지원하고 추정 시세를 만들지 않는다`() {
@@ -113,8 +113,8 @@ class CatalogIntegrationTest {
         assertEquals(2, catalog.search("S&P 500", "ETF", "KR").total)
         assertEquals(0, catalog.search("%_'").total)
         assertEquals(5, catalog.search("", "STOCK", "", "chips").total)
-        WebTestClient.bindToServer().baseUrl("http://localhost:$port").build().get().uri("/api/catalog?assetClass=ETF&region=KR").exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(2)
-        WebTestClient.bindToServer().baseUrl("http://localhost:$port").build().get().uri("/api/catalog?page=-1").exchange().expectStatus().isBadRequest
+        WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").build().get().uri("/api/catalog?assetClass=ETF&region=KR").exchange().expectStatus().isOk.expectBody().jsonPath("$.total").isEqualTo(2)
+        WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").build().get().uri("/api/catalog?page=-1").exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
     }
 
     @Test @Transactional

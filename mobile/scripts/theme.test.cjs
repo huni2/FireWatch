@@ -29,6 +29,7 @@ test('body, secondary, action and primary-button text retain readable contrast i
     for (const background of [c.canvas,c.surface]) for (const foreground of [c.text,c.muted,c.accent,c.negative,c.danger]) {
       assert.ok(contrast(foreground,background)>=4.5, `${mode}: ${foreground} on ${background}`);
     }
-    assert.ok(contrast(c.onAccent,c.accent)>=4.5, `${mode}: primary action label`);
+    assert.equal(c.actionText, '#17202E', `${mode}: controls use dark labels`);
+    assert.ok(contrast(c.actionText,c.actionBackground)>=4.5, `${mode}: action and selected control label`);
   }
 });

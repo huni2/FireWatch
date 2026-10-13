@@ -12,6 +12,7 @@ interface KeywordInputProps {
   /** false면 입력창을 숨기고 태그 목록만 — 종목 화면(APP-8)이 검색/직접입력 탭을 전환할 때 사용. */
   showInput?: boolean
   labelForValue?: (value: string) => string
+  disabled?: boolean
 }
 
 export function KeywordInput({
@@ -22,6 +23,7 @@ export function KeywordInput({
   validate,
   showInput = true,
   labelForValue,
+  disabled = false,
 }: KeywordInputProps) {
   const [draft, setDraft] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -53,7 +55,7 @@ export function KeywordInput({
             style={{ maxWidth: '100%' }}
           >
             <Text className="text-sm text-muted" style={{ flexShrink: 1 }}>{labelForValue?.(keyword) ?? keyword}</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel={`${labelForValue?.(keyword) ?? keyword} 삭제`} onPress={() => onChange(value.filter((k) => k !== keyword))} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
+            <Pressable accessibilityRole="button" accessibilityLabel={`${labelForValue?.(keyword) ?? keyword} 삭제`} accessibilityState={{ disabled }} disabled={disabled} onPress={() => onChange(value.filter((k) => k !== keyword))} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
               <Text className="text-sm text-muted">✕</Text>
             </Pressable>
           </View>
@@ -69,7 +71,7 @@ export function KeywordInput({
             }}
             onSubmitEditing={addKeyword}
             onBlur={addKeyword}
-            editable={value.length < maxCount}
+            editable={!disabled && value.length < maxCount}
             placeholder={value.length >= maxCount ? `최대 ${maxCount}개까지 등록 가능` : placeholder}
             maxLength={30}
             returnKeyType="done"

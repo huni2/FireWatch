@@ -26,7 +26,7 @@ class CommunityIntegrationTest {
     @Autowired lateinit var sessions: AuthSessions
     @Autowired lateinit var jdbc: JdbcTemplate
     @Autowired lateinit var settings: UserSettingsRepository
-    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").responseTimeout(java.time.Duration.ofSeconds(20)).build()
+    private fun client() = WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").responseTimeout(java.time.Duration.ofSeconds(20)).build()
     private fun login(email: String = "test@example.com"): Pair<String, String> {
         val device = UUID.randomUUID().toString()
         val account = users.save(AppUser(googleSub = device, email = email, emailVerified = true))
@@ -37,20 +37,20 @@ class CommunityIntegrationTest {
     @Test fun `문의는 본인만 읽고 재전송은 동일 접수이며 일반 계정은 관리하지 못한다`() {
         val (device, auth) = login()
         val input = FeedbackInput(UUID.randomUUID().toString(), "BUG", "다음 턴 버튼을 눌렀을 때 오류가 발생합니다", "WEB")
-        client().post().uri("/api/community/feedback").bodyValue(input).exchange().expectStatus().isUnauthorized
+        client().post().uri("/api/community/feedback").bodyValue(input).exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         val row = client().post().uri("/api/community/feedback").header("X-Device-Id", device).header("Authorization", auth).bodyValue(input).exchange().expectStatus().isOk.expectBody(FeedbackView::class.java).returnResult().responseBody!!
         client().post().uri("/api/community/feedback").header("X-Device-Id", device).header("Authorization", auth).bodyValue(input).exchange().expectStatus().isOk.expectBody().jsonPath("$.id").isEqualTo(row.id)
         assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM user_feedback WHERE id=?", Int::class.java, row.id))
         val (other, otherAuth) = login()
         client().get().uri("/api/community/feedback").header("X-Device-Id", other).header("Authorization", otherAuth).exchange().expectStatus().isOk.expectBody().json("[]")
-        client().get().uri("/api/community/operator/feedback").header("X-Device-Id", device).header("Authorization", auth).exchange().expectStatus().isForbidden
-        client().get().uri("/api/community/operator/notices").exchange().expectStatus().isUnauthorized
-        client().get().uri("/api/community/operator/feedback").header("X-API-Key", "community-operator").exchange().expectStatus().isUnauthorized
-        client().put().uri("/api/community/operator/feedback/${row.id}").header("X-Device-Id", device).header("Authorization", auth).bodyValue(FeedbackUpdate("RESOLVED", "답변")).exchange().expectStatus().isForbidden
+        client().get().uri("/api/community/operator/feedback").header("X-Device-Id", device).header("Authorization", auth).exchange().expectStatus().isForbidden.expectBody(Void::class.java)
+        client().get().uri("/api/community/operator/notices").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+        client().get().uri("/api/community/operator/feedback").header("X-API-Key", "community-operator").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+        client().put().uri("/api/community/operator/feedback/${row.id}").header("X-Device-Id", device).header("Authorization", auth).bodyValue(FeedbackUpdate("RESOLVED", "답변")).exchange().expectStatus().isForbidden.expectBody(Void::class.java)
         val (op, opAuth) = login("powerhch@gmail.com")
-        client().put().uri("/api/community/operator/feedback/${row.id}").header("X-Device-Id", op).header("Authorization", opAuth).bodyValue(FeedbackUpdate("REVIEWING", "확인하고 있습니다.")).exchange().expectStatus().isOk
+        client().put().uri("/api/community/operator/feedback/${row.id}").header("X-Device-Id", op).header("Authorization", opAuth).bodyValue(FeedbackUpdate("REVIEWING", "확인하고 있습니다.")).exchange().expectStatus().isOk.expectBody(Void::class.java)
         client().get().uri("/api/community/feedback").header("X-Device-Id", device).header("Authorization", auth).exchange().expectStatus().isOk.expectBody().jsonPath("$[0].reply").isEqualTo("확인하고 있습니다.")
-        client().post().uri("/api/community/feedback").header("X-Device-Id", device).header("Authorization", auth).bodyValue(input.copy(requestId = UUID.randomUUID().toString(), content = "short", screen = "/?token=secret")).exchange().expectStatus().isBadRequest
+        client().post().uri("/api/community/feedback").header("X-Device-Id", device).header("Authorization", auth).bodyValue(input.copy(requestId = UUID.randomUUID().toString(), content = "short", screen = "/?token=secret")).exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         val user = sessions.authenticate(device, auth)
         jdbc.update("DELETE FROM app_users WHERE id=?", user)
         assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM user_feedback WHERE id=?", Int::class.java, row.id))
@@ -61,7 +61,7 @@ class CommunityIntegrationTest {
         val now = Instant.now()
         val base = NoticeInput("새 기능", "포트폴리오 분석 안내", "WEB", true, now.minusSeconds(60), null, true)
         val (operatorDevice, operatorAuth) = login("powerhch@gmail.com")
-        fun create(input: NoticeInput) = client().post().uri("/api/community/operator/notices").header("X-Device-Id", operatorDevice).header("Authorization", operatorAuth).bodyValue(input).exchange().expectStatus().isOk
+        fun create(input: NoticeInput) = client().post().uri("/api/community/operator/notices").header("X-Device-Id", operatorDevice).header("Authorization", operatorAuth).bodyValue(input).exchange().expectStatus().isOk.expectBody(Void::class.java)
         create(base); create(base.copy(title = "앱", target = "ANDROID")); create(base.copy(title = "초안", published = false)); create(base.copy(title = "예정", startsAt = now.plusSeconds(3600))); create(base.copy(title = "종료", startsAt = now.minusSeconds(7200), endsAt = now.minusSeconds(3600)))
         client().get().uri("/api/community/notices?platform=WEB").exchange().expectStatus().isOk.expectBody().jsonPath("$.length()").isEqualTo(1).jsonPath("$[0].title").isEqualTo("새 기능")
         client().get().uri("/api/community/notices?platform=ANDROID").exchange().expectStatus().isOk.expectBody().jsonPath("$.length()").isEqualTo(1)
@@ -70,14 +70,14 @@ class CommunityIntegrationTest {
         val second = UUID.randomUUID().toString()
         links.save(DeviceLink(second, account))
         val secondAuth = "Bearer ${sessions.issue(second).token}"
-        client().post().uri("/api/community/hide-today").header("X-Device-Id", device).header("Authorization", auth).exchange().expectStatus().isOk
+        client().post().uri("/api/community/hide-today").header("X-Device-Id", device).header("Authorization", auth).exchange().expectStatus().isOk.expectBody(Void::class.java)
         val until = jdbc.queryForObject("SELECT hidden_until FROM notice_preferences WHERE user_id=?", java.sql.Timestamp::class.java, account)!!.toInstant()
         assertEquals(now.atZone(ZoneId.of("Asia/Seoul")).toLocalDate().plusDays(1).atStartOfDay(ZoneId.of("Asia/Seoul")).toInstant(), until)
         client().get().uri("/api/community/popup?platform=WEB").header("X-Device-Id", second).header("Authorization", secondAuth).exchange().expectStatus().isOk.expectBody().json("[]")
         client().get().uri("/api/community/notices?platform=WEB").exchange().expectStatus().isOk.expectBody().jsonPath("$.length()").isEqualTo(1)
         jdbc.update("UPDATE notice_preferences SET hidden_until=? WHERE user_id=?", java.sql.Timestamp.from(now.minusSeconds(1)), account)
         client().get().uri("/api/community/popup?platform=WEB").header("X-Device-Id", second).header("Authorization", secondAuth).exchange().expectStatus().isOk.expectBody().jsonPath("$.length()").isEqualTo(1)
-        client().get().uri("/api/community/popup?platform=WEB").header("X-Device-Id", second).exchange().expectStatus().isUnauthorized
+        client().get().uri("/api/community/popup?platform=WEB").header("X-Device-Id", second).exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
     }
 
     @Test fun `피드백 푸시는 재시작 후에도 최대 세번과 한시간 간격을 지킨다`() {

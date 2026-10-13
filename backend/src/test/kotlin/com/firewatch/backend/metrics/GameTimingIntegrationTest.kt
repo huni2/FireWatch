@@ -46,7 +46,7 @@ class GameTimingIntegrationTest {
     }
     // This verifies timing fields and durable state, not a five-second latency SLA.
     // Match other integration clients so cold/contended CI workers can finish setup.
-    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port")
+    private fun client() = WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port")
         .responseTimeout(Duration.ofSeconds(20)).build()
     private fun start(device: String) = client().post().uri("/api/game/start?compact=true").header("X-Device-Id", device)
         .exchange().expectStatus().isOk.expectHeader().valueMatches("Server-Timing", "application;dur=\\d+, auth_queue;dur=.+")
@@ -103,7 +103,7 @@ class GameTimingIntegrationTest {
         assertTrue(success.contains("status=200"))
         assertTrue(Regex("dispatch_ms=\\d+\\.\\d+").containsMatchIn(success))
         client().post().uri("/api/game/preview").header("X-Device-Id", device).bodyValue(body.copy(quantity = java.math.BigDecimal.ZERO))
-            .exchange().expectStatus().isBadRequest
+            .exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         val failure = httpAppender.list.map { it.formattedMessage }.last { it.contains("op=PREVIEW") }
         assertTrue(failure.contains("status=400"))
         assertTrue(failure.contains("controller_ms=unavailable"), failure)
@@ -151,14 +151,14 @@ class GameTimingIntegrationTest {
         val device = UUID.randomUUID().toString()
         val turn = start(device)
         client().get().uri("/api/game/sessions/${turn.sessionId}/assets/history?turnIndex=24&instrumentType=GOLD")
-            .header("X-Device-Id", device).exchange().expectStatus().isBadRequest
+            .header("X-Device-Id", device).exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         val failure = messages().last()
         assertTrue(failure.contains("op=HISTORY outcome=failure"))
         assertTrue(sqlCount(failure) > 0)
         assertTrue(failure.contains("repository_count=1"))
         assertTrue(failure.contains("rules_count=0"))
         assertTrue(failure.contains("history_count=0"))
-        client().get().uri("/api/game/current?compact=true").exchange().expectStatus().isBadRequest
+        client().get().uri("/api/game/current?compact=true").exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         val next = messages().last()
         assertTrue(next.contains("op=CURRENT outcome=failure"))
         assertEquals(0, sqlCount(next))

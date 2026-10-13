@@ -45,10 +45,10 @@ class ApiIntegrationTest @Autowired constructor(
 
     @Test
     fun `DB 연결 풀 상태는 관리 키가 있어야 조회하며 연결 정보는 공개하지 않는다`() {
-        webTestClient.get().uri("/api/operations/database-pool").exchange().expectStatus().isUnauthorized
+        webTestClient.get().uri("/api/operations/database-pool").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         webTestClient.get().uri("/api/operations/database-pool").header("X-API-Key", "wrong-key")
-            .exchange().expectStatus().isUnauthorized
-        webTestClient.get().uri("/api/operations/database-pool").header("X-API-Key", "test-key").exchange().expectStatus().isUnauthorized
+            .exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+        webTestClient.get().uri("/api/operations/database-pool").header("X-API-Key", "test-key").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         webTestClient.get().uri("/api/operations/database-pool").header("X-API-Key", "test-operator-key")
             .exchange().expectStatus().isOk.expectBody()
             .jsonPath("$.maximumConnections").isNumber
@@ -60,8 +60,8 @@ class ApiIntegrationTest @Autowired constructor(
 
     @Test
     fun `운영자 장애 푸시 수신자 등록은 관리 키와 기존 푸시 구독이 필요하다`() {
-        webTestClient.post().uri("/api/collection/operator").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isUnauthorized
-        webTestClient.post().uri("/api/collection/operator").header("X-API-Key", "test-key").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isUnauthorized
+        webTestClient.post().uri("/api/collection/operator").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+        webTestClient.post().uri("/api/collection/operator").header("X-API-Key", "test-key").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         webTestClient.post().uri("/api/collection/operator").header("X-API-Key", "test-operator-key").header("X-Device-Id", "operator-api-test").exchange().expectStatus().isEqualTo(409)
         val operator = settings.findByDeviceId("operator-api-test")!!
         operator.fcmTokensRaw = "operator-token"
@@ -72,7 +72,7 @@ class ApiIntegrationTest @Autowired constructor(
     }
 
     private val webTestClient: WebTestClient by lazy {
-        WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
+        WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").build()
     }
 
     @Test
@@ -105,14 +105,14 @@ class ApiIntegrationTest @Autowired constructor(
         kotlin.test.assertEquals(23, detail["turnIndex"].asInt())
         val past = mapper.readTree(bytes(get(detailPath.replace("turnIndex=23", "turnIndex=0"))))
         kotlin.test.assertEquals(1, past["history"]["points"].size())
-        get(detailPath, "another-device").exchange().expectStatus().isNotFound
-        get(detailPath.replace("turnIndex=23", "turnIndex=24")).exchange().expectStatus().isBadRequest
-        get(detailPath.replace("turnIndex=23", "turnIndex=-1")).exchange().expectStatus().isBadRequest
-        get(detailPath.replace("005930.KS", "UNKNOWN")).exchange().expectStatus().isNotFound
-        get(detailPath.replace("STOCK", "GOLD")).exchange().expectStatus().isNotFound
-        get(detailPath.replace("STOCK", "INVALID")).exchange().expectStatus().isBadRequest
-        webTestClient.get().uri(detailPath).exchange().expectStatus().isBadRequest
-        post("/api/game/next-turn?compact=invalid").exchange().expectStatus().isBadRequest
+        get(detailPath, "another-device").exchange().expectStatus().isNotFound.expectBody(Void::class.java)
+        get(detailPath.replace("turnIndex=23", "turnIndex=24")).exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
+        get(detailPath.replace("turnIndex=23", "turnIndex=-1")).exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
+        get(detailPath.replace("005930.KS", "UNKNOWN")).exchange().expectStatus().isNotFound.expectBody(Void::class.java)
+        get(detailPath.replace("STOCK", "GOLD")).exchange().expectStatus().isNotFound.expectBody(Void::class.java)
+        get(detailPath.replace("STOCK", "INVALID")).exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
+        webTestClient.get().uri(detailPath).exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
+        post("/api/game/next-turn?compact=invalid").exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         val current = mapper.readTree(bytes(get("/api/game/current")))
         // Fictional Briefing.createdAt is generated per response and is not a saved game field.
         for (node in listOf(full, compact, current)) (node["briefing"] as tools.jackson.databind.node.ObjectNode).remove("createdAt")
@@ -144,9 +144,9 @@ class ApiIntegrationTest @Autowired constructor(
         kotlin.test.assertEquals(1, preserved.simulationVersion)
         kotlin.test.assertEquals(2, preserved.currentTurnIndex)
         kotlin.test.assertEquals(com.firewatch.backend.entity.GameSessionStatus.ENDED, preserved.status)
-        webTestClient.get().uri(path.replace("AURA", "005930.KS")).header("X-Device-Id", device).exchange().expectStatus().isNotFound
+        webTestClient.get().uri(path.replace("AURA", "005930.KS")).header("X-Device-Id", device).exchange().expectStatus().isNotFound.expectBody(Void::class.java)
         jdbc.update("UPDATE game_sessions SET simulation_version=999 WHERE id=?", session.id)
-        webTestClient.get().uri(path).header("X-Device-Id", device).exchange().expectStatus().isBadRequest
+        webTestClient.get().uri(path).header("X-Device-Id", device).exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         kotlin.test.assertEquals(999, games.findById(session.id!!).orElseThrow().simulationVersion)
     }
 
@@ -283,7 +283,7 @@ class ApiIntegrationTest @Autowired constructor(
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(mapOf("pushTime" to "06:00", "interestKeywords" to emptyList<String>()))
             .exchange()
-            .expectStatus().isOk
+            .expectStatus().isOk.expectBody(Void::class.java)
 
         webTestClient.get().uri("/api/settings")
             .header("X-Device-Id", "device-b")

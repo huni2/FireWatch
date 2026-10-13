@@ -48,10 +48,10 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
         <Pressable accessibilityRole="checkbox" accessibilityState={{ checked, disabled: saving }} disabled={saving} onPress={() => setChecked((value) => !value)} className="min-h-11 flex-row items-center gap-3">
           <View
             className={`h-6 w-6 items-center justify-center rounded border ${
-              checked ? 'border-brand bg-brand' : 'border-neutral-400'
+              checked ? 'border-brand bg-selection' : 'border-neutral-400'
             }`}
           >
-            {checked && <Text className="text-sm font-bold text-onbrand">✓</Text>}
+            {checked && <Text className="text-sm font-bold text-onselection">✓</Text>}
           </View>
           <Text className="flex-1 text-base text-ink">
             (필수) 개인정보 수집·이용 및 개인정보처리방침에 동의합니다.
@@ -63,9 +63,9 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
           accessibilityRole="button"
           accessibilityState={{ disabled: !checked || saving, busy: saving }}
           disabled={!checked || saving}
-          className={`items-center rounded-full border py-4 ${checked ? 'bg-brand border-brand' : 'bg-surface border-line'}`}
+          className={`items-center rounded-full border py-4 ${checked ? 'bg-selection border-brand' : 'bg-surface border-line'}`}
         >
-          <Text className={`text-base font-bold ${checked ? 'text-onbrand' : 'text-muted'}`}>{saving ? '설정 저장 중…' : '동의하고 시작하기'}</Text>
+          <Text className={`text-base font-bold ${checked ? 'text-onselection' : 'text-muted'}`}>{saving ? '설정 저장 중…' : '동의하고 시작하기'}</Text>
         </Pressable>
       </View>
     </ScrollView></SafeAreaView>

@@ -29,14 +29,14 @@ class BackupReportIntegrationTest {
     companion object {
         @JvmStatic @DynamicPropertySource fun database(registry: DynamicPropertyRegistry) = TestDatabase.configure(registry)
     }
-    private fun client() = WebTestClient.bindToServer().baseUrl("http://localhost:$port").responseTimeout(Duration.ofSeconds(20)).build()
+    private fun client() = WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").responseTimeout(Duration.ofSeconds(20)).build()
     @Test fun `외부 보고는 비밀 키가 필요하고 입력에 원문 예외나 DB 주소를 허용하지 않는다`() {
         val path = "/api/operations/backup/report"
         val request = BackupReportInput("100-1", "DUMP_FAILED")
-        client().post().uri(path).bodyValue(request).exchange().expectStatus().isUnauthorized
-        client().post().uri(path).header("X-API-Key", "public-key").bodyValue(request).exchange().expectStatus().isUnauthorized
+        client().post().uri(path).bodyValue(request).exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
+        client().post().uri(path).header("X-API-Key", "public-key").bodyValue(request).exchange().expectStatus().isUnauthorized.expectBody(Void::class.java)
         listOf(BackupReportInput("'SQL'", "DUMP_FAILED"), BackupReportInput("100-1", "postgres://private-password")) .forEach {
-            client().post().uri(path).header("X-API-Key", "backup-report-test-key").bodyValue(it).exchange().expectStatus().isBadRequest
+            client().post().uri(path).header("X-API-Key", "backup-report-test-key").bodyValue(it).exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
         }
         assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM collection_alerts WHERE id='backup:100-1'", Int::class.java))
     }
@@ -44,7 +44,7 @@ class BackupReportIntegrationTest {
         jdbc.update("DELETE FROM collection_alerts WHERE category='backup'")
         val request = BackupReportInput("200-1", "ENCRYPT_FAILED")
         fun post(body: BackupReportInput) = client().post().uri("/api/operations/backup/report")
-            .header("X-API-Key", "backup-report-test-key").bodyValue(body).exchange().expectStatus().isOk
+            .header("X-API-Key", "backup-report-test-key").bodyValue(body).exchange().expectStatus().isOk.expectBody(Void::class.java)
         post(request)
         jdbc.update("UPDATE collection_alerts SET push_attempts=3 WHERE id='backup:200-1'")
         post(request)

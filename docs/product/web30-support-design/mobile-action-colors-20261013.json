@@ -1,0 +1,67 @@
+{
+  "environment": "React Native web preview with isolated API fixture; not Android device",
+  "rows": [
+    {
+      "mode": "light",
+      "start": {
+        "background": "rgb(255, 196, 155)",
+        "text": "rgb(23, 32, 46)",
+        "box": {
+          "x": 20,
+          "y": 719,
+          "width": 350,
+          "height": 48,
+          "top": 719,
+          "right": 370,
+          "bottom": 767,
+          "left": 20
+        }
+      },
+      "next": {
+        "background": "rgb(255, 196, 155)",
+        "text": "rgb(23, 32, 46)",
+        "box": {
+          "x": 236.875,
+          "y": 721,
+          "width": 133.125,
+          "height": 48,
+          "top": 721,
+          "right": 370,
+          "bottom": 769,
+          "left": 236.875
+        }
+      }
+    },
+    {
+      "mode": "dark",
+      "start": {
+        "background": "rgb(255, 196, 155)",
+        "text": "rgb(23, 32, 46)",
+        "box": {
+          "x": 20,
+          "y": 719,
+          "width": 350,
+          "height": 48,
+          "top": 719,
+          "right": 370,
+          "bottom": 767,
+          "left": 20
+        }
+      },
+      "next": {
+        "background": "rgb(255, 196, 155)",
+        "text": "rgb(23, 32, 46)",
+        "box": {
+          "x": 236.875,
+          "y": 721,
+          "width": 133.125,
+          "height": 48,
+          "top": 721,
+          "right": 370,
+          "bottom": 769,
+          "left": 236.875
+        }
+      }
+    }
+  ]
+}
