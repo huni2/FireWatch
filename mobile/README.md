@@ -4,13 +4,13 @@ Expo + React Native + Expo Router 기반 앱. 웹과 동일한 백엔드를 사�
 
 ## 설치용 APK
 
-최신 테스트 버전 **1.0.8 / versionCode 13 (2026-10-13)**: [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.8-android-preview/FireWatch-1.0.8-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.8-android-preview).
+최신 테스트 버전 **1.0.9 / versionCode 14 (2026-10-13)**: [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.9-android-preview/FireWatch-1.0.9-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.9-android-preview).
 
-긴 모달 10곳의 공통 스크롤·하단 여백, 주문·결과의 고정 버튼, Android 시트 입력의 키보드 대응, 관심 해제의 제자리 처리 표시·중복 요청 방지, 순위 버튼·입력 글자색 통일을 포함합니다. 이전 1.0.7 개선도 유지합니다. [점검 내용](../docs/product/android-preview-20261009/sheet-audit-20261013.md).
+보유 자산 등록·기업 상세 버튼의 글씨 가운데 정렬, 종목·시장 지표 차트의 바깥 터치 선택 해제·재선택를 포함합니다. 이전 1.0.8의 모달·키보드·처리 상태 수정도 유지합니다. [검증 범위](../docs/product/android-preview-20261009/button-chart-dismiss-20261013.md).
 
-소스 `8250a4e23c87ea7a85394d1b147cbcaca284949b`를 로컬 Expo prebuild+Gradle로 1회 빌드했습니다. 54,336,744 bytes(약 54.3MB), SHA-256 `200e8dffb40844bb2f80c3cd31bc9a44a45fedbe2e6d93381bb183699506ee70`. 기존 1.0.7 동일 서명·ARM32/64·R8·ZIP CRC/16KB 정렬·네이티브 모듈·마스코트·최신 코드·공개 다운로드를 대조했습니다. EAS 클라우드 요청 0회.
+소스 `a95f702254ba34b380ae08aeaa4decad371dfde0`를 로컬 Expo prebuild+Gradle로 1회 빌드했습니다. 54,336,744 bytes(약 54.3MB), SHA-256 `4855f02c3ce32587762c712f11c560388b0ac59c1a8e90c8db178ab74fac0d65`. 기존 1.0.8 동일 서명·ARM32/64·R8·ZIP CRC/16KB 정렬·네이티브 모듈·마스코트·새 차트 선택 코드·공개 다운로드를 대조했습니다. EAS 클라우드 요청 0회.
 
-Expo Go 없이 기존 앱 위에 업데이트합니다. 실제 Android 로그인·푸시·키보드·제스처·24주 완주·접근성은 설치 후 확인합니다. Play 게시본은 아닙니다.
+Expo Go 없이 기존 앱 위에 업데이트합니다. 실제 Android 터치·로그인·푸시·키보드·완주·접근성은 설치 후 확인합니다. Play 게시본은 아닙니다.
 
 ## 개발
 
@@ -32,7 +32,7 @@ EAS 프로젝트는 이미 app.json에 연결되어 있다. eas.json은 운영 A
 
 ### 웹·서버 배포와 별도 실행
 
-이번 사용자 요청으로 소스 `8250a4e`의 1.0.8/versionCode13를 로컬에서 빌드했다. 자동 APK/EAS 빌드는 계속 비활성이다. 웹·서버 배포나 Git push만으로 APK를 생성하지 않으며 이후 설치본도 별도 요청이 있어야 만든다.
+이번 사용자 요청으로 소스 `a95f702`의 1.0.9/versionCode14를 로컬에서 빌드했다. 자동 APK/EAS 빌드는 계속 비활성이다. 웹·서버 배포나 Git push만으로 APK를 생성하지 않으며 이후 설치본도 별도 요청이 있어야 만든다.
 
 로컬 빌드는 `npx expo prebuild --platform android --no-install`로 네이티브 프로젝트를 갱신한 뒤 Gradle `:app:assembleRelease`를 실행한다. preview의 ARM32/64 및 R8/리소스 축소 설정이 실제 gradle.properties에 반영되는지 확인한다. 생성 프로젝트는 기본 debug 서명이므로 공개 전에 기존 release 키로 서명하고 이전 APK와 인증서를 비교한다. 이번 PC 빌드는 heap3GiB/meta1GiB·최대 작업자2로 실행한다. 키·비밀번호·Firebase 파일·생성 android 폴더는 커밋하지 않는다.
 
