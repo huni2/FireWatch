@@ -19,3 +19,8 @@
 - 실제 30초 자동 갱신에 1.5초 지연과 503 실패를 넣었다. 갱신 중과 실패 후 +0.10% 차트가 유지됐고 재시도로 +0.20% 새 기록을 표시했다. 하루 요청은 초기·실패·재시도 3회, JavaScript 오류 0.
 
 브라우저는 로컬 시험 API를 사용하며 운영 데이터에 쓰지 않는다. 실제 Android 로그인·키보드·뒤로 가기·드래그·TalkBack은 이 검사로 통과 처리하지 않는다. 백엔드·DB·키 변경은 없다. APK/AAB/EAS 빌드를 실행하지 않으며 공개 1.0.10 APK와 README 설치 링크는 변경하지 않는다.
+
+
+## 2026-10-14 설치본 반영
+
+사용자가 새 APK 빌드를 요청해 위 수정과 PR #115를 1.0.11 / 빌드16에 포함했다. [APK](https://github.com/huni2/FireWatch/releases/download/v1.0.11-android-preview/FireWatch-1.0.11-android.apk) · [빌드·파일 검증](../android-preview-20261009/android-111-build.json). 이전 문단의 미빌드 상태는 수정 당시 기록이다. 실제 기기 확인은 계속 별도다.

@@ -1,6 +1,20 @@
 # APP-21 설치본 체크리스트
 
-## 최신 설치본 1.0.10 / 빌드 15 (2026-10-13)
+## 최신 설치본 1.0.11 / 빌드 16 (2026-10-14)
+
+긴 창의 스크롤·닫기 동작, 차트 시작 가격 기준선·상승/하락 표시, 시세 갱신 중 기록 유지와 재시도, 쉼표 수량·금액 입력, 시세·환율 날짜, 작은 버튼 터치 영역을 개선했습니다.
+
+소스 `9035ed7a979ecae349071cd3133fe8c10950aa74`를 로컬 Gradle로 빌드했습니다. 54,349,032 bytes(약 54.3MB), SHA-256 `6c5613ce179d5fd1169d57deab09072b6bb42b051b0968c9ab3abae086ddcc42`. 기존 1.0.10 동일 서명·ARM32/64·R8·ZIP CRC/16KB ZIP 정렬·네이티브 모듈·마스코트·새 수정 코드·공개 다운로드를 대조했습니다. Expo 클라우드 빌드 요청 0회. [소스 CI](https://github.com/huni2/FireWatch/actions/runs/38424209417) 성공.
+
+[APK](https://github.com/huni2/FireWatch/releases/download/v1.0.11-android-preview/FireWatch-1.0.11-android.apk) · [릴리스](https://github.com/huni2/FireWatch/releases/tag/v1.0.11-android-preview)
+
+- [x] 파일·공개 다운로드·README 최신화
+- [x] 모바일 81개 검사·타입·린트 및 기존 360/390px 라이트·다크 격리 UI 점검
+- [ ] 실제 Android 긴 창 스크롤·닫기·키보드·차트·재시도 확인
+- [ ] 실제 Android 로그인·푸시·완주·접근성
+- [ ] Play 계정 적합성·AAB·선언·심사 접근
+
+## 이전 설치본 1.0.10 / 빌드 15 (2026-10-13)
 
 자산 요약·점검·비중 우선 배치, 기업 필터와 상세 복귀, 종목 버튼 우선순위·차트 툴팁 경계, 게임 소식/기업·주문/내 자산 구분과 입력 유지 적용. 사용자 요청으로 로컬 빌드, Expo 클라우드 요청 0회. 소스 `2af69d9ff2e9cb6dab35d28e13f5983dd364bf3e`, [소스 CI](https://github.com/huni2/FireWatch/actions/runs/38375926321) 성공 확인.
 
