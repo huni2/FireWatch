@@ -1,6 +1,14 @@
 # Android 설치 검증
 
-## 최신 설치본 1.0.6 / 빌드11 (2026-10-13)
+## 최신 설치본1.0.7 / 빌드12 (2026-10-13)
+
+사용자 최신 APK/README 요청으로 소스 `0f82f19e7782c3e7d210cb10b79a38a6d4b5f726`를 로컬 빌드했다. 양쪽 모드의 밝은 버튼·짙은 글씨, 브리핑 관심 추가/해제와 처리 표시, 마지막 관심 기업 삭제, 긴 브리핑 스크롤, 지표7/30일 그래프·터치 날짜/원래 값을 포함한다. EAS 클라우드 요청0.
+
+기존1.0.6 동일 서명·패키지/버전·ARM32/64·R8/리소스 축소·ZIP CRC/16KB 정렬·Google/그라디언트/제스처 모듈·마스코트·최신 코드 문자열을 확인했다. 54,332,648 bytes(약 54.3MB), SHA-256 `94e029d5afd94a34b870e98d83174545c57913b3264646b8d66e2e6e36c133e0`. GitHub digest와 공개 다운로드 실물의 크기/해시를 대조했다. [APK](https://github.com/huni2/FireWatch/releases/download/v1.0.7-android-preview/FireWatch-1.0.7-android.apk) · [릴리스](https://github.com/huni2/FireWatch/releases/tag/v1.0.7-android-preview) · [파일 기록](../product/android-preview-20261009/android-107-build.json).
+
+소스CI38327397621·모바일71회귀·타입/lint·출시 설정 확인. 실제 Android 로그인·푸시·제스처·키보드·접근성은 미확인이다. 기존 앱을 삭제하지 않고 업데이트 설치하며 이후 자동/추가 빌드는 별도 요청 전 실행하지 않는다.
+
+## 이전 설치본 1.0.6 / 빌드11 (2026-10-13)
 
 사용자 새 APK/릴리스/README 최신화 요청으로 소스 `b1a67e584f369fc23f4ce9005ccbceec97948b65`를 로컬 Expo prebuild+Gradle로 빌드했다. EAS 클라우드 요청 0. PR#100~102의 버튼 대비·게임 시작 고정·공통 시트/드래그 닫기·관심 해제 상세 유지·설정 저장/작은 화면 메시지·글자/줄바꿈을 포함한다.
 
