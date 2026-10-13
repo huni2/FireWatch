@@ -4,13 +4,13 @@ Expo + React Native + Expo Router 기반 앱. 웹과 동일한 백엔드를 사�
 
 ## 설치용 APK
 
-최신 테스트 버전 **1.0.8 / versionCode 13 (2026-10-13)**: [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.8-android-preview/FireWatch-1.0.8-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.8-android-preview).
+최신 테스트 버전 **1.0.9 / versionCode 14 (2026-10-13)**: [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.9-android-preview/FireWatch-1.0.9-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.9-android-preview).
 
-긴 모달 10곳의 공통 스크롤·하단 여백, 주문·결과의 고정 버튼, Android 시트 입력의 키보드 대응, 관심 해제의 제자리 처리 표시·중복 요청 방지, 순위 버튼·입력 글자색 통일을 포함합니다. 이전 1.0.7 개선도 유지합니다. [점검 내용](../docs/product/android-preview-20261009/sheet-audit-20261013.md).
+보유 자산 등록·기업 상세 버튼의 글씨 가운데 정렬, 종목·시장 지표 차트의 바깥 터치 선택 해제·재선택를 포함합니다. 이전 1.0.8의 모달·키보드·처리 상태 수정도 유지합니다. [검증 범위](../docs/product/android-preview-20261009/button-chart-dismiss-20261013.md).
 
-소스 `8250a4e23c87ea7a85394d1b147cbcaca284949b`를 로컬 Expo prebuild+Gradle로 1회 빌드했습니다. 54,336,744 bytes(약 54.3MB), SHA-256 `200e8dffb40844bb2f80c3cd31bc9a44a45fedbe2e6d93381bb183699506ee70`. 기존 1.0.7 동일 서명·ARM32/64·R8·ZIP CRC/16KB 정렬·네이티브 모듈·마스코트·최신 코드·공개 다운로드를 대조했습니다. EAS 클라우드 요청 0회.
+소스 `a95f702254ba34b380ae08aeaa4decad371dfde0`를 로컬 Expo prebuild+Gradle로 1회 빌드했습니다. 54,336,744 bytes(약 54.3MB), SHA-256 `4855f02c3ce32587762c712f11c560388b0ac59c1a8e90c8db178ab74fac0d65`. 기존 1.0.8 동일 서명·ARM32/64·R8·ZIP CRC/16KB 정렬·네이티브 모듈·마스코트·새 차트 선택 코드·공개 다운로드를 대조했습니다. EAS 클라우드 요청 0회.
 
-Expo Go 없이 기존 앱 위에 업데이트합니다. 실제 Android 로그인·푸시·키보드·제스처·24주 완주·접근성은 설치 후 확인합니다. Play 게시본은 아닙니다.
+Expo Go 없이 기존 앱 위에 업데이트합니다. 실제 Android 터치·로그인·푸시·키보드·완주·접근성은 설치 후 확인합니다. Play 게시본은 아닙니다.
 
 ## 개발
 
@@ -32,7 +32,7 @@ EAS 프로젝트는 이미 app.json에 연결되어 있다. eas.json은 운영 A
 
 ### 웹·서버 배포와 별도 실행
 
-이번 사용자 요청으로 소스 `8250a4e`의 1.0.8/versionCode13를 로컬에서 빌드했다. 자동 APK/EAS 빌드는 계속 비활성이다. 웹·서버 배포나 Git push만으로 APK를 생성하지 않으며 이후 설치본도 별도 요청이 있어야 만든다.
+이번 사용자 요청으로 소스 `a95f702`의 1.0.9/versionCode14를 로컬에서 빌드했다. 자동 APK/EAS 빌드는 계속 비활성이다. 웹·서버 배포나 Git push만으로 APK를 생성하지 않으며 이후 설치본도 별도 요청이 있어야 만든다.
 
 로컬 빌드는 `npx expo prebuild --platform android --no-install`로 네이티브 프로젝트를 갱신한 뒤 Gradle `:app:assembleRelease`를 실행한다. preview의 ARM32/64 및 R8/리소스 축소 설정이 실제 gradle.properties에 반영되는지 확인한다. 생성 프로젝트는 기본 debug 서명이므로 공개 전에 기존 release 키로 서명하고 이전 APK와 인증서를 비교한다. 이번 PC 빌드는 heap3GiB/meta1GiB·최대 작업자2로 실행한다. 키·비밀번호·Firebase 파일·생성 android 폴더는 커밋하지 않는다.
 
@@ -66,19 +66,19 @@ EAS 프로젝트는 이미 app.json에 연결되어 있다. eas.json은 운영 A
 
 상단 해/달 스위치를 왼쪽(라이트)·오른쪽(다크)으로 전환하며 이 기기에 저장한다. 설정 화면에 들어가지 않아도 최초 동의·각 메뉴 헤더에서 바꿀 수 있다. 설정의 세 가지 테마 선택은 제거했으며 기존 기기 설정 저장값은 호환한다. 순위 창은 상단 제목/닫기를 고정하고 목록만 스크롤한다.
 
-타입/lint·테마/로딩9검사·Android JS export 및360/390px 격리 화면 검증 완료. 실제Android 드래그/TalkBack은 확인 전이다. 최신 공개 APK1.0.5에 로딩 정지 수정과 이번 변경을 포함했다. 이후 APK는 사용자 별도 요청 후 빌드한다.
+타입/lint·테마/로딩9검사·Android JS export 및360/390px 격리 화면 검증 완료. 실제Android 드래그/TalkBack은 확인 전이다. 당시 공개 APK1.0.5에 로딩 정지 수정과 이번 변경을 포함했다. 이후 APK는 사용자 별도 요청 후 빌드한다.
 
 ### 전체 UX 리뷰 소스 후속
 
 기업 탐색 검색을 하나로 모으고 후보·분야·ETF를 나눈다. 방문한 탭은 유지하며 숨긴 화면의 조회/폴링/로딩은 중단한다. Google 연결·로그아웃·현재 세션 무효화 때 보관 화면을 비운다. 회사 상세에서 보유 등록으로 회사 정보를 이어주고 저장한 자산/점검 결과를 강조한다. 게임은 주문 시트에서 총액을 보고 고정 확인 버튼을 누른다. 닫기는 입력 유지, 다음 턴·종료·새 게임은 초기화한다.
 
-타입/lint·모바일45회귀 및 Android JS export 검증. 최신 공개 APK1.0.5에 포함했다. 실제 Android 키보드/TalkBack/Alert 체결 확인은 남아 있으며 이후 새 APK는 별도 요청으로 진행한다. APK/EAS/OTA 자동 실행 없음.
+타입/lint·모바일45회귀 및 Android JS export 검증. 당시 공개 APK1.0.5에 포함했다. 실제 Android 키보드/TalkBack/Alert 체결 확인은 남아 있으며 이후 새 APK는 별도 요청으로 진행한다. APK/EAS/OTA 자동 실행 없음.
 
 ### 1.0.4 제보 후속 — 1.0.5에 포함
 
 게임 규칙 문단·시작 전 난이도/공매도 설명, 원터치 관심 기업 해제, 차트 터치 가격·시각, 뉴스 외부 이동 안내, 중앙 메시지와 기기별 알림 해제를 소스에 반영했다. 브리핑은 KST 하루 최대 3시간, 새 소식은 관심 키워드 기준 최대 한 시간에 한 번으로 선택할 수 있다. 새 알림 API는 Render 최신 코드 배포가 필요하다. [변경·발송 기준·검증](../docs/product/web30-support-design/interaction-review-20261012.md).
 
-최신 APK1.0.5에 이번 후속과 화면 정리를 함께 포함했다. 이후 자동/추가 APK/EAS 빌드는 실행하지 않는다.
+당시 APK1.0.5에 이번 후속과 화면 정리를 함께 포함했다. 이후 자동/추가 APK/EAS 빌드는 실행하지 않는다.
 
 ### 1.0.5 제보 후속 — 1.0.6에 포함
 

@@ -1,6 +1,18 @@
 # Android 설치 검증
 
-## 최신 설치본 1.0.8 / 빌드 13 (2026-10-13)
+## 최신 설치본 1.0.9 / 빌드 14 (2026-10-13)
+
+보유 자산 등록·기업 상세 버튼의 글씨 가운데 정렬, 종목·시장 지표 차트의 바깥 터치 선택 해제·재선택 적용. 사용자 요청 1회 로컬 빌드·EAS 0회. 소스 `a95f702254ba34b380ae08aeaa4decad371dfde0`와 CI 38345712375 성공 확인.
+
+기존 1.0.8 동일 서명, ARM32/64·R8·ZIP CRC/16KB 정렬·네이티브 모듈·마스코트·새 차트 선택 코드·공개 파일 검증 통과. 54,336,744 bytes(약 54.3MB), SHA-256 `4855f02c3ce32587762c712f11c560388b0ac59c1a8e90c8db178ab74fac0d65`. [APK](https://github.com/huni2/FireWatch/releases/download/v1.0.9-android-preview/FireWatch-1.0.9-android.apk) · [릴리스](https://github.com/huni2/FireWatch/releases/tag/v1.0.9-android-preview) · [파일 기록](../product/android-preview-20261009/android-109-build.json).
+
+- [x] 파일·공개 다운로드·README 최신화
+- [x] 모바일 71개 검사 및 라이트/다크 버튼 중심·선택 해제 미리보기
+- [ ] 실제 Android 버튼 중심·차트 바깥 터치/재선택
+- [ ] 실제 Android 로그인·푸시·키보드·완주·접근성
+- [ ] Play 계정 적합성·AAB·선언·심사 접근
+
+## 이전 설치본 1.0.8 / 빌드 13 (2026-10-13)
 
 긴 모달 10곳의 공통 스크롤·하단 여백, 주문·결과의 고정 버튼, Android 시트 입력의 키보드 대응, 관심 해제의 제자리 처리 표시·중복 요청 방지, 순위 버튼·입력 글자색 통일 적용. 사용자 요청 1회 로컬 빌드·EAS 0회. 소스 `8250a4e23c87ea7a85394d1b147cbcaca284949b`와 CI 38336486860 성공 확인.
 
