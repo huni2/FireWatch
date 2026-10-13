@@ -1,4 +1,5 @@
 import { ThemeProvider, useTheme } from '@/lib/theme'
+import { ChartSelectionProvider } from '@/lib/chartSelection'
 import '../global.css'
 
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
@@ -61,7 +62,7 @@ function AppContent() {
 }
 
 export default function RootLayout() {
-  return <ThemeProvider><RootContent /></ThemeProvider>
+  return <ChartSelectionProvider><ThemeProvider><RootContent /></ThemeProvider></ChartSelectionProvider>
 }
 
 function RootContent() {

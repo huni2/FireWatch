@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import { Text, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { LoadingIndicator } from '@/components/LoadingIndicator'
+import { useClearChartSelection } from './chartSelection'
 import { parseThemePreference, resolveTheme, themePalettes, type ThemePreference } from './themeColors'
 export type { ThemePreference, ThemeColors } from './themeColors'
 
@@ -21,8 +22,9 @@ function colorVariables(colors: typeof light) {
 // Portals need their own variable scope, including the app web preview.
 export function ThemeSurface({ children }: { children: ReactNode }) {
   const { colors } = useTheme()
+  const clearChartSelection = useClearChartSelection()
   const variables = useMemo(() => colorVariables(colors), [colors])
-  return <View style={[variables, { flex: 1 }]}>{children}</View>
+  return <View onTouchStart={clearChartSelection} style={[variables, { flex: 1 }]}>{children}</View>
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

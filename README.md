@@ -28,6 +28,8 @@ Play 스토어 출시 전 테스트용 설치본입니다. 최신 자산 요약�
 
 **이번 설치본 반영**: PR #108 게임 규칙과 PR #109 모달·키보드·처리 상태 보완을 포함했습니다. [점검 내용과 확인 범위](docs/product/android-preview-20261009/sheet-audit-20261013.md). 이후 설치본도 별도 요청 후 빌드합니다.
 
+**설치본 이후 수정**: 보유 자산 등록·기업 상세 버튼의 글씨 가운데 정렬과 차트 바깥 터치로 가격 선택 해제를 보완했습니다. 현재 APK 1.0.8에는 미포함이며 다음 요청 빌드에 반영합니다. [후속 점검](docs/product/android-preview-20261009/button-chart-dismiss-20261013.md).
+
 
 2026-10-09 후속으로 [BE-40 PR](https://github.com/huni2/FireWatch/pull/30)에서 KIND 공식 한국 상장법인2,651개의 회사명·업종 검색을 추가했습니다. 기존 편집 목록과 시세는 보존하며 가격을 생성하지 않습니다. [출처·범위·갱신 문서](docs/product/krx-company-directory/data-source.md)를 참고하세요. 서버·PostgreSQL·복원·웹/앱 CI 통과 후 웹·Render 배포를 확인했습니다. 공개 API에서 총2,669상품·새 기업의 한국어 검색·기존 분류·ETF·페이지 경계를 검증했습니다.
 
