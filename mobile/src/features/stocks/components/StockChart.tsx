@@ -2,7 +2,7 @@ import { useTheme } from '@/lib/theme'
 import { LoadingState } from '@/components/LoadingState'
 import { useChartSelection } from '@/lib/chartSelection'
 // web/src/features/stocks/components/StockChart.tsx와 동일 역할 — RN엔 recharts가 없어
-// react-native-gifted-charts의 LineChart(영역 채움)로 대체.
+// react-native-gifted-charts의 LineChart로 가격과 선택 기간 변화를 표시.
 import { useEffect, useMemo, useState } from 'react'
 import { Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native'
 import { LineChart } from 'react-native-gifted-charts'
@@ -11,7 +11,7 @@ import { type StockChartRange } from '@/lib/api'
 
 import { useStockHistory } from '../hooks/useStockHistory'
 import { stockLabel } from '../../../../../shared/stock-labels'
-import { formatPriceAxis, formatStockPrice } from '../../../../../shared/stock-price'
+import { formatStockPrice, stockPriceWindow, formatPriceChange } from '../../../../../shared/stock-price'
 import { CompanyNews } from './CompanyNews'
 
 
@@ -56,9 +56,11 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
   }, [name, currentData?.companyName, symbol, onNameFound])
 
   const chartData = useMemo(
-    () => (data?.points ?? []).map((point, index, points) => ({ value: point.close, timestamp: point.timestamp, label: formatLabel(point.timestamp, range), spacing: index === points.length - 1 ? 0 : undefined })),
-    [data, range],
+    () => (currentData?.points ?? []).filter(point => Number.isFinite(point.close) && point.close > 0).map((point, index, points) => ({ value: point.close, observedPrice: point.close, timestamp: point.timestamp, label: formatLabel(point.timestamp, range), spacing: index === points.length - 1 ? 0 : undefined })),
+    [currentData, range],
   )
+  const window = stockPriceWindow(chartData.map(point => point.value), currency)
+  const lineColor = window?.direction === 'up' ? colors.danger : window?.direction === 'down' ? colors.negative : colors.muted
 
   return (
     <View className="gap-3">
@@ -88,26 +90,30 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
       {!loading && !error && chartData.length === 0 && (
         <Text className="text-xs text-muted">표시할 데이터가 없습니다.</Text>
       )}
-      {!loading && !error && chartData.length > 0 && (
-        <><Text className="text-xs text-muted">차트를 누르면 가격이 보여요. 바깥을 누르면 표시가 닫혀요.</Text><View onTouchStart={selection.onTouchStart}><LineChart
+      {!loading && !error && chartData.length === 1 && <Text className="text-xs text-muted">가격 기록이 1개예요. 더 모이면 상승·하락 흐름을 볼 수 있어요.</Text>}
+      {!loading && !error && chartData.length > 1 && window && (
+        <><Text accessibilityLiveRegion="polite" style={{ color: lineColor, fontWeight: '600' }}>{formatPriceChange(window.change, window.percent, currency)}</Text>
+        <Text className="text-xs text-muted">점선은 기간 첫 가격이에요. 차트를 누르면 가격이 보이고, 바깥을 누르면 닫혀요.</Text><View onTouchStart={selection.onTouchStart}><LineChart
           key={`${symbol}:${range}:${selection.version}`}
           data={chartData}
-          pointerConfig={{ activatePointersInstantlyOnTouch: true, activatePointersOnLongPress: false, persistPointer: true, autoAdjustPointerLabelPosition: true, pointerColor: colors.accent, pointerStripColor: colors.muted, pointerLabelWidth: 150, pointerLabelHeight: 90, pointerLabelComponent: (items: { value: number; timestamp: string }[]) => items[0] ? <View style={{ width: 150, padding: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12 }}><Text style={{ color: colors.text, fontWeight: '700' }}>{formatStockPrice(items[0].value, currency)}</Text><Text style={{ color: colors.muted, fontSize: 12 }}>{new Date(items[0].timestamp).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} KST</Text></View> : null }}
+          pointerConfig={{ activatePointersInstantlyOnTouch: true, activatePointersOnLongPress: false, persistPointer: true, autoAdjustPointerLabelPosition: true, pointerColor: lineColor, pointerStripColor: colors.muted, pointerLabelWidth: 150, pointerLabelHeight: 90, pointerLabelComponent: (items: { observedPrice: number; timestamp: string }[]) => items[0] ? <View style={{ width: 150, padding: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12 }}><Text style={{ color: colors.text, fontWeight: '700' }}>{formatStockPrice(items[0].observedPrice, currency)}</Text><Text style={{ color: colors.muted, fontSize: 12 }}>{new Date(items[0].timestamp).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} KST</Text></View> : null }}
           height={220}
-          width={Math.max(220, width - 96)}
+          width={Math.max(180, width - 120)}
           adjustToWidth
-          spacing={(Math.max(220, width - 96) - 32) / Math.max(chartData.length - 1, 1)}
+          spacing={(Math.max(180, width - 120) - 32) / Math.max(chartData.length - 1, 1)}
           endSpacing={24}
-          color={colors.accent}
+          color={lineColor}
           thickness={2}
-          areaChart
-          startFillColor={colors.accent}
-          startOpacity={0.25}
-          endFillColor={colors.accent}
-          endOpacity={0}
-          curved
+          yAxisOffset={window.minimum}
+          maxValue={window.maximum - window.minimum}
+          showFractionalValues={currency !== 'KRW'}
+          roundToDigits={currency === 'KRW' ? 0 : 2}
+          showReferenceLine1
+          referenceLine1Position={window.first}
+          referenceLine1Config={{ color: colors.muted, thickness: 1, type: 'dashed' }}
           hideDataPoints
-          formatYLabel={value => formatPriceAxis(Number(value))}
+          formatYLabel={value => Number(value).toLocaleString('ko-KR', { maximumFractionDigits: currency === 'KRW' ? 0 : 2 })}
+          yAxisLabelWidth={64}
           yAxisTextStyle={{ fontSize: 10, color: colors.muted }}
           xAxisLabelTextStyle={{ fontSize: 10, color: colors.muted }}
           noOfSections={4}
