@@ -1,5 +1,6 @@
 import { useTheme } from '@/lib/theme'
 import { LoadingState } from '@/components/LoadingState'
+import { useChartSelection } from '@/lib/chartSelection'
 // web/src/features/stocks/components/StockChart.tsx와 동일 역할 — RN엔 recharts가 없어
 // react-native-gifted-charts의 LineChart(영역 채움)로 대체.
 import { useEffect, useMemo, useState } from 'react'
@@ -39,6 +40,7 @@ function formatLabel(timestamp: string, range: StockChartRange): string {
 }
 
 export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, showNews = true }: StockChartProps) {
+  const selection = useChartSelection()
   const { colors } = useTheme()
   const { width } = useWindowDimensions()
   const [range, setRange] = useState<StockChartRange>('6mo')
@@ -87,7 +89,8 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
         <Text className="text-xs text-muted">표시할 데이터가 없습니다.</Text>
       )}
       {!loading && !error && chartData.length > 0 && (
-        <><Text className="text-xs text-muted">차트를 누르거나 좌우로 움직이면 그날의 가격을 볼 수 있어요.</Text><LineChart
+        <><Text className="text-xs text-muted">차트를 누르면 가격이 보여요. 바깥을 누르면 표시가 닫혀요.</Text><View onTouchStart={selection.onTouchStart}><LineChart
+          key={`${symbol}:${range}:${selection.version}`}
           data={chartData}
           pointerConfig={{ activatePointersInstantlyOnTouch: true, activatePointersOnLongPress: false, persistPointer: true, autoAdjustPointerLabelPosition: true, pointerColor: colors.accent, pointerStripColor: colors.muted, pointerLabelWidth: 180, pointerLabelHeight: 70, pointerLabelComponent: (items: { value: number; timestamp: string }[]) => items[0] ? <View style={{ padding: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12 }}><Text style={{ color: colors.text, fontWeight: '700' }}>{formatStockPrice(items[0].value, currency)}</Text><Text style={{ color: colors.muted, fontSize: 12 }}>{new Date(items[0].timestamp).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} KST</Text></View> : null }}
           height={220}
@@ -111,7 +114,7 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
           yAxisColor="transparent"
           xAxisColor={colors.border}
           initialSpacing={8}
-        /></>
+        /></View></>
       )}
       {showNews && companyName !== '회사명 확인 필요' && <CompanyNews key={companyName} name={companyName} />}
     </View>

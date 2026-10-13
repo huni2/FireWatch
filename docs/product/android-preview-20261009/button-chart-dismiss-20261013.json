@@ -1,0 +1,63 @@
+{
+  "environment": "isolated React Native web touchscreen; not physical Android",
+  "rows": [
+    {
+      "mode": "light",
+      "interest": {
+        "button": {
+          "x": 151.0625,
+          "width": 194.859375
+        },
+        "label": {
+          "x": 196.0625,
+          "width": 104.859375
+        },
+        "delta": 0
+      },
+      "register": {
+        "button": {
+          "x": 20,
+          "width": 350
+        },
+        "label": {
+          "x": 137.734375,
+          "width": 114.53125
+        },
+        "delta": 0
+      },
+      "stockSelectDismissReselect": true,
+      "marketSelectDismissReselect": true,
+      "noStockRefetchOnDismiss": true,
+      "errors": []
+    },
+    {
+      "mode": "dark",
+      "interest": {
+        "button": {
+          "x": 151.0625,
+          "width": 194.859375
+        },
+        "label": {
+          "x": 196.0625,
+          "width": 104.859375
+        },
+        "delta": 0
+      },
+      "register": {
+        "button": {
+          "x": 20,
+          "width": 350
+        },
+        "label": {
+          "x": 137.734375,
+          "width": 114.53125
+        },
+        "delta": 0
+      },
+      "stockSelectDismissReselect": true,
+      "marketSelectDismissReselect": true,
+      "noStockRefetchOnDismiss": true,
+      "errors": []
+    }
+  ]
+}

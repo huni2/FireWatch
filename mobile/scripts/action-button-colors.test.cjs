@@ -23,7 +23,7 @@ for (const mode of ['light','dark']) for (const tone of ['primary','next','secon
     colors = themePalettes[mode];
     const button = ActionButton({ label: '거래 금액 확인', onPress() {}, tone, disabled: state !== 'ready', busy: state === 'busy' });
     const background = button.props.style.backgroundColor;
-    const [slot,label] = button.props.children;
+    const [slot,label,balance] = button.props.children;
     assert.ok(ratio(label.props.style.color,background)>=4.5);
     assert.equal(button.props.accessibilityState.disabled, state !== 'ready');
     if (tone !== 'secondary' && state !== 'disabled') {
@@ -31,5 +31,7 @@ for (const mode of ['light','dark']) for (const tone of ['primary','next','secon
       assert.equal(background, colors.actionBackground);
     }
     if (state === 'busy') assert.equal(slot.props.children.props.color, label.props.style.color);
+    assert.equal(slot.props.style.width, balance.props.style.width);
+    assert.equal(balance.props.pointerEvents, 'none');
   });
 }

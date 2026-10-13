@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Text, View, useWindowDimensions } from 'react-native'
 import { LineChart } from 'react-native-gifted-charts'
 import { ActionButton } from '@/components/ActionButton'
+import { useChartSelection } from '@/lib/chartSelection'
 import { LoadingState } from '@/components/LoadingState'
 import { fetchBriefingHistory, type Briefing } from '@/lib/api'
 import { useTheme } from '@/lib/theme'
@@ -9,6 +10,7 @@ import { marketHistoryWindow, marketMetrics, marketPoints, type MarketMetricKey 
 import { formatPriceAxis } from '../../../../../shared/stock-price'
 
 export function MarketHistoryChart({ metricKey }: { metricKey: MarketMetricKey }) {
+  const selection = useChartSelection()
   const { colors } = useTheme(), { width } = useWindowDimensions()
   const [history, setHistory] = useState<Briefing[]>([])
   const [loading, setLoading] = useState(true), [error, setError] = useState(false), [revision, setRevision] = useState(0)
@@ -36,9 +38,9 @@ export function MarketHistoryChart({ metricKey }: { metricKey: MarketMetricKey }
       <Text style={{ color: colors.text, fontSize: 24, fontWeight: '700' }}>{format(points.at(-1)!.value)}</Text>
       <Text style={{ color: colors.muted }}>{points.at(-1)!.date} 기록 · 실시간 값이 아니에요</Text>
       {points.length < 2 ? <Text style={{ color: colors.muted }}>기록이 1개예요. 더 모이면 흐름을 볼 수 있어요.</Text> : <>
-        <Text style={{ color: colors.muted }}>차트를 누르거나 움직이면 날짜와 값을 볼 수 있어요.</Text>
-        <LineChart data={data} height={180} width={Math.max(180,width-96)} adjustToWidth yAxisOffset={offset} maxValue={maximum - minimum + padding * 2} showFractionalValues roundToDigits={metric.unit === '%' ? 3 : 2} color={colors.accent} thickness={2} dataPointsColor={colors.accent} dataPointsRadius={3} noOfSections={4} formatYLabel={value=>metric.unit === '%' ? Number(value).toFixed(3) : formatPriceAxis(Number(value))} yAxisTextStyle={{ color: colors.muted, fontSize: 10 }} xAxisLabelTextStyle={{ color: colors.muted, fontSize: 10 }} rulesColor={colors.border} xAxisColor={colors.border} yAxisColor="transparent"
-          pointerConfig={{ activatePointersInstantlyOnTouch: true, activatePointersOnLongPress: false, persistPointer: true, autoAdjustPointerLabelPosition: true, pointerLabelWidth: 170, pointerLabelHeight: 68, pointerColor: colors.accent, pointerStripColor: colors.muted, pointerLabelComponent: (items: { observedValue: number; date: string }[]) => items[0] ? <View style={{ padding: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 10 }}><Text style={{ color: colors.text, fontWeight: '700' }}>{format(items[0].observedValue)}</Text><Text style={{ color: colors.muted }}>{items[0].date} 기준</Text></View> : null }} />
+        <Text style={{ color: colors.muted }}>차트를 누르면 날짜와 값이 보여요. 바깥을 누르면 표시가 닫혀요.</Text>
+        <View onTouchStart={selection.onTouchStart}><LineChart key={`${metricKey}:${days}:${selection.version}`} data={data} height={180} width={Math.max(180,width-96)} adjustToWidth yAxisOffset={offset} maxValue={maximum - minimum + padding * 2} showFractionalValues roundToDigits={metric.unit === '%' ? 3 : 2} color={colors.accent} thickness={2} dataPointsColor={colors.accent} dataPointsRadius={3} noOfSections={4} formatYLabel={value=>metric.unit === '%' ? Number(value).toFixed(3) : formatPriceAxis(Number(value))} yAxisTextStyle={{ color: colors.muted, fontSize: 10 }} xAxisLabelTextStyle={{ color: colors.muted, fontSize: 10 }} rulesColor={colors.border} xAxisColor={colors.border} yAxisColor="transparent"
+          pointerConfig={{ activatePointersInstantlyOnTouch: true, activatePointersOnLongPress: false, persistPointer: true, autoAdjustPointerLabelPosition: true, pointerLabelWidth: 170, pointerLabelHeight: 68, pointerColor: colors.accent, pointerStripColor: colors.muted, pointerLabelComponent: (items: { observedValue: number; date: string }[]) => items[0] ? <View style={{ padding: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 10 }}><Text style={{ color: colors.text, fontWeight: '700' }}>{format(items[0].observedValue)}</Text><Text style={{ color: colors.muted }}>{items[0].date} 기준</Text></View> : null }} /></View>
       </>}
       <Text style={{ color: colors.muted, fontSize: 12 }}>저장된 날짜만 연결해 표시해요. 수집이 없는 날짜와 값은 채우지 않아요.</Text>
       {points.length > 1 && <Text style={{ color: colors.muted, fontSize: 12 }}>세로축은 선택한 기간의 값 범위에 맞춰 보여줘요.</Text>}

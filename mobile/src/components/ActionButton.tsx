@@ -13,5 +13,6 @@ export function ActionButton({ label, onPress, disabled = false, busy, selected,
     style={{ minHeight: 48, maxWidth: '100%', flexShrink: 1, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12, overflow: 'hidden', alignSelf: fullWidth ? 'stretch' : 'flex-start', flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', borderWidth: tone === 'secondary' || inactive ? 1 : 0, borderColor: c.border, backgroundColor: inactive ? c.canvas : tone === 'secondary' ? c.surface : c.actionBackground }}>
     {(busy !== undefined || icon) && <View style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}>{busy ? <ActivityIndicator size="small" color={foreground} /> : icon}</View>}
     <Text style={{ fontSize: 15, fontWeight: '600', lineHeight: 22, textAlign: 'center', color: foreground, flexShrink: 1 }}>{label}</Text>
+    {(busy !== undefined || icon) && <View pointerEvents="none" accessible={false} style={{ width: 20, height: 20 }} />}
   </Pressable>
 }
