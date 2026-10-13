@@ -1,6 +1,6 @@
 # FireWatch 모바일 — Play 스토어 제출 가이드
 
-**현재 상태(2026-10-13)** — 최신 설치본은 **1.0.7 / versionCode 12**, 소스 `0f82f19e7782c3e7d210cb10b79a38a6d4b5f726`다. 로컬 Gradle 빌드·동일 서명·파일 검증·GitHub 공개 다운로드·빌드 소스 CI를 확인했다. [APK](https://github.com/huni2/FireWatch/releases/download/v1.0.7-android-preview/FireWatch-1.0.7-android.apk)는 직접 설치 테스트용이며 Play 제출용 AAB가 아니다. 실제 Android 로그인·푸시·접근성과 Play 제출은 미확인이다. 추가 APK/AAB/EAS 빌드는 사용자 요청 전 실행하지 않는다. [설치 체크리스트](../docs/product/android-preview-20261009/checklist.md)와 [데이터 보안 초안](../docs/product/release-submission-review/data-safety-draft.md)을 대조한다.
+**현재 상태(2026-10-13)** — 최신 설치본은 **1.0.8 / versionCode 13**, 소스 `8250a4e23c87ea7a85394d1b147cbcaca284949b`다. 로컬 Gradle 빌드·동일 서명·파일 검증·GitHub 공개 다운로드·빌드 소스 CI를 확인했다. [APK](https://github.com/huni2/FireWatch/releases/download/v1.0.8-android-preview/FireWatch-1.0.8-android.apk)는 직접 설치 테스트용이며 Play 제출용 AAB가 아니다. 실제 Android 로그인·푸시·접근성과 Play 제출은 미확인이다. 추가 APK/AAB/EAS 빌드는 사용자 요청 전 실행하지 않는다. [설치 체크리스트](../docs/product/android-preview-20261009/checklist.md)와 [데이터 보안 초안](../docs/product/release-submission-review/data-safety-draft.md)을 대조한다.
 
 2026-10-13 공식 정책을 재확인한 제출 초안이다. 실제 설치 빌드, 서버 기록, SDK/서비스 제공자의 처리 내역을 대조한 뒤 Console 양식을 확정한다. 심사 통과나 법률 검토 완료를 의미하지 않는다.
 
