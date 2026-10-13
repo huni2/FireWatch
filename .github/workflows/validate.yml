@@ -104,3 +104,6 @@ jobs:
       - name: Android chart runtime dependency contract
         if: matrix.client == 'mobile'
         run: node --test scripts/native-dependencies.test.cjs
+      - name: Android reading sheet interaction contract
+        if: matrix.client == 'mobile'
+        run: node --test scripts/app-sheet.test.cjs
