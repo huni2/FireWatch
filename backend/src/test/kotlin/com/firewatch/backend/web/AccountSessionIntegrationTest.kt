@@ -5,10 +5,13 @@ import com.firewatch.backend.entity.DeviceLink
 import com.firewatch.backend.entity.UserSettings
 import com.firewatch.backend.repository.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.AfterEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.http.client.reactive.JdkClientHttpConnector
+import java.net.http.HttpClient
 import java.time.Instant
 import kotlin.test.*
 import com.firewatch.backend.client.GoogleIdentity
@@ -30,7 +33,22 @@ class AccountSessionIntegrationTest {
     @Autowired lateinit var settings: UserSettingsRepository
     @Autowired lateinit var jdbc: org.springframework.jdbc.core.JdbcTemplate
     @MockitoBean lateinit var google: GoogleIdentityVerifier
-    private fun client() = WebTestClient.bindToServer().baseUrl("http://127.0.0.1:$port").responseTimeout(java.time.Duration.ofSeconds(20)).build()
+    // Keep test traffic off the server's shared Reactor HTTP resources. Reuse one
+    // transport per test method and close it explicitly; retain the 20-second limit.
+    private val transport = lazy { HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build() }
+    private val httpClient by lazy {
+        WebTestClient.bindToServer(JdkClientHttpConnector(transport.value))
+            .baseUrl("http://127.0.0.1:$port")
+            .responseTimeout(java.time.Duration.ofSeconds(20)).build()
+    }
+    private fun client() = httpClient
+
+    @AfterEach
+    fun closeTransport() {
+        // Status-only assertions cancel the response body. Do not wait indefinitely
+        // for its publisher while disposing a transport whose test is already done.
+        if (transport.isInitialized()) transport.value.shutdownNow()
+    }
 
     @Test
     fun `만료 세션은 같은 Google 계정으로만 갱신하고 폐기된 기기와 토큰은 복구하지 않는다`() {
