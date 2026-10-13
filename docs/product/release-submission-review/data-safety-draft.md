@@ -1,6 +1,6 @@
 # FireWatch Play 데이터 보안 입력 초안
 
-**2026-10-13 제출 상태** — 코드 대조 초안은 아래2026-10-10 기록이다. 최신 APK1.0.9/14의 Google/푸시 모듈 포함 확인은 SDK 수집 범위 검증이나 Console 답변 제출을 대신하지 않는다. 최종 AAB·운영 계약/리전·방침·삭제 이행과 대조할 때 이 표를 재확정한다. 계정 유형·금융 선언·심사 접근은 [Play 제출 가이드](../../../mobile/PLAY_STORE.md)에서 함께 관리한다.
+**2026-10-13 제출 상태** — 코드 대조 초안은 아래2026-10-10 기록이다. 최신 APK1.0.10/15의 Google/푸시 모듈 포함 확인은 SDK 수집 범위 검증이나 Console 답변 제출을 대신하지 않는다. 최종 AAB·운영 계약/리전·방침·삭제 이행과 대조할 때 이 표를 재확정한다. 계정 유형·금융 선언·심사 접근은 [Play 제출 가이드](../../../mobile/PLAY_STORE.md)에서 함께 관리한다.
 
 2026-10-10 코드 대조. Play Console에 제출한 답변이 아니다. 최종 Android 설치본·제공업체 설정/계약·공개 방침과 대조 후 입력한다. 패키지는 `com.firewatch.mobile`이며 공개 방침은 https://firewatch-eqp.pages.dev/privacy, 삭제 요청은 https://firewatch-eqp.pages.dev/privacy#delete-account다.
 
