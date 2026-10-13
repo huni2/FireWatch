@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Button, Empty, Segmented, Skeleton, Typography } from 'antd'
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Alert, Button, Empty, Segmented, Skeleton, Typography, theme } from 'antd'
+import { Line, LineChart, ReferenceLine, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { StockChartRange } from '../../../lib/api'
 import { useStockHistory } from '../hooks/useStockHistory'
-import { BRAND_GREEN } from '../../../lib/theme'
 import { stockLabel } from '../../../../../shared/stock-labels'
-import { formatPriceAxis, formatStockPrice } from '../../../../../shared/stock-price'
+import { formatStockPrice, stockPriceWindow, formatPriceChange } from '../../../../../shared/stock-price'
 import { CompanyNews } from './CompanyNews'
 import { SlowLoadingHint } from '../../../components/SlowLoadingHint'
-
-const CHART_COLOR = BRAND_GREEN
 
 interface StockChartProps {
   symbol: string
@@ -41,9 +38,10 @@ function formatLabel(timestamp: string, range: StockChartRange): string {
   return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-// Design Ref: llm-wiki/design.md §4 벤치마크 톤 — RateChart와 동일한 Area+그라디언트 스타일 재사용.
+// Price history uses a line and the period's first-price baseline, not a filled balance area.
 // 2026-08-21 사용자 요청 — "5년/6개월/3개월/1달/일주일/하루 이렇게 시간적으로 볼 수 있는 차트".
 export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, showNews = true }: StockChartProps) {
+  const { token } = theme.useToken()
   const [range, setRange] = useState<StockChartRange>('6mo')
   const { data, loading, error, isSlow, reload } = useStockHistory(symbol, range)
   const currentData = data?.symbol === symbol ? data : null
@@ -57,9 +55,11 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
   }, [name, currentData?.companyName, symbol, onNameFound])
 
   const chartData = useMemo(
-    () => (data?.points ?? []).map((point) => ({ label: formatLabel(point.timestamp, range), value: point.close })),
-    [data, range],
+    () => (currentData?.points ?? []).filter(point => Number.isFinite(point.close) && point.close > 0).map((point) => ({ label: formatLabel(point.timestamp, range), value: point.close })),
+    [currentData, range],
   )
+  const window = stockPriceWindow(chartData.map(point => point.value), currency)
+  const lineColor = window?.direction === 'up' ? token.colorError : window?.direction === 'down' ? token.colorInfo : token.colorTextSecondary
 
   return (
     <div className="company-chart-content">
@@ -83,30 +83,26 @@ export function StockChart({ symbol, name = stockLabel(symbol), onNameFound, sho
         <Alert type="error" message={`${companyName} 시세를 불러오지 못했습니다`} description="보유 기록은 유지돼요. 시세를 다시 불러와주세요." showIcon action={<Button onClick={reload}>시세 다시 확인</Button>} />
       )}
       {!loading && !error && chartData.length === 0 && <Empty description="표시할 데이터가 없습니다" />}
-      {!loading && !error && chartData.length > 0 && (
+      {!loading && !error && chartData.length === 1 && <Typography.Text type="secondary">가격 기록이 1개예요. 더 모이면 상승·하락 흐름을 볼 수 있어요.</Typography.Text>}
+      {!loading && !error && chartData.length > 1 && window && (
+        <><Typography.Text style={{ display: 'block', color: lineColor, fontWeight: 600 }}>{formatPriceChange(window.change, window.percent, currency)}</Typography.Text>
+        <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>점선은 선택 기간 첫 가격이에요.</Typography.Text>
         <ResponsiveContainer width="100%" height={280}>
-          <AreaChart data={chartData}>
-            <defs>
-              <linearGradient id="stockChartFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={CHART_COLOR} stopOpacity={0.25} />
-                <stop offset="100%" stopColor={CHART_COLOR} stopOpacity={0} />
-              </linearGradient>
-            </defs>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.4} />
             <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-            <YAxis tickFormatter={formatPriceAxis} domain={['auto', 'auto']} axisLine={false} tickLine={false} tick={{ fontSize: 12 }} width={60} />
+            <YAxis tickFormatter={value => Number(value).toLocaleString('ko-KR', { maximumFractionDigits: currency === 'KRW' ? 0 : 2 })} domain={[window.minimum, window.maximum]} allowDataOverflow axisLine={false} tickLine={false} tick={{ fontSize: 12 }} width={76} />
+            <ReferenceLine y={window.first} stroke={token.colorTextSecondary} strokeDasharray="4 4" />
             <Tooltip formatter={(value) => [formatStockPrice(Number(value), currency), "주가"]} contentStyle={{ borderRadius: 8, fontSize: 13 }} />
-            <Area
-              type="monotone"
+            <Line
+              type="linear"
               dataKey="value"
-              stroke={CHART_COLOR}
+              stroke={lineColor}
               strokeWidth={2}
-              fill="url(#stockChartFill)"
               dot={false}
-              connectNulls
             />
-          </AreaChart>
-        </ResponsiveContainer>
+          </LineChart>
+        </ResponsiveContainer></>
       )}
       {showNews && companyName !== '회사명 확인 필요' && <div style={{ marginTop: 24 }}><CompanyNews key={companyName} name={companyName} /></div>}
     </div>
