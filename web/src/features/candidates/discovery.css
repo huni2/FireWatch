@@ -65,3 +65,7 @@
 
 .candidate-connection { width: 100%; padding-block: 8px; font-size: 14px; line-height: 1.6; }
 .candidate-connection strong { color: var(--ant-color-text-secondary); font-size: 13px; }
+
+.discovery-filter-summary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-block: 12px; color: var(--ant-color-text-secondary); }
+.discovery-filters[hidden] { display: none; }
+@media(max-width:599px) { .sector-chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; }.sector-chips .ant-btn { flex-shrink: 0; } }

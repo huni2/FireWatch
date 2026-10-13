@@ -1,0 +1,81 @@
+{
+  "environment": "Isolated fixture: React Native web layout, not a physical Android APK. Web uses an isolated local production build. No production data was written.",
+  "mobile390": [
+    {
+      "mode": "light",
+      "portfolioCompositionBeforeHoldings": true,
+      "actionableFinding": true,
+      "filterApplyAndReset": true,
+      "detailDrillInAndReturn": true,
+      "tooltipBounds": {
+        "x": 201,
+        "y": 387,
+        "width": 128,
+        "height": 33
+      },
+      "gameViewAndFilterRetention": true,
+      "errors": []
+    },
+    {
+      "mode": "dark",
+      "portfolioCompositionBeforeHoldings": true,
+      "actionableFinding": true,
+      "filterApplyAndReset": true,
+      "detailDrillInAndReturn": true,
+      "tooltipBounds": {
+        "x": 201,
+        "y": 387,
+        "width": 128,
+        "height": 33
+      },
+      "gameViewAndFilterRetention": true,
+      "errors": []
+    }
+  ],
+  "mobile360": [
+    {
+      "mode": "light",
+      "portfolioCompositionBeforeHoldings": true,
+      "actionableFinding": true,
+      "filterApplyAndReset": true,
+      "detailDrillInAndReturn": true,
+      "tooltipBounds": {
+        "x": 171,
+        "y": 387,
+        "width": 128,
+        "height": 33
+      },
+      "gameViewAndFilterRetention": true,
+      "errors": []
+    },
+    {
+      "mode": "dark",
+      "portfolioCompositionBeforeHoldings": true,
+      "actionableFinding": true,
+      "filterApplyAndReset": true,
+      "detailDrillInAndReturn": true,
+      "tooltipBounds": {
+        "x": 171,
+        "y": 387,
+        "width": 128,
+        "height": 33
+      },
+      "gameViewAndFilterRetention": true,
+      "errors": []
+    }
+  ],
+  "web": [
+    {
+      "width": 1366,
+      "filter": true,
+      "noHorizontalOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "filter": true,
+      "noHorizontalOverflow": true,
+      "errors": []
+    }
+  ]
+}
