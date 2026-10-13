@@ -1,10 +1,10 @@
-import { AppSheet } from '@/components/AppSheet'
+import { AppSheet, AppSheetScrollView } from '@/components/AppSheet'
 import { ActionButton } from '@/components/ActionButton'
 import { LoadingState } from '@/components/LoadingState'
 import { useTheme } from '@/lib/theme'
 // 자산의 주간 가격과 체결 기록을 미래 데이터 없이 표시한다.
 import { gamePeriod, isWeeklyGame } from '../../../../shared/game-week'
-import { Linking, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native'
+import { Linking, Pressable, Text, View, useWindowDimensions } from 'react-native'
 import { LineChart } from 'react-native-gifted-charts'
 import { useGameAssetHistory } from './useGameAssetHistory'
 import type { PracticeTurn } from '@/lib/investingApi'
@@ -25,7 +25,7 @@ export function PracticeAssetDetail({ target, turn, close, order }: { target: Pr
   const stats = target ? positionStats(turn.transactions, target.instrumentType, target.symbol, holding?.currentPrice ?? null) : null
   const change = historyChange(summary)
   const money = (v: number | null | undefined) => v == null ? '미확정' : v.toLocaleString('ko-KR', { maximumFractionDigits: 2 })
-  return <AppSheet open={!!target} title={target?.name ?? '자산 상세'} close={close} height="90%"><ScrollView contentContainerClassName="gap-4 p-5 pb-10">
+  return <AppSheet open={!!target} title={target?.name ?? '자산 상세'} close={close} height="90%"><AppSheetScrollView contentContainerStyle={{ gap: 16 }}>
     <Text className="text-2xl font-bold text-ink">{target?.name}</Text><Text className="text-xl font-bold text-ink">{money(summary?.points.at(-1)?.price ?? holding?.currentPrice ?? (target?.symbol ? turn.stockPrices[target.symbol] : null))} 게임머니</Text>
     {company?.source && <><Text className="text-muted">기업 정보 확인 {company.verifiedAt} · 회사 이름과 분야만 실제 자료이며 가격·뉴스·픽은 가상입니다.</Text><Pressable accessibilityRole="link" onPress={() => void Linking.openURL(company.source!)} style={{ minHeight: 44, justifyContent: 'center' }}><Text className="text-brand">회사 공식 자료 보기</Text></Pressable></>}
     <Text className="text-muted">직전 턴 가격 {change ? `${change.percent >= 0 ? '+' : ''}${change.percent.toFixed(2)}%` : '첫 턴 또는 이전 기록 없음'}</Text>
@@ -35,5 +35,5 @@ export function PracticeAssetDetail({ target, turn, close, order }: { target: Pr
     <Text className="text-sm text-muted">체결 표시와 아래 원장에서 매수·매도를 확인하세요. 평가손익은 현재 보유분의 미실현 손익입니다.</Text>
     <Text className="text-lg font-semibold text-ink">이 자산의 체결 기록</Text>{trades.length ? trades.map(t => <Text key={t.id} className="text-ink">{period} {t.turnIndex + 1} · {t.action === 'BUY' ? '매수' : '매도'} {t.quantity}개 · 단가 {money(t.price)} · 총액 {money(t.total)}</Text>) : <Text className="text-muted">아직 거래하지 않은 자산입니다.</Text>}
     {target && turn.status === 'ACTIVE' && <View className="gap-3"><ActionButton fullWidth tone="next" label="매수 주문에 담기" onPress={() => order(target, 'BUY')} /><ActionButton fullWidth label="매도 주문에 담기" onPress={() => order(target, 'SELL')} /></View>}
-  </ScrollView></AppSheet>
+  </AppSheetScrollView></AppSheet>
 }

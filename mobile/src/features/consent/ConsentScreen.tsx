@@ -72,7 +72,7 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
       <Modal visible={policyOpen} animationType="slide" onRequestClose={() => setPolicyOpen(false)}><ThemeSurface>
         <SafeAreaProvider><SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }}>
           <ModalHeader title="개인정보처리방침" close={() => setPolicyOpen(false)} />
-          <ScrollView contentContainerClassName="p-5 pb-10"><InfoDocument kind="privacy" /></ScrollView>
+          <ScrollView style={{ flex: 1 }} contentContainerClassName="p-5 pb-10"><InfoDocument kind="privacy" /></ScrollView>
         </SafeAreaView></SafeAreaProvider>
       </ThemeSurface></Modal>
     </SafeAreaProvider>

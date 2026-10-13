@@ -2,7 +2,7 @@ import { ActionButton } from '@/components/ActionButton'
 import { LoadingState } from '@/components/LoadingState'
 import { ScreenIntro } from '@/components/ScreenIntro'
 // web/src/features/stocks/StocksPage.tsx와 동일 역할의 모바일 종목 화면(APP-8) — 관심 종목 관리 + 차트.
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 
 import { updateSettings } from '@/lib/api'
@@ -22,6 +22,8 @@ const TICKER_PATTERN = /^[A-Za-z0-9]+(\.[A-Za-z0-9]+)?$/
 export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio, onBack }: { initialSymbol?: string; initialQuery?: string; onOpenPortfolio?: (symbol?: string, name?: string) => void; onBack?: () => void }) {
   const { settings, loading, reload } = useSettings(true)
   const [savingWatch, setSavingWatch] = useState(false)
+  const watchLock = useRef(false)
+  const [pendingWatch, setPendingWatch] = useState<string | null>(null)
   const [watchedStocks, setWatchedStocks] = useState<string[]>([])
   const [selected, setSelected] = useState<string | null>(initialSymbol && TICKER_PATTERN.test(initialSymbol) ? initialSymbol : null)
   const { names, rememberName } = useStockNames()
@@ -36,19 +38,23 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
   }, [settings, initialSymbol])
 
   async function handleChange(next: string[]) {
-    if (savingWatch || !settings) return
+    if (watchLock.current || !settings) return
+    watchLock.current = true
     setSavingWatch(true)
+    setPendingWatch(watchedStocks.find(symbol => !next.includes(symbol)) ?? next.find(symbol => !watchedStocks.includes(symbol)) ?? null)
     const previous = watchedStocks
     const previousSelected = selected
-    setWatchedStocks(next)
-    // 기업 상세에서는 계속 읽지만 관심 목록에는 해제한 기업을 남기지 않는다.
-    if (!initialSymbol && selected && !next.includes(selected)) setSelected(next[0] ?? null)
-    try { await updateSettings({ watchedStocks: next }) }
+    try {
+      await updateSettings({ watchedStocks: next })
+      setWatchedStocks(next)
+      if (!initialSymbol && selected && !next.includes(selected)) setSelected(next[0] ?? null)
+    }
     catch (e) { setWatchedStocks(previous); setSelected(previousSelected); Toast.show({ type: 'error', text1: '관심종목 저장 실패', text2: e instanceof Error ? e.message : '다시 시도해주세요.' }) }
-    finally { setSavingWatch(false) }
+    finally { watchLock.current = false; setSavingWatch(false); setPendingWatch(null) }
   }
 
   function handleAddFromSearch(symbol: string, name?: string) {
+    if (watchLock.current) return
     rememberName(symbol, name)
     if (watchedStocks.includes(symbol)) {
       setSelected(symbol)
@@ -73,7 +79,7 @@ export function StocksScreen({ initialSymbol, initialQuery = '', onOpenPortfolio
             <Text className="text-xs text-muted">
               국내 대형주는 한글명(예: 삼성전자)으로 찾을 수 있고, 그 외는 영문 사명(예: Tesla)으로 검색하세요.
             </Text>
-            <KeywordInput value={watchedStocks} onChange={handleChange} disabled={savingWatch || !settings} showInput={false} labelForValue={labelForValue} />
+            <KeywordInput value={watchedStocks} onChange={handleChange} disabled={savingWatch || !settings} busyValue={pendingWatch} showInput={false} labelForValue={labelForValue} />
       </View>}
 
       {watchedStocks.length === 0 && !selected ? (

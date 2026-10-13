@@ -1,0 +1,121 @@
+{
+  "environment": "Isolated React Native web preview, not physical Android",
+  "sheetAudit": {
+    "environment": "React Native web isolated fixture; not Android keyboard or physical device verification",
+    "results": [
+      {
+        "mode": "light",
+        "viewport": "390x740",
+        "rulesBottom": {
+          "top": 258,
+          "height": 512,
+          "total": 770
+        },
+        "fixedClose": true,
+        "reopen": true,
+        "rankingClose": true,
+        "orderFooterVisible": true,
+        "watchRemoveBusyInPlace": true,
+        "settingsWrites": 2,
+        "errors": []
+      },
+      {
+        "mode": "dark",
+        "viewport": "390x740",
+        "rulesBottom": {
+          "top": 258,
+          "height": 512,
+          "total": 770
+        },
+        "fixedClose": true,
+        "reopen": true,
+        "rankingClose": true,
+        "orderFooterVisible": true,
+        "watchRemoveBusyInPlace": true,
+        "settingsWrites": 2,
+        "errors": []
+      }
+    ]
+  },
+  "gameFlow": [
+    {
+      "mode": "light",
+      "environment": "mocked 24-week progression; not real server or Android",
+      "detail": {
+        "top": 1262,
+        "height": 549,
+        "total": 1811
+      },
+      "replay": {
+        "top": 2061,
+        "height": 512,
+        "total": 2573
+      },
+      "result": {
+        "top": 577,
+        "height": 371,
+        "total": 948
+      },
+      "resultFooterVisible": true,
+      "nextCalls": 23,
+      "errors": []
+    },
+    {
+      "mode": "dark",
+      "environment": "mocked 24-week progression; not real server or Android",
+      "detail": {
+        "top": 1262,
+        "height": 549,
+        "total": 1811
+      },
+      "replay": {
+        "top": 2061,
+        "height": 512,
+        "total": 2573
+      },
+      "result": {
+        "top": 577,
+        "height": 371,
+        "total": 948
+      },
+      "resultFooterVisible": true,
+      "nextCalls": 23,
+      "errors": []
+    }
+  ],
+  "marketRegression": {
+    "environment": "React Native web with isolated API; not physical Android",
+    "results": [
+      {
+        "mode": "light",
+        "watchAddedAndLastRemoved": true,
+        "briefingScroll": {
+          "top": 912,
+          "height": 600,
+          "total": 1512
+        },
+        "historyGroupsAndPeriod": true,
+        "chartTouch": {
+          "date": "2026-10-10",
+          "value": 1359
+        },
+        "errors": []
+      },
+      {
+        "mode": "dark",
+        "watchAddedAndLastRemoved": true,
+        "briefingScroll": {
+          "top": 912,
+          "height": 600,
+          "total": 1512
+        },
+        "historyGroupsAndPeriod": true,
+        "chartTouch": {
+          "date": "2026-10-10",
+          "value": 1359
+        },
+        "errors": []
+      }
+    ]
+  }
+}

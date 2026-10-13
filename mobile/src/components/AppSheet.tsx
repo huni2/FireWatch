@@ -1,7 +1,7 @@
-import { useCallback, useRef, type ReactNode } from 'react'
-import { Modal, View } from 'react-native'
+import { useCallback, useRef, type ComponentProps, type ReactNode } from 'react'
+import { Modal, Platform, TextInput, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import BottomSheet, { BottomSheetBackdrop, useBottomSheetTimingConfigs, type BottomSheetBackdropProps } from '@gorhom/bottom-sheet'
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput, useBottomSheetTimingConfigs, type BottomSheetBackdropProps } from '@gorhom/bottom-sheet'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ThemeSurface, useTheme } from '@/lib/theme'
 import { ModalHeader } from './ModalHeader'
@@ -20,6 +20,7 @@ export function AppSheet({ open, title, close, disabled = false, height = '85%',
   return <Modal visible transparent animationType="fade" statusBarTranslucent onRequestClose={dismiss}>
     <GestureHandlerRootView style={{ flex: 1 }}><ThemeSurface>
       <BottomSheet ref={sheet} index={0} snapPoints={[height]} topInset={insets.top} enableDynamicSizing={false} animateOnMount animationConfigs={animationConfigs} accessible={false} accessibilityRole="none"
+        keyboardBehavior="interactive" keyboardBlurBehavior="restore" android_keyboardInputMode="adjustResize" enableBlurKeyboardOnGesture
         enablePanDownToClose={!disabled} enableHandlePanningGesture={!disabled} enableContentPanningGesture={false}
         backdropComponent={backdrop} onClose={() => { if (!disabled) close(); else sheet.current?.snapToIndex(0) }} backgroundStyle={{ backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
         handleComponent={() => <View accessible accessibilityRole="text" accessibilityLabel="창 손잡이" accessibilityHint="아래로 끌면 닫아요. 오른쪽 닫기 버튼도 사용할 수 있어요." style={{ minHeight: 40, alignItems: 'center', justifyContent: 'center' }}><View style={{ backgroundColor: colors.muted, width: 36, height: 4, borderRadius: 2 }} /></View>}>
@@ -32,3 +33,12 @@ export function AppSheet({ open, title, close, disabled = false, height = '85%',
     </ThemeSurface></GestureHandlerRootView>
   </Modal>
 }
+
+// Every sheet body owns a bounded scrolling area; headers and footers stay outside it.
+export function AppSheetScrollView({ style, contentContainerStyle, ...props }: ComponentProps<typeof BottomSheetScrollView>) {
+  return <BottomSheetScrollView {...props} style={[{ flex: 1 }, style]} keyboardShouldPersistTaps="handled"
+    contentContainerStyle={[{ padding: 20, gap: 20, paddingBottom: 48 }, contentContainerStyle]} />
+}
+
+// The native input registers keyboard focus with the sheet; RN web lacks its focus API.
+export const AppSheetTextInput = Platform.OS === 'web' ? TextInput : BottomSheetTextInput

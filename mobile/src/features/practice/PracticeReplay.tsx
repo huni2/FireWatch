@@ -1,9 +1,9 @@
-import { AppSheet } from '@/components/AppSheet'
+import { AppSheet, AppSheetScrollView } from '@/components/AppSheet'
 import { LoadingState } from '@/components/LoadingState'
 // 주간 투자 선택과 결과를 관련 가상 뉴스부터 차분하게 돌아보도록 안내한다.
 import { gamePeriod, gameNews } from '../../../../shared/game-week'
 import { assetsForGame } from '../../../../shared/game-assets'
-import { Image, Pressable, ScrollView, Text, View } from 'react-native'
+import { Image, Pressable, Text, View } from 'react-native'
 import type { PracticeTurn } from '@/lib/investingApi'
 import { replayChoices, replayIndicators, replayPicks, replayResults } from '../../../../shared/game-replay'
 
@@ -15,7 +15,7 @@ export function PracticeReplay({ value, close }: { value: PracticeReplayState | 
   const news = value?.after ? gameNews(value.after.briefing.news, assetsForGame(value.after), value.before.holdings, '', value.before.holdings.length > 0).slice(0, 5) : []
   const money = (v: number | null | undefined) => v == null ? '미확정' : v.toLocaleString('ko-KR', { maximumFractionDigits: 2 })
   const pct = (v: number | null) => v == null ? '미확정' : `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`
-  return <AppSheet open={!!value} title={value?.after ? `이번 ${period} 돌아보기` : '내 선택을 돌아보는 중'} close={close}><ScrollView contentContainerClassName="gap-5 p-5 pb-10">
+  return <AppSheet open={!!value} title={value?.after ? `이번 ${period} 돌아보기` : '내 선택을 돌아보는 중'} close={close}><AppSheetScrollView >
     <Pressable accessibilityRole="button" onPress={close} className="min-h-11 justify-center"><Text className="text-brand">{value?.after ? '다음 선택으로' : '연출 건너뛰기'}</Text></Pressable>
     {value && <>
       <View className="flex-row items-center gap-4"><Image source={require('../../../../shared/assets/firewatch-scout.png')} accessibilityLabel="FireWatch 불꽃 정찰대" style={{ width: 92, height: 110 }} resizeMode="contain" /><View className="flex-1"><Text className="text-xs text-muted">{period} {value.before.turnIndex + 1} → {value.after ? value.after.turnIndex + 1 : '?'}</Text><Text className="text-xl font-bold text-ink">{value.after ? `이번 ${period} 돌아보기` : '내 선택을 돌아보는 중'}</Text></View></View>
@@ -33,5 +33,5 @@ export function PracticeReplay({ value, close }: { value: PracticeReplayState | 
         <Text className="text-xl font-bold text-ink">총자산 {money(value.after.portfolioValue)} 게임머니</Text><Text className="text-muted">직전 총자산 {money(value.before.portfolioValue)}</Text>
       </>}
     </>}
-  </ScrollView></AppSheet>
+  </AppSheetScrollView></AppSheet>
 }
