@@ -92,7 +92,7 @@ export function StockSearchInput({ onSelect, onQueryChange, preserveQueryOnSelec
               key={result.symbol}
               onPress={() => handleSelect(result.symbol)}
               accessibilityRole="button"
-              className="min-h-11 justify-center border-b border-line px-3 py-3 last:border-b-0"
+              className="min-h-12 justify-center border-b border-line px-3 py-3 last:border-b-0"
             >
               <Text className="text-sm text-ink">
                 {stockLabel(result.symbol, { [result.symbol]: result.name })}

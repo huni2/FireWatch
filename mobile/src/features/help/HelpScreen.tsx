@@ -18,7 +18,7 @@ export function HelpScreen() {
   return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5 pb-12">
     <Text className="text-base leading-6 text-muted">하려는 일을 골라보세요. 안내를 읽고 뒤로가면 보던 화면으로 돌아가요.</Text>
     {topics.map(([title, answer], index) => <View key={title} className="rounded-2xl bg-surface p-4">
-      <Pressable accessibilityRole="button" accessibilityState={{ expanded: opened === index }} onPress={() => setOpened(opened === index ? null : index)} className="min-h-11 flex-row items-center justify-between gap-3">
+      <Pressable accessibilityRole="button" accessibilityState={{ expanded: opened === index }} onPress={() => setOpened(opened === index ? null : index)} className="min-h-12 flex-row items-center justify-between gap-3">
         <Text className="flex-1 text-base font-bold text-ink">{title}</Text><Text className="text-xl text-muted">{opened === index ? '−' : '+'}</Text>
       </Pressable>
       {opened === index && <Text className="pt-3 text-base leading-7 text-ink">{answer}</Text>}

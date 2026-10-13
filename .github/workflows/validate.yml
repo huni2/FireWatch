@@ -107,3 +107,6 @@ jobs:
       - name: Android reading sheet interaction contract
         if: matrix.client == 'mobile'
         run: node --test scripts/app-sheet.test.cjs
+      - name: Android refresh and numeric input contracts
+        if: matrix.client == 'mobile'
+        run: node --test scripts/android-polish.test.cjs scripts/news-and-price.test.cjs

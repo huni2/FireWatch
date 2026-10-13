@@ -12,10 +12,10 @@ export function CandidatesScreen({ shortTerm = false, ...navigation }: { shortTe
   const briefing = useResource(fetchRecommendations)
   const portfolio = useResource(fetchPortfolio)
   return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5" refreshControl={<RefreshControl refreshing={briefing.refreshing} onRefresh={() => { void briefing.refresh(); void portfolio.reload() }} />}>
-    <Text accessibilityRole="header" className="text-2xl font-bold text-ink">{shortTerm ? '단기 관찰' : '기업 찾기'}</Text>
+    {shortTerm && <Text accessibilityRole="header" className="text-2xl font-bold text-ink">단기 관찰</Text>}
     <CompanyDiscovery shortTerm={shortTerm} briefing={briefing.data} portfolio={portfolio.data} loading={briefing.loading} {...navigation} />
     <InvestmentNotice />
-    <Pressable accessibilityRole="button" accessibilityState={{ expanded: more }} onPress={() => setMore(!more)} className="min-h-11 justify-center"><Text className="text-brand">분석 이력·투자 조건 {more ? "접기" : "더 보기"}</Text></Pressable>
+    <Pressable accessibilityRole="button" accessibilityState={{ expanded: more }} onPress={() => setMore(!more)} className="min-h-12 justify-center"><Text className="text-brand">분석 이력·투자 조건 {more ? "접기" : "더 보기"}</Text></Pressable>
     {more && <><RecommendationHistory />
     {briefing.data?.analyzedAt && <Text className="text-sm text-muted">분석 {new Date(briefing.data.analyzedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} 한국 시간 · 지표 기준 {briefing.data.sourceBriefingDate}. 추가 소식은 뉴스 메뉴에서 확인하세요.</Text>}
     {portfolio.error && <Text className="text-danger">포트폴리오: {portfolio.error}</Text>}

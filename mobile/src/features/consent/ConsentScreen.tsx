@@ -39,13 +39,13 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
         <Text className="text-base leading-6 text-muted">
           직접 입력한 투자 기록과 관심 기업을 저장해 점검에 사용해요. Google 계정 연결과 알림은 선택이며, 알림을 켜면 푸시 토큰을 사용해요. 어떤 자료를 보관하는지 아래에서 확인할 수 있어요.
         </Text>
-        <Pressable accessibilityRole="button" accessibilityHint="앱 안에서 전문을 읽고 이 화면으로 돌아옵니다." onPress={() => setPolicyOpen(true)} className="min-h-11 justify-center">
+        <Pressable accessibilityRole="button" accessibilityHint="앱 안에서 전문을 읽고 이 화면으로 돌아옵니다." onPress={() => setPolicyOpen(true)} className="min-h-12 justify-center">
           <Text className="text-base font-semibold text-brand underline">개인정보처리방침 전문 보기</Text>
         </Pressable>
       </View>
 
       <View className="gap-3 border-t border-line pt-4">
-        <Pressable accessibilityRole="checkbox" accessibilityState={{ checked, disabled: saving }} disabled={saving} onPress={() => setChecked((value) => !value)} className="min-h-11 flex-row items-center gap-3">
+        <Pressable accessibilityRole="checkbox" accessibilityState={{ checked, disabled: saving }} disabled={saving} onPress={() => setChecked((value) => !value)} className="min-h-12 flex-row items-center gap-3">
           <View
             className={`h-6 w-6 items-center justify-center rounded border ${
               checked ? 'border-brand bg-selection' : 'border-neutral-400'
