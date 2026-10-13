@@ -10,11 +10,11 @@
 
 ## Android 설치
 
-**최신 테스트 버전: 1.0.9 · Android 빌드 14 · 2026-10-13 · 약 54.3MB**
+**최신 테스트 버전: 1.0.10 · Android 빌드 15 · 2026-10-13 · 약 54.3MB**
 
-보유 자산 등록·기업 상세 버튼의 글씨 가운데 정렬, 종목·시장 지표 차트의 바깥 터치 선택 해제·재선택를 포함했습니다. 기존 1.0.8의 모달·키보드·처리 상태 개선도 유지합니다. 같은 서명으로 업데이트 설치하며 로컬 빌드로 EAS 횟수는 사용하지 않았습니다. 실제 Android 터치·로그인·푸시·키보드·완주 동작은 설치 후 확인합니다.
+자산 요약·점검·비중 우선 배치, 기업 필터와 상세 복귀, 종목 버튼 우선순위·차트 툴팁 경계, 게임 소식/기업·주문/내 자산 구분과 입력 유지를 포함했습니다. 기존 버튼 가운데 정렬·차트 바깥 터치 해제·모달 스크롤 개선도 유지합니다. 같은 서명으로 기존 앱 위에 업데이트 설치하며 Expo 클라우드 빌드 횟수는 사용하지 않았습니다. 실제 Android 로그인·푸시·키보드·제스처는 설치 후 확인합니다.
 
-[**APK 다운로드**](https://github.com/huni2/FireWatch/releases/download/v1.0.9-android-preview/FireWatch-1.0.9-android.apk) · [변경 내용·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.9-android-preview)
+[**APK 다운로드**](https://github.com/huni2/FireWatch/releases/download/v1.0.10-android-preview/FireWatch-1.0.10-android.apk) · [변경 내용·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.10-android-preview)
 
 1. Android 휴대폰에서 APK를 다운로드하고 파일을 엽니다.
 2. 설치가 차단되면 다운로드에 사용한 브라우저의 ‘이 출처의 앱 설치 허용’을 켭니다.
@@ -24,11 +24,9 @@ Play 스토어 출시 전 테스트용 설치본입니다. 최신 자산 요약�
 
 ## 현재 상태
 
-2026-10-13 기준. Android 1.0.9 / 빌드14 설치본 소스는 `a95f702`입니다. 실제 기기의 Google 로그인·푸시·접근성·최적화 후 동작은 별도로 확인합니다.
+2026-10-13 기준. Android 1.0.10 / 빌드15 설치본 소스는 `2af69d9`입니다. 실제 기기의 Google 로그인·푸시·접근성·최적화 후 동작은 별도로 확인합니다.
 
-**이번 설치본 반영**: PR #110 버튼 정렬·차트 선택 해제까지 포함했습니다. [후속 점검](docs/product/android-preview-20261009/button-chart-dismiss-20261013.md). 이후 설치본도 별도 요청 후 빌드합니다.
-
-
+**이번 설치본 반영**: PR #113 투자 점검·기업 탐색·게임 흐름 후속조치를 포함했습니다. [변경·검증 범위](docs/product/design-flow-20261013/review-followup.md). 이후 설치본도 별도 요청 후 빌드합니다.
 
 2026-10-09 후속으로 [BE-40 PR](https://github.com/huni2/FireWatch/pull/30)에서 KIND 공식 한국 상장법인2,651개의 회사명·업종 검색을 추가했습니다. 기존 편집 목록과 시세는 보존하며 가격을 생성하지 않습니다. [출처·범위·갱신 문서](docs/product/krx-company-directory/data-source.md)를 참고하세요. 서버·PostgreSQL·복원·웹/앱 CI 통과 후 웹·Render 배포를 확인했습니다. 공개 API에서 총2,669상품·새 기업의 한국어 검색·기존 분류·ETF·페이지 경계를 검증했습니다.
 
@@ -115,7 +113,7 @@ OpenSearch는 비용과 운영 부담으로 보류했습니다. 종목 검색은
 
 서버가 저장 기록과 거래 장부의 기준입니다. 웹은 기능별 훅과 로컬 상태로 조회·편집·처리 중·실패를 관리하며, 모바일은 같은 API 계약을 사용합니다. 전역 서버 캐시 라이브러리는 아직 도입하지 않았습니다. 검색 결과와 조건의 일치, 요청 경쟁, 중복 조회는 계속 점검할 항목입니다.
 
-[CI 워크플로](.github/workflows/validate.yml)는 백엔드 테스트, PostgreSQL 동시성·카탈로그/합성3,000건·문의·게임 순위 통합 검사 및 별도 DB 백업 복원/행 서명/시퀀스 대조, 웹 lint/build, 모바일 lint/타입 검사와 출시 설정·네이티브 차트 의존성 검사를 수행합니다. Android 1.0.9 소스의 [CI](https://github.com/huni2/FireWatch/actions/runs/38345712375)는 성공했습니다. 이 결과가 실제 기기 푸시 수신이나 현재 외부 수집 성공을 증명하지는 않습니다.
+[CI 워크플로](.github/workflows/validate.yml)는 백엔드 테스트, PostgreSQL 동시성·카탈로그/합성3,000건·문의·게임 순위 통합 검사 및 별도 DB 백업 복원/행 서명/시퀀스 대조, 웹 lint/build, 모바일 lint/타입 검사와 출시 설정·네이티브 차트 의존성 검사를 수행합니다. Android 1.0.10 소스의 [CI](https://github.com/huni2/FireWatch/actions/runs/38375926321)는 성공했습니다. 이 결과가 실제 기기 푸시 수신이나 현재 외부 수집 성공을 증명하지는 않습니다.
 
 ## 로컬 실행
 

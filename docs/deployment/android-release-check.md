@@ -1,6 +1,18 @@
 # Android 설치 검증
 
-## 최신 설치본 1.0.9 / 빌드 14 (2026-10-13)
+## 최신 설치본 1.0.10 / 빌드 15 (2026-10-13)
+
+자산 요약·점검·비중 우선 배치, 기업 필터와 상세 복귀, 종목 버튼 우선순위·차트 툴팁 경계, 게임 소식/기업·주문/내 자산 구분과 입력 유지 적용. 사용자 요청으로 로컬 빌드, Expo 클라우드 요청 0회. 소스 `2af69d9ff2e9cb6dab35d28e13f5983dd364bf3e`, [소스 CI](https://github.com/huni2/FireWatch/actions/runs/38375926321) 성공 확인.
+
+기존 1.0.9 동일 서명·ARM32/64·R8·ZIP CRC/16KB 정렬·네이티브 모듈·마스코트·최신 UI 코드·공개 다운로드 검증 통과. 54,344,936 bytes(약 54.3MB), SHA-256 `c2b8a2aa890f73fd46cefcd633a1326d9a51c756aa2c03b1e7b524bcbcd0a289`. [APK](https://github.com/huni2/FireWatch/releases/download/v1.0.10-android-preview/FireWatch-1.0.10-android.apk) · [릴리스](https://github.com/huni2/FireWatch/releases/tag/v1.0.10-android-preview) · [파일 기록](../product/android-preview-20261009/android-110-build.json).
+
+- [x] 파일·공개 다운로드·README 최신화
+- [x] 모바일 71개 검사 및 390/360px 라이트·다크 격리 UI 점검
+- [ ] 실제 Android 키보드·뒤로 가기·필터·차트·게임 구역 전환
+- [ ] 실제 Android 로그인·푸시·완주·접근성
+- [ ] Play 계정 적합성·AAB·선언·심사 접근
+
+## 이전 설치본 1.0.9 / 빌드 14 (2026-10-13)
 
 보유 자산 등록·기업 상세 버튼의 글씨 가운데 정렬, 종목·시장 지표 차트의 바깥 터치 선택 해제·재선택 적용. 사용자 요청 1회 로컬 빌드·EAS 0회. 소스 `a95f702254ba34b380ae08aeaa4decad371dfde0`와 CI 38345712375 성공 확인.
 
