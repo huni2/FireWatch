@@ -72,6 +72,12 @@ class InstrumentCatalog(private val jdbc: JdbcTemplate, private val transactions
         }
     }
 
+    fun namesFor(symbols: List<String>): Map<String, String> {
+        if (symbols.isEmpty()) return emptyMap()
+        val keys = symbols.distinct()
+        return jdbc.query("SELECT symbol, name FROM instrument_catalog WHERE symbol IN (${keys.joinToString(",") { "?" }})", { row, _ -> row.getString("symbol") to row.getString("name") }, *keys.toTypedArray()).toMap()
+    }
+
     fun search(query: String = "", assetClass: String = "", region: String = "", sectorId: String = "", limit: Int = 20, page: Int = 0): CatalogPage {
         val sql = searchQueries(query, assetClass, region, sectorId, limit, page)
         val total = jdbc.queryForObject(sql.countSql, Int::class.java, *sql.countArgs) ?: 0

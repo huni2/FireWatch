@@ -39,7 +39,7 @@ class AuthController(
         @RequestHeader("X-Device-Id", required = false) deviceId: String?,
         @RequestBody request: GoogleLinkRequest,
     ): SettingsResponse = withContext(Dispatchers.IO) {
-        val settings = authService.linkGoogleAccount(deviceId = deviceId.requireDeviceId(), idToken = request.idToken)
+        val settings = authService.linkGoogleAccount(deviceId = deviceId.requireDeviceId(), idToken = request.idToken, recordChoice = request.recordChoice)
         settings.toResponse(identityResolver.linkedEmailFor(settings)).copy(session = sessions.issue(deviceId.requireDeviceId()))
     }
 

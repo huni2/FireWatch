@@ -3,8 +3,8 @@ import type { Settings } from './api'
 import { getDeviceId } from './deviceId'
 import { clearLoginSession, saveLoginSession } from './loginSession'
 import { setOperatorKey, setAccountOperator } from './operatorAccess'
-export async function linkGoogleAccount(idToken: string) {
-  const data = await request<Settings>('/api/auth/google/link', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() }, body: JSON.stringify({ idToken }) })
+export async function linkGoogleAccount(idToken: string, recordChoice?: import('../../../shared/account-record-link').AccountRecordChoice) {
+  const data = await request<Settings>('/api/auth/google/link', { method: 'POST', headers: { 'X-Device-Id': getDeviceId() }, body: JSON.stringify({ idToken, recordChoice }) })
   if (!data.session) throw new Error('로그인 세션을 받지 못했습니다. 다시 시도해주세요.')
   saveLoginSession(data.session); setOperatorKey(''); setAccountOperator('')
   return data

@@ -54,7 +54,7 @@ class PortfolioService(
         return analyze(saved, true)
     }
 
-    private fun validate(input: PortfolioUpdateRequest) {
+    fun validate(input: PortfolioUpdateRequest) {
         val errors = mutableMapOf<String, String>()
         if (input.version < 0 || input.goal.isBlank() || input.goal.length > 120) errors["goal"] = "투자 목표는 1~120자입니다."
         if (input.horizonMonths !in 1..600) errors["horizonMonths"] = "투자 기간은 1~600개월입니다."

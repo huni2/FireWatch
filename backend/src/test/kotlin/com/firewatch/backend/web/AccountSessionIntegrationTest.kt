@@ -3,6 +3,7 @@ package com.firewatch.backend.web
 import com.firewatch.backend.entity.AppUser
 import com.firewatch.backend.entity.DeviceLink
 import com.firewatch.backend.entity.UserSettings
+import com.firewatch.backend.entity.watchedStocks
 import com.firewatch.backend.repository.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.AfterEach
@@ -26,6 +27,10 @@ import java.math.BigDecimal
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = ["spring.datasource.url=jdbc:h2:mem:session-test;DB_CLOSE_DELAY=-1", "firewatch.scheduler.cron=-", "firewatch.settings.api-key=session-test-key", "firewatch.operator.api-key=operator-test-key"])
 class AccountSessionIntegrationTest {
+    companion object {
+        @JvmStatic @org.springframework.test.context.DynamicPropertySource
+        fun database(registry: org.springframework.test.context.DynamicPropertyRegistry) = TestDatabase.configure(registry)
+    }
     @LocalServerPort var port: Int = 0
     @Autowired lateinit var sessions: AuthSessions
     @Autowired lateinit var users: AppUserRepository
@@ -33,6 +38,129 @@ class AccountSessionIntegrationTest {
     @Autowired lateinit var settings: UserSettingsRepository
     @Autowired lateinit var jdbc: org.springframework.jdbc.core.JdbcTemplate
     @MockitoBean lateinit var google: GoogleIdentityVerifier
+    @Autowired lateinit var portfolios: PortfolioRepository
+    @Autowired lateinit var revisions: PortfolioRevisionRepository
+    private val recordMapper = tools.jackson.databind.json.JsonMapper.builder().findAndAddModules().build()
+
+    private fun recordFixture(key: String, guestHoldings: List<PortfolioHoldingInput>, guestStocks: String? = "005930.KS,035720.KS", accountStocks: String? = "035720.KS,AAPL"): Pair<UserSettings, UserSettings> {
+        val user = users.save(AppUser(googleSub = "record-choice-$key", email = "$key@example.test"))
+        `when`(google.verify("record-choice-$key-proof")).thenReturn(GoogleIdentity(user.googleSub, user.email, true))
+        val guest = settings.save(UserSettings(deviceId = "record-choice-$key-device", watchedStocksRaw = guestStocks))
+        val account = settings.save(UserSettings(userId = user.id, watchedStocksRaw = accountStocks))
+        portfolios.saveAndFlush(com.firewatch.backend.entity.Portfolio(ownerId = guest.id, holdingsJson = recordMapper.writeValueAsString(guestHoldings)))
+        portfolios.saveAndFlush(com.firewatch.backend.entity.Portfolio(ownerId = account.id, goal = "계정 목표", cash = BigDecimal("10000"), holdingsJson = recordMapper.writeValueAsString(listOf(PortfolioHoldingInput("035720.KS", "카카오", BigDecimal("10"), BigDecimal("50000"))))))
+        return guest to account
+    }
+    private fun recordLogin(key: String, choice: com.firewatch.backend.web.dto.AccountRecordChoice? = null) = client().post().uri("/api/auth/google/link")
+        .header("X-Device-Id", "record-choice-$key-device").bodyValue(com.firewatch.backend.web.dto.GoogleLinkRequest("record-choice-$key-proof", choice)).exchange()
+    private fun comparison(key: String): String {
+        val error = recordLogin(key).expectStatus().isEqualTo(409).expectBody(ErrorResponse::class.java).returnResult().responseBody!!.error
+        assertEquals("ACCOUNT_RECORD_CHOICE_REQUIRED", error.code)
+        return (error.details["comparison"] as Map<*, *>)["fingerprint"] as String
+    }
+    private fun storedHoldings(owner: Long) = recordMapper.readValue(portfolios.findById(owner).orElseThrow().holdingsJson, Array<PortfolioHoldingInput>::class.java).toList()
+
+    @Test
+    fun `빈 보유 기록과 이미 있는 관심 기업은 로그인 차단 없이 계정 기록을 유지한다`() {
+        val (guest, account) = recordFixture("empty", emptyList(), "035720.KS", "035720.KS,AAPL")
+        val response = recordLogin("empty").expectStatus().isOk.expectBody(SettingsResponse::class.java).returnResult().responseBody!!
+        assertNotNull(response.session)
+        assertEquals(listOf("035720.KS", "AAPL"), response.watchedStocks)
+        assertEquals(BigDecimal("10"), storedHoldings(account.id).single().quantity)
+        assertTrue(storedHoldings(guest.id).isEmpty())
+    }
+
+    @Test
+    fun `관심 기업만 있어도 비교하며 합치면 중복을 하나로 남기고 포트폴리오는 바꾸지 않는다`() {
+        val (guest, account) = recordFixture("watch", emptyList())
+        val before = portfolios.findById(account.id).orElseThrow().holdingsJson
+        val fingerprint = comparison("watch")
+        assertFalse(links.existsById(guest.deviceId!!))
+        recordLogin("watch", com.firewatch.backend.web.dto.AccountRecordChoice("MERGE_ACCOUNT", "ACCOUNT", fingerprint)).expectStatus().isOk.expectBody(Void::class.java)
+        assertEquals(listOf("035720.KS", "AAPL", "005930.KS"), settings.findById(account.id).orElseThrow().watchedStocks())
+        assertEquals(before, portfolios.findById(account.id).orElseThrow().holdingsJson)
+        assertEquals("005930.KS,035720.KS", settings.findById(guest.id).orElseThrow().watchedStocksRaw)
+    }
+
+    @Test
+    fun `확인 전에는 쓰지 않고 계정 기록만 선택하면 기기 원본과 계정 모두 보존한다`() {
+        val (guest, account) = recordFixture("keep", listOf(PortfolioHoldingInput("035720.KS", "카카오", BigDecimal("2"))))
+        val before = portfolios.findById(account.id).orElseThrow().holdingsJson
+        val fingerprint = comparison("keep")
+        assertFalse(links.existsById(guest.deviceId!!))
+        assertEquals(before, portfolios.findById(account.id).orElseThrow().holdingsJson)
+        recordLogin("keep", com.firewatch.backend.web.dto.AccountRecordChoice("ACCOUNT", "ACCOUNT", fingerprint)).expectStatus().isOk.expectBody(Void::class.java)
+        assertEquals(before, portfolios.findById(account.id).orElseThrow().holdingsJson)
+        assertEquals(BigDecimal("2"), storedHoldings(guest.id).single().quantity)
+        assertEquals("035720.KS,AAPL", settings.findById(account.id).orElseThrow().watchedStocksRaw)
+    }
+
+    @Test
+    fun `중복 보유는 선택한 쪽 값으로만 업데이트하며 현금은 더하지 않고 변경 전후 이력을 남긴다`() {
+        for (mode in listOf("MERGE_ACCOUNT", "MERGE_DEVICE")) {
+            val key = mode.lowercase().replace('_', '-')
+            val guestHolding = PortfolioHoldingInput("035720.KS", "카카오", BigDecimal("2"), BigDecimal("40000"))
+            val (guest, account) = recordFixture(key, listOf(guestHolding, PortfolioHoldingInput("005930.KS", "삼성전자", BigDecimal("3"))))
+            val source = portfolios.findById(guest.id).orElseThrow(); source.cash = BigDecimal("7000"); portfolios.saveAndFlush(source)
+            val fingerprint = comparison(key)
+            recordLogin(key, com.firewatch.backend.web.dto.AccountRecordChoice(mode, "DEVICE", fingerprint)).expectStatus().isOk.expectBody(Void::class.java)
+            val holdings = storedHoldings(account.id)
+            assertEquals(2, holdings.size)
+            assertEquals(if (mode == "MERGE_DEVICE") BigDecimal("2") else BigDecimal("10"), holdings.single { it.symbol == "035720.KS" }.quantity)
+            assertEquals(if (mode == "MERGE_DEVICE") BigDecimal("40000") else BigDecimal("50000"), holdings.single { it.symbol == "035720.KS" }.averageCost)
+            assertEquals(0, BigDecimal("7000").compareTo(portfolios.findById(account.id).orElseThrow().cash))
+            assertEquals("계정 목표", portfolios.findById(account.id).orElseThrow().goal)
+            assertEquals(guestHolding, storedHoldings(guest.id).first())
+            assertEquals(2, revisions.findAll().count { it.ownerId == account.id })
+            // Retry after linking is idempotent and cannot merge the source twice.
+            recordLogin(key, com.firewatch.backend.web.dto.AccountRecordChoice(mode, "DEVICE", fingerprint)).expectStatus().isOk.expectBody(Void::class.java)
+            assertEquals(2, revisions.findAll().count { it.ownerId == account.id })
+        }
+    }
+
+    @Test
+    fun `비교 뒤 관심 기업이나 보유 기록이 변경되면 예전 확인으로 연결할 수 없다`() {
+        val (guest, account) = recordFixture("stale", listOf(PortfolioHoldingInput("035720.KS", "카카오", BigDecimal("2"))))
+        val fingerprint = comparison("stale")
+        val changed = settings.findById(account.id).orElseThrow(); changed.watchedStocksRaw = "AAPL"; settings.saveAndFlush(changed)
+        recordLogin("stale", com.firewatch.backend.web.dto.AccountRecordChoice("MERGE_DEVICE", "DEVICE", fingerprint)).expectStatus().isEqualTo(409).expectBody(Void::class.java)
+        assertFalse(links.existsById(guest.deviceId!!))
+        assertEquals(BigDecimal("10"), storedHoldings(account.id).single().quantity)
+        val current = comparison("stale")
+        assertNotEquals(fingerprint, current)
+        val changedPortfolio = portfolios.findById(account.id).orElseThrow(); changedPortfolio.cash = BigDecimal("999"); portfolios.saveAndFlush(changedPortfolio)
+        recordLogin("stale", com.firewatch.backend.web.dto.AccountRecordChoice("MERGE_DEVICE", "DEVICE", current)).expectStatus().isEqualTo(409).expectBody(Void::class.java)
+        assertFalse(links.existsById(guest.deviceId!!))
+    }
+
+    @Test
+    fun `합친 기록의 제한이나 계좌 규칙을 위반하면 로그인도 기록 변경도 롤백된다`() {
+        val (guest, account) = recordFixture("limit", emptyList(), (1..20).joinToString(",") { "S$it" }, "AAPL")
+        val fingerprint = comparison("limit")
+        recordLogin("limit", com.firewatch.backend.web.dto.AccountRecordChoice("MERGE_ACCOUNT", "ACCOUNT", fingerprint)).expectStatus().isBadRequest.expectBody(Void::class.java)
+        assertFalse(links.existsById(guest.deviceId!!)); assertEquals("AAPL", settings.findById(account.id).orElseThrow().watchedStocksRaw)
+        val (guestIsa, accountIsa) = recordFixture("isa", listOf(PortfolioHoldingInput("AAPL", "애플", BigDecimal("1"), currency = "USD", region = "US")))
+        val isa = portfolios.findById(accountIsa.id).orElseThrow(); isa.accountType = "ISA"; portfolios.saveAndFlush(isa)
+        val isaFingerprint = comparison("isa")
+        recordLogin("isa", com.firewatch.backend.web.dto.AccountRecordChoice("MERGE_DEVICE", "ACCOUNT", isaFingerprint)).expectStatus().isBadRequest.expectBody(Void::class.java)
+        assertFalse(links.existsById(guestIsa.deviceId!!)); assertEquals(1, storedHoldings(accountIsa.id).size)
+    }
+
+    @Test
+    fun `현금만 있는 기록도 선택이 필요하고 합친 보유 종목 50개 제한을 우회하지 않는다`() {
+        val (cashGuest, cashAccount) = recordFixture("cash-only", emptyList(), null, null)
+        val cash = portfolios.findById(cashGuest.id).orElseThrow(); cash.cash = BigDecimal("777"); portfolios.saveAndFlush(cash)
+        val fingerprint = comparison("cash-only")
+        recordLogin("cash-only", com.firewatch.backend.web.dto.AccountRecordChoice("MERGE_ACCOUNT", "ACCOUNT", fingerprint)).expectStatus().isOk.expectBody(Void::class.java)
+        assertEquals(0, BigDecimal("10000").compareTo(portfolios.findById(cashAccount.id).orElseThrow().cash))
+        val many = (1..50).map { PortfolioHoldingInput("${100000 + it}.KS", "기업 $it", BigDecimal.ONE) }
+        val (guest, account) = recordFixture("many", many, null, null)
+        val manyFingerprint = comparison("many")
+        recordLogin("many", com.firewatch.backend.web.dto.AccountRecordChoice("MERGE_DEVICE", "ACCOUNT", manyFingerprint)).expectStatus().isBadRequest.expectBody(Void::class.java)
+        assertFalse(links.existsById(guest.deviceId!!))
+        assertEquals(1, storedHoldings(account.id).size)
+        assertEquals(50, storedHoldings(guest.id).size)
+    }
     // Keep test traffic off the server's shared Reactor HTTP resources. Reuse one
     // transport per test method and close it explicitly; retain the 20-second limit.
     private val transport = lazy { HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build() }

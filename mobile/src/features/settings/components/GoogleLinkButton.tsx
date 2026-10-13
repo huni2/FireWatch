@@ -1,6 +1,8 @@
 // 선택적 Google 계정 연결(APP-6). 커스텀 Android 빌드에서 서명/OAuth 왕복을 검증한다.
 // Expo Go와 JS export는 설치 앱의 로그인 검증을 대신하지 않는다.
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { AccountRecordLinkSheet } from './AccountRecordLinkSheet'
+import { accountRecordComparison, accountRecordErrorMessage, type AccountRecordChoice, type AccountRecordComparison } from '../../../../../shared/account-record-link'
 import { Alert, Pressable, Text, View } from 'react-native'
 import { LoadingIndicator } from '@/components/LoadingIndicator'
 import { useTheme } from '@/lib/theme'
@@ -53,15 +55,37 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
   }
   const loginInProgress = useRef(false)
   const [loginError, setLoginError] = useState<string | null>(null)
+  const [comparison, setComparison] = useState<AccountRecordComparison | null>(null)
+  const pendingToken = useRef<string | null>(null)
+  useEffect(() => () => { pendingToken.current = null }, [])
+  function cancelComparison() { if (!linking) { pendingToken.current = null; setComparison(null); setLoginError(null) } }
+  async function connect(token: string, choice?: AccountRecordChoice) {
+    try {
+      const settings = await linkGoogleAccount(token, choice)
+      pendingToken.current = null; setComparison(null); onLinked(settings)
+      Toast.show({ type: 'success', text1: '계정을 연결했어요', text2: '같은 계정으로 기록을 이어서 볼 수 있어요.' })
+    } catch (error) {
+      const records = error instanceof ApiRequestError ? accountRecordComparison(error.apiError) : null
+      if (records) { pendingToken.current = token; setComparison(records); setLoginError(choice ? '기록이 변경됐어요. 최신 내용을 다시 확인해주세요.' : null); return }
+      const message = error instanceof ApiRequestError ? accountRecordErrorMessage(error.apiError) : error instanceof Error ? error.message : '연결하지 못했어요. 잠시 후 다시 시도해주세요.'
+      setLoginError(message)
+      if (!pendingToken.current) Toast.show({ type: 'error', text1: '계정 연결을 확인해주세요', text2: message })
+    }
+  }
+  async function confirmRecords(choice: AccountRecordChoice) {
+    if (loginInProgress.current || !pendingToken.current) return
+    loginInProgress.current = true; setLinking(true); setLoginError(null)
+    try { await connect(pendingToken.current, choice) }
+    finally { loginInProgress.current = false; setLinking(false) }
+  }
   async function login() {
-    if (loginInProgress.current) return
+    if (loginInProgress.current || comparison) return
     loginInProgress.current = true
     setLinking(true); setLoginError(null)
     try {
       const token = await googleIdToken()
       if (!token) return
-      onLinked(await linkGoogleAccount(token))
-      Toast.show({ type: 'success', text1: '계정을 연결했어요', text2: '같은 계정으로 기록을 이어서 볼 수 있어요.' })
+      await connect(token)
     } catch (error) {
       const message = error instanceof ApiRequestError ? error.apiError.message : error instanceof Error ? error.message : '연결하지 못했어요. 잠시 후 다시 시도해주세요.'
       setLoginError(message)
@@ -99,7 +123,7 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
         <Text className="text-center text-sm font-semibold text-brand">{linkedEmail} 계정과 연동되었습니다 ✓</Text>
         <Text className="text-xs text-muted">로그인은 30일간 유지되고, 만료되면 연결된 Google 계정으로 복구를 시도해요. 계정 확인이 필요하면 다시 로그인해주세요.</Text>
         <Pressable disabled={linking || deviceBusy || deleting} onPress={() => void login()} className="min-h-12 items-center justify-center">{linking ? <LoadingIndicator color={colors.accent} trackColor={colors.border} label="Google 로그인 확인 중" width={60} /> : <Text className="text-brand">Google 로그인 갱신</Text>}</Pressable>
-        {loginError && <Text accessibilityRole="alert" className="text-sm text-danger">{loginError}</Text>}
+        {loginError && !comparison && <Text accessibilityRole="alert" className="text-sm text-danger">{loginError}</Text>}
         <Pressable disabled={deviceBusy} onPress={manageDevices} className="min-h-12 items-center justify-center"><Text className="text-brand">연결된 기기 확인</Text></Pressable>
         {devices?.map((device, index) => <View key={device.id} className="rounded-xl border border-line p-3">
           <Text className="font-semibold text-ink">{device.current ? '현재 기기' : `연결 기기 ${index + 1}`}</Text>
@@ -115,9 +139,9 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
   }
 
   return (
-    <View className="gap-2"><Pressable
+    <View className="gap-2">{comparison && <AccountRecordLinkSheet key={comparison.fingerprint} comparison={comparison} busy={linking} error={loginError} close={cancelComparison} confirm={choice => void confirmRecords(choice)} />}<Pressable
       onPress={() => void login()}
-      disabled={linking}
+      disabled={linking || !!comparison}
       className="flex-row items-center justify-center gap-2 rounded-full border border-line bg-surface py-3"
     >
       {linking ? (
@@ -125,6 +149,6 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
       ) : (
         <Text className="text-base font-semibold text-muted">Google 계정 연동</Text>
       )}
-    </Pressable>{loginError && <Text accessibilityRole="alert" className="text-sm text-danger">{loginError}</Text>}</View>
+    </Pressable>{loginError && !comparison && <Text accessibilityRole="alert" className="text-sm text-danger">{loginError}</Text>}</View>
   )
 }
