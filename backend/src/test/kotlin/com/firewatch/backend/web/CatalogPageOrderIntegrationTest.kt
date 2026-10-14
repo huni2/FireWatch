@@ -23,6 +23,21 @@ class CatalogPageOrderIntegrationTest {
     @Autowired lateinit var catalog: InstrumentCatalog
     private val mapper = JsonMapper.builder().findAndAddModules().build()
 
+    @Test fun `정확 이름과 이름 시작 일치를 부분 일치보다 먼저 보여주고 페이지에 중복이 없다`() {
+        val original = catalog.search("005930.KS").items.first().instrument
+        for ((symbol, name) in listOf("UXEXACT" to "검색검증", "UXPREFIX" to "검색검증 ETF", "UXCONTAINS" to "가 검색검증")) {
+            val item = original.copy(symbol = symbol, name = name)
+            jdbc.update("INSERT INTO instrument_catalog(symbol,name,normalized_name,search_text,metadata_json,asset_class,region,sector_id,underlying_index,verified_at) VALUES(?,?,?,?,?,'STOCK','KR','test-page','','2026-10-09')",
+                symbol, name, InstrumentCatalog.normalize(name), InstrumentCatalog.normalize(name), mapper.writeValueAsString(item))
+        }
+        val first = catalog.search("검색검증", limit = 2)
+        val second = catalog.search("검색검증", limit = 2, page = 1)
+        assertEquals(listOf("UXEXACT", "UXPREFIX"), first.items.map { it.instrument.symbol })
+        assertTrue(first.hasMore)
+        assertEquals(listOf("UXCONTAINS"), second.items.map { it.instrument.symbol })
+        assertFalse(second.hasMore)
+    }
+
     private fun legacy(q: String, type: String = "", region: String = "", sector: String = "", page: Int = 0): Pair<String, Array<Any>> {
         val sql = catalog.searchQueries(q, type, region, sector, 50, page)
         if (q.isNotBlank() || InstrumentCatalog.normalize(q.take(100)).isNotEmpty()) return sql.rowSql to sql.rowArgs

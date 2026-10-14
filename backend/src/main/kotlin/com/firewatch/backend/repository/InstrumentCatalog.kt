@@ -72,6 +72,14 @@ class InstrumentCatalog(private val jdbc: JdbcTemplate, private val transactions
         }
     }
 
+    fun metadataFor(symbols: List<String>): Map<String, CatalogItem> {
+        if (symbols.isEmpty()) return emptyMap()
+        val keys = symbols.distinct()
+        return jdbc.query("SELECT symbol,metadata_json FROM instrument_catalog WHERE symbol IN (${keys.joinToString(",") { "?" }})", { row, _ ->
+            row.getString("symbol") to mapper.readValue(row.getString("metadata_json"), CatalogItem::class.java)
+        }, *keys.toTypedArray()).toMap()
+    }
+
     fun namesFor(symbols: List<String>): Map<String, String> {
         if (symbols.isEmpty()) return emptyMap()
         val keys = symbols.distinct()
@@ -105,8 +113,9 @@ class InstrumentCatalog(private val jdbc: JdbcTemplate, private val transactions
                 "SELECT c.metadata_json,q.price,q.as_of FROM ($pageSql) page JOIN instrument_catalog c ON c.symbol=page.symbol LEFT JOIN market_quotes q ON c.symbol=q.symbol ORDER BY page.name,page.symbol",
                 (filters.map { it.second } + listOf<Any>(size, page * size)).toTypedArray(), size)
         }
-        val order = "CASE WHEN $exactColumn=? THEN 0 WHEN c.symbol=? THEN 0 ELSE 1 END, c.name, c.symbol"
-        val orderArgs = listOf<Any>(term, query.trim().uppercase())
+        val prefix = "${term.replace("!", "!!").replace("%", "!%").replace("_", "!_")}%"
+        val order = "CASE WHEN $exactColumn=? THEN 0 WHEN c.symbol=? THEN 0 WHEN $exactColumn LIKE ? ESCAPE '!' THEN 1 ELSE 2 END, c.name, c.symbol"
+        val orderArgs = listOf<Any>(term, query.trim().uppercase(), prefix)
         return CatalogQueries("SELECT COUNT(*) FROM instrument_catalog c $where", args,
             "SELECT c.metadata_json, q.price, q.as_of FROM instrument_catalog c LEFT JOIN market_quotes q ON c.symbol=q.symbol $where ORDER BY $order LIMIT ? OFFSET ?",
             (args.toList() + orderArgs + listOf<Any>(size, page * size)).toTypedArray(), size)

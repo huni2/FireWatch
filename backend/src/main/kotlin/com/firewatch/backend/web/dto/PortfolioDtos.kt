@@ -39,6 +39,11 @@ data class PortfolioHoldingView(
 
 data class ValuationCoverage(val pricedHoldings: Int, val totalHoldings: Int, val includedValueKrw: BigDecimal, val missingNames: List<String>)
 
+data class PortfolioReviewRequest(val version: Long)
+data class PortfolioReviewCheckpoint(val reviewedAt: Instant, val cash: BigDecimal,
+    val holdings: List<PortfolioHoldingView>, val totalValueKrw: BigDecimal?,
+    val fxAsOf: String?, val newsLinks: List<String>)
+
 data class PortfolioResponse(
     val version: Long,
     val goal: String,
@@ -62,6 +67,7 @@ data class PortfolioResponse(
     val exposure: com.firewatch.backend.service.PortfolioExposure? = null,
     val allocationBasis: String = "MARKET_VALUE",
     val valuationCoverage: ValuationCoverage? = null,
+    val reviewCheckpoint: PortfolioReviewCheckpoint? = null,
 ) {
     override fun toString() = "포트폴리오 분석 $analysisVersion (자산 ${holdings.size}개)"
 }

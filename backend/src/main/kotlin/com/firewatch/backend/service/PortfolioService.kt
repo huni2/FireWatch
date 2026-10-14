@@ -22,6 +22,7 @@ class PortfolioService(
     private val briefings: BriefingRepository,
     private val news: NewsArticleRepository,
     private val newsFeed: NewsFeedRepository,
+    private val catalog: InstrumentCatalog,
 ) : AuditedComponent {
     override val auditEventType = AuditEventType.PORTFOLIO
     private val mapper = JsonMapper.builder().findAndAddModules().build()
@@ -33,6 +34,24 @@ class PortfolioService(
         val owner = identityResolver.resolveForDevice(deviceId).id
         val stored = portfolios.findById(owner).orElse(null)
         return analyze(stored ?: Portfolio(ownerId = owner), stored != null)
+    }
+
+    // Save a user-requested comparison baseline, without altering holdings or their edit time.
+    @Transactional
+    fun review(deviceId: String, input: PortfolioReviewRequest): PortfolioResponse {
+        if (input.version < 0) throw ValidationException("점검할 기록 버전을 확인해주세요.", mapOf("version" to "0 이상이어야 해요."))
+        val owner = identityResolver.resolveForDevice(deviceId).id
+        val row = portfolios.findForAccountLink(owner)
+            ?: throw ValidationException("먼저 보유 자산이나 현금을 등록해주세요.", mapOf("holdings" to "저장한 기록이 필요해요."))
+        if (row.version != input.version) throw ConflictException("다른 화면에서 기록이 변경됐어요. 최신 기록을 확인한 뒤 점검을 마쳐주세요.")
+        val current = analyze(row, true)
+        if (current.holdings.isEmpty() && current.cash <= BigDecimal.ZERO)
+            throw ValidationException("먼저 보유 자산이나 현금을 등록해주세요.", mapOf("holdings" to "보유 기록이 필요해요."))
+        val checkpoint = PortfolioReviewCheckpoint(Instant.now(), current.cash,
+            current.holdings, current.totalValueKrw, current.fxAsOf, current.relatedNews.map { it.link })
+        row.reviewJson = mapper.writeValueAsString(checkpoint)
+        val saved = portfolios.saveAndFlush(row)
+        return current.copy(version = saved.version, reviewCheckpoint = checkpoint)
     }
 
     @Transactional
@@ -115,9 +134,22 @@ class PortfolioService(
         val target = targetFor(row.riskLevel, row.horizonMonths)
         val contribution = target.mapValues { (_, weight) -> row.monthlyContribution.multiply(weight).divide(BigDecimal("100"), 0, RoundingMode.DOWN) }.toMutableMap()
         if (contribution.isNotEmpty()) contribution["CASH"] = contribution.getValue("CASH") + row.monthlyContribution - contribution.values.fold(BigDecimal.ZERO) { a, v -> a + v }
-        val articles = (if (holdings.isEmpty()) emptyList() else newsFeed.findTop50ByOrderByPubDateDescCollectedAtDesc().map { NewsArticleResponse(it.title, it.link, it.description, it.pubDate) } + latest?.id?.let { news.findByBriefingId(it).map { n -> n.toResponse() } }.orEmpty())
-            .distinctBy { it.link }.filter { article -> holdings.any { h -> article.title.contains(h.name, true) || (h.symbol.length >= 3 && Regex("(?i)(?<![A-Za-z0-9])${Regex.escape(h.symbol)}(?![A-Za-z0-9])").containsMatchIn(article.title)) } }.take(10)
-        return PortfolioResponse(row.version, row.goal, row.horizonMonths, row.riskLevel, row.accountType, row.monthlyContribution, row.cash, views, invested, total, if (total != null && invested != null) percent(total - row.cash - invested, invested) else null, allocation, target, contribution, insights, articles, row.updatedAt.takeIf { persisted }, latest?.briefingDate?.toString().takeIf { fx != null }, exposure = PortfolioExposureAnalysis.analyze(views, row.cash), valuationCoverage = coverage)
+        val metadata = catalog.metadataFor(holdings.map { it.symbol })
+        val namePatterns = holdings.flatMap { h ->
+            val item = metadata[h.symbol]
+            (listOfNotNull(h.name, item?.name, h.symbol, h.symbol.removeSuffix(".KS").removeSuffix(".KQ")) + item?.aliases.orEmpty().filter { it.trim().length >= 3 })
+                .map { it.trim() }.filter { it.length >= 2 }
+        }.distinct().map { name ->
+            if (name.any { it in 'A'..'Z' || it in 'a'..'z' || it in '0'..'9' }) Regex("(?i)(?<![A-Za-z0-9])${Regex.escape(name)}(?![A-Za-z0-9])")
+            else Regex(Regex.escape(name))
+        }
+        val articles = (if (holdings.isEmpty()) emptyList() else newsFeed.findTop200ByOrderByPubDateDescCollectedAtDesc().map { NewsArticleResponse(it.title, it.link, it.description, it.pubDate) } + latest?.id?.let { news.findByBriefingId(it).map { n -> n.toResponse() } }.orEmpty())
+            .distinctBy { it.link }.filter { article ->
+                val text = "${article.title} ${article.description.orEmpty()}"
+                namePatterns.any { it.containsMatchIn(text) }
+            }.sortedByDescending { it.pubDate }.take(10)
+        return PortfolioResponse(row.version, row.goal, row.horizonMonths, row.riskLevel, row.accountType, row.monthlyContribution, row.cash, views, invested, total, if (total != null && invested != null) percent(total - row.cash - invested, invested) else null, allocation, target, contribution, insights, articles, row.updatedAt.takeIf { persisted }, latest?.briefingDate?.toString().takeIf { fx != null }, exposure = PortfolioExposureAnalysis.analyze(views, row.cash), valuationCoverage = coverage,
+            reviewCheckpoint = row.reviewJson?.let { mapper.readValue(it, PortfolioReviewCheckpoint::class.java) })
     }
 
     companion object {

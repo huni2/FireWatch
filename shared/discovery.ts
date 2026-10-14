@@ -6,11 +6,12 @@ export interface RecommendationReport extends DiscoveryBriefing { sourceBriefing
 export interface Sector { id: string; name: string; description: string; keywords: string[]; checks: string[] }
 export interface Company { symbol: string; name: string; aliases: string[]; sectorId: string; region: 'KR' | 'US'; description: string; source: string; verifiedAt?: string }
 export const companyDefaultVerifiedAt = '2026-10-07'
-export const catalogVerifiedAt = '2026-10-07~2026-10-09'
+export const catalogVerifiedAt = '2026-10-07~2026-10-14'
 // Editorial navigation groups, not exchange classifications or a recommendation ranking.
 export const sectors: Sector[] = [
   { id: 'chips', name: '반도체·AI 인프라', description: 'AI와 전자기기를 움직이는 칩과 컴퓨팅', keywords: ['반도체', 'GPU', '메모리'], checks: ['고객 수요와 설비투자 변화', '수출 규제와 고객 집중도'] },
   { id: 'software', name: '플랫폼·소프트웨어', description: '검색, 클라우드와 업무용 소프트웨어', keywords: ['클라우드', '플랫폼', '소프트웨어'], checks: ['서비스 매출과 이용자 변화', 'AI 투자 비용과 경쟁'] },
+  { id: 'devices', name: '기기·소비자 기술', description: '휴대폰·컴퓨터와 소비자용 기기·서비스', keywords: ['스마트폰', '컴퓨터', '웨어러블'], checks: ['제품 수요와 서비스 매출 변화', '공급망과 지역별 판매 흐름'] },
   { id: 'mobility', name: '자동차·모빌리티', description: '완성차와 전기차, 이동 서비스', keywords: ['자동차', '전기차', '모빌리티'], checks: ['판매량과 제품별 수익성', '관세·환율·가격 경쟁'] },
   { id: 'battery', name: '배터리·에너지 저장', description: '전기차 배터리와 전력을 저장하는 ESS', keywords: ['배터리', '이차전지', 'ESS'], checks: ['수주와 공장 가동률', '원재료 비용과 고객 수요'] },
   { id: 'health', name: '바이오·헬스케어', description: '바이오의약품 개발과 위탁 생산', keywords: ['바이오', '의약품', 'CDMO'], checks: ['제품 허가와 계약 공시', '특허·개발 일정·생산 품질'] },
@@ -18,6 +19,7 @@ export const sectors: Sector[] = [
   { id: 'defense', name: '방산·항공우주', description: '방위 장비, 항공 기술과 우주 사업', keywords: ['방산', '항공', '우주'], checks: ['수주잔고와 납품 일정', '정부 예산과 수출 승인'] },
 ]
 export const companies: Company[] = [
+  { symbol: 'AAPL', name: '애플', aliases: ['Apple', 'Apple Inc.', 'Apple Inc'], sectorId: 'devices', region: 'US', description: '스마트폰·컴퓨터 등 소비자용 기기와 소프트웨어·서비스를 제공하는 기업', source: 'https://investor.apple.com/faq/default.aspx', verifiedAt: '2026-10-14' },
   { symbol: '035720.KS', name: '카카오', aliases: ['Kakao', 'Kakao Corp'], sectorId: 'software', region: 'KR', description: '메신저·콘텐츠와 플랫폼 서비스를 제공하는 기업', source: 'https://www.kakaocorp.com/ir/stockInformation?lang=ko', verifiedAt: '2026-10-09' },
   { symbol: '000660.KS', name: 'SK하이닉스', aliases: ['SK hynix', '하이닉스', '에스케이하이닉스'], sectorId: 'chips', region: 'KR', description: 'DRAM·NAND 등 메모리 반도체를 만드는 기업', source: 'https://m.skhynix.com/ir/UI-FR-IR03/', verifiedAt: '2026-10-09' },
   { symbol: '000270.KS', name: '기아', aliases: ['Kia', 'Kia Corporation', '기아자동차'], sectorId: 'mobility', region: 'KR', description: '완성차와 전기차 등 이동 수단을 만드는 기업', source: 'https://worldwide.kia.com/ko/company/investor-relations', verifiedAt: '2026-10-09' },

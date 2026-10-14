@@ -1,5 +1,23 @@
 [
   {
+    "symbol": "AAPL",
+    "name": "애플",
+    "aliases": [
+      "Apple",
+      "Apple Inc.",
+      "Apple Inc"
+    ],
+    "sectorId": "devices",
+    "region": "US",
+    "description": "스마트폰·컴퓨터 등 소비자용 기기와 소프트웨어·서비스를 제공하는 기업",
+    "source": "https://investor.apple.com/faq/default.aspx",
+    "verifiedAt": "2026-10-14",
+    "assetClass": "STOCK",
+    "underlyingIndex": "",
+    "issuer": "",
+    "currency": "USD"
+  },
+  {
     "symbol": "035720.KS",
     "name": "카카오",
     "aliases": [
