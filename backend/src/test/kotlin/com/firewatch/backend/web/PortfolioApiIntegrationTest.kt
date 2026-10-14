@@ -120,6 +120,10 @@ class PortfolioApiIntegrationTest {
         quotes.save(com.firewatch.backend.entity.MarketQuote("REVIEW.KS", BigDecimal("80000")))
         client.put().uri("/api/portfolio").header("X-Device-Id", "review-owner-a").contentType(MediaType.APPLICATION_JSON).bodyValue(input(0, "REVIEW.KS"))
             .exchange().expectStatus().isOk.expectBody().jsonPath("$.reviewCheckpoint").isEmpty
+            .consumeWith { result ->
+                // The APK distinguishes a supported first checkpoint (null) from an old server (absent).
+                kotlin.test.assertTrue(String(result.responseBody!!).contains("\"reviewCheckpoint\""))
+            }
         val before = portfolios.findAll().single { it.holdingsJson.contains("REVIEW.KS") }
         val oldHoldings = before.holdingsJson
         val oldTime = before.updatedAt
