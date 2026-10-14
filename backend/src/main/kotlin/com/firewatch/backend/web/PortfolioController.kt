@@ -2,6 +2,7 @@ package com.firewatch.backend.web
 
 import com.firewatch.backend.service.PortfolioService
 import com.firewatch.backend.web.dto.PortfolioUpdateRequest
+import com.firewatch.backend.web.dto.PortfolioReviewRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.web.bind.annotation.*
@@ -11,10 +12,17 @@ import org.springframework.web.bind.annotation.*
 class PortfolioController(private val service: PortfolioService, private val limiter: SettingsRateLimiter) {
     // 배포 계약 확인은 사용자 신원이나 DB 조회 없이 제공한다.
     @GetMapping("/capabilities")
-    fun capabilities() = mapOf("optionalAverageCost" to true, "allocationBasis" to "MARKET_VALUE", "analysisVersion" to "portfolio-rules-v3")
+    fun capabilities() = mapOf("optionalAverageCost" to true, "allocationBasis" to "MARKET_VALUE", "analysisVersion" to "portfolio-rules-v3", "reviewCheckpoint" to true)
 
     @GetMapping
     suspend fun get(@RequestHeader("X-Device-Id", required = false) deviceId: String?) = withContext(Dispatchers.IO) { service.get(deviceId.requireDeviceId()) }
+
+    @PutMapping("/review")
+    suspend fun review(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @RequestBody input: PortfolioReviewRequest) = withContext(Dispatchers.IO) {
+        val id = deviceId.requireDeviceId()
+        if (!limiter.allow(id)) throw TooManyRequestsException()
+        service.review(id, input)
+    }
 
     @PutMapping
     suspend fun update(@RequestHeader("X-Device-Id", required = false) deviceId: String?, @RequestBody input: PortfolioUpdateRequest) = withContext(Dispatchers.IO) {

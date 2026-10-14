@@ -17,6 +17,7 @@ class Portfolio(
     var cash: BigDecimal = BigDecimal.ZERO,
     @Column(columnDefinition = "TEXT") var holdingsJson: String = "[]",
     var updatedAt: Instant = Instant.now(),
+    @Column(columnDefinition = "TEXT") var reviewJson: String? = null,
 ) {
     override fun toString() = "포트폴리오 v$version 변경"
 }

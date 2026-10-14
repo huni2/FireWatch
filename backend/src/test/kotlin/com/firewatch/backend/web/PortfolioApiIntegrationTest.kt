@@ -11,8 +11,12 @@ import com.firewatch.backend.entity.Briefing
 import java.math.BigDecimal
 import java.time.LocalDate
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = ["spring.datasource.url=jdbc:h2:mem:portfolio-test;DB_CLOSE_DELAY=-1", "firewatch.scheduler.cron=-", "firewatch.operator.api-key=portfolio-operator-key"])
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = ["spring.datasource.url=jdbc:h2:mem:portfolio-test;DB_CLOSE_DELAY=-1", "firewatch.scheduler.cron=-", "firewatch.market.collection-cron=-", "firewatch.operator.api-key=portfolio-operator-key"])
 class PortfolioApiIntegrationTest {
+    companion object {
+        @JvmStatic @org.springframework.test.context.DynamicPropertySource
+        fun database(registry: org.springframework.test.context.DynamicPropertyRegistry) = TestDatabase.configure(registry)
+    }
     @Autowired private lateinit var auditLogs: com.firewatch.backend.repository.AuditLogRepository
     @Autowired private lateinit var briefings: BriefingRepository
     @Autowired private lateinit var gameSessions: com.firewatch.backend.repository.GameSessionRepository
@@ -110,6 +114,64 @@ class PortfolioApiIntegrationTest {
       "monthlyContribution":300000,"cash":100000,
       "holdings":[{"symbol":"$symbol","name":"삼성전자","quantity":10,"averageCost":70000,"currency":"$currency","assetClass":"STOCK","sector":"반도체","region":"KR","underlyingIndex":""}]
     }"""
+
+    @Test
+    fun `사용자가 마친 점검은 보유 기록과 편집 시각을 바꾸지 않고 서버 기준으로 저장하며 다른 사용자는 볼 수 없다`() {
+        quotes.save(com.firewatch.backend.entity.MarketQuote("REVIEW.KS", BigDecimal("80000")))
+        client.put().uri("/api/portfolio").header("X-Device-Id", "review-owner-a").contentType(MediaType.APPLICATION_JSON).bodyValue(input(0, "REVIEW.KS"))
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.reviewCheckpoint").isEmpty
+        val before = portfolios.findAll().single { it.holdingsJson.contains("REVIEW.KS") }
+        val oldHoldings = before.holdingsJson
+        val oldTime = before.updatedAt
+        client.put().uri("/api/portfolio/review").header("X-Device-Id", "review-owner-a").contentType(MediaType.APPLICATION_JSON).bodyValue("""{"version":0}""")
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.version").isEqualTo(1)
+            .jsonPath("$.reviewCheckpoint.reviewedAt").isNotEmpty
+            .jsonPath("$.reviewCheckpoint.holdings[0].valueKrw").isEqualTo(800000)
+            .jsonPath("$.reviewCheckpoint.holdings[0].holding.quantity").isEqualTo(10)
+        val checked = portfolios.findById(before.ownerId).orElseThrow()
+        kotlin.test.assertEquals(oldHoldings, checked.holdingsJson)
+        kotlin.test.assertEquals(oldTime, checked.updatedAt)
+        val savedReview = checked.reviewJson
+        client.get().uri("/api/portfolio").header("X-Device-Id", "review-owner-b").exchange().expectStatus().isOk.expectBody().jsonPath("$.reviewCheckpoint").isEmpty
+        client.put().uri("/api/portfolio/review").header("X-Device-Id", "review-owner-a").contentType(MediaType.APPLICATION_JSON).bodyValue("""{"version":0}""")
+            .exchange().expectStatus().isEqualTo(409)
+        kotlin.test.assertEquals(savedReview, portfolios.findById(before.ownerId).orElseThrow().reviewJson)
+        quotes.save(com.firewatch.backend.entity.MarketQuote("REVIEW.KS", BigDecimal("90000")))
+        client.put().uri("/api/portfolio").header("X-Device-Id", "review-owner-a").contentType(MediaType.APPLICATION_JSON).bodyValue(input(1, "REVIEW.KS").replace("\"quantity\":10", "\"quantity\":11"))
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.holdings[0].holding.quantity").isEqualTo(11)
+            .jsonPath("$.holdings[0].valueKrw").isEqualTo(990000)
+            .jsonPath("$.reviewCheckpoint.holdings[0].holding.quantity").isEqualTo(10)
+            .jsonPath("$.reviewCheckpoint.holdings[0].valueKrw").isEqualTo(800000)
+        kotlin.test.assertEquals(savedReview, portfolios.findById(before.ownerId).orElseThrow().reviewJson)
+    }
+
+    @Test
+    fun `평가 자료가 빠진 점검도 누락 상태를 그대로 보존하며 빈 기록과 누락 신원은 거부한다`() {
+        client.put().uri("/api/portfolio").header("X-Device-Id", "review-missing-owner").contentType(MediaType.APPLICATION_JSON).bodyValue(input(0, "REVIEWMISSING.KS"))
+            .exchange().expectStatus().isOk.expectBody(Void::class.java)
+        client.put().uri("/api/portfolio/review").header("X-Device-Id", "review-missing-owner").contentType(MediaType.APPLICATION_JSON).bodyValue("""{"version":0}""")
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.reviewCheckpoint.totalValueKrw").isEmpty
+            .jsonPath("$.reviewCheckpoint.holdings[0].valueKrw").isEmpty
+        client.put().uri("/api/portfolio/review").header("X-Device-Id", "review-empty-owner").contentType(MediaType.APPLICATION_JSON).bodyValue("""{"version":0}""")
+            .exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
+        client.put().uri("/api/portfolio/review").contentType(MediaType.APPLICATION_JSON).bodyValue("""{"version":0}""")
+            .exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
+        client.put().uri("/api/portfolio/review").header("X-Device-Id", "review-missing-owner").contentType(MediaType.APPLICATION_JSON).bodyValue("""{"version":-1}""")
+            .exchange().expectStatus().isBadRequest.expectBody(Void::class.java)
+    }
+
+    @Test
+    fun `보유 기업의 영문 별칭과 기사 설명도 소식으로 연결하되 다른 영문 회사의 일부 문자열은 제외한다`() {
+        val now = java.time.Instant.now()
+        feed.save(com.firewatch.backend.entity.NewsFeedItem("review-apple-news", "해외 기업 실적 자료", "https://example.com/review-apple-news", "Apple Inc. 공개 자료", now))
+        feed.save(com.firewatch.backend.entity.NewsFeedItem("review-appleton-news", "Appleton 기업 자료", "https://example.com/review-appleton-news", "다른 기업", now))
+        val body = input(0, "AAPL", "USD").replace("삼성전자", "애플")
+        client.put().uri("/api/portfolio").header("X-Device-Id", "review-news-owner").contentType(MediaType.APPLICATION_JSON).bodyValue(body)
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.relatedNews[?(@.link == 'https://example.com/review-apple-news')]").isNotEmpty
+            .jsonPath("$.relatedNews[?(@.link == 'https://example.com/review-appleton-news')]").isEmpty
+        client.put().uri("/api/portfolio/review").header("X-Device-Id", "review-news-owner").contentType(MediaType.APPLICATION_JSON).bodyValue("""{"version":0}""")
+            .exchange().expectStatus().isOk.expectBody().jsonPath("$.reviewCheckpoint.newsLinks").isNotEmpty
+    }
 
     @Test
     fun `저장 분석 조회와 사용자 격리 및 변경 충돌을 검증한다`() {
