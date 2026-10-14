@@ -11,6 +11,10 @@ object TestDatabase {
         registry.add("spring.datasource.driver-class-name") { "org.postgresql.Driver" }
         registry.add("spring.datasource.username") { "firewatch_test" }
         registry.add("spring.datasource.password") { "firewatch_test" }
+        // Cached Spring test contexts must share PostgreSQL's connection budget.
+        // Match the production maximum instead of retaining ten connections per context.
+        registry.add("spring.datasource.hikari.maximum-pool-size") { "3" }
+        registry.add("spring.datasource.hikari.minimum-idle") { "0" }
         registry.add("spring.sql.init.platform") { "postgresql" }
     }
 }
