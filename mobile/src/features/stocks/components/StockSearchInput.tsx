@@ -77,7 +77,7 @@ export function StockSearchInput({ onSelect, onQueryChange, preserveQueryOnSelec
         value={query}
         onChangeText={handleChange}
         placeholderTextColor={colors.muted}
-        placeholder="종목명으로 검색 (예: 삼성전자, Apple)"
+        placeholder="주식·ETF 검색 (예: 삼성전자, 애플)"
         className="rounded-lg border border-line bg-surface px-3 py-2 text-base text-ink"
       />
       {searching && <LoadingState inline compact message="회사를 찾고 있어요" />}

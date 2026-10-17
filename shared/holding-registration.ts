@@ -2,12 +2,26 @@
 import { companies, sectors } from './discovery'
 import etfs from './etfs.json'
 import type { Holding } from './investing'
+import type { CatalogItem } from './catalog'
 
-export function selectedHolding(current: Holding, symbol: string, name?: string): Holding {
+export function selectedHolding(current: Holding, symbol: string, name?: string, instrument?: CatalogItem): Holding {
   const company = companies.find(item => item.symbol === symbol)
   const etf = etfs.find(item => item.symbol === symbol)
   const korean = /\.(KS|KQ)$/.test(symbol)
-  return { ...current, symbol, name: name || company?.name || etf?.name || '', assetClass: etf ? 'ETF' : 'STOCK', currency: korean ? 'KRW' : 'USD', region: korean ? 'KR' : 'US', sector: sectors.find(item => item.id === company?.sectorId)?.name || '미분류', underlyingIndex: etf?.underlyingIndex ?? '' }
+  const changed = current.symbol.toUpperCase() !== symbol.toUpperCase()
+  return { ...current, quantity: changed ? 0 : current.quantity, averageCost: changed ? null : current.averageCost,
+    symbol, name: instrument?.name || name || company?.name || etf?.name || '',
+    assetClass: instrument?.assetClass ?? (etf ? 'ETF' : 'STOCK'), currency: instrument?.currency ?? (korean ? 'KRW' : 'USD'),
+    region: instrument?.region ?? (korean ? 'KR' : 'US'),
+    sector: sectors.find(item => item.id === (instrument?.sectorId ?? company?.sectorId))?.name || '미분류',
+    underlyingIndex: instrument?.underlyingIndex ?? etf?.underlyingIndex ?? '' }
+}
+
+export function holdingIdentity(holding: Pick<Holding, 'symbol' | 'assetClass' | 'currency'>): string {
+  const korean = /\.(KS|KQ)$/i.test(holding.symbol)
+  const code = holding.symbol.replace(/\.(KS|KQ)$/i, '')
+  const kind = holding.assetClass === 'ETF' ? 'ETF' : holding.assetClass === 'STOCK' ? '주식' : holding.assetClass === 'BOND' ? '채권' : '기타'
+  return `${code} · ${korean ? '한국 상장' : '미국 상장'} · ${kind} · ${holding.currency === 'KRW' ? '원화' : '달러'}`
 }
 
 export function holdingError(holding: Holding, others: Holding[]): string | null {

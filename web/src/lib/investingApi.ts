@@ -1,6 +1,6 @@
 import { ApiRequestError, request } from './api'
 import { getDeviceId } from './deviceId'
-import type { Portfolio, PortfolioDraft, NewsFeed } from '../../../shared/investing'
+import type { Portfolio, PortfolioDraft, NewsFeed, HoldingNoteRequest } from '../../../shared/investing'
 import { newsQuery, type NewsFilters } from '../../../shared/investing'
 import type { RecommendationReport } from '../../../shared/discovery'
 export const fetchRecommendations = () => request<RecommendationReport>('/api/recommendations/latest')
@@ -16,4 +16,6 @@ export const fetchPortfolio = async () => {
   }
 }
 export const savePortfolio = (draft: PortfolioDraft) => request<Portfolio>('/api/portfolio', { method: 'PUT', headers: { 'X-Device-Id': getDeviceId() }, body: JSON.stringify(draft) })
+export const reviewPortfolio = (version: number) => request<Portfolio>('/api/portfolio/review', { method: 'PUT', headers: { 'X-Device-Id': getDeviceId() }, body: JSON.stringify({ version }) })
+export const saveHoldingNote = (note: HoldingNoteRequest) => request<Portfolio>('/api/portfolio/note', { method: 'PUT', headers: { 'X-Device-Id': getDeviceId() }, body: JSON.stringify(note) })
 export const fetchNewsFeed = (filters?: NewsFilters) => request<NewsFeed>(`/api/news?${newsQuery(filters)}`)

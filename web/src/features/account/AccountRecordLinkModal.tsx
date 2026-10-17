@@ -6,6 +6,7 @@ import { stockLabel } from '../../../../shared/stock-labels'
 function Records({ title, data }: { title: string; data: AccountRecordSnapshot }) {
   return <section style={{ border: '1px solid var(--border-color, #ddd)', borderRadius: 12, padding: 16, flex: '1 1 240px', minWidth: 0 }}>
     <h3>{title}</h3><p>{data.accountType === 'ISA' ? 'ISA' : data.accountType === 'PENSION' ? '연금' : '일반'} 계좌 · {data.goal}</p><p>보유 {data.holdings.length}개 · 현금 {data.cash.toLocaleString('ko-KR')}원</p>
+    {data.noteCount !== undefined && <p>투자 메모 {data.noteCount}개 · 양쪽에 같은 종목의 메모가 있으면 선택한 쪽을 우선해요.</p>}
     <ul>{data.holdings.map(h => <li key={h.symbol}>{h.name} · {h.quantity.toLocaleString('ko-KR')}주 · 매입가 {h.averageCost == null ? '미입력' : `${h.averageCost.toLocaleString('ko-KR')}${h.currency === 'KRW' ? '원' : '달러'}`}</li>)}</ul>
     <p>관심 기업 {data.watchedStocks.length}개{data.watchedStocks.length ? ` · ${data.watchedStocks.map(s => data.watchedNames?.[s] ?? stockLabel(s)).join(', ')}` : ''}</p>
   </section>
@@ -17,6 +18,7 @@ export function AccountRecordLinkModal({ comparison, busy, error, close, confirm
   const [cashSource, setCashSource] = useState<AccountRecordChoice['cashSource']>('ACCOUNT')
   const summary = accountRecordSummary(comparison)
   const hasAssets = comparison.device.holdings.length > 0 || comparison.device.cash > 0
+  const hasDeviceRecords = hasAssets || (comparison.device.noteCount ?? 0) > 0
   const mergeBlocked = summary.watches > 20 || (hasAssets && summary.holdings > 50)
   return <Modal open title="기록을 어떻게 연결할까요?" width={760} onCancel={close} maskClosable={false} closable={!busy} keyboard={!busy}
     styles={{ body: { maxHeight: '65vh', overflowY: 'auto' } }} footer={<><Button disabled={busy} onClick={close}>취소</Button><Button type="primary" loading={busy} disabled={!mode || (mode !== 'ACCOUNT' && mergeBlocked)} onClick={() => { if (mode) confirm({ mode, cashSource, fingerprint: comparison.fingerprint }) }}>선택한 방법으로 연결</Button></>}>
@@ -25,8 +27,8 @@ export function AccountRecordLinkModal({ comparison, busy, error, close, confirm
     <h3>연결 방법</h3>
     <Radio.Group disabled={busy} value={mode} onChange={e => setMode(e.target.value)} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <Radio value="ACCOUNT">계정 기록만 사용</Radio>
-      <Radio value="MERGE_ACCOUNT">{hasAssets ? '합치고, 중복은 계정 값 유지' : '관심 기업 합치기'}</Radio>
-      {hasAssets && <Radio value="MERGE_DEVICE">합치고, 중복은 기기 값으로 업데이트</Radio>}
+      <Radio value="MERGE_ACCOUNT">{hasDeviceRecords ? '합치고, 중복은 계정 값 유지' : '관심 기업 합치기'}</Radio>
+      {hasDeviceRecords && <Radio value="MERGE_DEVICE">합치고, 중복은 기기 값으로 업데이트</Radio>}
     </Radio.Group>
     {mode === 'ACCOUNT' && <p>기기 기록을 합치지 않고 로그인해요. 기기 원본은 덮어쓰거나 삭제하지 않아요.</p>}
     {mode && mode !== 'ACCOUNT' && <>

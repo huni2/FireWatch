@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-10-14T07:23:51.366Z",
+  "phase": "after",
+  "health": {
+    "status": 200,
+    "body": "OK"
+  },
+  "capabilities": {
+    "status": 200,
+    "body": {
+      "optionalAverageCost": true,
+      "allocationBasis": "MARKET_VALUE",
+      "analysisVersion": "portfolio-rules-v3",
+      "reviewCheckpoint": true
+    }
+  },
+  "apple": {
+    "status": 200,
+    "total": 1,
+    "symbols": [
+      "AAPL"
+    ]
+  },
+  "news": {
+    "status": 200,
+    "total": 973,
+    "updatedAt": "2026-10-14T07:00:00.000439Z"
+  },
+  "reviewWithoutIdentityStatus": 400,
+  "commit": "965036a92c13bf5f05ddce9ae723c6840efdc1fb",
+  "pullRequest": "https://github.com/huni2/FireWatch/pull/120",
+  "githubDeploymentId": 7059251355,
+  "renderDeployId": "dep-db7iodks728c73d6plo0",
+  "ciRun": 38526634501,
+  "ciConclusion": "success",
+  "mainCiRun": 38527219984,
+  "mainCiConclusion": "success",
+  "renderDeploymentState": "success",
+  "backupRun": 38525409644,
+  "encryptedBackupBytes": 1284569,
+  "encryptedBackupChecksumMatched": true,
+  "schemaChange": "ADD COLUMN IF NOT EXISTS portfolios.review_json TEXT",
+  "productionPersonalRecordsWrittenBySmokeTest": false,
+  "paidPlanChanges": false,
+  "webDeploymentPerformed": false,
+  "newApkBuildPerformed": false
+}

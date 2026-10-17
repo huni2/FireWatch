@@ -4,13 +4,17 @@ Expo + React Native + Expo Router 기반 앱. 웹과 동일한 백엔드를 사�
 
 ## 설치용 APK
 
-최신 테스트 버전 **1.0.11 / versionCode 16 (2026-10-14)**: [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.11-android-preview/FireWatch-1.0.11-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.11-android-preview).
+최신 **로컬 테스트 버전 1.0.12 / versionCode17 (2026-10-14)**. 파일은 `dist/FireWatch-1.0.12-android.apk`입니다. [검증 기록](../docs/product/android-preview-20261009/android-112-build.json).
 
-긴 창의 스크롤·닫기 동작, 차트 시작 가격 기준선·상승/하락 표시, 시세 갱신 중 기록 유지와 재시도, 쉼표 수량·금액 입력, 시세·환율 날짜, 작은 버튼 터치 영역을 개선했습니다. [검증 범위](../docs/product/design-flow-20261013/android-polish.md).
+종목 검색 결과를 눌러 보유 자산을 등록하고, 수량과 선택 입력인 평균 구매 가격을 구분합니다. 다른 종목을 선택할 때 기존 수량·가격을 초기화하며 중복 종목은 기존 기록 수정으로 연결합니다. 내 투자 점검 화면에 평가 자료 상태·보유 비중·ETF 지수명 중복·관련 소식과 수량 수정 경로를 배치했습니다.
 
-소스 `9035ed7a979ecae349071cd3133fe8c10950aa74`를 로컬 Gradle로 빌드했습니다. 54,349,032 bytes(약 54.3MB), SHA-256 `6c5613ce179d5fd1169d57deab09072b6bb42b051b0968c9ab3abae086ddcc42`. 기존 1.0.10 동일 서명·ARM32/64·R8·ZIP CRC/16KB ZIP 정렬·네이티브 모듈·마스코트·새 수정 코드·공개 다운로드를 대조했습니다. Expo 클라우드 빌드 요청 0회. [소스 CI](https://github.com/huni2/FireWatch/actions/runs/38424209417) 성공.
+54,389,992 bytes(약 54.4MB), SHA-256 `449581279c339721b8f0c4b6ab1f1838295ba72c52f216d238dd753c0d4c0b04`. 기존 1.0.11과 같은 서명·패키지/버전·ARM32/64·R8·ZIP 무결성·16KB ZIP 정렬·네이티브 모듈·새 검색/점검 코드 포함을 확인했습니다. 모바일 검사84개·공통 등록/점검 검사14개·타입·린트·출시 설정 검사를 통과했습니다. Expo 클라우드 빌드 요청0회.
 
-Expo Go 없이 기존 앱 위에 업데이트합니다. 실제 Android 로그인·푸시·키보드·제스처·완주·접근성은 설치 후 확인합니다. Play 게시본은 아닙니다.
+기준 커밋 `7f27c91`와 미커밋 작업 트리 변경으로 빌드했습니다. Expo Go 없이 기존 앱 위에 업데이트합니다. 실제 Android 설치·로그인·푸시·키보드·제스처·접근성은 확인 전입니다. Play 게시본/AAB가 아닙니다.
+
+2026-10-14 Render 백엔드와 점검 기록용 스키마 배포를 완료했습니다. APK1.0.12에서 자료를 다시 확인하거나 앱을 재실행하면 첫/이번 점검 저장·이전 점검 비교를 사용할 수 있습니다. 애플 검색·카탈로그 정보와 기업 별칭 뉴스 매칭 보완도 서버에 반영됐습니다. 시세·뉴스 수집 간격 단축과 새로고침 시 외부 자료 재수집은 이번 변경에 포함되지 않습니다.
+
+공개 다운로드는 아직 이전 **1.0.11 / versionCode16**입니다. 이번 수정은 그 파일에 들어 있지 않습니다. [이전 APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.11-android-preview/FireWatch-1.0.11-android.apk) · [이전 공개 릴리스](https://github.com/huni2/FireWatch/releases/tag/v1.0.11-android-preview).
 
 ## 개발
 
@@ -32,7 +36,7 @@ EAS 프로젝트는 이미 app.json에 연결되어 있다. eas.json은 운영 A
 
 ### 웹·서버 배포와 별도 실행
 
-이번 사용자 요청으로 소스 `9035ed7`의 1.0.11/versionCode16를 로컬에서 빌드했다. 자동 APK/EAS 빌드는 계속 비활성이다. 웹·서버 배포나 Git push만으로 APK를 생성하지 않으며 이후 설치본도 별도 요청이 있어야 만든다.
+이번 사용자 요청으로 최신 작업 트리의 1.0.12/versionCode17를 로컬에서 빌드했다. 자동 APK/EAS 빌드는 계속 비활성이다. 웹·서버 배포나 Git push만으로 APK를 생성하지 않으며 이후 설치본도 별도 요청이 있어야 만든다.
 
 로컬 빌드는 `npx expo prebuild --platform android --no-install`로 네이티브 프로젝트를 갱신한 뒤 Gradle `:app:assembleRelease`를 실행한다. preview의 ARM32/64 및 R8/리소스 축소 설정이 실제 gradle.properties에 반영되는지 확인한다. 생성 프로젝트는 기본 debug 서명이므로 공개 전에 기존 release 키로 서명하고 이전 APK와 인증서를 비교한다. 이번 PC 빌드는 heap3GiB/meta1GiB·최대 작업자2로 실행한다. 키·비밀번호·Firebase 파일·생성 android 폴더는 커밋하지 않는다.
 

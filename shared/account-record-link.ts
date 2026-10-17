@@ -5,6 +5,7 @@ export interface AccountRecordSnapshot {
   cash: number
   watchedStocks: string[]
   watchedNames?: Record<string, string>
+  noteCount?: number
   goal: string
   accountType: string
 }
@@ -20,6 +21,7 @@ export function accountRecordComparison(error: { code: string; details?: Record<
   const c = error.details?.comparison as AccountRecordComparison | undefined
   function snapshotValid(s?: AccountRecordSnapshot) {
     return !!s && Number.isFinite(s.cash) && s.cash >= 0 && Array.isArray(s.holdings)
+      && (s.noteCount === undefined || (Number.isInteger(s.noteCount) && s.noteCount >= 0 && s.noteCount <= 100))
       && s.holdings.every(h => h && typeof h.symbol === 'string' && typeof h.name === 'string' && Number.isFinite(h.quantity)
         && (h.averageCost == null || Number.isFinite(h.averageCost)))
       && Array.isArray(s.watchedStocks) && s.watchedStocks.every(s => typeof s === 'string')
