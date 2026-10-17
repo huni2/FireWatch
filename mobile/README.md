@@ -2,7 +2,13 @@
 
 Expo + React Native + Expo Router 기반 앱. 웹과 동일한 백엔드를 사용하며 개인 포트폴리오, 시장 자료, 별도의 가상 게임, 공지·문의 화면을 제공한다.
 
-## 설치용 APK
+## Play 업로드용 AAB
+
+2026-10-17, **1.0.13 / versionCode18**. 파일은 `dist/FireWatch-1.0.13-play.aab`(44,447,531 bytes), SHA-256 `7853b826e1d1613bb9b61560cdb0572ff6d64e13a45c6dc3e8a29301489fe049`입니다. 메모·복기·달력과 등록/점검 개선을 포함합니다. 기존 Play 업로드 인증서 일치, AAB 구조, manifest와 포함된 Expo 설정의 패키지·버전을 확인했습니다. 무료 로컬 Gradle 빌드이며 EAS 빌드 요청은 없습니다.
+
+Play Console의 기존 비공개 테스트 트랙에 새 버전으로 업로드합니다. [출시 메모](../docs/deployment/android-113-release-notes.txt). 실제 Android 설치 검증과 Play 제출·심사·배포는 아직 완료하지 않았습니다. AAB 파일은 직접 설치용 APK가 아닙니다.
+
+## 이전 설치용 APK
 
 최신 **로컬 테스트 버전 1.0.12 / versionCode17 (2026-10-14)**. 파일은 `dist/FireWatch-1.0.12-android.apk`입니다. [검증 기록](../docs/product/android-preview-20261009/android-112-build.json).
 

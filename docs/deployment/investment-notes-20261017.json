@@ -1,0 +1,65 @@
+{
+  "checkedAt": "2026-10-17T08:12:30.254Z",
+  "health": 200,
+  "capabilities": {
+    "optionalAverageCost": true,
+    "allocationBasis": "MARKET_VALUE",
+    "analysisVersion": "portfolio-rules-v3",
+    "reviewCheckpoint": true,
+    "holdingNotes": true
+  },
+  "appleSymbols": [
+    "AAPL"
+  ],
+  "newsTotal": 1084,
+  "noteWithoutIdentityStatus": 400,
+  "webHomeStatus": 200,
+  "moduleSrc": "/assets/index-lXszjcaE.js",
+  "portfolioAssets": [
+    {
+      "name": "PortfolioPage-BuubMRMS.js",
+      "sha256": "89e695faabccb1d7566e4715358ac31f52c7c22323e9e48d4ca544a3210c96c9",
+      "matchesLocalBuild": true
+    },
+    {
+      "name": "PortfolioPage-CUi1i-IX.css",
+      "sha256": "fbbbf7169250317f7feabe9fd3b9e20df225375da3632d21642d786d899c4b14",
+      "matchesLocalBuild": true
+    }
+  ],
+  "productionPersonalRecordsWritten": false,
+  "sourceCommit": "0e1fa9c66ebd4f7d89a3d9e94f50e85d1359642a",
+  "pullRequest": "https://github.com/huni2/FireWatch/pull/121",
+  "pullRequestCiRun": 39015642506,
+  "mainCiRun": 39016050800,
+  "ciConclusion": "success",
+  "githubDeploymentId": 7136805359,
+  "renderDeployId": "dep-db9iofjrjlhs73bo1710",
+  "renderState": "success",
+  "webDeploymentUrl": "https://3d4403d3.firewatch-eqp.pages.dev",
+  "webProductionUrl": "https://firewatch-eqp.pages.dev",
+  "backupRun": 39015571643,
+  "encryptedBackupBytes": 1601175,
+  "encryptedBackupChecksumMatched": true,
+  "schemaChange": "ADD COLUMN IF NOT EXISTS portfolios.holding_notes_json TEXT",
+  "paidPlanChanges": false,
+  "android": {
+    "version": "1.0.13",
+    "versionCode": 18,
+    "package": "com.firewatch.mobile",
+    "file": "FireWatch-1.0.13-play.aab",
+    "bytes": 44447531,
+    "sha256": "7853b826e1d1613bb9b61560cdb0572ff6d64e13a45c6dc3e8a29301489fe049",
+    "sourceCommit": "0e1fa9c66ebd4f7d89a3d9e94f50e85d1359642a",
+    "pullRequest": "https://github.com/huni2/FireWatch/pull/121",
+    "signingCertificateSha256": "77E5B0F278E32C79BFE1D94607D6527CC60DA4B930792BE786B983CEBDAE99D9",
+    "matchesPreviousPlayUploadCertificate": true,
+    "bundletoolValidated": true,
+    "bundleManifestVerified": true,
+    "embeddedExpoConfigVerified": true,
+    "build": "local Gradle bundleRelease",
+    "paidBuildServiceUsed": false,
+    "playSubmitted": false,
+    "actualAndroidDeviceVerified": false
+  }
+}

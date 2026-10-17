@@ -1,5 +1,18 @@
 # Android 설치 검증
 
+## Play 업로드 후보 1.0.13 / 빌드18 (2026-10-17)
+
+`mobile/dist/FireWatch-1.0.13-play.aab`, 44,447,531 bytes. SHA-256 `7853b826e1d1613bb9b61560cdb0572ff6d64e13a45c6dc3e8a29301489fe049`. 소스 `0e1fa9c66ebd4f7d89a3d9e94f50e85d1359642a`, [PR121](https://github.com/huni2/FireWatch/pull/121).
+
+- [x] 무료 로컬 `bundleRelease` 완료. EAS 빌드 요청 없음
+- [x] 기존 Play 업로드용 AAB와 SHA-256 인증서 일치, JAR 서명 확인
+- [x] bundletool validate, manifest·내장 Expo 설정의 `com.firewatch.mobile / 1.0.13 / 18` 확인
+- [x] 모바일84개·공통22개, 타입·기능 린트·웹 빌드와 PC/모바일 너비 회귀 확인
+- [ ] 실제 Android 업데이트·키보드·달력·로그인·푸시·접근성 확인
+- [ ] Play Console 기존 비공개 테스트 트랙에 AAB 업로드·검토·출시
+
+[Play 출시 메모](android-113-release-notes.txt). 기존 공개 APK1.0.11, 로컬 APK1.0.12와 새 AAB 후보를 구분한다.
+
 ## 최신 로컬 설치본 1.0.12 / 빌드17 (2026-10-14)
 
 종목 검색 결과를 눌러 보유 자산을 등록하고, 수량과 선택 입력인 평균 구매 가격을 구분합니다. 다른 종목을 선택할 때 기존 수량·가격을 초기화하며 중복 종목은 기존 기록 수정으로 연결합니다. 내 투자 점검 화면에 평가 자료 상태·보유 비중·ETF 지수명 중복·관련 소식과 수량 수정 경로를 배치했습니다.
