@@ -15,7 +15,7 @@ import java.math.BigDecimal
 import java.security.MessageDigest
 import java.time.Instant
 
-data class AccountRecordSnapshot(val holdings: List<PortfolioHoldingInput>, val cash: BigDecimal, val watchedStocks: List<String>, val goal: String, val accountType: String, val watchedNames: Map<String, String> = emptyMap())
+data class AccountRecordSnapshot(val holdings: List<PortfolioHoldingInput>, val cash: BigDecimal, val watchedStocks: List<String>, val goal: String, val accountType: String, val watchedNames: Map<String, String> = emptyMap(), val noteCount: Int = 0)
 data class AccountRecordComparison(val fingerprint: String, val device: AccountRecordSnapshot, val account: AccountRecordSnapshot) {
     override fun toString() = "계정 연결 기록 비교 (내용 비공개)"
 }
@@ -32,7 +32,8 @@ class AccountRecordLinkService(
     private val mapper = JsonMapper.builder().findAndAddModules().build()
     private fun holdings(row: Portfolio?) = row?.let { mapper.readValue(it.holdingsJson, Array<PortfolioHoldingInput>::class.java).toList() }.orEmpty()
     private fun stocks(settings: UserSettings) = settings.watchedStocks().map { it.trim().uppercase() }.filter { it.isNotBlank() }.distinct()
-    private fun snapshot(settings: UserSettings, row: Portfolio?, names: Map<String, String>) = AccountRecordSnapshot(holdings(row), row?.cash ?: BigDecimal.ZERO, stocks(settings), row?.goal ?: "장기 자산 형성", row?.accountType ?: "GENERAL", names)
+    private fun notes(row: Portfolio?) = row?.holdingNotesJson?.let { mapper.readValue(it, Array<HoldingNote>::class.java).toList() }.orEmpty()
+    private fun snapshot(settings: UserSettings, row: Portfolio?, names: Map<String, String>) = AccountRecordSnapshot(holdings(row), row?.cash ?: BigDecimal.ZERO, stocks(settings), row?.goal ?: "장기 자산 형성", row?.accountType ?: "GENERAL", names, notes(row).size)
 
     fun resolve(device: UserSettings, account: UserSettings, choice: AccountRecordChoice?) {
         // Refresh already-loaded settings under locks; otherwise a concurrent watch-list edit
@@ -48,7 +49,7 @@ class AccountRecordLinkService(
         // not permanently block login. New guest watch symbols still need a choice.
         val hasAssets = deviceSnapshot.holdings.isNotEmpty() || deviceSnapshot.cash > BigDecimal.ZERO
         val hasNewWatches = deviceSnapshot.watchedStocks.any { it !in accountSnapshot.watchedStocks }
-        if (!hasAssets && !hasNewWatches) return
+        if (!hasAssets && !hasNewWatches && deviceSnapshot.noteCount == 0) return
         val digestInput = listOf(device.id, account.id, source?.version, target?.version,
             source?.updatedAt, target?.updatedAt, deviceSnapshot, accountSnapshot,
             source?.horizonMonths, source?.riskLevel, source?.monthlyContribution,
@@ -66,7 +67,7 @@ class AccountRecordLinkService(
         val mergedWatches = (accountSnapshot.watchedStocks + deviceSnapshot.watchedStocks).distinct()
         if (mergedWatches.size > 20) throw ValidationException("합친 관심 기업이 20개를 넘어요. 기기의 관심 기업을 정리한 뒤 다시 연결하거나 계정 기록으로 로그인해주세요.", emptyMap())
 
-        if (hasAssets) {
+        if (hasAssets || deviceSnapshot.noteCount > 0) {
             val base = target ?: Portfolio(ownerId = account.id).also { row ->
                 source?.let { row.goal = it.goal; row.horizonMonths = it.horizonMonths; row.riskLevel = it.riskLevel; row.accountType = it.accountType; row.monthlyContribution = it.monthlyContribution }
             }
@@ -77,6 +78,10 @@ class AccountRecordLinkService(
             }
             val cash = if (choice.cashSource == "DEVICE") deviceSnapshot.cash else accountSnapshot.cash
             val input = PortfolioUpdateRequest(base.version, base.goal, base.horizonMonths, base.riskLevel, base.accountType, base.monthlyContribution, cash, merged.values.toList())
+            val mergedNotes = notes(target).associateBy { it.symbol }.toMutableMap()
+            notes(source).forEach { note -> if (note.symbol !in mergedNotes || choice.mode == "MERGE_DEVICE") mergedNotes[note.symbol] = note }
+            if (mergedNotes.size > 100) throw ValidationException("합친 투자 메모가 100개를 넘어요. 메모를 정리하거나 계정 기록만 사용해주세요.", emptyMap())
+            base.holdingNotesJson = mapper.writeValueAsString(mergedNotes.values.toList())
             // Keep the existing 50-row, currency/account, amount and precision limits.
             portfolioService.validate(input)
             // Existing account history is normally present; save an explicit pre-merge

@@ -79,7 +79,7 @@ export function StockSearchInput({ onSelect, onQueryChange, initialQuery = '', i
       showSearch
       searchValue={query}
       value={value}
-      placeholder="종목명으로 검색 (예: 삼성전자, Apple)"
+      placeholder="주식·ETF 검색 (예: 삼성전자, 애플)"
       filterOption={false}
       notFoundContent={searching ? <Spin size="small" /> : failed ? '검색을 불러오지 못했어요. 아래에서 다시 시도해주세요.' : searched ? '일치하는 회사가 없어요. 이름을 바꿔 검색해보세요.' : '회사나 상품 이름을 입력해주세요.'}
       onSearch={handleSearch}

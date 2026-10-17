@@ -36,3 +36,74 @@
 .portfolio-summary + .portfolio-finding { margin-top: -20px; border-radius: 0 0 16px 16px; background: var(--ant-color-bg-container); border-top: 1px solid var(--ant-color-border-secondary); }
 .portfolio-saved { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .portfolio-holding-row.just-saved { background: var(--ant-color-primary-bg); border-radius: 10px; padding-inline: 12px; }
+
+.holding-search { display: grid; gap: 8px; }
+.holding-search-examples { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.holding-search-examples > small:last-child { flex-basis: 100%; }
+.holding-search > label,.holding-field { font-weight: 600; }
+.holding-search small,.holding-search [role="status"] { color: var(--ant-color-text-secondary); font-size: 13px; line-height: 1.5; }
+.holding-search-result { display: grid; gap: 4px; padding-block: 4px; white-space: normal; overflow-wrap: anywhere; }
+.holding-search-result strong { font-weight: 600; line-height: 1.5; }
+.holding-search-result small { color: var(--ant-color-text-secondary); font-size: 12px; }
+.holding-registered { margin-left: 8px; color: var(--ant-color-primary); font-size: 12px; font-weight: 400; }
+.holding-selected > div { min-width: 0; overflow-wrap: anywhere; }
+.holding-selected > button { flex-shrink: 0; }
+.holding-field + div { margin-top: 8px; font-size: 13px; line-height: 1.6; }
+@media (max-width: 599px) {
+  .holding-drawer { width: 100% !important; }
+  .holding-drawer .ant-drawer-body { padding: 20px; }
+  .holding-drawer .ant-drawer-footer { padding: 16px 20px; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+}
+
+.portfolio-checkup { min-width: 0; }
+.portfolio-checkup:focus { outline: 2px solid var(--ant-color-primary); outline-offset: 4px; }
+.checkup-content { display: grid; gap: 20px; }
+.checkup-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.checkup-heading h3,.checkup-heading h4,.checkup-heading p { margin: 0; }
+.checkup-heading p { margin-top: 6px; color: var(--ant-color-text-secondary); }
+.checkup-data { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, .7fr); gap: 20px; padding: 20px; border-radius: 16px; background: var(--ant-color-bg-container); }
+.checkup-data > div { display: grid; gap: 6px; }
+.checkup-data strong { font-size: 28px; line-height: 1.35; overflow-wrap: anywhere; }
+.checkup-data span,.checkup-data p,.checkup-content small { color: var(--ant-color-text-secondary); }
+.checkup-data p { margin: 0; font-size: 13px; line-height: 1.7; align-self: center; }
+.checkup-findings { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 14px; }
+.checkup-findings article,.checkup-no-prices,.checkup-comparison,.checkup-news { background: var(--ant-color-bg-container); border: 1px solid var(--ant-color-border-secondary); border-radius: 16px; padding: 20px; min-width: 0; }
+.checkup-findings article { display: flex; flex-direction: column; gap: 10px; }
+.checkup-findings article > span { color: var(--ant-color-text-secondary); font-size: 12px; }
+.checkup-findings h4 { margin: 0; font-size: 20px; line-height: 1.5; overflow-wrap: anywhere; }
+.checkup-findings p { margin: 0; font-size: 13px; line-height: 1.7; color: var(--ant-color-text-secondary); }
+.checkup-findings article > div { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+.checkup-findings .ant-btn-link { padding-inline: 0; }
+.checkup-findings a { min-height: 44px; display: inline-flex; align-items: center; }
+.checkup-comparison h4,.checkup-news h4 { font-size: 18px; }
+.checkup-comparison p,.checkup-comparison li,.checkup-no-prices p { line-height: 1.7; }
+.checkup-comparison ul { padding-left: 20px; margin-block: 10px; }
+.checkup-review-action { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.checkup-review-action small { flex: 1 1 240px; line-height: 1.6; }
+.checkup-news article { display: grid; gap: 8px; padding-block: 14px; border-bottom: 1px solid var(--ant-color-border-secondary); }
+.checkup-news article:last-of-type { margin-bottom: 12px; }
+.checkup-news a { min-height: 44px; display: inline-flex; align-items: center; overflow-wrap: anywhere; line-height: 1.6; }
+.checkup-record-actions { display: flex; gap: 8px 12px; align-items: center; flex-wrap: wrap; }
+.checkup-record-actions > span { color: var(--ant-color-text-secondary); }
+.holding-notes { border: 1px solid var(--ant-color-border-secondary); border-radius: 16px; padding: 20px; background: var(--ant-color-bg-container); min-width: 0; }
+.holding-notes h3 { margin: 0; font-size: 18px; }
+.holding-notes p { color: var(--ant-color-text-secondary); line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.holding-notes article { display: grid; gap: 8px; padding-block: 16px; border-top: 1px solid var(--ant-color-border-secondary); }
+.holding-notes article > div { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.holding-notes article p { margin: 0; }
+.holding-notes article .ant-btn { justify-self: start; }
+.holding-notes small { color: var(--ant-color-text-secondary); }
+.holding-note-fields { display: grid; gap: 24px; padding-bottom: 24px; }
+.holding-note-fields label { display: grid; gap: 10px; line-height: 1.6; }
+.holding-note-fields p,.holding-note-fields small { color: var(--ant-color-text-secondary); line-height: 1.7; }
+.holding-note-date-field { display: grid; gap: 10px; }
+.holding-note-date-control { display: flex; align-items: center; gap: 8px; }
+.holding-note-date-control .ant-picker { flex: 1; min-width: 0; min-height: 48px; cursor: pointer; }
+.holding-note-date-control .ant-picker-input > input { cursor: pointer; }
+.holding-note-date-control > .ant-btn { min-height: 48px; }
+@media (max-width: 599px) {
+  .checkup-data { grid-template-columns: 1fr; gap: 12px; padding: 18px; }
+  .checkup-data strong { font-size: 24px; }
+  .checkup-findings article,.checkup-no-prices,.checkup-comparison,.checkup-news { padding: 18px; }
+  .checkup-record-actions > span { flex-basis: 100%; }
+}

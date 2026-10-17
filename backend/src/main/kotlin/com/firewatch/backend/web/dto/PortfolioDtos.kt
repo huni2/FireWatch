@@ -40,6 +40,14 @@ data class PortfolioHoldingView(
 data class ValuationCoverage(val pricedHoldings: Int, val totalHoldings: Int, val includedValueKrw: BigDecimal, val missingNames: List<String>)
 
 data class PortfolioReviewRequest(val version: Long)
+data class HoldingNoteRequest(val version: Long, val symbol: String, val reason: String = "",
+    val nextCheck: String = "", val reviewDate: String? = null, val reflection: String = "") {
+    override fun toString() = "투자 메모 변경 v$version (내용 비공개)"
+}
+data class HoldingNote(val symbol: String, val name: String, val reason: String, val nextCheck: String,
+    val reviewDate: String?, val reflection: String, val updatedAt: Instant) {
+    override fun toString() = "투자 메모 (내용 비공개)"
+}
 data class PortfolioReviewCheckpoint(val reviewedAt: Instant, val cash: BigDecimal,
     val holdings: List<PortfolioHoldingView>, val totalValueKrw: BigDecimal?,
     val fxAsOf: String?, val newsLinks: List<String>)
@@ -68,6 +76,7 @@ data class PortfolioResponse(
     val allocationBasis: String = "MARKET_VALUE",
     val valuationCoverage: ValuationCoverage? = null,
     val reviewCheckpoint: PortfolioReviewCheckpoint? = null,
+    val holdingNotes: List<HoldingNote> = emptyList(),
 ) {
     override fun toString() = "포트폴리오 분석 $analysisVersion (자산 ${holdings.size}개)"
 }

@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS portfolios (
  cash DECIMAL(16,2) NOT NULL, holdings_json TEXT NOT NULL, updated_at TIMESTAMP NOT NULL
 );
 ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS review_json TEXT;
+ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS holding_notes_json TEXT;
 CREATE TABLE IF NOT EXISTS instrument_catalog (
  symbol VARCHAR(20) PRIMARY KEY, name VARCHAR(160) NOT NULL, normalized_name VARCHAR(160) NOT NULL,
  search_text TEXT NOT NULL, metadata_json TEXT NOT NULL, asset_class VARCHAR(20) NOT NULL,

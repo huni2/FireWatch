@@ -26,6 +26,8 @@ export interface FeedArticle {
   pubDate: string | null
 }
 export interface Portfolio extends Omit<PortfolioDraft, 'holdings'> {
+  holdingNotes?: HoldingNote[]
+  reviewCheckpoint?: PortfolioReviewCheckpoint | null
   holdings: { holding: Holding; investedKrw: number | null; currentPrice: number | null; valueKrw: number | null; returnPercent: number | null; quoteAsOf: string | null }[]
   investedKrw: number | null
   totalValueKrw: number | null
@@ -48,6 +50,17 @@ export interface Portfolio extends Omit<PortfolioDraft, 'holdings'> {
     indexOverlaps: { index: string; names: string[] }[]
     usdFxDown10ImpactKrw: number | null
   } | null
+}
+export interface HoldingNoteDraft { reason: string; nextCheck: string; reviewDate: string | null; reflection: string }
+export interface HoldingNote extends HoldingNoteDraft { symbol: string; name: string; updatedAt: string }
+export interface HoldingNoteRequest extends HoldingNoteDraft { symbol: string; version: number }
+export interface PortfolioReviewCheckpoint {
+  reviewedAt: string
+  cash: number
+  holdings: Portfolio['holdings']
+  totalValueKrw: number | null
+  fxAsOf: string | null
+  newsLinks: string[]
 }
 export interface NewsFeed { news: FeedArticle[]; updatedAt: string | null; refreshMinutes: number; page?: number; size?: number; total?: number; hasMore?: boolean }
 export interface NewsFilters { from?: string; to?: string; q?: string; page?: number; size?: number }

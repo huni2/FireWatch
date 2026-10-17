@@ -12,6 +12,7 @@ import tools.jackson.databind.json.JsonMapper
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
+import java.time.LocalDate
 
 @Service
 class PortfolioService(
@@ -34,6 +35,34 @@ class PortfolioService(
         val owner = identityResolver.resolveForDevice(deviceId).id
         val stored = portfolios.findById(owner).orElse(null)
         return analyze(stored ?: Portfolio(ownerId = owner), stored != null)
+    }
+
+    @Transactional
+    fun saveNote(deviceId: String, input: HoldingNoteRequest): PortfolioResponse {
+        val symbol = input.symbol.trim().uppercase()
+        val date = input.reviewDate?.trim()?.takeIf { it.isNotEmpty() }
+        val errors = mutableMapOf<String, String>()
+        if (input.version < 0 || !Regex("^[A-Z0-9]+(\\.[A-Z0-9]+)?$").matches(symbol) || symbol.length > 20) errors["symbol"] = "등록한 종목과 기록 버전을 확인해주세요."
+        if (input.reason.length > 500) errors["reason"] = "보유 이유는 500자까지 입력해주세요."
+        if (input.nextCheck.length > 500) errors["nextCheck"] = "다음 확인할 내용은 500자까지 입력해주세요."
+        if (input.reflection.length > 1000) errors["reflection"] = "돌아본 내용은 1,000자까지 입력해주세요."
+        if (date != null && (!Regex("\\d{4}-\\d{2}-\\d{2}").matches(date) || runCatching { LocalDate.parse(date).year in 2000..2100 }.getOrDefault(false).not())) errors["reviewDate"] = "2000~2100년의 올바른 날짜를 입력해주세요."
+        if (errors.isNotEmpty()) throw ValidationException("투자 메모를 확인해주세요.", errors)
+        val owner = identityResolver.resolveForDevice(deviceId).id
+        val row = portfolios.findForAccountLink(owner) ?: throw ValidationException("먼저 보유 종목을 등록해주세요.", emptyMap())
+        if (row.version != input.version) throw ConflictException("다른 화면에서 기록이 바뀌었어요. 메모를 복사해 둔 뒤 최신 기록을 다시 확인해주세요.")
+        val notes = row.holdingNotesJson?.let { mapper.readValue(it, Array<HoldingNote>::class.java).toMutableList() } ?: mutableListOf()
+        val previous = notes.find { it.symbol == symbol }
+        val holding = readHoldings(row).find { it.symbol == symbol }
+        if (holding == null && previous == null) throw ValidationException("등록한 보유 종목에 메모를 남겨주세요.", emptyMap())
+        notes.removeAll { it.symbol == symbol }
+        val reason = input.reason.trim(); val nextCheck = input.nextCheck.trim(); val reflection = input.reflection.trim()
+        if (reason.isNotEmpty() || nextCheck.isNotEmpty() || reflection.isNotEmpty() || date != null) {
+            if (notes.size >= 100) throw ValidationException("투자 메모는 이전 보유 종목을 포함해 100개까지 저장할 수 있어요.", emptyMap())
+            notes.add(HoldingNote(symbol, holding?.name ?: previous!!.name, reason, nextCheck, date, reflection, Instant.now()))
+        }
+        row.holdingNotesJson = mapper.writeValueAsString(notes)
+        return analyze(portfolios.saveAndFlush(row), true)
     }
 
     // Save a user-requested comparison baseline, without altering holdings or their edit time.
@@ -149,7 +178,8 @@ class PortfolioService(
                 namePatterns.any { it.containsMatchIn(text) }
             }.sortedByDescending { it.pubDate }.take(10)
         return PortfolioResponse(row.version, row.goal, row.horizonMonths, row.riskLevel, row.accountType, row.monthlyContribution, row.cash, views, invested, total, if (total != null && invested != null) percent(total - row.cash - invested, invested) else null, allocation, target, contribution, insights, articles, row.updatedAt.takeIf { persisted }, latest?.briefingDate?.toString().takeIf { fx != null }, exposure = PortfolioExposureAnalysis.analyze(views, row.cash), valuationCoverage = coverage,
-            reviewCheckpoint = row.reviewJson?.let { mapper.readValue(it, PortfolioReviewCheckpoint::class.java) })
+            reviewCheckpoint = row.reviewJson?.let { mapper.readValue(it, PortfolioReviewCheckpoint::class.java) },
+            holdingNotes = row.holdingNotesJson?.let { mapper.readValue(it, Array<HoldingNote>::class.java).toList() }.orEmpty())
     }
 
     companion object {

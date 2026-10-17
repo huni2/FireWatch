@@ -21,7 +21,7 @@ jobs:
         working-directory: backend
         env:
           FIREWATCH_TEST_POSTGRES_URL: jdbc:postgresql://localhost:5432/firewatch_test
-        run: bash gradlew test --tests '*SettingsCreationConcurrencyTest' --tests '*AccountSessionIntegrationTest' --tests '*PortfolioApiIntegrationTest' --tests '*CatalogIntegrationTest' --tests '*CatalogScaleIntegrationTest' --tests '*CatalogRealScaleIntegrationTest' --tests '*CatalogPageOrderIntegrationTest' --tests '*CommunityIntegrationTest' --tests '*GameRankingIntegrationTest' --tests '*GameSimulationVersionMigrationTest' --tests '*GameTimingIntegrationTest' --tests '*BackupReportIntegrationTest' --rerun-tasks
+        run: bash gradlew test --tests '*SettingsCreationConcurrencyTest' --tests '*AccountSessionIntegrationTest' --tests '*PortfolioApiIntegrationTest' --tests '*HoldingNotesIntegrationTest' --tests '*CatalogIntegrationTest' --tests '*CatalogScaleIntegrationTest' --tests '*CatalogRealScaleIntegrationTest' --tests '*CatalogPageOrderIntegrationTest' --tests '*CommunityIntegrationTest' --tests '*GameRankingIntegrationTest' --tests '*GameSimulationVersionMigrationTest' --tests '*GameTimingIntegrationTest' --tests '*BackupReportIntegrationTest' --rerun-tasks
       - name: Preserve failed test reports
         if: failure()
         uses: actions/upload-artifact@v4
@@ -78,6 +78,9 @@ jobs:
       - name: Investment connection and news date contracts
         if: matrix.client == 'web'
         run: node --test ../scripts/design-data-contract.test.cjs
+      - name: Holding notes and portfolio checkup contracts
+        if: matrix.client == 'web'
+        run: node --test ../scripts/holding-notes.test.cjs ../scripts/holding-registration.test.cjs ../scripts/portfolio-checkup.test.cjs
       - name: Encrypted backup safety tests
         if: matrix.client == 'web'
         run: |

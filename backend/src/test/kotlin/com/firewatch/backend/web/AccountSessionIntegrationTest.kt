@@ -61,6 +61,28 @@ class AccountSessionIntegrationTest {
     private fun storedHoldings(owner: Long) = recordMapper.readValue(portfolios.findById(owner).orElseThrow().holdingsJson, Array<PortfolioHoldingInput>::class.java).toList()
 
     @Test
+    fun `보유를 삭제한 기기의 투자 메모도 동의 후 선택한 우선순위로 연결하고 원본은 보존한다`() {
+        for (mode in listOf("ACCOUNT", "MERGE_ACCOUNT", "MERGE_DEVICE")) {
+            val key = "notes-${mode.lowercase().replace('_', '-')}"
+            val (guest, account) = recordFixture(key, emptyList(), null, null)
+            fun note(symbol: String, reason: String) = com.firewatch.backend.web.dto.HoldingNote(symbol, "기업", reason, "확인할 내용", null, "", Instant.now())
+            val source = portfolios.findById(guest.id).orElseThrow()
+            source.holdingNotesJson = recordMapper.writeValueAsString(listOf(note("035720.KS", "기기 메모"), note("AAPL", "이전 보유 메모")))
+            val original = source.holdingNotesJson
+            portfolios.saveAndFlush(source)
+            val target = portfolios.findById(account.id).orElseThrow()
+            target.holdingNotesJson = recordMapper.writeValueAsString(listOf(note("035720.KS", "계정 메모")))
+            portfolios.saveAndFlush(target)
+            val fingerprint = comparison(key)
+            recordLogin(key, com.firewatch.backend.web.dto.AccountRecordChoice(mode, "ACCOUNT", fingerprint)).expectStatus().isOk.expectBody(Void::class.java)
+            val merged = recordMapper.readValue(portfolios.findById(account.id).orElseThrow().holdingNotesJson!!, Array<com.firewatch.backend.web.dto.HoldingNote>::class.java)
+            assertEquals(if (mode == "ACCOUNT") 1 else 2, merged.size)
+            assertEquals(if (mode == "MERGE_DEVICE") "기기 메모" else "계정 메모", merged.single { it.symbol == "035720.KS" }.reason)
+            assertEquals(original, portfolios.findById(guest.id).orElseThrow().holdingNotesJson)
+        }
+    }
+
+    @Test
     fun `빈 보유 기록과 이미 있는 관심 기업은 로그인 차단 없이 계정 기록을 유지한다`() {
         val (guest, account) = recordFixture("empty", emptyList(), "035720.KS", "035720.KS,AAPL")
         val response = recordLogin("empty").expectStatus().isOk.expectBody(SettingsResponse::class.java).returnResult().responseBody!!
@@ -337,6 +359,7 @@ class AccountSessionIntegrationTest {
         client().put().uri("/api/portfolio").header("X-Device-Id", "deletion-first").header("Authorization", "Bearer ${first.token}")
             .bodyValue(com.firewatch.backend.web.dto.PortfolioUpdateRequest(0, "삭제 검사", 60, "BALANCED", "GENERAL", java.math.BigDecimal.ZERO, java.math.BigDecimal("1000"), emptyList()))
             .exchange().expectStatus().isOk.expectBody(Void::class.java)
+        jdbc.update("UPDATE portfolios SET holding_notes_json=? WHERE owner_id=?", recordMapper.writeValueAsString(listOf(com.firewatch.backend.web.dto.HoldingNote("AAPL", "애플", "계정 삭제 대상 메모", "", null, "", Instant.now()))), shared.id)
         client().post().uri("/api/community/feedback").header("X-Device-Id", "deletion-first").header("Authorization", "Bearer ${first.token}")
             .bodyValue(FeedbackInput(java.util.UUID.randomUUID().toString(), "BUG", "삭제 전 문의 기록 검사", "WEB"))
             .exchange().expectStatus().isOk.expectBody(Void::class.java)
