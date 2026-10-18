@@ -52,6 +52,7 @@ function AppContent() {
           <Stack.Screen name="privacy" options={{ title: '개인정보처리방침' }} />
           <Stack.Screen name="guide" options={{ title: '도움말' }} />
           <Stack.Screen name="investment-info" options={{ title: '투자 정보 이용안내' }} />
+          <Stack.Screen name="investment-style" options={{ title: '내 투자 방식 찾기' }} />
         </Stack>
       </BottomSheetModalProvider></View></AppReadiness.Provider>
       <Toast config={toastConfig} />

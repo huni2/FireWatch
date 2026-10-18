@@ -13,6 +13,7 @@ import { HoldingNotes, HoldingNoteEditor } from './HoldingNotes'
 import { noteIsEmpty } from '../../../../shared/holding-notes'
 import type { CheckupFinding } from '../../../../shared/portfolio-checkup'
 import { InvestmentNotice } from '../../components/InvestmentNotice'
+import { InvestmentStyleEntry } from '../investment-style/InvestmentStyleEntry'
 import { PortfolioExposureCard } from './PortfolioExposureCard'
 import { InvestmentFocus } from './InvestmentFocus'
 import { HoldingDrawer } from './HoldingDrawer'
@@ -82,7 +83,7 @@ export function PortfolioPage() {
     if (query.data && JSON.stringify(draft) !== JSON.stringify(toDraft(query.data))) modal.confirm({ title: '변경한 계획을 저장하지 않고 닫을까요?', okText: '변경 취소', cancelText: '계속 입력', onOk: () => { setDraft(null); setPlanOpen(false) } })
     else { setDraft(null); setPlanOpen(false) }
   }
-  if (!draft) return query.error ? <Alert type="error" message="기록을 불러오지 못했어요." description="등록한 기록을 지우지 않았어요. 다시 불러와주세요." action={<Button onClick={query.reload}>다시 시도</Button>} /> : <section aria-label="내 기록 조회" aria-busy="true"><p role="status">내 기록을 확인하고 있어요.</p><SlowLoadingHint loading={query.loading} isSlow={query.isSlow} /><Card loading title="내 자산 점검" /></section>
+  if (!draft) return <div className="portfolio-home"><InvestmentStyleEntry />{query.error ? <Alert type="error" message="기록을 불러오지 못했어요." description="등록한 기록을 지우지 않았어요. 다시 불러와주세요." action={<Button onClick={query.reload}>다시 시도</Button>} /> : <section aria-label="내 기록 조회" aria-busy="true"><p role="status">내 기록을 확인하고 있어요.</p><SlowLoadingHint loading={query.loading} isSlow={query.isSlow} /><Card loading title="내 자산 점검" /></section>}</div>
   const portfolio = query.data
   const hasAssets = !!portfolio && (portfolio.holdings.length > 0 || portfolio.cash > 0)
   async function markReview() {
@@ -134,6 +135,7 @@ export function PortfolioPage() {
     {query.loading && hasAssets && <p role="status">등록한 기록을 유지하며 최신 내용을 확인하고 있어요.</p>}
     {query.error && <Alert type="warning" message="최신 기록을 확인하지 못했어요. 현재 기록은 유지돼요." action={<Button onClick={query.reload}>다시 확인</Button>} />}
     {error && !selected && !planOpen && !noteTarget && <Alert type="error" message={error} />}
+    <InvestmentStyleEntry />
     {hasAssets && <nav aria-label="내 투자 바로가기"><Button onClick={showHoldings}>보유 내역 보기</Button></nav>}
     {!hasAssets && <section className="portfolio-welcome"><div className="welcome-copy"><span className="section-kicker">내 투자에서 발견하기</span><Title level={3}>내 자산이 어디에<br />몰려 있는지 알아보세요</Title><p>종목을 선택하고 수량을 입력하면 내 투자 구성을 점검할 수 있어요.<br />평균 구매 가격은 나중에 입력해도 괜찮아요.</p><Button data-tour="portfolio-registration" type="primary" size="large" disabled={saving} onClick={() => openHolding()}>첫 자산 등록</Button><Button type="text" onClick={() => setSampleOpen(true)}>예시로 먼저 보기 →</Button></div><div className="welcome-connection" aria-hidden="true"><span>다른 상품</span><div><b>ETF A</b><i /><b>ETF B</b></div><strong>같은 시장</strong><small>가상 예시 · 개인 기록에 저장되지 않음</small></div></section>}
     {hasAssets && portfolio && <>

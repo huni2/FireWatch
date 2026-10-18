@@ -1,5 +1,9 @@
 /* 보유 기록 홈과 별도 입력 패널의 밀도·반응형 배치를 정의한다. */
 .portfolio-home { display: grid; gap: 24px; max-width: 1280px; margin-inline: auto; }
+.investment-style-entry { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; padding: 20px; border: 1px solid var(--ant-color-border); border-radius: 16px; background: var(--ant-color-bg-container); }
+.investment-style-entry h3 { margin: 0 0 8px; font-size: 18px; }
+.investment-style-entry p { color: var(--ant-color-text-secondary); margin: 4px 0; line-height: 1.6; }
+.investment-style-entry a { display: inline-flex; align-items: center; min-height: 48px; }
 .portfolio-home > * { min-width: 0; overflow-wrap: anywhere; }
 .portfolio-finding-actions > * { min-width: 0; max-width: 100%; }
 .portfolio-details .ant-card-head-title { white-space: normal; }
