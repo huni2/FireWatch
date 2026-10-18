@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-18",
+  "pullRequest": "https://github.com/huni2/FireWatch/pull/122",
+  "sourceCommit": "fcb570e",
+  "mainMergeCommit": "b85b14d50c6c3be6c9425396c4022ee1ec1012c8",
+  "ciRun": 39091080122,
+  "ciConclusion": "success",
+  "feature": "나에게 맞는 투자 방식 찾기",
+  "web": {
+    "production": "https://firewatch-eqp.pages.dev/investment-style",
+    "deployment": "https://3bb318de.firewatch-eqp.pages.dev",
+    "routeStatus": 200,
+    "quizAndPortfolioAssetsMatchLocalBuild": true,
+    "viewportsChecked": ["1280 light", "360 light", "360 dark"],
+    "personalDataWrittenBySmokeCheck": false
+  },
+  "android": {
+    "path": "mobile/dist/FireWatch-1.0.14-play.aab",
+    "version": "1.0.14",
+    "versionCode": 19,
+    "package": "com.firewatch.mobile",
+    "bytes": 44459773,
+    "sha256": "889451431259e2f80daa03a799a771951d60664d89b716afe491fd46668f312b",
+    "uploadCertificateSha1": "6E:F8:DE:E5:44:D5:28:81:57:B8:5A:1B:C7:7A:81:A4:58:AA:70:7C",
+    "matchesPreviousUploadCertificate": true,
+    "bundletoolValidation": "passed",
+    "jarSignatureVerification": "passed",
+    "manifestAndEmbeddedExpoConfig": "verified",
+    "localGradleBuild": "success, 6m 6s",
+    "easBuildRequests": 0,
+    "playUploadedByAgent": false,
+    "physicalDeviceVerified": false
+  },
+  "checks": {
+    "sharedTests": 27,
+    "existingMobileTests": 84,
+    "webAndMobileTypeChecks": "passed",
+    "changedAreaLint": "passed",
+    "webBuild": "passed",
+    "browserFlows": ["entry during backend failure", "10 questions", "back retains answers", "unknown answers", "opt-in save", "reload", "capacity vs willingness", "save failure preserves prior result", "delete cancel and confirm", "unsaved exit confirmation", "corrupt storage recovery", "no answer network writes", "no horizontal overflow"]
+  },
+  "backend": "unchanged; no Render deployment",
+  "googleLogin": {
+    "status": "pending user OAuth registration and Play device confirmation",
+    "reportedError": "10",
+    "playAppSigningSha1ProvidedByUser": "48:20:E0:4F:95:B0:01:56:76:8E:AD:5A:1E:AF:2F:8D:1F:61:4C:E8",
+    "remoteOAuthChangedByAgent": false,
+    "blocker": "Google sign-in blocked in connected in-app browser; ordinary browser is not connected"
+  }
+}

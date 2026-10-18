@@ -10,11 +10,11 @@
 
 ## Android 설치
 
-**1.0.14 / 빌드19 업데이트 준비 (2026-10-18)**: [나에게 맞는 투자 방식 찾기](docs/product/investment-style-self-check.md)를 웹·앱에 추가했습니다. 로그인 없이 10문항에 답하고, 관리 방식·변동을 감수하려는 마음·생활 여력을 따로 살펴볼 수 있습니다. 결과는 선택할 때만 기기에 저장하며 서버·AI로 보내지 않습니다. [새 출시 메모](docs/deployment/android-114-release-notes.txt). 현재 빌드·배포 진행 중이며 아래 1.0.13 결과물과 구분합니다.
+**웹 반영·AAB 준비 완료 — 1.0.14 / 빌드19 (2026-10-18)**: [나에게 맞는 투자 방식 찾기](docs/product/investment-style-self-check.md)를 웹·앱에 추가했습니다. 로그인 없이 10문항에 답하고, 관리 방식·변동을 감수하려는 마음·생활 여력을 따로 살펴볼 수 있습니다. 결과는 선택할 때만 기기에 저장하며 서버·AI로 보내지 않습니다. [새 출시 메모](docs/deployment/android-114-release-notes.txt). 웹에 배포했으며 AAB는 `mobile/dist/FireWatch-1.0.14-play.aab`(44,459,773 bytes)입니다. 구조·서명·패키지·버전 검증과 CI를 통과했습니다. Play 업로드와 실기기 검증은 아직 수행하지 않았습니다. [배포·빌드 검증](docs/deployment/investment-style-20261018.json).
 
 **Play Google 로그인 오류10 확인 중**: 제공된 Play 앱 서명 SHA-1을 같은 Google Cloud 프로젝트의 Android OAuth 클라이언트에 등록해야 합니다. 내장 브라우저 로그인 차단으로 원격 설정 변경은 수행하지 못했으며 실제 해결은 확인 전입니다. [정확한 등록 값과 확인 절차](docs/deployment/google-play-login-20261018.md).
 
-**최신 Play 업로드용 AAB: 1.0.13 · Android 빌드 18 · 2026-10-17 · 약 44.4MB**
+**이전 Play 업로드용 AAB: 1.0.13 · Android 빌드 18 · 2026-10-17 · 약 44.4MB**
 
 로컬 결과물은 `mobile/dist/FireWatch-1.0.13-play.aab`입니다. 투자 메모·복기, 달력 선택, 내 투자 바로가기와 검색·등록 개선을 포함합니다. 이전 Play 업로드용 AAB와 동일한 인증서, 패키지·버전, bundletool 검증을 확인했습니다. 기존 비공개 테스트 트랙의 새 버전에 업로드하며 새 앱을 만들지 않습니다. **AAB 생성과 Play 업로드·심사·테스터 업데이트는 별도이며 아직 Play에 제출하지 않았습니다.** [출시 메모](docs/deployment/android-113-release-notes.txt).
 
