@@ -7,6 +7,7 @@ import { useContext, useEffect, useRef, useState } from 'react'
 import { Alert, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
 import Toast from 'react-native-toast-message'
 import { InvestmentNotice } from '@/components/InvestmentNotice'
+import { InvestmentStyleEntry } from '../investment-style/InvestmentStyleEntry'
 import { PortfolioExposureCard } from './PortfolioExposureCard'
 import { InvestmentFocus } from './InvestmentFocus'
 import { PortfolioConnections } from './PortfolioConnections'
@@ -26,7 +27,7 @@ export function PortfolioScreen(navigation: { onOpenStock?: (symbol: string) => 
   const { initialHolding, onHoldingConsumed } = navigation
 
   const query = useResource(fetchPortfolio)
-  const { markReady, preparing } = useContext(AppReadiness)
+  const { markReady } = useContext(AppReadiness)
   useEffect(() => { if (!query.loading) markReady() }, [query.loading, markReady])
   const [editing, setEditing] = useState<{ base: PortfolioDraft; initial: Holding; index: number | null } | null>(null)
   const [plan, setPlan] = useState<PortfolioDraft | null>(null)
@@ -94,10 +95,11 @@ export function PortfolioScreen(navigation: { onOpenStock?: (symbol: string) => 
   }
   const portfolio = query.data
   const hasAssets = !!portfolio && (portfolio.holdings.length > 0 || portfolio.cash > 0)
-  if (!portfolio && query.loading) return preparing ? null : <LoadingState message="내 투자 기록을 불러오고 있어요" />
+  if (!portfolio && query.loading) return <View onLayout={markReady} style={{ flex: 1, padding: 20, gap: 16 }}><InvestmentStyleEntry /><LoadingState message="내 투자 기록을 불러오고 있어요" /></View>
   return <>
     <ScrollView ref={scroll} className="flex-1 bg-canvas" contentContainerClassName="gap-4 p-5 pb-10" refreshControl={<RefreshControl refreshing={query.refreshing} onRefresh={query.refresh} />}>
       <View className="gap-2"><Text className="text-2xl font-bold text-ink">내 투자</Text></View>
+      <InvestmentStyleEntry />
       {hasAssets && portfolio && <View className="flex-row flex-wrap gap-3"><ActionButton tone="primary" disabled={saving || portfolio.holdings.length >= 50} label="자산 추가" onPress={() => openHolding()} /><ActionButton label="보유 내역 보기" onPress={() => scroll.current?.scrollTo({ y: holdingsY.current, animated: true })} /><ActionButton disabled={saving} label="현금·투자 계획" onPress={() => { setError(null); setPlan(toDraft(portfolio)) }} /></View>}
       {query.error && <View className="gap-2"><Text className="text-ink">{query.error}</Text><Pressable onPress={query.reload} className="min-h-12 justify-center"><Text className="text-brand">다시 확인</Text></Pressable></View>}
       {error && !editing && !plan && !noteTarget && <Text className="text-danger">{error}</Text>}

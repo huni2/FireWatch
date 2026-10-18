@@ -19,6 +19,7 @@ const HelpPage = lazy(() => import('./features/help/HelpPage').then((m) => ({ de
 const PrivacyPage = lazy(() => import('./features/privacy/PrivacyPage').then((m) => ({ default: m.PrivacyPage })))
 const OpenSourcePage = lazy(() => import('./features/opensource/OpenSourcePage').then(m => ({ default: m.OpenSourcePage })))
 const PortfolioPage = lazy(() => import('./features/portfolio/PortfolioPage').then(m => ({ default: m.PortfolioPage })))
+const InvestmentStylePage = lazy(() => import('./features/investment-style/InvestmentStylePage').then(m => ({ default: m.InvestmentStylePage })))
 const AccountPage = lazy(() => import('./features/account/AccountPage').then(m => ({ default: m.AccountPage })))
 const InvestmentInfoPage = lazy(() => import('./features/help/InvestmentInfoPage').then(m => ({ default: m.InvestmentInfoPage })))
 const CandidatesPage = lazy(() => import('./features/candidates/CandidatesPage').then(m => ({ default: m.CandidatesPage })))
@@ -42,6 +43,7 @@ export default function App() {
           <Routes>
             <Route element={<AppShell darkMode={darkMode} onToggleDarkMode={setDarkMode} />}>
             <Route index element={<Suspense fallback={<Skeleton active />}><PortfolioPage /></Suspense>} />
+            <Route path="investment-style" element={<Suspense fallback={<Skeleton active />}><InvestmentStylePage /></Suspense>} />
             <Route path="account" element={<Suspense fallback={<Skeleton active />}><AccountPage /></Suspense>} />
             <Route path="community" element={<Suspense fallback={<Skeleton active />}><CommunityPage /></Suspense>} />
             <Route path="investment-info" element={<Suspense fallback={<Skeleton active />}><InvestmentInfoPage /></Suspense>} />
