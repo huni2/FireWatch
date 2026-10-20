@@ -11,6 +11,8 @@
 
 ## 2026-10-20
 
+- **[BE] Gemini 3.6·브리핑 복구 운영 배포 완료·외부503 지속 확인**: 132dfbf Render10:38:39 KST 배포success, CI39354024600 백엔드/H2/PG/복구·웹·모바일 전체success, healthOK. 정상예약39354611437 HTTP200 후10:39 Gemini503 재발로 오늘ID62/뉴스20/FALLBACK 유지. 복구성공으로 표현하지 않음. 7770b37 읽기전용 수동진단39354837974 success, paused=false·다음재시도11:09이후/예약지연가능. 비밀/본문/URL 출력0·한도초기화0. docs/maintenance/briefing-recovery 참고.
+
 - **[BE] Gemini 3.6 모델 전환·배포 준비**: 사용자 요청에 따라 기본값/Render Blueprint를 gemini-3.6-flash로 변경하고 기존 3.5 환경변수도 클라이언트에서 3.6으로 정규화했다. 로컬 HTTP로 실제 경로3종 검증, 전체 build245개 중244통과/1skip/실패0. 6724439의 FALLBACK 복구와 함께 배포 진행.
 
 - **[BE] Gemini 503 이후 당일 FALLBACK 복구·추천 오류 구분**: FALLBACK을 부분 성공으로 기록해 기존 DB 임대·30/60분 간격·하루 실패 3회 한도 안에서 복구한다. 구버전 SUCCESS/FALLBACK도 대상이며 동일 ID/생성 시각/시세/뉴스를 보존하고 정상/과거 브리핑은 변경하지 않는다. 429는 당일 중지하고 FALLBACK 중 추천 추가 호출을 차단한다. 추천 실패를 별도 action 및 안전한 NO_QUALIFIED_RECOMMENDATIONS/NO_RECOMMENDATION_NEWS 코드로 구분한다. 관련32·전체244 중243통과/1skip·build 성공. 운영 배포·실제 복구 확인은 미수행. docs/maintenance/briefing-recovery 참고.

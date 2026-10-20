@@ -7,3 +7,6 @@
 - 관련 테스트 32개 통과. 전체 `gradlew.bat build` 성공, 테스트 244개 중 243개 통과·1개 건너뜀·실패 0개. H2 통합 테스트에서 원본 ID/시각/뉴스/시세 보존, 구버전 SUCCESS/FALLBACK 복구, 세 번 제한과 429 중지를 확인했다.
 - 운영 배포/실제 제공처 복구 확인은 아직 수행하지 않았다. 이미 당일 한도에 도달한 회로는 배포로 초기화하지 않으며 다음 한국 날짜에 다시 실행한다. 과거 FALLBACK은 변경하지 않는다.
 - 사용자 후속 요청으로 모델 전환과 배포를 진행한다. gemini-3.6-flash 기본값/Blueprint 및 기존 3.5 환경변수 정규화 적용. 로컬 HTTP 요청 경로 3종 검증 통과. 전체 build 성공, 245개 중244통과/1skip/실패0. 원격 main은 368eacd, 배포에는 6724439의 복구 처리도 포함한다.
+- 운영 배포 완료: 코드 132dfbf4597022ad5f3247f6ec55088a67946355, GitHub deployment7189223337/Render dep-dbbc9fe7bikc73ai4bqg, 2026-10-20 10:38:39 KST success. CI39354024600 백엔드(H2/PG/복구)·웹·모바일 전체 success. 공개 health OK.
+- 정상 수집 dispatch39354611437 HTTP200/triggered:true. 오늘 브리핑ID62·생성시각·뉴스20 유지. 10:39:27 KST Gemini가 다시503을 반환해 아직 FALLBACK이며 실제 AI 복구 성공은 미확인이다. 오류를 숨기거나 성공으로 표시하지 않는다.
+- 7770b37에 수동 워크플로 diagnose_only 옵션 추가. 운영 비밀은 기존 Actions secret으로만 사용하며 출력은 브리핑 알림ID/paused/시각과 최근 Gemini status/HTTP 코드로 제한한다. 원문·URL·프롬프트 출력0. 진단만 실행한39354837974 success, 추가 수집 단계는 건너뜀. 당일 paused=false, 마지막 실패 기준 다음 재시도는11:09 이후이며 실제 예약 호출 지연 가능성이 있다. 실패 한도 초기화0.
