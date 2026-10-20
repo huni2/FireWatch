@@ -18,12 +18,9 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL
-        # 2026-08-21 실측 3종 전부 확인: 3.7-flash→429, 2.5-flash→404(단종 진행중),
-        # 3.5-flash→429. "Gemini 3" 계열은 세부 버전(Flash/Flash-Lite) 상관없이 검색
-        # 그라운딩 무료 할당량이 0이라 전부 429 — 임의로 빡센 모델을 고른 게 아니라
-        # Google 쪽 무료 티어 정책 자체의 문제. 엔드포인트가 살아있는(404 아닌) 3.5로 고정
-        # — 나중에 할당량이 풀리면 바로 작동할 가능성이 2.5보다 높음. FALLBACK으로 운영 중.
-        value: gemini-3.5-flash
+        # 3.5 독립 모델 지원 중단에 따라 공식 대체 모델을 직접 지정한다.
+        # Search Grounding 없이 수집된 시세와 RSS 뉴스만 요약한다.
+        value: gemini-3.6-flash
       - key: EXIM_API_KEY
         sync: false
       - key: ECOS_API_KEY

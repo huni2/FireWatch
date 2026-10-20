@@ -50,8 +50,10 @@ data class GeminiBriefingResult(
 class GeminiClient(
     @Value("\${firewatch.gemini.base-url}") baseUrl: String,
     @Value("\${firewatch.gemini.api-key}") private val apiKey: String,
-    @Value("\${firewatch.gemini.model}") private val model: String,
+    @Value("\${firewatch.gemini.model}") model: String,
 ) {
+    // 기존 Render 환경변수가 남아 있어도 지원 중단된 별칭 대신 공식 대체 모델을 직접 호출한다.
+    private val model = if (model == "gemini-3.5-flash") "gemini-3.6-flash" else model
     // Boot 4에서 WebClient.Builder 오토컨피그 빈이 기본 제공되지 않아(webflux 스타터만으로는 부족) 직접 생성한다.
     private val webClient = WebClient.builder().baseUrl(baseUrl).build()
 
