@@ -11,6 +11,8 @@
 
 ## 2026-10-20
 
+- **[PROJ] README 무료 운영 원칙·자료 장애·Android 상태 정리**: 사용자 API키/결제 요구 없는 무료 운영과 서버 키 관리 범위를 명시했다. 적용된 FALLBACK복구/한도/기록과 미구현 중복호출제거/환율이전값표시/추천없음정상처리를 구분했다. 기능·기술·로컬명령·문서링크를 정리하고 Android 공개APK1.0.11/로컬APK1.0.12/준비AAB1.0.14를 분리했다. GitHub releases/패키지·검증기록 대조, 로컬링크·앵커31개/코드블록/모델·버전 일치PASS. 문서만 변경·앱/서버 빌드0.
+
 - **[BE] Gemini 3.6·브리핑 복구 운영 배포 완료·외부503 지속 확인**: 132dfbf Render10:38:39 KST 배포success, CI39354024600 백엔드/H2/PG/복구·웹·모바일 전체success, healthOK. 정상예약39354611437 HTTP200 후10:39 Gemini503 재발로 오늘ID62/뉴스20/FALLBACK 유지. 복구성공으로 표현하지 않음. 7770b37 읽기전용 수동진단39354837974 success, paused=false·다음재시도11:09이후/예약지연가능. 비밀/본문/URL 출력0·한도초기화0. docs/maintenance/briefing-recovery 참고.
 
 - **[BE] Gemini 3.6 모델 전환·배포 준비**: 사용자 요청에 따라 기본값/Render Blueprint를 gemini-3.6-flash로 변경하고 기존 3.5 환경변수도 클라이언트에서 3.6으로 정규화했다. 로컬 HTTP로 실제 경로3종 검증, 전체 build245개 중244통과/1skip/실패0. 6724439의 FALLBACK 복구와 함께 배포 진행.

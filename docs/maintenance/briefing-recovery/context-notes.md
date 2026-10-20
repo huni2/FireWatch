@@ -10,3 +10,4 @@
 - 운영 배포 완료: 코드 132dfbf4597022ad5f3247f6ec55088a67946355, GitHub deployment7189223337/Render dep-dbbc9fe7bikc73ai4bqg, 2026-10-20 10:38:39 KST success. CI39354024600 백엔드(H2/PG/복구)·웹·모바일 전체 success. 공개 health OK.
 - 정상 수집 dispatch39354611437 HTTP200/triggered:true. 오늘 브리핑ID62·생성시각·뉴스20 유지. 10:39:27 KST Gemini가 다시503을 반환해 아직 FALLBACK이며 실제 AI 복구 성공은 미확인이다. 오류를 숨기거나 성공으로 표시하지 않는다.
 - 7770b37에 수동 워크플로 diagnose_only 옵션 추가. 운영 비밀은 기존 Actions secret으로만 사용하며 출력은 브리핑 알림ID/paused/시각과 최근 Gemini status/HTTP 코드로 제한한다. 원문·URL·프롬프트 출력0. 진단만 실행한39354837974 success, 추가 수집 단계는 건너뜀. 당일 paused=false, 마지막 실패 기준 다음 재시도는11:09 이후이며 실제 예약 호출 지연 가능성이 있다. 실패 한도 초기화0.
+- 17시 사용자 로그 제보 후 공개 API에서 오늘ID62/NORMAL/뉴스20/원래 생성시각 보존을 확인했다. 환율USD/JPY100/CNY는null이다. 읽기전용 진단39392140087 success에서14:26:43 Gemini WARNING(반환 성공),14:26:57 HTTP503, 브리핑종류 paused=true/14:26:50 갱신을 확인했다. 마지막503은별도추천분석이며 아침브리핑복구실패로해석하지 않는다. 사용자제공16시·17시 금융 INCOMPLETE_DATA는환율3종누락이며 제공처직접원인은예외누락으로미확정이다.

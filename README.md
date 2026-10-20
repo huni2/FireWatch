@@ -4,174 +4,139 @@
 
 **시장 자료와 개인 투자 기록을 연결하는 웹·Android 투자 점검 서비스.**
 
-관심 기업의 가격·차트·뉴스·AI 분석 근거를 살펴보고, 직접 등록한 보유 자산의 비중과 집중·중복을 점검합니다. 가상투자 게임은 실제 투자 정보와 분리된 연습 메뉴입니다. 실제 주식 주문이나 증권사 자동 연동은 제공하지 않습니다.
+관심 기업의 가격·차트·뉴스와 AI 분석 근거를 살펴보고, 직접 등록한 보유 자산의 비중·집중·중복을 점검합니다. 투자 연습은 별도의 가상 게임으로 제공합니다. 실제 주식 주문이나 증권사 자동 연동은 제공하지 않습니다.
 
-[웹 서비스](https://firewatch-eqp.pages.dev) · [백엔드 API](https://firewatch-backend-q3cv.onrender.com/api/health) · [개발 포트폴리오 사례](docs/portfolio/firewatch-case-study.md) · [배포 안내](DEPLOY.md)
-
-## Android 설치
-
-**웹 반영·AAB 준비 완료 — 1.0.14 / 빌드19 (2026-10-18)**: [나에게 맞는 투자 방식 찾기](docs/product/investment-style-self-check.md)를 웹·앱에 추가했습니다. 로그인 없이 10문항에 답하고, 관리 방식·변동을 감수하려는 마음·생활 여력을 따로 살펴볼 수 있습니다. 결과는 선택할 때만 기기에 저장하며 서버·AI로 보내지 않습니다. [새 출시 메모](docs/deployment/android-114-release-notes.txt). 웹에 배포했으며 AAB는 `mobile/dist/FireWatch-1.0.14-play.aab`(44,459,773 bytes)입니다. 구조·서명·패키지·버전 검증과 CI를 통과했습니다. Play 업로드와 실기기 검증은 아직 수행하지 않았습니다. [배포·빌드 검증](docs/deployment/investment-style-20261018.json).
-
-**Play Google 로그인 오류10 확인 중**: 제공된 Play 앱 서명 SHA-1을 같은 Google Cloud 프로젝트의 Android OAuth 클라이언트에 등록해야 합니다. 내장 브라우저 로그인 차단으로 원격 설정 변경은 수행하지 못했으며 실제 해결은 확인 전입니다. [정확한 등록 값과 확인 절차](docs/deployment/google-play-login-20261018.md).
-
-**이전 Play 업로드용 AAB: 1.0.13 · Android 빌드 18 · 2026-10-17 · 약 44.4MB**
-
-로컬 결과물은 `mobile/dist/FireWatch-1.0.13-play.aab`입니다. 투자 메모·복기, 달력 선택, 내 투자 바로가기와 검색·등록 개선을 포함합니다. 이전 Play 업로드용 AAB와 동일한 인증서, 패키지·버전, bundletool 검증을 확인했습니다. 기존 비공개 테스트 트랙의 새 버전에 업로드하며 새 앱을 만들지 않습니다. **AAB 생성과 Play 업로드·심사·테스터 업데이트는 별도이며 아직 Play에 제출하지 않았습니다.** [출시 메모](docs/deployment/android-113-release-notes.txt).
-
-**이전 직접 설치 APK: 1.0.12 · Android 빌드 17 · 2026-10-14 · 약 54.4MB**
-
-종목 검색 결과를 눌러 보유 자산을 등록하고, 수량과 선택 입력인 평균 구매 가격을 구분합니다. 다른 종목을 선택할 때 기존 수량·가격을 초기화하며 중복 종목은 기존 기록 수정으로 연결합니다. 내 투자 점검 화면에 평가 자료 상태·보유 비중·ETF 지수명 중복·관련 소식과 수량 수정 경로를 배치했습니다.
-
-새 서명 APK는 로컬 빌드 결과 `mobile/dist/FireWatch-1.0.12-android.apk`로 제공합니다. 기존 앱 위에 업데이트 설치하며, 앱을 삭제하지 않습니다. [새 설치본 검증 기록](docs/product/android-preview-20261009/android-112-build.json) · [등록 흐름](docs/product/holding-registration-ux.md) · [투자 점검 범위](docs/product/investor-checkup-pilot.md).
-
-**이전 공개 다운로드는 1.0.11 / 빌드16입니다.** 아래 공개 파일에는 이번 검색·등록·투자 점검 수정이 포함되지 않습니다. 새 1.0.12의 GitHub 공개 릴리스와 Play 게시를 이번 로컬 빌드 완료로 표시하지 않습니다.
-
-[이전 공개 APK 1.0.11](https://github.com/huni2/FireWatch/releases/download/v1.0.11-android-preview/FireWatch-1.0.11-android.apk) · [기존 공개 릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.11-android-preview)
-
-1. 새 APK를 Android 휴대폰으로 옮기고 파일을 엽니다.
-2. 설치가 차단되면 파일을 여는 앱의 ‘이 출처의 앱 설치 허용’을 켭니다.
-3. 기존 FireWatch 위에 업데이트합니다. Expo Go는 필요하지 않습니다. 설치 실패 시 기존 앱을 삭제하기 전에 원인을 확인합니다.
-
-2026-10-14 Render 백엔드와 점검 기록용 스키마 배포를 완료했습니다. APK1.0.12에서 자료를 다시 확인하거나 앱을 재실행하면 첫/이번 점검 저장·이전 점검 비교를 사용할 수 있습니다. 애플 검색·카탈로그 정보와 기업 별칭 뉴스 매칭 보완도 서버에 반영됐습니다. [서버 배포 검증](docs/deployment/portfolio-review-20261014.json). 시세·뉴스 수집 간격 단축과 새로고침 시 외부 자료 재수집은 이번 변경에 포함되지 않습니다.
-
-Play 스토어 출시 전 테스트용 설치본입니다. 실제 Android 설치·로그인·푸시·접근성 검증은 [Android 검증 문서](docs/deployment/android-release-check.md)에 별도로 기록합니다. 웹·서버 배포만으로 설치 앱이 자동 갱신되지는 않습니다.
-
-## 현재 상태
-
-**2026-10-17 웹·서버 배포 완료 / Android AAB 준비**: [투자 메모와 복기](docs/product/investment-notes-mvp.md), 검색·등록과 내 투자 화면 개선을 Cloudflare Pages·Render에 반영했습니다. 공개 메모 기능·기존 뉴스 조회와 운영 웹 번들 일치를 확인했습니다. Android 1.0.13 / 빌드18 AAB는 생성·서명 검증을 완료했으며 **Play 비공개 테스트 업로드·출시는 아직 수행하지 않았습니다.** 이전 APK에는 이번 메모가 포함되지 않습니다. [배포·빌드 검증](docs/deployment/investment-notes-20261017.json).
-
-2026-10-14 기준. 최신 로컬 APK는 Android 1.0.12 / 빌드17입니다. 기준 커밋 `7f27c91`에 현재 작업 트리의 등록·점검 변경을 포함했으며, 커밋되지 않은 변경과 소스 해시는 [빌드 기록](docs/product/android-preview-20261009/android-112-build.json)에서 구분합니다. 실제 Android 로그인·푸시·접근성은 별도로 확인합니다.
-
-**이번 설치본 반영**: 기존 사용성 개선과 계정 기록 비교·선택 흐름 위에 종목 검색 선택·등록 입력 정리·내 투자 점검 화면을 추가했습니다. 서버 변경과 자료 갱신 제안은 설치본 반영 여부와 구분합니다. [설치 검증](docs/deployment/android-release-check.md). 이후 설치본도 별도 요청 후 빌드합니다.
-
-2026-10-09 후속으로 [BE-40 PR](https://github.com/huni2/FireWatch/pull/30)에서 KIND 공식 한국 상장법인2,651개의 회사명·업종 검색을 추가했습니다. 기존 편집 목록과 시세는 보존하며 가격을 생성하지 않습니다. [출처·범위·갱신 문서](docs/product/krx-company-directory/data-source.md)를 참고하세요. 서버·PostgreSQL·복원·웹/앱 CI 통과 후 웹·Render 배포를 확인했습니다. 공개 API에서 총2,669상품·새 기업의 한국어 검색·기존 분류·ETF·페이지 경계를 검증했습니다.
-
-| 영역 | 상태 |
-|---|---|
-| 웹·백엔드 | Cloudflare Pages·Render에 배포. 운영 데이터는 Supabase PostgreSQL에 저장 |
-| Google 로그인 | 웹 실제 로그인 성공 확인. 계정 연결·세션·연결 기기 관리 구현 |
-| Android | Expo 기반 주요 기능과 빌드 설정 구현. 최신 APK의 로그인·푸시·삭제 등 실기기 검증과 Play 출시 준비 진행 중 |
-| 디자인 | 기본 라이트 모드·오렌지 포인트, 선택형 웹·Android 다크 모드. 자산 요약·탐색 여백·계정 화면·게임 순위 로딩 개선 반영 |
-| 운영 | 수집 실패 기록·제한된 재시도·운영자 진단 구현. 외부 금융 데이터 수집 장애의 실제 복구 확인은 남아 있음 |
-
-구현, 배포, 실기기 검증은 서로 다른 단계로 관리합니다. 웹 배포가 기존 설치 APK를 갱신하지는 않습니다.
+[웹에서 시작하기](https://firewatch-eqp.pages.dev) · [Android 안내](#android-이용) · [개발 포트폴리오 사례](docs/portfolio/firewatch-case-study.md) · [배포 안내](DEPLOY.md)
 
 ## 주요 기능
 
-| 기능 | 사용자에게 제공하는 내용 |
+| 기능 | 제공하는 내용 |
 |---|---|
-| 나에게 맞는 투자 방식 찾기 | 로그인 없이 10문항 자기점검. 관리 과정의 선호와 생활 제약을 구분하고 선택적으로 기기에 결과 보관·재검사·삭제 |
-| 개인 포트폴리오 | 검색 결과에서 회사·상품을 선택하고 수량, 선택 입력인 평균 구매 가격, 현금을 직접 등록. 원금 비중·수집 시세 평가·분야/통화 노출·같은 ETF 지수명 중복 점검 |
-| 내 기업 점검 | 관심 기업과 보유 주식을 모아 추천 근거·관련 기사·보유 맥락을 확인하고 가격/뉴스 화면으로 이동 |
-| 기업 탐색 | 회사명 검색, 분야별 시작 목록, 개별 후보의 이유·위험·근거 기사, 가격·차트·뉴스 |
-| 시장 자료·뉴스 | 장전 브리핑, 지수·환율·금·은·채권 자료, 날짜·키워드별 저장 뉴스 검색 |
-| 투자 연습 | 시드 기반 가상 가격·지표·뉴스·픽, 주문 미리보기/총액/체결 기록, 보유 손익·compact 턴 응답/선택 상세 그래프·결과 설명 |
-| 게임 순위 | 로그인 후 선택 등록·공개 닉네임 동의·철회, 주간 순위와 주간 우승 기록. 게임 내부에서만 제공 |
-| 계정·지원 | Google 계정 연결, 관심·알림 설정, 문제 신고·의견, 공지와 첫 진입 안내 |
-| 운영 관리 | 운영자 전용 감사로그·수집 진단·장애 알림. 일반 사용자의 운영 API 접근은 서버에서 제한 |
+| 내 투자 | 보유 자산·수량·선택 입력인 평균 구매 가격·현금 등록, 구성 비중과 평가 자료 상태 점검 |
+| 투자 메모·복기 | 투자 판단과 점검 기록 보관, 이전 점검과 비교 |
+| 기업 탐색 | 회사명·분야 검색, 관심 기업, 가격·차트와 관련 기사 |
+| 시장 자료·AI 분석 | 장전 브리핑, 지수·환율·금·은·채권 자료, 이유·위험·기사 근거가 있는 후보 |
+| 저장 뉴스 | 날짜·키워드별 뉴스 검색과 원문 연결 |
+| 나에게 맞는 투자 방식 찾기 | 로그인 없이 10문항 자기점검, 선택한 경우에만 기기에 결과 보관·재검사·삭제 |
+| 투자 연습 | 가상 가격·뉴스·지표로 진행하는 주간 게임, 거래 기록·회고와 선택적 순위 등록 |
+| 계정·지원 | Google 계정 연결, 관심·알림 설정, 공지·의견·문제 신고 |
 
-AI 분석은 참고 정보이며 수익이나 가격 변동 원인을 보장하지 않습니다. 구성 초안은 규칙 기반 예시입니다. [투자 정보 제공 범위](docs/product/investment-information-boundary.md)를 별도로 관리합니다.
+AI 해석과 구성 초안은 참고 정보이며 수익이나 개인별 투자 적합성을 보장하지 않습니다. 게임의 가격·뉴스·픽은 가상 자료입니다. [투자 정보 제공 범위](docs/product/investment-information-boundary.md)를 확인하세요.
 
-## 아키텍처
+## 무료 운영 원칙
 
-```mermaid
-flowchart TB
-    WEB["웹: React · Cloudflare Pages"] -->|"REST · 기기/로그인 세션"| API
-    APP["Android: Expo · React Native"] -->|"REST · 기기/로그인 세션"| API
-    GHA["GitHub Actions 예약 폴링"] -->|"서버 전용 운영 키"| API
-    subgraph SERVER["Render · Kotlin / Spring Boot"]
-        API["API · 권한 검증"] --> DOMAIN["포트폴리오 · 계정 · 문의 · 가상게임"]
-        API --> COLLECT["수집 작업 · lease · 제한된 재시도"]
-        COLLECT --> AI["Gemini: 확보한 자료의 요약·해석"]
-        COLLECT --> PUSH["알림 · 운영자 장애 outbox"]
-        AUDIT["Spring AOP 감사로그"] -.-> DOMAIN
-        AUDIT -.-> COLLECT
-    end
-    COLLECT --> SOURCES["Yahoo Finance · 수출입은행 · ECOS · RSS"]
-    AI --> GEMINI["Gemini API"]
-    DOMAIN --> DB[("Supabase PostgreSQL")]
-    COLLECT --> DB
-    AUDIT --> DB
-    PUSH --> PROVIDERS["Web Push · Expo Push / FCM"]
-    PROVIDERS --> WEB
-    PROVIDERS --> APP
-```
+FireWatch는 **무료 API와 인프라의 제공 범위 안에서 운영**합니다. 일반 사용자에게 이용료나 개인 Gemini API 키 등록을 요구하지 않으며, 유료 API 도입이나 사용자별 API 키 입력을 전제로 운영하지 않습니다.
 
-클라이언트가 DB에 직접 접근하지 않고 백엔드 API를 통해 조회·저장합니다. 게임은 외부 시세·뉴스·AI API를 호출하지 않는 가상 시뮬레이션으로 분리했습니다.
+외부 API 키는 서버 운영자가 서버 환경변수로 관리합니다. 웹·앱에 운영 비밀을 넣지 않습니다. 저장소를 직접 실행하는 개발자의 환경 설정은 일반 사용자의 서비스 이용과 구분합니다.
 
-## 기술 스택과 선택
+무료 제공처의 호출 한도·일시 장애·서버 콜드스타트로 자료 갱신이 늦어지거나 일부 기능이 제한될 수 있습니다. 운영 목표는 **외부 API가 실패해도 확보한 자료는 계속 제공하고, 정해진 한도 안에서 복구하는 것**입니다.
 
-| 계층 | 현재 코드 기준 | 선택과 절충 |
+## 자료 갱신과 장애 대응
+
+앱과 웹은 서버에 저장된 자료를 조회합니다. 화면 새로고침이 모든 외부 API의 즉시 재수집을 뜻하지 않으며, 장전 브리핑과 독립적인 뉴스·시세 수집은 각각의 예약 작업으로 실행합니다. 예약 호출 자체의 지연도 발생할 수 있습니다.
+
+### 현재 적용된 동작
+
+| 상황 | 처리 |
+|---|---|
+| Gemini 호출 실패 | 금융 자료가 있으면 `FALLBACK` 브리핑을 제공하고, 당일 제한된 재시도로 AI 요약 복구 |
+| FALLBACK 복구 | 저장된 지표·뉴스·브리핑 ID·생성 시각을 보존. 정상·과거 브리핑은 재작성하지 않음 |
+| 반복 실패·한도 초과 | DB 작업 임대로 중복 실행 방지. 종류별 한국 날짜 기준 실패 3회 한도와 30~60분 재시도 간격 적용. HTTP 429는 해당 종류 당일 중지 |
+| 일부 금융 자료 누락 | 정상 수집 항목은 저장하고 누락 항목을 실패 코드로 기록. 이전 정상 관측 이력 보존 |
+| FALLBACK 상태의 별도 추천 분석 | Gemini 추가 호출을 보류하고 브리핑 복구를 우선 |
+| 원인 확인 | 운영자 감사로그·장애 알림과 수동 진단 제공. 수동 진단 출력에는 키·프롬프트·AI 본문을 포함하지 않음 |
+
+2026-10-20에 Gemini `gemini-3.6-flash` 전환과 FALLBACK 복구를 서버에 배포했습니다. 후속 점검에서 오늘 브리핑의 `NORMAL` 복구를 확인했지만, 별도 추천 분석의 503과 달러·엔·위안 환율 누락은 남아 있습니다. `NORMAL`은 AI 요약 생성 상태이며 모든 금융 항목의 완전성을 뜻하지 않습니다. [배포·검증 기록](docs/maintenance/briefing-recovery/context-notes.md).
+
+### 앞으로 보완할 동작
+
+아래 항목은 개선 방향이며 아직 모두 구현된 상태는 아닙니다.
+
+- 성공한 브리핑 분석 결과를 추천에도 재사용해 Gemini 중복 호출 줄이기.
+- 일시 오류·인증 오류·할당량 초과를 구분하고, 전체 호출 한도 안에서 재시도 정책 개선하기.
+- 환율 제공처의 인증·연결·응답 오류를 비밀값 없이 구분해 기록하기.
+- 환율 갱신 실패 시 마지막 정상값을 출처·기준일과 함께 화면에 표시하기.
+- 근거가 충분한 추천이 없는 경우 정상적인 ‘추천 없음’으로 처리하기.
+
+## Android 이용
+
+2026-10-20 기준, **공개 다운로드와 로컬 빌드 결과물은 다릅니다.**
+
+| 구분 | 확인된 버전 | 이용·배포 상태 |
 |---|---|---|
-| 백엔드 | Kotlin 2.3.21 · Java 21 · Spring Boot 4.1.0 | 도메인 검증·트랜잭션·스케줄러를 한 서비스에 구성. WebFlux/WebClient와 JPA/JDBC를 함께 사용하며 완전한 논블로킹 서버로 설명하지 않음 |
-| 데이터 | PostgreSQL · JPA/JDBC · H2 | 운영 영속성과 로컬 개발을 분리. H2 테스트 외에 PostgreSQL 통합 검증 수행 |
-| 웹 | React 18 · Vite 8 · TypeScript · Ant Design 5 | 기능별 화면, 라우트 지연 로딩, 공통 디자인 토큰과 반응형 레이아웃 |
-| Android | Expo SDK 57 · React Native 0.86 · Expo Router · NativeWind | 웹과 API·도메인 계산·문구 공유. 네이티브 인증/푸시는 별도 설치 빌드로 검증 |
-| 분석·알림 | Gemini · Web Push · Expo Notifications / FCM | 확보한 자료를 AI가 해석하고, 사용자/운영자 알림 경로를 구분 |
-| 배포·검증 | Cloudflare Pages · Render · Supabase · GitHub Actions · EAS | 무료 사용 범위를 목표로 운영. 콜드스타트·외부 API 한도·빌드 대기 등의 제약을 수용 |
+| 공개 테스트 APK | 1.0.11 / 빌드16 | [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.11-android-preview/FireWatch-1.0.11-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.11-android-preview) |
+| 로컬 직접 설치 APK | 1.0.12 / 빌드17 | 검색·등록·내 투자 점검 개선. [빌드 검증](docs/product/android-preview-20261009/android-112-build.json) |
+| 최신 준비 AAB | 1.0.14 / 빌드19 | 투자 방식 자기점검 포함. 서명·패키지·버전 검증 완료. Play 업로드·게시와 실기기 검증은 확인 전. [검증 기록](docs/deployment/investment-style-20261018.json) |
 
-OpenSearch는 비용과 운영 부담으로 보류했습니다. 종목 검색은 PostgreSQL 기반 카탈로그와 외부 검색 경로를 사용하며, 전 시장 자체 검색엔진을 완성했다고 주장하지 않습니다.
+공개 1.0.11 APK에는 이후 추가된 메모·자기점검 등 최신 앱 기능이 포함되지 않습니다. AAB는 Play 업로드용이며 휴대폰에 직접 설치하는 APK가 아닙니다. Play 설치 앱의 Google 로그인 오류10은 OAuth 등록과 실제 로그인 성공 확인이 남아 있습니다. [로그인 점검 절차](docs/deployment/google-play-login-20261018.md).
 
-## 백엔드에서 해결한 문제
+APK는 휴대폰에서 열어 기존 앱 위에 업데이트합니다. 필요한 경우 파일을 여는 앱의 ‘이 출처의 앱 설치 허용’을 켭니다. 설치 실패 시 기존 앱을 삭제하기 전에 원인을 확인하세요. Expo Go는 필요하지 않습니다.
 
-| 문제 | 적용한 해결 | 코드·근거 |
-|---|---|---|
-| 컨테이너 재배포 후 기록 유실 | 운영 저장소를 외부 PostgreSQL로 분리하고 기존 자료를 보존하는 수집 경로 구성 | [운영 DB 전환 결정](llm-wiki/Decisions/0009-persistent-db-supabase.md) |
-| 중복 수집·실패 무한 반복 | DB 작업 lease, KST 날짜/종류별 실패 한도, 30~60분 재시도 간격, 장애 기록과 운영자 알림 | [CollectionJobRunner](backend/src/main/kotlin/com/firewatch/backend/service/CollectionJobRunner.kt) |
-| Supabase session pooler 연결 한도 초과 | 인스턴스당 최대 연결 3개·유휴 0개로 축소, 배포 중 중첩 연결 예산 고려 | [운영 DB 설정](backend/src/main/resources/application-prod.yml) |
-| 포트폴리오 동시 편집 충돌 | 버전 확인·변경 이력 저장, 오래된 저장 요청 거절, 미저장 입력 보호 | [PortfolioService](backend/src/main/kotlin/com/firewatch/backend/service/PortfolioService.kt) |
-| 주문 중복·장부 불일치 | 요청 ID 재사용 처리, 게임 행 잠금, 서버 계산으로 거래·평가·순위 일관성 유지 | [GameService](backend/src/main/kotlin/com/firewatch/backend/service/GameService.kt) |
-| 공개 클라이언트 키로 운영 API 접근 | 서버 전용 키와 검증된 운영자 로그인 세션으로 분리. 이메일 표시만으로 권한 부여하지 않음 | [OperatorAccess](backend/src/main/kotlin/com/firewatch/backend/service/OperatorAccess.kt) |
-| 근거 없는 AI 후보 노출 | 저장 기사와 연결이 확인된 후보를 노출하고 이유·위험·자료 시각을 함께 표시 | [기업 탐색 도메인](shared/discovery.ts) |
+**서버 처리만 바뀌고 API 계약이 유지되는 변경은 기존 앱에도 적용됩니다.** 이번 Gemini 전환·복구 수정은 앱 재배포가 필요하지 않습니다. 앱 화면·기능·네이티브 설정의 변경은 새 설치본이 필요하며, 웹 배포만으로 설치 앱이 갱신되지는 않습니다.
 
-문제의 배경·판단·검증·남은 한계는 [포트폴리오 사례 문서](docs/portfolio/firewatch-case-study.md)에 정리했습니다.
+세부 빌드·출시 이력은 [Android 개발 안내](mobile/README.md), [Play 제출 안내](mobile/PLAY_STORE.md), [실기기 검증](docs/deployment/android-release-check.md)에서 관리합니다.
 
-## 상태 관리와 검증
+## 서비스 구성
 
-서버가 저장 기록과 거래 장부의 기준입니다. 웹은 기능별 훅과 로컬 상태로 조회·편집·처리 중·실패를 관리하며, 모바일은 같은 API 계약을 사용합니다. 전역 서버 캐시 라이브러리는 아직 도입하지 않았습니다. 검색 결과와 조건의 일치, 요청 경쟁, 중복 조회는 계속 점검할 항목입니다.
+| 영역 | 구성 |
+|---|---|
+| 웹 | React 18 · TypeScript · Vite 8 · Ant Design 5 / Cloudflare Pages |
+| Android | Expo SDK 57 · React Native 0.86 · Expo Router · NativeWind |
+| 백엔드 | Kotlin 2.3 · Java 21 · Spring Boot 4.1 / Render |
+| 저장소 | 운영 Supabase PostgreSQL · JPA/JDBC, 로컬 기본 H2 |
+| 외부 자료 | Yahoo Finance · 한국수출입은행 · 한국은행 ECOS · RSS |
+| 분석·알림 | 서버 Gemini API · Web Push · Expo Notifications / FCM |
+| 예약·검증 | GitHub Actions 예약 폴링·CI, 백엔드 자체 예약 작업 |
 
-[CI 워크플로](.github/workflows/validate.yml)는 백엔드 테스트, PostgreSQL 동시성·카탈로그/합성3,000건·문의·게임 순위 통합 검사 및 별도 DB 백업 복원/행 서명/시퀀스 대조, 웹 lint/build, 모바일 lint/타입 검사와 출시 설정·네이티브 차트 의존성 검사를 수행합니다. Android 1.0.11 소스의 [CI](https://github.com/huni2/FireWatch/actions/runs/38424209417)는 성공했습니다. 이 결과가 실제 기기 푸시 수신이나 현재 외부 수집 성공을 증명하지는 않습니다.
+웹과 앱은 같은 REST API를 사용하며 DB에 직접 접근하지 않습니다. 백엔드는 WebFlux/WebClient와 JPA/JDBC를 함께 사용합니다. 외부 수집 중에는 DB 저장 트랜잭션을 유지하지 않으며, 운영 API는 서버 전용 키 또는 검증된 운영자 세션으로 제한합니다.
 
-## 로컬 실행
+검색은 PostgreSQL 기반 카탈로그와 외부 검색 경로를 사용합니다. 한국 상장법인 목록과 편집한 분야·ETF 목록의 범위는 서로 다릅니다. [상장법인 자료 출처·범위](docs/product/krx-company-directory/data-source.md).
 
-Java 21과 Node.js 22를 준비합니다. 각 명령은 해당 디렉터리에서 실행합니다.
+## 로컬 실행과 검증
+
+Java 21과 Node.js 22를 준비합니다. 아래 각 실행은 **저장소 루트에서 별도 터미널**로 시작합니다.
 
 ```powershell
-# backend/ — 기본 개발 프로필은 H2, 기본 포트 8080
+# 백엔드 — 기본 H2, 포트 8080
+cd backend
 .\gradlew.bat bootRun
+```
 
-# web/ — web/.env.example을 참고해 .env 구성
+```powershell
+# 웹 — web/.env.example을 참고해 .env 구성
+cd web
 npm ci
 npm run dev
+```
 
-# mobile/ — mobile/.env.example을 참고해 환경 구성
+```powershell
+# 앱 — mobile/.env.example을 참고해 환경 구성
+cd mobile
 npm ci
 npx expo start
 ```
 
-```powershell
-# backend/
-.\gradlew.bat test
-# web/
-npm run lint
-npm run build
-# mobile/
-npm run lint
-npx tsc --noEmit
-node --test scripts/release-check.test.cjs
-```
+검증 명령은 각 디렉터리에서 실행합니다.
 
-외부 API 키가 없는 로컬 환경에서는 실제 분석·푸시 기능을 모두 검증할 수 없습니다. Google 로그인·Android 원격 푸시는 Expo Go 확인과 설치 APK 검증을 구분합니다.
+| 영역 | 명령 |
+|---|---|
+| 백엔드 | `./gradlew build` 또는 Windows에서 `.\gradlew.bat build` |
+| 웹 | `npm run lint` · `npm run build` |
+| 앱 | `npm run lint` · `npx tsc --noEmit` · `npm run release:check` |
 
-## 문서와 출시 전 과제
+외부 API 키가 없는 로컬 환경에서는 실제 AI 분석·일부 자료 수집·푸시를 모두 검증할 수 없습니다. 서버용 키·DB 비밀번호를 `VITE_*`나 `EXPO_PUBLIC_*`에 넣지 않습니다. 환경변수와 실행 구성은 [배포 안내](DEPLOY.md)를 참고하세요.
 
-- [개발 포트폴리오 사례·소개 문구](docs/portfolio/firewatch-case-study.md)
-- [배포·환경변수·운영 점검](DEPLOY.md)
-- [자료 보관·백업·복구 절차](docs/deployment/data-preservation.md) · [출시 기능 범위](docs/product/release-scope.md)
-- [Android 개발 안내](mobile/README.md) · [Play 제출 안내](mobile/PLAY_STORE.md) · [실기기 검증](docs/deployment/android-release-check.md)
-- [프로덕트 문서](docs/product/) · [기존 디자인·기능 리뷰](docs/reviews/)
-- [현재 맥락](llm-wiki/Context.md) · [열린 과제](llm-wiki/Next-Tasks.md) · [설계 결정](llm-wiki/Decisions/) · [작업 로그](llm-wiki/log.md)
+[CI](.github/workflows/validate.yml)는 백엔드·PostgreSQL 통합·백업 복원, 웹 lint/build, 모바일 lint/타입·출시 설정 등을 확인합니다. 2026-10-20 서버 배포 코드의 [전체 CI](https://github.com/huni2/FireWatch/actions/runs/39354024600)는 통과했습니다. CI 성공은 외부 API의 현재 가용성이나 실제 Android 로그인·푸시 수신을 보장하지 않습니다.
 
-남은 핵심 작업은 최신 Android 설치 검증, 금융 데이터 수집 복구 확인, 개인정보·투자 정보 범위와 Play 제출 항목 확인입니다. 게임은 2026-10-11 후속으로 실제 기업 이름 60개·12분야의 주간 게임을 구현했습니다. 첫 주 시작 가격에서 23회 이동해 24주째에 마무리하며 분야별 이야기가 이어집니다. 가격·뉴스·지표·픽은 전부 가상 자료이고 기업·보유 분야 탐색, 주간 회고와 완주 후 선택적 순위 등록을 제공합니다. [주간 게임 설계·검증 범위](docs/product/game-weekly-design.md)를 참고하세요. 서버 배포 확인은 별도로 기록합니다. 이전 시험 기록은 보관하며 출시 후 시즌은 추후 과제입니다. 분야별 시작 목록과 ETF 비교도 전체 상장 종목·상품 데이터베이스는 아닙니다.
+## 문서
 
-개발 과정에서는 Claude Code와 Codex를 활용했습니다. 요구사항·기술 결정·실패와 검증 결과를 코드와 함께 기록하며, AI 생성 결과는 테스트와 운영 확인으로 검토합니다. 도구가 생성한 코드와 사람이 내린 제품·운영 판단을 구분해 설명합니다.
+| 목적 | 문서 |
+|---|---|
+| 제품 범위 | [출시 기능 범위](docs/product/release-scope.md) · [투자 정보 제공 범위](docs/product/investment-information-boundary.md) |
+| 운영 | [배포·환경변수](DEPLOY.md) · [운영자 인증](docs/deployment/operator-access.md) · [자료 보관·백업·복구](docs/deployment/data-preservation.md) |
+| Android | [개발 안내](mobile/README.md) · [Play 제출](mobile/PLAY_STORE.md) · [설치 검증](docs/deployment/android-release-check.md) |
+| 기능 상세 | [투자 점검](docs/product/investor-checkup-pilot.md) · [투자 메모](docs/product/investment-notes-mvp.md) · [자기점검](docs/product/investment-style-self-check.md) · [가상 게임](docs/product/game-weekly-design.md) |
+| 설계·작업 기록 | [현재 맥락](llm-wiki/Context.md) · [열린 과제](llm-wiki/Next-Tasks.md) · [설계 결정](llm-wiki/Decisions/) · [작업 로그](llm-wiki/log.md) |
+| 개발 사례 | [문제·판단·검증과 남은 한계](docs/portfolio/firewatch-case-study.md) |
+
+개발 과정에서는 Claude Code와 Codex를 활용했습니다. 요구사항과 기술 결정, 실패·검증 결과를 코드와 함께 기록하며 생성된 결과는 테스트와 운영 확인으로 검토합니다.
