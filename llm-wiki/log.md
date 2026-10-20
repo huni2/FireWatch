@@ -9,6 +9,10 @@
 > **담당 태그**: `[BE]` 백엔드(Kotlin/Spring) 코드 · `[WEB]` 웹(React/AntD) 코드 · `[APP]` 모바일(React Native) 코드 · `[PROJ]` 위키·문서·설정 등 코드 외 작업.
 > 한 항목이 여러 영역을 건드렸다면 **항목을 쪼갠다** — 태그를 두 개 붙이지 않는다.
 
+## 2026-10-20
+
+- **[BE] Gemini 503 이후 당일 FALLBACK 복구·추천 오류 구분**: FALLBACK을 부분 성공으로 기록해 기존 DB 임대·30/60분 간격·하루 실패 3회 한도 안에서 복구한다. 구버전 SUCCESS/FALLBACK도 대상이며 동일 ID/생성 시각/시세/뉴스를 보존하고 정상/과거 브리핑은 변경하지 않는다. 429는 당일 중지하고 FALLBACK 중 추천 추가 호출을 차단한다. 추천 실패를 별도 action 및 안전한 NO_QUALIFIED_RECOMMENDATIONS/NO_RECOMMENDATION_NEWS 코드로 구분한다. 관련32·전체244 중243통과/1skip·build 성공. 운영 배포·실제 복구 확인은 미수행. docs/maintenance/briefing-recovery 참고.
+
 ## 2026-10-10
 
 - **[PROJ] 열린3개 과제 참조 문서 최신화·첫 백업 감사 원문0 확인**: NextTasks/Context·BE21/WEB38/APP21 참조MD 현행 대조. WEB main CI success·과거 APK소스/현재 모바일5f77550·가운영 승인 기준 반영. 첫 운영 백업 복원본 OperatorAccess 감사128행/Bearer0/마스킹63 읽기 전용 확인·세션은 폐기 후 범위·서버 종료. 새 과제/운영 접속/자료 삭제/APK0.

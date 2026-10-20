@@ -75,12 +75,13 @@ class SchedulerController(
         triggerScope.launch { marketCollection.collectIfDue(); newsPushService.notifyNewArticles(java.time.Instant.now()); recommendations.collectIfDue(); operationsPush.flush(java.time.Instant.now()) }
 
         var triggered = false
-        if (briefing == null) {
+        if (briefing == null || briefing.dataSourceStatus == com.firewatch.backend.entity.DataSourceStatus.FALLBACK) {
             if (now.isAfter(LocalTime.parse(generateAfter))) {
                 triggerScope.launch { schedulerJob.triggerManually(apiKey, deviceId, authorization); recommendations.collectIfDue(); operationsPush.flush(java.time.Instant.now()) }
                 triggered = true
             }
-        } else {
+        }
+        if (briefing != null) {
             val hasDueRecipient = userSettingsRepository.findAll()
                 .any { isRowDue(it, now, pollWindowMinutes, today) }
             if (hasDueRecipient) {

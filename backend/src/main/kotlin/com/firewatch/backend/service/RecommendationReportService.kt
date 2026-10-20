@@ -41,6 +41,7 @@ class RecommendationReportService(
         if (jdbc.queryForObject("SELECT COUNT(*) FROM recommendation_reports WHERE analysis_date=?", Long::class.java, today) != 0L)
             return CollectionOutcome.SKIPPED
         val source = briefings.findByBriefingDate(today) ?: return CollectionOutcome.SKIPPED
+        if (source.dataSourceStatus == com.firewatch.backend.entity.DataSourceStatus.FALLBACK) return CollectionOutcome.SKIPPED
         return jobs.run("briefing:recommendations:$today", now, fetch = {
             val articles = archive.search(null, today, null, 0, 5).news
             check(articles.isNotEmpty()) { "NO_RECOMMENDATION_NEWS" }

@@ -51,6 +51,8 @@ class RecommendationReportIntegrationTest {
         assertEquals(count, jdbc.queryForObject("SELECT COUNT(*) FROM recommendation_reports", Long::class.java))
         assertEquals(CollectionOutcome.SKIPPED, service.collectIfDue(now.plusSeconds(1)))
         assertEquals(1, jdbc.queryForObject("SELECT failure_count FROM collection_jobs WHERE id='briefing:recommendations:2026-10-10'", Int::class.java))
+        assertEquals("NO_QUALIFIED_RECOMMENDATIONS", jdbc.queryForObject("SELECT error_code FROM collection_jobs WHERE id='briefing:recommendations:2026-10-10'", String::class.java))
+        kotlin.test.assertTrue(jdbc.queryForObject("SELECT response_summary FROM audit_logs WHERE action_name='collection.briefing.recommendations' ORDER BY id DESC LIMIT 1", String::class.java)!!.contains("NO_QUALIFIED_RECOMMENDATIONS"))
     }
 
     private fun service(link: String): RecommendationReportService {

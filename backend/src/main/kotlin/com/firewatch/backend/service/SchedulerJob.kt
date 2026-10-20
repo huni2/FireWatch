@@ -63,13 +63,26 @@ class SchedulerJob(
     private fun executePipeline() {
         val now = java.time.Instant.now()
         val today = now.atZone(ZoneId.of(schedulerTimezone)).toLocalDate()
-        if (briefingRepository.findByBriefingDate(today) != null) return
+        val existing = briefingRepository.findByBriefingDate(today)
+        if (existing?.dataSourceStatus == DataSourceStatus.NORMAL) return
         var prepared: PreparedBriefing? = null
-        val outcome = collectionJobs.run("briefing:$today", now, fetch = { generateBriefing().also { prepared = it } }, persist = { result ->
-            val saved = briefingRepository.save(result.briefing)
-            val briefingId = saved.id ?: error("저장된 Briefing에 id가 없음")
-            newsArticleRepository.saveAll(result.news.map { article -> NewsArticle(briefingId = briefingId, title = article.title, link = article.link, description = article.description, pubDate = article.pubDate) })
-            CollectionWrite(1 + result.news.size)
+        // refresh also permits recovery of FALLBACK rows previously marked SUCCESS by older servers.
+        val outcome = collectionJobs.run("briefing:$today", now, refresh = java.time.Duration.ofMinutes(30), fetch = { generateBriefing(existing).also { prepared = it } }, persist = { result ->
+            var count = 0
+            if (existing == null || result.gemini != null) {
+                val saved = briefingRepository.save(result.briefing)
+                count = 1
+                val briefingId = saved.id ?: error("저장된 Briefing에 id가 없음")
+                if (existing == null) {
+                    newsArticleRepository.saveAll(result.news.map { article -> NewsArticle(briefingId = briefingId, title = article.title, link = article.link, description = article.description, pubDate = article.pubDate) })
+                    count += result.news.size
+                }
+            }
+            val failure = result.failure
+            val httpStatus = (failure as? org.springframework.web.reactive.function.client.WebClientResponseException)?.statusCode?.value()
+            CollectionWrite(count, partial = result.gemini == null,
+                missingAssets = if (failure == null) emptyList() else listOf(httpStatus?.let { "GEMINI_HTTP_$it" } ?: "GEMINI_UNAVAILABLE"),
+                halt = httpStatus == 429)
         })
         // Recommendation price resolution calls external APIs, so it runs after commit.
         val result = prepared?.gemini
@@ -79,15 +92,17 @@ class SchedulerJob(
         }
     }
 
-    private data class PreparedBriefing(val briefing: Briefing, val news: List<com.firewatch.backend.client.NewsArticleResult>, val gemini: GeminiBriefingResult?)
+    private data class PreparedBriefing(val briefing: Briefing, val news: List<com.firewatch.backend.client.NewsArticleResult>, val gemini: GeminiBriefingResult?, val failure: Exception?)
 
-    private fun generateBriefing(): PreparedBriefing {
+    private fun generateBriefing(existing: Briefing?): PreparedBriefing {
         // 컨테이너 기본 타임존(UTC로 추정)이 아니라 스케줄러와 같은 존을 명시적으로 써야 한다 —
         // KST 08:00은 UTC로 전날 23:00이라, 타임존 없이 LocalDate.now()를 쓰면 자동 실행 때마다
         // "오늘"이 하루 전 날짜로 계산돼 매번 스킵되는 버그가 있었다(2026-08-21 실측 발견).
         val today = LocalDate.now(ZoneId.of(schedulerTimezone))
 
-        val financialSnapshot = runCatching { financialDataService.fetchLatestSnapshot() }
+        val financialSnapshot = if (existing != null) FinancialSnapshot(existing.goldPrice, existing.silverPrice, existing.usdKrw,
+            existing.jpy100Krw, existing.cnyKrw, existing.kospi, existing.kosdaq, existing.sp500, existing.nasdaq,
+            existing.dow, existing.usBondYield10y, existing.krBondYield10y) else runCatching { financialDataService.fetchLatestSnapshot() }
             .onFailure { log.warn("금융 API 실패 — 해당 필드는 비운 채 진행", it) }
             .getOrNull()
 
@@ -97,11 +112,14 @@ class SchedulerJob(
         // (NewsRssClient), 이 20건을 그대로 Gemini 프롬프트에 다 넣으면 프롬프트가 커져 타임아웃
         // 위험이 늘어난다(2026-08-28 실제 TimeoutException 이력 있음) — DB 저장·응답용은 20건 그대로,
         // Gemini에는 기존과 동일하게 상위 5건만 넘긴다.
-        val newsArticles = runCatching { newsService.fetchRelatedNews() }
+        val newsArticles = if (existing != null) newsArticleRepository.findByBriefingId(existing.id!!).map {
+            com.firewatch.backend.client.NewsArticleResult(it.title, it.link, it.description.orEmpty(), it.pubDate)
+        } else runCatching { newsService.fetchRelatedNews() }
             .onFailure { log.warn("관련 뉴스 조회 실패 — 빈 목록으로 계속 진행", it) }
             .getOrDefault(emptyList())
         val newsArticlesForGemini = newsArticles.take(GEMINI_NEWS_LIMIT)
 
+        var failure: Exception? = null
         val geminiResult: GeminiBriefingResult? = try {
             geminiBriefingService.fetchTodaysBriefing(
                 goldPrice = financialSnapshot?.goldPrice,
@@ -119,16 +137,19 @@ class SchedulerJob(
                 newsArticles = newsArticlesForGemini,
             )
         } catch (ex: Exception) {
+            failure = ex
             log.warn("Gemini 실패 — FALLBACK으로 처리", ex)
             AuditContext.markFallback("Gemini 실패: ${(ex.message ?: ex.javaClass.simpleName).take(200)}")
             null
         }
 
-        check(geminiResult != null || financialSnapshot != null) {
-            "Gemini와 금융 API가 모두 실패해 브리핑을 생성할 수 없음"
+        if (geminiResult == null && financialSnapshot == null) {
+            throw failure ?: IllegalStateException("Gemini와 금융 API가 모두 실패해 브리핑을 생성할 수 없음")
         }
 
         val briefing = Briefing(
+                id = existing?.id,
+                createdAt = existing?.createdAt ?: java.time.Instant.now(),
                 briefingDate = today,
                 marketSummary = geminiResult?.marketSummary
                     ?: "AI 브리핑 생성에 실패했습니다. 금/은/환율 정보만 제공됩니다.",
@@ -149,7 +170,7 @@ class SchedulerJob(
                 krBondYield10y = financialSnapshot?.krBondYield10y,
                 dataSourceStatus = if (geminiResult == null) DataSourceStatus.FALLBACK else DataSourceStatus.NORMAL,
             )
-        return PreparedBriefing(briefing, newsArticles, geminiResult)
+        return PreparedBriefing(briefing, newsArticles, geminiResult, failure)
         // 푸시 발송은 여기서 하지 않는다 — 공개 배포 전환(2026-09) 이후 사용자마다 pushTime이 달라서,
         // "생성"(여기, 하루 1회 전역)과 "발송"(사용자별 pushTime)을 분리했다. SchedulerController가
         // 매 폴링마다 PushService.notifyDueUsers()를 별도로 호출해 지금 시각이 자기 pushTime인

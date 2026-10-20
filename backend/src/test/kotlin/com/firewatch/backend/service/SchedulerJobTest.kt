@@ -63,7 +63,7 @@ class SchedulerJobTest {
 
     @Test
     fun `오늘자 브리핑이 이미 있으면 아무것도 호출하지 않고 스킵한다`() {
-        every { briefingRepository.findByBriefingDate(today) } returns mockk()
+        every { briefingRepository.findByBriefingDate(today) } returns Briefing(briefingDate = today, marketSummary = "정상", dataSourceStatus = DataSourceStatus.NORMAL)
 
         schedulerJob.runMorningBriefing()
 

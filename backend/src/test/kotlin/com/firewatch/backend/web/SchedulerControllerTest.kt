@@ -12,6 +12,26 @@ import kotlin.test.assertTrue
 class SchedulerControllerTest {
 
     @Test
+    fun `예약 폴링은 FALLBACK이 있어도 복구를 요청한다`() {
+        val date = LocalDate.now(java.time.ZoneId.of("Asia/Seoul"))
+        val briefings = io.mockk.mockk<com.firewatch.backend.repository.BriefingRepository>()
+        io.mockk.every { briefings.findByBriefingDate(date) } returns com.firewatch.backend.entity.Briefing(
+            id = 1L, briefingDate = date, marketSummary = "대체 자료", dataSourceStatus = com.firewatch.backend.entity.DataSourceStatus.FALLBACK)
+        val scheduler = io.mockk.mockk<com.firewatch.backend.service.SchedulerJob>(relaxed = true)
+        val settings = io.mockk.mockk<com.firewatch.backend.repository.UserSettingsRepository>()
+        io.mockk.every { settings.findAll() } returns emptyList()
+        val controller = SchedulerController(
+            newsPushService = io.mockk.mockk(relaxed = true), schedulerJob = scheduler,
+            pushService = io.mockk.mockk(relaxed = true), briefingRepository = briefings,
+            userSettingsRepository = settings, operatorAccess = io.mockk.mockk(relaxed = true),
+            schedulerTimezone = "Asia/Seoul", pollWindowMinutes = 20, generateAfter = "00:00",
+            marketCollection = io.mockk.mockk(relaxed = true), recommendations = io.mockk.mockk(relaxed = true),
+            operationsPush = io.mockk.mockk(relaxed = true))
+        assertTrue(controller.triggerIfDue("operator-key", null, null)["triggered"] == true)
+        io.mockk.verify(timeout = 3000, exactly = 1) { scheduler.triggerManually("operator-key", null, null) }
+    }
+
+    @Test
     fun `pushTime 직후면 due다`() {
         assertTrue(SchedulerController.isDue("08:00", LocalTime.of(8, 5), windowMinutes = 20))
     }
