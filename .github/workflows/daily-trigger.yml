@@ -19,13 +19,19 @@ name: Briefing Scheduler Poll
 on:
   schedule:
     - cron: "7,22,37,52 * * * *"
-  workflow_dispatch: {} # 수동 테스트용 — 이것도 due 판정을 거친다. 강제 실행은 /api/scheduler/trigger를 직접 curl.
+  workflow_dispatch:
+    inputs:
+      diagnose_only:
+        description: "수집을 실행하지 않고 브리핑 상태만 조회"
+        type: boolean
+        default: false
 
 jobs:
   poll:
     runs-on: ubuntu-latest
     steps:
       - name: Call /api/scheduler/trigger-if-due
+        if: inputs.diagnose_only != true
         env:
           BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
           OPERATOR_KEY: ${{ secrets.OPERATOR_API_KEY }}
@@ -44,3 +50,20 @@ jobs:
             echo "::error::스케줄러 폴링 실패 (HTTP $status)"
             exit 1
           fi
+      - name: Read safe briefing diagnostics
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
+          OPERATOR_KEY: ${{ secrets.OPERATOR_API_KEY }}
+        run: |
+          if [ -z "$OPERATOR_KEY" ] || [ -z "$BACKEND_URL" ]; then
+            echo "::error::서버 전용 인증 설정이 필요합니다."
+            exit 1
+          fi
+          curl -sS --fail --max-time 90 "$BACKEND_URL/api/collection/alerts" \
+            -H "X-API-Key: $OPERATOR_KEY" -o /tmp/briefing-alerts.json
+          jq '[.[] | select(.category == "briefing") | {id, category, paused, updatedAt}]' /tmp/briefing-alerts.json
+          curl -sS --fail --max-time 90 "$BACKEND_URL/api/audit-logs?eventType=GEMINI_API&size=10" \
+            -H "X-API-Key: $OPERATOR_KEY" -o /tmp/briefing-api-status.json
+          # 원문 요약/프롬프트/제공처 URL은 출력하지 않는다.
+          jq '[.data[] | {status, createdAt, httpStatus: (try ([.responseSummary | capture("^(?<code>[45][0-9]{2}) ").code][0] // null) catch null)}]' /tmp/briefing-api-status.json
