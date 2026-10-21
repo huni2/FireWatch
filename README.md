@@ -126,7 +126,7 @@ npx expo start
 
 외부 API 키가 없는 로컬 환경에서는 실제 AI 분석·일부 자료 수집·푸시를 모두 검증할 수 없습니다. 서버용 키·DB 비밀번호를 `VITE_*`나 `EXPO_PUBLIC_*`에 넣지 않습니다. 환경변수와 실행 구성은 [배포 안내](DEPLOY.md)를 참고하세요.
 
-[CI](.github/workflows/validate.yml)는 백엔드·PostgreSQL 통합·백업 복원, 웹 lint/build, 모바일 lint/타입·출시 설정 등을 확인합니다. 2026-10-20 서버 배포 코드의 [전체 CI](https://github.com/huni2/FireWatch/actions/runs/39354024600)는 통과했습니다. CI 성공은 외부 API의 현재 가용성이나 실제 Android 로그인·푸시 수신을 보장하지 않습니다.
+[CI](.github/workflows/validate.yml)는 백엔드·PostgreSQL 통합·백업 복원, 웹 lint/build, 모바일 lint/타입·출시 설정 등을 확인합니다. 2026-10-21 서버 배포 코드의 [전체 CI](https://github.com/huni2/FireWatch/actions/runs/39525932572)는 통과했습니다. CI 성공은 외부 API의 현재 가용성이나 실제 Android 로그인·푸시 수신을 보장하지 않습니다.
 
 ## 문서
 
