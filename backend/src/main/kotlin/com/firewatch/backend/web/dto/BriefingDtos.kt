@@ -7,6 +7,7 @@ import com.firewatch.backend.entity.recommendedStocks
 import com.firewatch.backend.entity.trendingKeywords
 import com.firewatch.backend.entity.recommendationDetails
 import com.firewatch.backend.entity.StockRecommendationDetail
+import com.firewatch.backend.entity.basicSummary
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -54,7 +55,7 @@ data class BriefingResponse(
 fun Briefing.toResponse(news: List<NewsArticle> = emptyList()) = BriefingResponse(
     id = id ?: error("저장되지 않은 Briefing에는 응답 DTO를 만들 수 없음"),
     briefingDate = briefingDate,
-    marketSummary = marketSummary,
+    marketSummary = if (dataSourceStatus == DataSourceStatus.FALLBACK) basicSummary(news.map { it.title to it.pubDate }) else marketSummary,
     recommendedStocks = recommendedStocks(),
     trendingKeywords = trendingKeywords(),
     goldPrice = goldPrice,

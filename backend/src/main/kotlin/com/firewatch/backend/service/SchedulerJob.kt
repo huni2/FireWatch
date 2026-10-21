@@ -9,6 +9,8 @@ import com.firewatch.backend.entity.DataSourceStatus
 import com.firewatch.backend.entity.NewsArticle
 import com.firewatch.backend.entity.toCommaSeparated
 import com.firewatch.backend.entity.toRecommendationJson
+import com.firewatch.backend.entity.basicSummary
+import com.firewatch.backend.client.GeminiCallException
 import com.firewatch.backend.repository.BriefingRepository
 import com.firewatch.backend.repository.NewsArticleRepository
 import org.slf4j.LoggerFactory
@@ -80,9 +82,15 @@ class SchedulerJob(
             }
             val failure = result.failure
             val httpStatus = (failure as? org.springframework.web.reactive.function.client.WebClientResponseException)?.statusCode?.value()
+                ?: (failure as? GeminiCallException)?.httpStatus
             CollectionWrite(count, partial = result.gemini == null,
-                missingAssets = if (failure == null) emptyList() else listOf(httpStatus?.let { "GEMINI_HTTP_$it" } ?: "GEMINI_UNAVAILABLE"),
-                halt = httpStatus == 429)
+                missingAssets = if (failure == null) emptyList() else listOf(when {
+                    (failure as? GeminiCallException)?.requestAttempted == false -> "GEMINI_DAILY_LIMIT"
+                    failure.message == "NO_BRIEFING_INPUTS" -> "BRIEFING_INPUTS_MISSING"
+                    httpStatus != null -> "GEMINI_HTTP_$httpStatus"
+                    else -> "GEMINI_UNAVAILABLE"
+                }),
+                halt = httpStatus == 429 || (failure as? GeminiCallException)?.budgetExhausted == true)
         })
         // Recommendation price resolution calls external APIs, so it runs after commit.
         val result = prepared?.gemini
@@ -119,8 +127,17 @@ class SchedulerJob(
             .getOrDefault(emptyList())
         val newsArticlesForGemini = newsArticles.take(GEMINI_NEWS_LIMIT)
 
+        val hasFinancialData = financialSnapshot?.let { snapshot ->
+            listOf(snapshot.goldPrice, snapshot.silverPrice, snapshot.usdKrw, snapshot.jpy100Krw, snapshot.cnyKrw,
+                snapshot.kospi, snapshot.kosdaq, snapshot.sp500, snapshot.nasdaq, snapshot.dow,
+                snapshot.usBondYield10y, snapshot.krBondYield10y).any { it != null && it.signum() > 0 }
+        } == true
         var failure: Exception? = null
-        val geminiResult: GeminiBriefingResult? = try {
+        val geminiResult: GeminiBriefingResult? = if (!hasFinancialData && newsArticles.isEmpty()) {
+            failure = IllegalStateException("NO_BRIEFING_INPUTS")
+            AuditContext.markFallback("NO_BRIEFING_INPUTS")
+            null
+        } else try {
             geminiBriefingService.fetchTodaysBriefing(
                 goldPrice = financialSnapshot?.goldPrice,
                 silverPrice = financialSnapshot?.silverPrice,
@@ -143,12 +160,9 @@ class SchedulerJob(
             null
         }
 
-        if (geminiResult == null && financialSnapshot == null) {
-            throw failure ?: IllegalStateException("Gemini와 금융 API가 모두 실패해 브리핑을 생성할 수 없음")
-        }
-
         val briefing = Briefing(
                 id = existing?.id,
+                aiAnalyzedAt = geminiResult?.generatedAt,
                 createdAt = existing?.createdAt ?: java.time.Instant.now(),
                 briefingDate = today,
                 marketSummary = geminiResult?.marketSummary
@@ -170,6 +184,7 @@ class SchedulerJob(
                 krBondYield10y = financialSnapshot?.krBondYield10y,
                 dataSourceStatus = if (geminiResult == null) DataSourceStatus.FALLBACK else DataSourceStatus.NORMAL,
             )
+        if (geminiResult == null) briefing.marketSummary = briefing.basicSummary(newsArticles.map { it.title to it.pubDate })
         return PreparedBriefing(briefing, newsArticles, geminiResult, failure)
         // 푸시 발송은 여기서 하지 않는다 — 공개 배포 전환(2026-09) 이후 사용자마다 pushTime이 달라서,
         // "생성"(여기, 하루 1회 전역)과 "발송"(사용자별 pushTime)을 분리했다. SchedulerController가

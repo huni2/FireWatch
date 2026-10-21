@@ -49,6 +49,13 @@ class SchedulerRecoveryIntegrationTest {
         jdbc.update("UPDATE collection_circuits SET next_attempt_at=NULL WHERE id=?", key)
     }
 
+    @Test fun `저장된 기본 브리핑에 입력 자료가 전혀 없으면 AI를 호출하지 않는다`() {
+        briefings.save(com.firewatch.backend.entity.Briefing(briefingDate = today, marketSummary = "자료 없음", dataSourceStatus = DataSourceStatus.FALLBACK))
+        scheduler().runMorningBriefing()
+        verify(exactly = 0) { gemini.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+        assertEquals(DataSourceStatus.FALLBACK, briefings.findByBriefingDate(today)?.dataSourceStatus)
+    }
+
     @Test fun `503 후 제한된 재시도로 원본 지표 뉴스 ID 시각을 유지하며 복구한다`() {
         every { gemini.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws unavailable()
         scheduler().runMorningBriefing()
@@ -67,6 +74,7 @@ class SchedulerRecoveryIntegrationTest {
         scheduler().runMorningBriefing()
         val recovered = assertNotNull(briefings.findByBriefingDate(today))
         assertEquals(DataSourceStatus.NORMAL, recovered.dataSourceStatus)
+        assertNotNull(recovered.aiAnalyzedAt)
         assertEquals("복구된 요약", recovered.marketSummary)
         assertEquals(fallback.id, recovered.id)
         assertEquals(fallback.createdAt, recovered.createdAt)
@@ -100,10 +108,8 @@ class SchedulerRecoveryIntegrationTest {
         due()
         scheduler().runMorningBriefing()
         assertEquals("PAUSED", jdbc.queryForObject("SELECT status FROM collection_jobs WHERE id=?", String::class.java, key))
-        val archive = mockk<NewsArchiveService>()
-        val recommendations = RecommendationReportService(jdbc, briefings, archive, gemini, jobs)
+        val recommendations = RecommendationReportService(jdbc, briefings, articles)
         assertEquals(CollectionOutcome.SKIPPED, recommendations.collectIfDue())
-        verify(exactly = 0) { archive.search(any(), any(), any(), any(), any()) }
         verify(exactly = 1) { gemini.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
         assertTrue(briefings.findByBriefingDate(today)?.dataSourceStatus == DataSourceStatus.FALLBACK)
     }

@@ -66,4 +66,6 @@ jobs:
           curl -sS --fail --max-time 90 "$BACKEND_URL/api/audit-logs?eventType=GEMINI_API&size=10" \
             -H "X-API-Key: $OPERATOR_KEY" -o /tmp/briefing-api-status.json
           # 원문 요약/프롬프트/제공처 URL은 출력하지 않는다.
-          jq '[.data[] | {status, createdAt, httpStatus: (try ([.responseSummary | capture("^(?<code>[45][0-9]{2}) ").code][0] // null) catch null)}]' /tmp/briefing-api-status.json
+          jq '[.data[] | {status, createdAt, httpStatus: (try ([.responseSummary | capture("^(?<code>[45][0-9]{2}) ").code][0] // null) catch null), model: (try ([.responseSummary | capture("(?:모델: |model=)(?<model>gemini-[a-z0-9.-]+)").model][0] // null) catch null)}]' /tmp/briefing-api-status.json
+          curl -sS --fail --max-time 90 "$BACKEND_URL/api/briefings/latest" -o /tmp/briefing-public-status.json
+          jq '{id, briefingDate, dataSourceStatus, createdAt, newsCount: (.news | length), basicSummary: (.marketSummary | contains("기본 시장 브리핑"))}' /tmp/briefing-public-status.json

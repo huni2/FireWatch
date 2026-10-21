@@ -136,6 +136,7 @@ class SchedulerJobTest {
         every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns
             GeminiBriefingResult(marketSummary = "요약", recommendedStocks = emptyList())
         every { financialDataService.fetchLatestSnapshot() } throws IllegalStateException("yahoo down")
+        every { newsService.fetchRelatedNews() } returns listOf(NewsArticleResult("확보한 기사", "https://example.com/news", "자료", null))
         val saved = slot<Briefing>()
         every { briefingRepository.save(capture(saved)) } answers { saved.captured.also { it.id = 1L } }
 
@@ -147,15 +148,19 @@ class SchedulerJobTest {
     }
 
     @Test
-    fun `둘 다 실패하면 예외를 던지고 아무것도 저장하지 않는다`() {
+    fun `제공처가 모두 실패해도 자료 미확보를 명시한 기본 브리핑을 저장한다`() {
         every { briefingRepository.findByBriefingDate(today) } returns null
         every { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws
             IllegalStateException("gemini down")
         every { financialDataService.fetchLatestSnapshot() } throws IllegalStateException("yahoo down")
 
-        assertFailsWith<IllegalStateException> { schedulerJob.runMorningBriefing() }
-
-        verify(exactly = 0) { briefingRepository.save(any()) }
+        val saved = slot<Briefing>()
+        every { briefingRepository.save(capture(saved)) } answers { saved.captured.also { it.id = 1L } }
+        schedulerJob.runMorningBriefing()
+        assertEquals(DataSourceStatus.FALLBACK, saved.captured.dataSourceStatus)
+        kotlin.test.assertTrue(saved.captured.marketSummary.contains("자료 미확보"))
+        kotlin.test.assertTrue(saved.captured.marketSummary.contains("확보한 뉴스가 없습니다"))
+        verify(exactly = 0) { geminiBriefingService.fetchTodaysBriefing(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
     }
 
     @Test

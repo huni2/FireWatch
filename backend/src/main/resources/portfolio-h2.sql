@@ -62,6 +62,8 @@ ALTER TABLE collection_alerts ADD COLUMN IF NOT EXISTS notified_at TIMESTAMP;
 ALTER TABLE briefings ADD COLUMN IF NOT EXISTS recommendation_details TEXT;
 
 CREATE TABLE IF NOT EXISTS recommendation_reports (analysis_date DATE PRIMARY KEY, source_briefing_date DATE NOT NULL, analyzed_at TIMESTAMP NOT NULL, report_json TEXT NOT NULL);
+-- 예전 브리핑에서 실제 AI 생성 시각을 확인할 수 없으면 임의 시각을 만들지 않는다.
+ALTER TABLE recommendation_reports ALTER COLUMN analyzed_at DROP NOT NULL;
 
 CREATE TABLE IF NOT EXISTS auth_sessions (
   token_hash VARCHAR(64) PRIMARY KEY,

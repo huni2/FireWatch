@@ -69,4 +69,5 @@ tasks.withType<Test> {
 	useJUnitPlatform()
 	systemProperty("firewatch.scheduler.cron", "-")
 	systemProperty("firewatch.market.collection-cron", "-")
+	systemProperty("firewatch.scheduler.recovery-enabled", "false")
 }

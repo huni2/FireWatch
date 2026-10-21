@@ -51,6 +51,9 @@ firewatch:
     # 분리했다. 이 시각을 지나야(그리고 오늘자 브리핑이 아직 없어야) 생성 파이프라인을 돌린다 —
     # 어떤 사용자의 이른 pushTime보다도 먼저 데이터가 준비되도록 여유를 둔 고정값.
     generate-after: "07:00"
+    # 기동 후 10초 및 깨어 있는 동안 5분마다 DB의 미완료 작업을 확인한다.
+    recovery-enabled: true
+    recovery-delay-ms: 300000
   google:
     # Google 로그인(선택적 기기 간 동기화) ID 토큰 검증용 audience. 모바일 앱의 Android OAuth
     # 클라이언트 ID — 여러 개면 쉼표로 구분(예: 웹 클라이언트 ID를 추가로 발급한 경우).

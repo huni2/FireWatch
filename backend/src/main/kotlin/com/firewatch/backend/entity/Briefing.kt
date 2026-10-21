@@ -80,6 +80,8 @@ class Briefing(
 
     @Column(name = "recommendation_details")
     var recommendationDetailsRaw: String? = null,
+    @Column(name = "ai_analyzed_at")
+    var aiAnalyzedAt: Instant? = null,
 )
 
 // Hibernate 엔티티 내부에 계산 프로퍼티를 두면 매핑 대상으로 오인될 수 있어 확장 함수로 분리

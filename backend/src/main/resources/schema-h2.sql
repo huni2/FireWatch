@@ -134,6 +134,13 @@ CREATE TABLE IF NOT EXISTS game_transactions (
 );
 
 -- Additive notification preferences: preserve existing daily schedules and tokens.
+CREATE TABLE IF NOT EXISTS gemini_daily_usage (
+  usage_date DATE PRIMARY KEY,
+  request_count INT NOT NULL CHECK (request_count BETWEEN 0 AND 3)
+);
+ALTER TABLE gemini_daily_usage ADD COLUMN IF NOT EXISTS stopped BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE briefings ADD COLUMN IF NOT EXISTS ai_analyzed_at TIMESTAMP WITH TIME ZONE;
+
 ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS push_times TEXT;
 ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS notified_slots TEXT;
 ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS news_push_enabled BOOLEAN DEFAULT FALSE NOT NULL;

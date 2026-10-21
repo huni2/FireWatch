@@ -1,9 +1,12 @@
 package com.firewatch.backend.service
 
-import com.firewatch.backend.client.NewsArticleResult
 import com.firewatch.backend.entity.StockRecommendationDetail
+import com.firewatch.backend.entity.recommendationDetails
+import com.firewatch.backend.entity.recommendedStocks
 import com.firewatch.backend.repository.BriefingRepository
+import com.firewatch.backend.repository.NewsArticleRepository
 import com.firewatch.backend.web.dto.NewsArticleResponse
+import com.firewatch.backend.web.dto.toResponse
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import tools.jackson.databind.json.JsonMapper
@@ -29,37 +32,43 @@ data class RecommendationReport(
 class RecommendationReportService(
     private val jdbc: JdbcTemplate,
     private val briefings: BriefingRepository,
-    private val archive: NewsArchiveService,
-    private val gemini: GeminiBriefingService,
-    private val jobs: CollectionJobRunner,
+    private val articles: NewsArticleRepository,
 ) {
     private val mapper = JsonMapper.builder().findAndAddModules().build()
     private val zone = ZoneId.of("Asia/Seoul")
 
     fun collectIfDue(now: Instant = Instant.now()): CollectionOutcome {
         val today = now.atZone(zone).toLocalDate()
-        if (jdbc.queryForObject("SELECT COUNT(*) FROM recommendation_reports WHERE analysis_date=?", Long::class.java, today) != 0L)
+        if (jdbc.queryForObject("SELECT COUNT(*) FROM recommendation_reports WHERE analysis_date=?", Long::class.java, today) != 0L) {
+            completeLegacyJob(today, now)
             return CollectionOutcome.SKIPPED
+        }
         val source = briefings.findByBriefingDate(today) ?: return CollectionOutcome.SKIPPED
         if (source.dataSourceStatus == com.firewatch.backend.entity.DataSourceStatus.FALLBACK) return CollectionOutcome.SKIPPED
-        return jobs.run("briefing:recommendations:$today", now, fetch = {
-            val articles = archive.search(null, today, null, 0, 5).news
-            check(articles.isNotEmpty()) { "NO_RECOMMENDATION_NEWS" }
-            val generated = gemini.fetchTodaysBriefing(source.goldPrice, source.silverPrice, source.usdKrw, source.jpy100Krw,
-                source.cnyKrw, source.kospi, source.kosdaq, source.sp500, source.nasdaq, source.dow, source.usBondYield10y,
-                source.krBondYield10y, articles.map { NewsArticleResult(it.title, it.link, it.description.orEmpty(), it.pubDate) })
-            val links = articles.map { it.link }.filter { it.startsWith("https://") || it.startsWith("http://") }.toSet()
-            val details = generated.recommendationDetails.filter { detail ->
-                detail.stockName in generated.recommendedStocks && detail.reason.isNotBlank() && detail.risk.isNotBlank() &&
-                    detail.sourceNewsLinks.any { link -> link in links && articles.any { article -> article.link == link && mentionsCompany(article, detail.stockName) } }
-            }.map { it.copy(sourceNewsLinks = it.sourceNewsLinks.filter { link -> link in links }) }.distinctBy { it.stockName }
-            check(details.isNotEmpty()) { "NO_QUALIFIED_RECOMMENDATIONS" }
-            RecommendationReport(today, source.briefingDate, now, details.map { it.stockName }, details, articles, "READY", generated.marketSummary)
-        }, persist = { result ->
-            jdbc.update("INSERT INTO recommendation_reports (analysis_date, source_briefing_date, analyzed_at, report_json) VALUES (?, ?, ?, ?)",
-                today, source.briefingDate, Timestamp.from(now), mapper.writeValueAsString(result))
-            CollectionWrite(result.recommendationDetails.size)
-        })
+        // 분석을 다시 요청하지 않고, 이 브리핑 생성에 실제 사용한 기사와 근거를 재사용한다.
+        val news = articles.findByBriefingId(source.id!!).map { it.toResponse() }
+        val report = visibleReport(RecommendationReport(today, source.briefingDate, source.aiAnalyzedAt, source.recommendedStocks(),
+            source.recommendationDetails(), news, "READY", source.marketSummary))
+        val completed = if (report.recommendationDetails.isEmpty()) report.copy(status = "READY",
+            marketSummary = "오늘 제공된 자료에서 기사 근거 조건을 충족하는 추천이 없습니다.") else report
+        return try {
+            val written = jdbc.update("""INSERT INTO recommendation_reports (analysis_date, source_briefing_date, analyzed_at, report_json)
+                SELECT ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM recommendation_reports WHERE analysis_date=?)""",
+                today, source.briefingDate, source.aiAnalyzedAt?.let(Timestamp::from), mapper.writeValueAsString(completed), today)
+            completeLegacyJob(today, now)
+            if (written == 1) CollectionOutcome.SUCCESS else CollectionOutcome.SKIPPED
+        } catch (_: org.springframework.dao.DuplicateKeyException) { CollectionOutcome.SKIPPED }
+    }
+
+    private fun completeLegacyJob(today: LocalDate, now: Instant) {
+        // 제공처 호출이 없는 작업의 완료만 정리하며, HTTP 예산·실패 회로는 초기화하지 않는다.
+        jdbc.update("""UPDATE collection_jobs SET status='SUCCESS', error_code=NULL, next_attempt_at=NULL, last_success_at=?
+            WHERE id=? AND lease_token IS NULL AND status IN ('FAILED','PARTIAL','PAUSED')""",
+            Timestamp.from(now), "briefing:recommendations:$today")
+        val pending = jdbc.queryForObject("""SELECT COUNT(*) FROM collection_jobs WHERE id LIKE 'briefing:%'
+            AND last_attempt_at>=? AND status IN ('FAILED','PARTIAL','PAUSED')""", Int::class.java,
+            Timestamp.from(today.atStartOfDay(zone).toInstant())) ?: 0
+        if (pending == 0) jdbc.update("UPDATE collection_alerts SET resolved_at=? WHERE category='briefing' AND resolved_at IS NULL", Timestamp.from(now))
     }
 
     fun latest(now: Instant = Instant.now()): RecommendationReport {
@@ -86,10 +95,10 @@ class RecommendationReportService(
     private fun visibleReport(report: RecommendationReport): RecommendationReport {
         val qualified = report.recommendationDetails.filter { detail ->
             detail.stockName in report.recommendedStocks && detail.reason.isNotBlank() && detail.risk.isNotBlank() &&
-                detail.sourceNewsLinks.any { link -> report.news.any { article -> article.link == link && mentionsCompany(article, detail.stockName) } }
+                detail.sourceNewsLinks.any { link -> (link.startsWith("https://") || link.startsWith("http://")) && report.news.any { article -> article.link == link && mentionsCompany(article, detail.stockName) } }
         }
         return report.copy(recommendedStocks = qualified.map { it.stockName }, recommendationDetails = qualified,
-            status = if (qualified.isEmpty()) "WAITING" else "READY", excludedCount = report.recommendationDetails.size - qualified.size,
+            status = if (qualified.isEmpty() && report.recommendedStocks.isNotEmpty()) "WAITING" else "READY", excludedCount = report.excludedCount + report.recommendationDetails.size - qualified.size,
             marketSummary = if (qualified.size < report.recommendationDetails.size) "" else report.marketSummary)
     }
 }

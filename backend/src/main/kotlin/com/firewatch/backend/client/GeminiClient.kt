@@ -20,12 +20,15 @@ data class GeminiBriefingResult(
     // 티커를 이름→심볼 맵으로 들고 있다가 RecommendedStockSnapshotService가 우선 시도하게 한다.
     val recommendedStockSymbols: Map<String, String> = emptyMap(),
     val recommendationDetails: List<StockRecommendationDetail> = emptyList(),
+    val modelUsed: String? = null,
+    val generatedAt: java.time.Instant = java.time.Instant.now(),
 ) {
     // fetchTodaysBriefing()이 이 값을 그대로 반환해, AuditLogAspect의 감사로그 응답요약에
     // "GeminiBriefingResult(marketSummary=..., recommendedStocks=[...])" 같은 필드명 래퍼가 그대로
     // 남던 문제(2026-10-05 지적) — marketSummary 본문은 그대로 보존하고(디버깅에 제일 유용한 값이라
     // 잘라내지 않음) 필드명 노이즈만 걷어낸다.
     override fun toString(): String = buildString {
+        if (modelUsed != null) append("모델: $modelUsed\n")
         append(marketSummary)
         if (recommendedStocks.isNotEmpty()) append(" · 추천종목: ${recommendedStocks.joinToString(", ")}")
         if (trendingKeywords.isNotEmpty()) append(" · 트렌드키워드: ${trendingKeywords.joinToString(", ")}")
@@ -51,6 +54,7 @@ class GeminiClient(
     @Value("\${firewatch.gemini.base-url}") baseUrl: String,
     @Value("\${firewatch.gemini.api-key}") private val apiKey: String,
     @Value("\${firewatch.gemini.model}") model: String,
+    private val budget: GeminiCallBudget? = null,
 ) {
     // 기존 Render 환경변수가 남아 있어도 지원 중단된 별칭 대신 공식 대체 모델을 직접 호출한다.
     private val model = if (model == "gemini-3.5-flash") "gemini-3.6-flash" else model
@@ -83,21 +87,38 @@ class GeminiClient(
             "contents" to listOf(mapOf("parts" to listOf(mapOf("text" to prompt)))),
         )
 
-        val response = webClient.post()
-            .uri("/models/$model:generateContent")
-            .header("x-goog-api-key", apiKey)
-            .bodyValue(requestBody)
-            .retrieve()
-            .bodyToMono<Map<String, Any?>>()
-            .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
-            .block()
-            ?: error("Gemini 응답 본문이 비어 있음")
-
-        return parseResponse(response, newsArticles.map { it.link }.toSet())
+        // 한 작업은 최대 두 번, 실제 HTTP 요청은 DB 예산으로 하루 최대 세 번이다.
+        repeat(2) { localAttempt ->
+            val attempt = if (budget == null) localAttempt + 1 else budget.reserve()
+                ?: throw GeminiCallException(null, true, FALLBACK_MODEL, requestAttempted = false)
+            val selectedModel = if (attempt == 1) model else FALLBACK_MODEL
+            try {
+                val response = webClient.post()
+                    .uri("/models/$selectedModel:generateContent")
+                    .header("x-goog-api-key", apiKey)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono<Map<String, Any?>>()
+                    .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
+                    .block() ?: error("Gemini 응답 본문이 비어 있음")
+                return parseResponse(response, newsArticles.map { it.link }.toSet()).copy(modelUsed = selectedModel)
+            } catch (ex: Exception) {
+                val cause = reactor.core.Exceptions.unwrap(ex)
+                val status = (cause as? org.springframework.web.reactive.function.client.WebClientResponseException)?.statusCode?.value()
+                if (status in setOf(401, 403, 429)) budget?.stop()
+                val exhausted = budget?.exhausted() == true
+                val transient = status in setOf(408, 500, 502, 503, 504) || cause is java.util.concurrent.TimeoutException ||
+                    cause is org.springframework.web.reactive.function.client.WebClientRequestException
+                if (!transient || exhausted || localAttempt == 1) throw GeminiCallException(status, exhausted || status in setOf(401, 403, 429), selectedModel)
+                Thread.sleep(kotlin.random.Random.nextLong(1000, 2001))
+            }
+        }
+        error("Gemini 호출이 완료되지 않았습니다")
     }
 
     companion object {
-        private const val TIMEOUT_SECONDS = 60L
+        private const val TIMEOUT_SECONDS = 35L
+        private const val FALLBACK_MODEL = "gemini-3.5-flash-lite"
         private val STOCK_LINE_REGEX = Regex("""^추천\s*종목\s*[:：]\s*(.+)$""", RegexOption.MULTILINE)
         private val KEYWORD_LINE_REGEX = Regex("""^핵심\s*키워드\s*[:：]\s*(.+)$""", RegexOption.MULTILINE)
         private val DETAIL_LINE_REGEX = Regex("""^종목근거\s*[:：]\s*(\[.*\])\s*$""", RegexOption.MULTILINE)
