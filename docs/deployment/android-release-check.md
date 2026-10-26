@@ -1,5 +1,18 @@
 # Android 설치 검증
 
+## 최신 공개 APK 1.0.15 / 빌드20 (2026-10-26)
+
+[APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.15-android-preview/FireWatch-1.0.15-android.apk) · [릴리스·해시](https://github.com/huni2/FireWatch/releases/tag/v1.0.15-android-preview) · [배포 기록](briefing-reading-20261026.md) · [파일 검증](android-115-build.json).
+
+- [x] 브리핑 전체 화면·마크다운 정리·공통 패널 스크롤·긴 근거/메모/제목 표시 보완
+- [x] 모바일85개·공통 텍스트3개·서버264개 통과(1개 제외), 타입·린트·출시 구성 및 전체 CI 통과
+- [x] 로컬 APK/AAB 빌드, 각 기존 인증서 일치, 패키지/버전·내장 Expo 설정·16KB APK ZIP 정렬 확인
+- [x] GitHub APK/AAB/해시 게시 및 업로드 digest 일치, Render 서버 배포 완료
+- [ ] 실제 Android 긴 본문·키보드·큰 글씨·뒤로가기·푸시 수신
+- [ ] Play Alpha AAB 업로드·심사 전송: Chrome ChatGPT 확장프로그램의 파일 URL 접근 권한 대기
+
+아래 기록은 이전 버전 이력이다.
+
 ## Play 업로드 후보 1.0.13 / 빌드18 (2026-10-17)
 
 `mobile/dist/FireWatch-1.0.13-play.aab`, 44,447,531 bytes. SHA-256 `7853b826e1d1613bb9b61560cdb0572ff6d64e13a45c6dc3e8a29301489fe049`. 소스 `0e1fa9c66ebd4f7d89a3d9e94f50e85d1359642a`, [PR121](https://github.com/huni2/FireWatch/pull/121).
