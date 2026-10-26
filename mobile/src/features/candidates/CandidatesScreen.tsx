@@ -6,6 +6,7 @@ import { accountLabels, productChecklist, riskLabels } from '../../../../shared/
 import { CompanyDiscovery } from './CompanyDiscovery'
 import { RecommendationHistory } from './RecommendationHistory'
 import { InvestmentNotice } from '@/components/InvestmentNotice'
+import { briefingText } from '../../../../shared/briefing-text'
 
 export function CandidatesScreen({ shortTerm = false, ...navigation }: { shortTerm?: boolean; onOpenStock?: (symbol: string) => void; onOpenNews?: (query: string) => void; onOpenPortfolio?: () => void; onSearchStock?: (name: string) => void }) {
   const [more, setMore] = useState(false)
@@ -25,7 +26,7 @@ export function CandidatesScreen({ shortTerm = false, ...navigation }: { shortTe
     {briefing.data && <>
       <Text className="font-semibold text-ink">브리핑 기준 {briefing.data.briefingDate}</Text>
       {!!briefing.data.excludedCount && <Text className="text-sm text-muted">기업명과 근거 기사 연결이 확인되지 않은 후보 {briefing.data.excludedCount}개는 제외했습니다. 분석 원본은 보존합니다.</Text>}
-      {!!briefing.data.marketSummary && <><Text className="font-semibold text-ink">선정 당시 시장 맥락</Text><Text className="text-sm leading-6 text-ink">{briefing.data.marketSummary}</Text></>}
+      {!!briefing.data.marketSummary && <><Text className="font-semibold text-ink">선정 당시 시장 맥락</Text><Text className="text-sm leading-6 text-ink">{briefingText(briefing.data.marketSummary)}</Text></>}
       {briefing.data.news.slice(0, 5).map(n => <Pressable key={n.link} onPress={() => Linking.openURL(n.link)}><Text className="text-brand">{n.title} ↗</Text></Pressable>)}
     </>}
     {!shortTerm && <View className="gap-3 rounded-xl border border-line bg-surface p-4"><Text className="font-bold text-ink">계좌 → 투자 대상 → 실제 상품</Text><Text className="text-sm text-ink">ISA는 계좌, S&P 500은 투자 대상입니다. 실제 매수할 ETF의 구조와 비용을 비교하세요.</Text>{productChecklist.map(x => <Text key={x} className="text-sm text-ink">• {x}</Text>)}{portfolio.data?.holdings.filter(h => h.holding.assetClass === 'ETF').map(h => <Text key={h.holding.symbol} className="text-ink">{h.holding.name} · {h.holding.underlyingIndex || '지수 미입력'} · {h.holding.currency}</Text>)}</View>}

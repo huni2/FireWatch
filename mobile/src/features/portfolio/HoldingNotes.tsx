@@ -21,9 +21,9 @@ export function HoldingNotes({ portfolio, busy, edit }: { portfolio: Portfolio; 
     {(expanded ? rows : rows.slice(0, 3)).map(({ note, name, archived }) => <View key={note.symbol} style={{ gap: 8, paddingVertical: 12, borderTopWidth: 1, borderTopColor: c.border }}>
       <Text style={{ color: c.text, fontWeight: '600' }}>{name}{archived ? ' · 이전 보유' : ''}</Text>
       <Text style={{ color: c.muted }}>{noteDateLabel(note)}</Text>
-      {!!note.reason && <Text style={{ color: c.text, lineHeight: 22 }} numberOfLines={3}>보유 이유 · {note.reason}</Text>}
-      {!!note.nextCheck && <Text style={{ color: c.muted, lineHeight: 22 }} numberOfLines={3}>다음 확인 · {note.nextCheck}</Text>}
-      {!!note.reflection && <Text style={{ color: c.text, lineHeight: 22 }} numberOfLines={3}>돌아본 내용 · {note.reflection}</Text>}
+      {!!note.reason && <Text style={{ color: c.text, lineHeight: 22 }}>보유 이유 · {note.reason}</Text>}
+      {!!note.nextCheck && <Text style={{ color: c.muted, lineHeight: 22 }}>다음 확인 · {note.nextCheck}</Text>}
+      {!!note.reflection && <Text style={{ color: c.text, lineHeight: 22 }}>돌아본 내용 · {note.reflection}</Text>}
       <ActionButton label={`${name} 메모 읽기·수정`} disabled={busy} onPress={() => edit(note.symbol, name)} />
     </View>)}
     {rows.length > 3 && <ActionButton label={expanded ? '메모 접기' : `메모 전체 ${rows.length}개 보기`} onPress={() => setExpanded(!expanded)} />}

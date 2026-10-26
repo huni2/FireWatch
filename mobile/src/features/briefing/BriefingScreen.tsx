@@ -6,6 +6,7 @@ import { InvestmentNotice } from '@/components/InvestmentNotice'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 
 import type { Briefing } from '@/lib/api'
+import { briefingText } from '../../../../shared/briefing-text'
 
 import { RecommendedStockList } from './components/RecommendedStockChip'
 import { qualifiedRecommendations } from '../../../../shared/discovery'
@@ -55,7 +56,7 @@ export function BriefingScreen({ briefing, cachedAt, loading, onOpenSheet, error
             </Text>
             <Text className="text-sm font-semibold text-brand">전체 브리핑 읽기 →</Text>
             <Text className="text-sm text-muted" numberOfLines={3}>
-              {briefing.marketSummary}
+              {briefingText(briefing.marketSummary)}
             </Text>
           </Pressable>
           {qualifiedRecommendations(briefing).length > 0 && (

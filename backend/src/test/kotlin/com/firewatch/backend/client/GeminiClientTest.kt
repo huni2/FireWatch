@@ -198,6 +198,7 @@ class GeminiClientTest {
         assertTrue(prompt.contains("코스피 강세 마감"))
         assertTrue(prompt.contains("코스피가 2%대 강세로 마감했다."))
         assertTrue(prompt.contains("핵심키워드"))
+        assertTrue(prompt.contains("본문은 일반 텍스트 문단으로 작성하세요"))
     }
 
     @Test

@@ -98,7 +98,13 @@ class PushService(
         }
 
         val title = "FireWatch 오늘의 브리핑"
-        val body = briefing.marketSummary.take(NOTIFICATION_BODY_MAX_LENGTH)
+        val summary = briefingNotificationText(briefing.marketSummary)
+        val body = if (summary.length > NOTIFICATION_BODY_MAX_LENGTH) {
+            val end = NOTIFICATION_BODY_MAX_LENGTH - 1
+            // Kotlin indexes UTF-16 units; never split an emoji's surrogate pair.
+            val safeEnd = if (summary[end - 1].isHighSurrogate() && summary[end].isLowSurrogate()) end - 1 else end
+            summary.take(safeEnd).trimEnd() + "…"
+        } else summary
 
         var totalTokens = 0
         var totalSuccess = 0

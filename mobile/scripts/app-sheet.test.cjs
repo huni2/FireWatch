@@ -12,7 +12,9 @@ function fixture() {
   }).outputText;
   vm.runInNewContext(source, { module, exports: module.exports, require: name => {
     if (name === 'react') return { useRef: () => ({ current: sheet }), useCallback: fn => fn };
-    if (name === 'react-native') return { Modal: 'Modal', Platform: { OS: 'android' }, ScrollView: 'NativeScrollView', TextInput: 'TextInput', View: 'View' };
+    if (name === 'react-native') return { Modal: 'Modal', KeyboardAvoidingView: 'KeyboardAvoidingView', Platform: { OS: 'android' }, ScrollView: 'NativeScrollView', TextInput: 'TextInput', View: 'View' };
+    if (name === 'react-native-toast-message') return { __esModule: true, default: 'Toast' };
+    if (name === '@/lib/toastConfig') return { toastConfig: {} };
     if (name === 'react-native-gesture-handler') return { GestureHandlerRootView: 'GestureRoot' };
     if (name === '@gorhom/bottom-sheet') return { __esModule: true, default: 'BottomSheet', BottomSheetBackdrop: 'Backdrop', BottomSheetTextInput: 'SheetInput', useBottomSheetTimingConfigs: () => ({}) };
     if (name === 'react-native-safe-area-context') return { useSafeAreaInsets: () => ({ top: 24, bottom: 34 }) };
@@ -30,27 +32,35 @@ function find(node, type) {
   }
 }
 
-test('reading taps cannot dismiss a sheet; explicit close and completed handle drag can', () => {
+test('reading and backdrop taps cannot dismiss a panel; explicit close and Android back can', () => {
   const f = fixture(); let dismissed = 0;
   const modal = f.AppSheet({ open: true, title: '시장 브리핑', close: () => dismissed++, children: 'long briefing' });
-  const sheet = find(modal, 'BottomSheet');
-  const backdrop = sheet.props.backdropComponent({});
-  assert.equal(backdrop.props.pressBehavior, 'none');
-  assert.equal(sheet.props.enableContentPanningGesture, false);
-  assert.deepEqual(Array.from(sheet.props.activeOffsetY), [-16, 16]);
-  assert.equal(f.closeCalls(), 0);
-  find(modal, 'Header').props.close(); assert.equal(f.closeCalls(), 1);
-  sheet.props.onClose(); assert.equal(dismissed, 1);
+  assert.equal(find(modal, 'BottomSheet'), undefined);
+  assert.equal(find(modal, 'KeyboardAvoidingView').props.onTouchEnd, undefined);
+  assert.equal(dismissed, 0);
+  find(modal, 'Header').props.close(); assert.equal(dismissed, 1);
+  modal.props.onRequestClose(); assert.equal(dismissed, 2);
 });
-test('saving disables close, Android back, and handle dismissal without blocking body scrolling', () => {
+test('saving disables close and Android back without blocking body scrolling', () => {
   const f = fixture(); let dismissed = 0;
   const modal = f.AppSheet({ open: true, disabled: true, title: '주문', close: () => dismissed++, children: 'form' });
-  const sheet = find(modal, 'BottomSheet');
-  assert.equal(sheet.props.enablePanDownToClose, false);
-  assert.equal(sheet.props.enableHandlePanningGesture, false);
   modal.props.onRequestClose(); find(modal, 'Header').props.close();
-  assert.equal(f.closeCalls(), 0);
-  sheet.props.onClose(); assert.equal(dismissed, 0); assert.equal(f.restores(), 1);
+  assert.equal(dismissed, 0);
+  assert.equal(find(modal, 'Header').props.disabled, true);
+});
+
+test('keyboard resizing and long footers keep form content and actions scrollable', () => {
+  const f = fixture();
+  const modal = f.AppSheet({ open: true, title: '주문', close() {}, height: '90%', footer: '긴 동작 안내', children: '본문' });
+  const frame = find(modal, 'KeyboardAvoidingView');
+  assert.equal(frame.props.behavior, 'height');
+  assert.equal(frame.props.children.props.style.height, '90%');
+  const footer = find(modal, 'NativeScrollView');
+  assert.equal(footer.props.children, '긴 동작 안내');
+  assert.equal(footer.props.style.maxHeight, '40%');
+  assert.equal(footer.props.keyboardShouldPersistTaps, 'handled');
+  assert.equal(f.AppSheetTextInput, 'TextInput');
+  assert.equal(f.AppSheet({ open: false, title: '닫힘', close() {}, children: '비공개' }), null);
 });
 test('long content uses independent native scrolling and preserves scroll callbacks and bottom padding', () => {
   const f = fixture(), onScroll = () => {}, lastLine = '마지막 안내';

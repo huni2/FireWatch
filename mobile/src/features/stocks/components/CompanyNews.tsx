@@ -21,7 +21,7 @@ export function CompanyNews({ name }: { name: string }) {
     {!loading && groups.mentions.length > 0 && <Pressable accessibilityRole="button" accessibilityState={{ expanded }} onPress={() => setExpanded(!expanded)} className="min-h-12 justify-center"><Text className="text-brand">본문에서 언급된 기사 {groups.mentions.length}개 {expanded ? "접기" : "보기"}</Text><Text className="text-xs text-muted">단순 언급일 수 있어요. 직접 소식인지 원문에서 확인해주세요.</Text></Pressable>}
     {!error && visible.filter(article => /^https?:\/\//i.test(article.link)).map(article => <Pressable key={article.link} accessibilityRole="link" onPress={() => { void Linking.openURL(article.link).catch(() => Toast.show({ type: 'error', text1: '기사를 열지 못했습니다.' })) }} className="gap-2 rounded-xl border border-line bg-surface p-4">
       <Text className="text-xs text-muted">{groups.headline.includes(article) ? "제목에 회사명 포함" : "본문에서 회사명 언급"}</Text>
-      <Text className="text-sm font-semibold text-ink" numberOfLines={2}>{articleText(article.title)}</Text>
+      <Text className="text-sm font-semibold text-ink">{articleText(article.title)}</Text>
       {article.pubDate && <Text className="text-xs text-muted">{new Date(article.pubDate).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</Text>}
       {article.description && <Text className="text-xs text-muted" numberOfLines={2}>{articleText(article.description)}</Text>}
     </Pressable>)}

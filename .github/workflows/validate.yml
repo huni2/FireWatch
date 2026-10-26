@@ -81,6 +81,9 @@ jobs:
       - name: Holding notes and portfolio checkup contracts
         if: matrix.client == 'web'
         run: node --test ../scripts/holding-notes.test.cjs ../scripts/holding-registration.test.cjs ../scripts/portfolio-checkup.test.cjs
+      - name: Briefing plain text compatibility
+        if: matrix.client == 'web'
+        run: node --test ../scripts/briefing-text.test.cjs
       - name: Investment style self-check rules
         if: matrix.client == 'web'
         run: node --test ../scripts/investment-style.test.cjs

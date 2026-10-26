@@ -61,6 +61,34 @@ class PushServiceTest {
         UserSettings(pushTime = "08:00", fcmTokensRaw = fcmTokensRaw, webPushSubscriptionsRaw = webPushSubscriptionsRaw)
 
     @Test
+    fun `브리핑 알림은 두 채널 모두 마크다운을 제거한 뒤 길이를 제한한다`() {
+        val row = dueRow(fcmTokensRaw = "token-a", webPushSubscriptionsRaw = listOf(subscriptionA).toJsonString())
+        every { userSettingsRepository.findAll() } returns listOf(row)
+        every { fcmSender.sendMulticast(any(), any(), any()) } returns FcmSendResult(1, emptyList())
+        every { webPushSender.sendToAll(any(), any(), any()) } returns WebPushSendResult(1, emptyList())
+        val markdown = "## 오늘의 시장\n---\n**상승**과 __주의__\n- [기사](https://example.com)\n" + "추가 내용 ".repeat(100)
+        val expected = ("오늘의 시장 상승과 주의 • 기사 " + "추가 내용 ".repeat(100)).take(199).trimEnd() + "…"
+        val report = Briefing(briefingDate = today, marketSummary = markdown, dataSourceStatus = DataSourceStatus.NORMAL)
+
+        pushService.notifyDueUsers(report, now, windowMinutes, today)
+
+        verify { fcmSender.sendMulticast(listOf("token-a"), "FireWatch 오늘의 브리핑", expected) }
+        verify { webPushSender.sendToAll(listOf(subscriptionA), "FireWatch 오늘의 브리핑", expected) }
+        assertEquals("코스피 -1.2%, 10-20%", briefingNotificationText("코스피 -1.2%, 10-20%"))
+        assertEquals("시장 요약 주의 S&P_500_INDEX", briefingNotificationText("## 시장 요약 ##\r\n_주의_\r\nS&P_500_INDEX"))
+        assertEquals("PRICE__BASE__KRW, 2 * 3 * 4, 시장 확인, 주의", briefingNotificationText("PRICE__BASE__KRW, 2 * 3 * 4, *시장 확인*, __주의__"))
+    }
+
+    @Test
+    fun `알림 길이 경계의 이모지를 반으로 자르지 않는다`() {
+        every { userSettingsRepository.findAll() } returns listOf(dueRow(fcmTokensRaw = "token-a"))
+        every { fcmSender.sendMulticast(any(), any(), any()) } returns FcmSendResult(1, emptyList())
+        val report = Briefing(briefingDate = today, marketSummary = "가".repeat(198) + "📈추가 내용", dataSourceStatus = DataSourceStatus.NORMAL)
+        pushService.notifyDueUsers(report, now, windowMinutes, today)
+        verify { fcmSender.sendMulticast(listOf("token-a"), "FireWatch 오늘의 브리핑", "가".repeat(198) + "…") }
+    }
+
+    @Test
     fun `앱 발송 예외가 웹 발송을 막지 않고 둘 다 실패하면 안전한503을 반환한다`() {
         val row = dueRow(fcmTokensRaw = "private-token", webPushSubscriptionsRaw = listOf(subscriptionA).toJsonString())
         every { userSettingsRepository.save(any<UserSettings>()) } answers { firstArg() }
