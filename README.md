@@ -60,15 +60,15 @@ FireWatch는 **무료 API와 인프라의 제공 범위 안에서 운영**합니
 
 ## Android 이용
 
-2026-10-20 기준, **공개 다운로드와 로컬 빌드 결과물은 다릅니다.**
+2026-10-26 기준, **공개 APK 다운로드와 Play 설치 앱의 업데이트는 별도입니다.**
 
 | 구분 | 확인된 버전 | 이용·배포 상태 |
 |---|---|---|
-| 공개 테스트 APK | 1.0.11 / 빌드16 | [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.11-android-preview/FireWatch-1.0.11-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.11-android-preview) |
+| 공개 테스트 APK | 1.0.15 / 빌드20 | [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.15-android-preview/FireWatch-1.0.15-android.apk) · [릴리스·SHA-256](https://github.com/huni2/FireWatch/releases/tag/v1.0.15-android-preview) |
 | 로컬 직접 설치 APK | 1.0.12 / 빌드17 | 검색·등록·내 투자 점검 개선. [빌드 검증](docs/product/android-preview-20261009/android-112-build.json) |
-| 최신 준비 AAB | 1.0.14 / 빌드19 | 투자 방식 자기점검 포함. 서명·패키지·버전 검증 완료. Play 업로드·게시와 실기기 검증은 확인 전. [검증 기록](docs/deployment/investment-style-20261018.json) |
+| 최신 준비 AAB | 1.0.15 / 빌드20 | 브리핑·긴 안내 스크롤 보완. 서명·패키지·버전 검증 완료. Play Alpha 업로드는 브라우저 파일 접근 권한 대기. [검증 기록](docs/deployment/android-115-build.json) |
 
-공개 1.0.11 APK에는 이후 추가된 메모·자기점검 등 최신 앱 기능이 포함되지 않습니다. AAB는 Play 업로드용이며 휴대폰에 직접 설치하는 APK가 아닙니다. Play 설치 앱의 Google 로그인 오류10은 OAuth 등록과 실제 로그인 성공 확인이 남아 있습니다. [로그인 점검 절차](docs/deployment/google-play-login-20261018.md).
+공개 1.0.15 APK에는 브리핑·긴 안내 스크롤 보완과 이전 메모·자기점검 기능이 포함됩니다. 기존 GitHub APK와 같은 서명입니다. Play 설치 앱은 기존 Alpha 트랙의 업데이트를 이용해야 합니다. AAB는 Play 업로드용이며 직접 설치하는 APK가 아닙니다. Play 로그인과 실제 기기 스크롤·푸시 수신은 별도 확인이 필요합니다. [로그인 점검 절차](docs/deployment/google-play-login-20261018.md).
 
 APK는 휴대폰에서 열어 기존 앱 위에 업데이트합니다. 필요한 경우 파일을 여는 앱의 ‘이 출처의 앱 설치 허용’을 켭니다. 설치 실패 시 기존 앱을 삭제하기 전에 원인을 확인하세요. Expo Go는 필요하지 않습니다.
 

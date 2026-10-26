@@ -16,6 +16,10 @@
 
 ## 배포
 
-진행 중. 완료 후 소스 커밋·서버 배포·공개 파일 및 해시를 기록한다.
+소스 `b6489617de2490214296b6c13c45a800e24b4096`. [전체 CI](https://github.com/huni2/FireWatch/actions/runs/40335311195) 성공. Render 배포 7333744886 success 및 운영 health OK 확인.
 
-직접 설치 APK는 `-Pfirewatch.legacyApkSigning=true`로 기존 공개 APK의 서명을 유지한다. 이 옵션과 bundle 작업을 함께 실행하면 빌드를 거절한다. Play AAB는 기존 release 업로드 키로 빌드한다.
+[Android 1.0.15 공개 다운로드](https://github.com/huni2/FireWatch/releases/tag/v1.0.15-android-preview)에 APK·AAB·SHA256SUMS.txt를 게시했다. 기존 직접 다운로드 APK와 서명 일치, GitHub 업로드 파일의 크기·SHA-256 일치, APK 16KB ZIP 정렬, AAB bundletool·JAR 서명, 두 파일의 manifest와 내장 Expo 설정 1.0.15/20을 확인했다. [파일 검증 기록](android-115-build.json).
+
+Play Console에서 기존 Alpha 1.0.14(19)의 운영 상태를 확인하고 새 버전 초안을 준비했다. 확장프로그램의 로컬 파일 접근이 꺼져 `fileChooser.setFiles`가 거절됐으므로 AAB 업로드·심사 전송은 미완료다. Chrome의 ChatGPT 확장프로그램에서 ‘파일 URL에 대한 액세스 허용’을 사용자가 활성화한 뒤 제출을 이어간다. 프로덕션 트랙이나 테스터·국가·권한 설정은 변경하지 않았다.
+
+Play AAB는 기존 release 업로드 키로 빌드한다. 직접 다운로드 APK는 별도 출력 파일에 Android SDK `apksigner`로 기존 공개 APK의 로컬 키를 적용하고, 이전 APK의 인증서와 대조한다. AAB에는 직접 다운로드용 서명을 적용하지 않는다. `mobile/android`는 생성된 로컬 파일이며 Git에서 제외된다.

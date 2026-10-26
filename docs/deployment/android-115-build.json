@@ -1,0 +1,42 @@
+{
+  "version": "1.0.15",
+  "versionCode": 20,
+  "package": "com.firewatch.mobile",
+  "source": "b6489617de2490214296b6c13c45a800e24b4096",
+  "localGradleDuration": "24m 8s",
+  "easCloudBuildRequests": 0,
+  "apk": {
+    "file": "mobile/dist/FireWatch-1.0.15-android.apk",
+    "bytes": 54439144,
+    "sha256": "d27ba7f7393c9cb5514a953f7cb5c414813b05070b3648f0f2842d5a6c5bd327",
+    "certificateSha256": "c18ae134880984599cf09930fef6157a371fb6b4a28108c64478776fd614b0b2",
+    "matchesPreviousDirectDownloadCertificate": true,
+    "signatureVerified": true,
+    "alignment16KBVerified": true
+  },
+  "aab": {
+    "file": "mobile/dist/FireWatch-1.0.15-play.aab",
+    "bytes": 44460678,
+    "sha256": "2f62f1aa2501b145870e45e0d09e379e049697d8fcb467497ae56ab1a93d3f49",
+    "certificateSha256": "77e5b0f278e32c79bfe1d94607d6527cc60da4b930792be786b983cebdae99d9",
+    "matchesPreviousUploadCertificate": true,
+    "jarSignatureVerified": true,
+    "bundletoolValidated": true
+  },
+  "embeddedExpoConfigAndNativeManifestMatch": true,
+  "abis": ["arm64-v8a", "armeabi-v7a"],
+  "githubRelease": "https://github.com/huni2/FireWatch/releases/tag/v1.0.15-android-preview",
+  "githubAssetsDigestMatch": true,
+  "githubReleasePublic": true,
+  "ci": "https://github.com/huni2/FireWatch/actions/runs/40335311195",
+  "ciConclusion": "success",
+  "backendDeploymentId": 7333744886,
+  "backendDeploymentStatus": "success",
+  "backendHealth": "OK",
+  "playTrack": "Alpha",
+  "previousPublishedPlayVersion": "1.0.14 (19)",
+  "playUploadCompleted": false,
+  "playReviewSubmitted": false,
+  "playBlocker": "ChatGPT Chrome extension file URL access is disabled; fileChooser.setFiles rejected the upload",
+  "physicalAndroidVerified": false
+}

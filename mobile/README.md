@@ -2,6 +2,8 @@
 
 Expo + React Native + Expo Router 기반 앱. 웹과 동일한 백엔드를 사용하며 개인 포트폴리오, 시장 자료, 별도의 가상 게임, 공지·문의 화면을 제공한다.
 
+2026-10-26 최신 공개 APK는 **1.0.15 / versionCode20**입니다. [APK 다운로드](https://github.com/huni2/FireWatch/releases/download/v1.0.15-android-preview/FireWatch-1.0.15-android.apk) · [릴리스·해시](https://github.com/huni2/FireWatch/releases/tag/v1.0.15-android-preview). 브리핑 전체 화면·일반 텍스트, 공통 패널 스크롤·키보드, 추천 근거·메모·뉴스 제목 잘림을 보완했습니다. 기존 직접 다운로드 앱과 같은 서명입니다. Play용 `dist/FireWatch-1.0.15-play.aab`도 검증했지만 Alpha 업로드는 브라우저 파일 접근 권한 때문에 미완료입니다. [현재 배포 기록](../docs/deployment/briefing-reading-20261026.md). 아래 1.0.14 이하 내용은 이전 이력입니다.
+
 ## Play 업로드용 AAB
 
 2026-10-18 **1.0.14 / versionCode19 AAB 준비 완료**. ‘나에게 맞는 투자 방식 찾기’를 추가합니다. 10문항·로그인 없이 이용하며 결과 저장을 선택해야 이 기기에 보관합니다. 서버·AI로 답변을 전송하지 않습니다. [기능과 저장 범위](../docs/product/investment-style-self-check.md) · [출시 메모](../docs/deployment/android-114-release-notes.txt). 새 파일은 `dist/FireWatch-1.0.14-play.aab`(44,459,773 bytes), SHA-256 `889451431259e2f80daa03a799a771951d60664d89b716afe491fd46668f312b`입니다. 무료 로컬 빌드, bundletool·서명·manifest/Expo 버전 검증을 완료했습니다. 웹 배포와 PR CI도 통과했습니다. Play 업로드와 실제 Android 설치 검증은 아직 수행하지 않았습니다. [배포·빌드 검증](../docs/deployment/investment-style-20261018.json). 아래 1.0.13은 이전 결과물입니다. [Play 로그인 오류10](../docs/deployment/google-play-login-20261018.md)의 OAuth 설정 변경과 실제 로그인 성공은 아직 확인 전입니다.
