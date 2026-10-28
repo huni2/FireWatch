@@ -30,28 +30,30 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
   const [linking, setLinking] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [devices, setDevices] = useState<LinkedDevice[] | null>(null)
-  const [deviceBusy, setDeviceBusy] = useState(false)
+  // 기기 목록 조회·해제·로그아웃이 버튼 하나씩 다르게 바쁜 상태를 보여줘야 해서, 공유 busy 불값 대신 "지금 뭐가 실행 중인지"를 담는다.
+  const [deviceAction, setDeviceAction] = useState<string | null>(null)
+  const deviceBusy = deviceAction !== null
   async function manageDevices() {
-    setDeviceBusy(true)
+    setDeviceAction('devices')
     try { setDevices(await fetchLinkedDevices()) }
     catch (error) { Toast.show({ type: 'error', text1: '기기 확인 실패', text2: error instanceof Error ? error.message : '다시 로그인해주세요.' }) }
-    finally { setDeviceBusy(false) }
+    finally { setDeviceAction(null) }
   }
   function revokeDevice(device: LinkedDevice) {
     Alert.alert('이 기기의 연결을 해제할까요?', '계정에 저장한 데이터는 유지됩니다. 이 기기는 다시 로그인해야 접근할 수 있어요.', [
       { text: '취소', style: 'cancel' }, { text: '연결 해제', style: 'destructive', onPress: async () => {
-        setDeviceBusy(true)
+        setDeviceAction(device.id)
         try { await revokeLinkedDevice(device.id); setDevices((rows) => rows?.filter((row) => row.id !== device.id) ?? null) }
         catch (error) { Toast.show({ type: 'error', text1: '연결 해제 실패', text2: error instanceof Error ? error.message : '잠시 후 다시 시도해주세요.' }) }
-        finally { setDeviceBusy(false) }
+        finally { setDeviceAction(null) }
       } },
     ])
   }
   async function logout() {
-    setDeviceBusy(true)
+    setDeviceAction('logout')
     try { await logoutAccount(); setDevices(null); onDeleted(); Toast.show({ type: 'success', text1: '로그아웃했습니다', text2: '계정 데이터는 보관됩니다.' }) }
     catch (error) { Toast.show({ type: 'error', text1: '로그아웃 실패', text2: error instanceof Error ? error.message : '다시 시도해주세요.' }) }
-    finally { setDeviceBusy(false) }
+    finally { setDeviceAction(null) }
   }
   const loginInProgress = useRef(false)
   const [loginError, setLoginError] = useState<string | null>(null)
@@ -124,13 +126,13 @@ function ConfiguredGoogleLinkButton({ linkedEmail, onLinked, onDeleted }: Google
         <Text className="text-xs text-muted">로그인은 30일간 유지되고, 만료되면 연결된 Google 계정으로 복구를 시도해요. 계정 확인이 필요하면 다시 로그인해주세요.</Text>
         <Pressable disabled={linking || deviceBusy || deleting} onPress={() => void login()} className="min-h-12 items-center justify-center">{linking ? <LoadingIndicator color={colors.primary} trackColor={colors.border} label="Google 로그인 확인 중" width={60} /> : <Text className="text-primary">Google 로그인 갱신</Text>}</Pressable>
         {loginError && !comparison && <Text accessibilityRole="alert" className="text-sm text-danger">{loginError}</Text>}
-        <Pressable disabled={deviceBusy} onPress={manageDevices} className="min-h-12 items-center justify-center"><Text className="text-primary">연결된 기기 확인</Text></Pressable>
+        <Pressable disabled={deviceBusy} onPress={manageDevices} className="min-h-12 items-center justify-center">{deviceAction === 'devices' ? <LoadingIndicator color={colors.primary} trackColor={colors.border} label="연결된 기기 확인 중" width={60} /> : <Text className="text-primary">연결된 기기 확인</Text>}</Pressable>
         {devices?.map((device, index) => <View key={device.id} className="rounded-xl border border-line p-3">
           <Text className="font-semibold text-ink">{device.current ? '현재 기기' : `연결 기기 ${index + 1}`}</Text>
           <Text className="text-xs text-muted">연결일 · {new Date(device.linkedAt).toLocaleDateString('ko-KR')}</Text>
-          {!device.current && <Pressable disabled={deviceBusy} onPress={() => revokeDevice(device)} className="min-h-12 justify-center"><Text className="text-danger">연결 해제</Text></Pressable>}
+          {!device.current && <Pressable disabled={deviceBusy} onPress={() => revokeDevice(device)} className="min-h-12 justify-center">{deviceAction === device.id ? <LoadingIndicator color={colors.danger} trackColor={colors.border} label="연결 해제 중" width={60} /> : <Text className="text-danger">연결 해제</Text>}</Pressable>}
         </View>)}
-        <Pressable disabled={deviceBusy} onPress={logout} className="min-h-12 items-center justify-center"><Text className="text-muted">이 기기에서 로그아웃</Text></Pressable>
+        <Pressable disabled={deviceBusy} onPress={logout} className="min-h-12 items-center justify-center">{deviceAction === 'logout' ? <LoadingIndicator color={colors.muted} trackColor={colors.border} label="로그아웃 중" width={60} /> : <Text className="text-muted">이 기기에서 로그아웃</Text>}</Pressable>
         <Pressable onPress={handleDeletePress} disabled={deleting} className="min-h-12 items-center justify-center py-2">
           {deleting ? <LoadingIndicator color={colors.primary} trackColor={colors.border} label="계정 삭제 처리 중" width={60} /> : <Text className="text-sm font-semibold text-danger">계정 삭제</Text>}
         </Pressable>
