@@ -44,7 +44,7 @@ export function EditorFrame({ title, saving, error, changed, close, submit, butt
 }
 function Field({ label, value, change, numeric = false, unit }: { label: string; value: string; change: (value: string) => void; numeric?: boolean; unit?: string }) {
   const { colors: c } = useTheme()
- return <View style={{ gap: 8 }}><Text style={{ color: c.muted }}>{label}</Text><TextInput accessibilityLabel={label} value={value} onChangeText={text => change(numeric ? groupThousands(text) : text)} keyboardType={numeric ? 'decimal-pad' : 'default'} style={{ minHeight: 48, borderWidth: 1, borderColor: c.border, borderRadius: 12, padding: 14, color: c.text }} />{unit && portfolioNumberHint(value, unit) && <Text style={{ color: c.muted }}>{portfolioNumberHint(value, unit)}</Text>}</View> }
+ return <View style={{ gap: 8 }}><Text style={{ color: c.muted }}>{label}</Text><TextInput accessibilityLabel={label} value={value} onChangeText={text => change(numeric ? groupThousands(text) : text)} keyboardType={numeric ? 'decimal-pad' : 'default'} selectTextOnFocus={numeric} style={{ minHeight: 48, borderWidth: 1, borderColor: c.border, borderRadius: 12, padding: 14, color: c.text }} />{unit && portfolioNumberHint(value, unit) && <Text style={{ color: c.muted }}>{portfolioNumberHint(value, unit)}</Text>}</View> }
 function Choice({ label, selected, press }: { label: string; selected: boolean; press: () => void }) {
   const { colors: c } = useTheme()
  return <Pressable accessibilityRole="button" accessibilityState={{ selected }} onPress={press} style={{ minHeight: 48, padding: 12, borderWidth: 1, borderColor: selected ? c.primary : c.border, borderRadius: 10 }}><Text style={{ color: selected ? c.primary : c.text }}>{label}</Text></Pressable> }
@@ -74,6 +74,11 @@ export function HoldingRegistration({ initial, others, editing, saving, error, c
     }).catch(() => { /* Preserve input; metadata can be completed below. */ }).finally(() => { if (active) setChecking(false) })
     return () => { active = false }
   }, [initial.symbol, editing])
+  useEffect(() => {
+    // 기록 수정은 검색 단계 없이 곧장 수량 입력으로 열리는데, pick()의 포커스 호출을 안 타므로 여기서 보완한다.
+    if (!search) requestAnimationFrame(() => quantityInput.current?.focus())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const value = { ...holding, quantity: parsePortfolioNumber(quantity), averageCost: cost.trim() ? parsePortfolioNumber(cost) : null }
   const changed = JSON.stringify(value) !== JSON.stringify(initial)
   function pick(item: HoldingSearchResult) {
@@ -115,8 +120,7 @@ export function HoldingRegistration({ initial, others, editing, saving, error, c
       {selectionNotice && <Text accessibilityLiveRegion="polite" style={{ color: c.muted }}>{selectionNotice}</Text>}
       {checking && <Text accessibilityLiveRegion="polite" style={{ color: c.muted }}>종목 정보를 확인하고 있어요…</Text>}
       <View style={{ gap: 8 }}><Text style={{ color: c.text, fontWeight: '600' }}>보유 수량</Text><View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: quantityError ? c.danger : c.border, borderRadius: 12 }}>
-        <TextInput ref={quantityInput} accessibilityLabel="보유 수량" keyboardType="decimal-pad" value={quantity} onChangeText={text => { setQuantity(groupThousands(text)); setValidation(null) }} returnKeyType="done" onSubmitEditing={Keyboard.dismiss} style={{ flex: 1, minHeight: 56, padding: 14, fontSize: 24, color: c.text }} /><Text style={{ paddingRight: 16, color: c.muted }}>주</Text></View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{[-100, -10, -1, 1, 10, 100].map(delta => <Choice key={delta} label={delta > 0 ? `+${delta}` : `${delta}`} selected={false} press={() => { const next = Math.max(0, Math.round(((parsePortfolioNumber(quantity) || 0) + delta) * 10000) / 10000); setQuantity(groupThousands(String(next))); setValidation(null) }} />)}</View>
+        <TextInput ref={quantityInput} accessibilityLabel="보유 수량" keyboardType="decimal-pad" value={quantity} onChangeText={text => { setQuantity(groupThousands(text)); setValidation(null) }} selectTextOnFocus returnKeyType="done" onSubmitEditing={Keyboard.dismiss} style={{ flex: 1, minHeight: 56, padding: 14, fontSize: 24, color: c.text }} /><Text style={{ paddingRight: 16, color: c.muted }}>주</Text></View>
         {quantityError && <Text accessibilityRole="alert" style={{ color: c.danger }}>{quantityError}</Text>}
         <Text style={{ color: c.muted, lineHeight: 20 }}>현재 보유한 총수량을 입력해주세요. 소수점 네 자리까지 입력할 수 있어요.</Text>
         {!!quantity && portfolioNumberHint(quantity, '주') && <Text style={{ color: c.muted }}>{portfolioNumberHint(quantity, '주')}</Text>}
