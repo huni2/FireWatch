@@ -25,6 +25,8 @@
 
 - **[APP] 인디고 브랜드 리디자인 Stage 2 마무리 — 모바일 4화면 재평가**: 웹과 같은 방식으로 모바일도 "목업 가정 vs 실제 구현" 확인. 포트폴리오만 실제 변경 필요 — 진행바 나열을 `AllocationDonut`(`react-native-gifted-charts` `PieChart`, 웹과 동일한 success/info 역할색 재사용, 동일 hex라 플랫폼 색이 이미 통일돼 있었음)으로 교체. 브리핑(`BriefingScreen`)은 원래부터 세로 피드였고, 후보(`CompanyDiscovery`)는 탭→`AppSheet` 상세가 이미 progressive disclosure, 지수(`IndicesScreen`)의 지표 카드는 이미 가로 스크롤이 아니라 `flexWrap` 2열 그리드라 셋 다 변경 불필요 확인만 하고 끝. `npx tsc --noEmit`·`expo lint` 통과. 이걸로 Stage 2(플래그십 화면 구조 변경) 종료 — 다음은 Stage 3(나머지 라우트 기계적 스윕).
 
+- **[WEB] 인디고 브랜드 리디자인 Stage 3 — 나머지 라우트 전수 점검, 추가 코드 변경 없이 종료**: `web/src`·`mobile/src` 전체에서 hex 색상 패턴을 전수 grep해 Stage 1·2가 놓친 하드코딩이 있는지 확인. 웹에서 남은 건 전부 설명 가능한 것(`editorial.css`의 분야연결/시장근거/게임 등 별도 의미색 체계, 거래 매수·매도 마커, 서드파티 벤더 코드)뿐이고 나머지 11개 라우트는 AntD `colorPrimary` 캐스케이딩으로 이미 자동 적용돼 추가로 고칠 게 없음을 확인. 모바일도 동일(남은 하드코딩은 시트 배경 스크림 하나, 브랜드색과 무관). 모바일 네이티브 `android/colors.xml`의 `colorPrimary`도 확인했으나 `mobile/android/`가 `.gitignore` 대상(= `expo prebuild` 재생성 산출물)이라 고쳐도 의미 없어 패스. `npm run build`·`lint`(웹), `npx tsc --noEmit`·`expo lint`(모바일) 최종 통과 — Stage 1·2·3 전부 종료, 브랜치 `codex/redesign-indigo-brand`, main 미병합.
+
 ## 2026-10-21
 
 - **[BE] 무료 브리핑 안정성 운영 배포·기본 본문 제공 확인**: 1405a5d Render10:18:35 KST success, CI39525932572 attempt2 백엔드H2/PG신규예산/보고서·복원/웹/모바일전체success. 웹최초실패는외부apt403·재실행통과/검사우회0. 공개healthOK·오늘ID63/FALLBACK/뉴스20/생성시각보존·기본브리핑본문true확인. 읽기전용진단39526683943 success. 기존재시도대기10:38이후라보조모델실응답/AI복구는미확인·한도초기화0/수동AI추가호출0. 앱빌드0. docs/maintenance/briefing-resilience 참고.
