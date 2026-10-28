@@ -2,6 +2,7 @@
 import { Button, Card, Space, Typography } from 'antd'
 import { Link } from 'react-router-dom'
 import policy from '../../../../shared/privacy-policy.json'
+import './privacy.css'
 
 const { Title, Paragraph } = Typography
 
@@ -13,17 +14,22 @@ export function PrivacyPage() {
       <Space wrap><Link to="/account">내 계정에서 삭제하기 →</Link><Button href={`mailto:${policy.contactEmail}?subject=${encodeURIComponent('FireWatch 계정·데이터 삭제 요청')}`}>이메일로 삭제 요청</Button></Space>
       <Paragraph style={{ marginTop: 12, marginBottom: 0 }}>요청 대상을 확인한 뒤 처리 결과를 안내합니다. 비밀번호·인증 토큰·계좌번호는 보내지 마세요. 아래에 자동 삭제 범위와 별도로 처리할 자료를 안내합니다.</Paragraph>
     </Card>
-    <Card className="hoverable-card">
-      <Space direction="vertical" size={20} style={{ width: '100%' }}>
-        <Paragraph type="secondary" style={{ margin: 0 }}>시행일자: {policy.effectiveDate}</Paragraph>
-        <Paragraph style={{ margin: 0 }}>{policy.intro}</Paragraph>
-        {policy.sections.map(section => <section key={section.title}>
-          <Title level={5}>{section.title}</Title>
-          {section.blocks.map((block, index) => block.kind === 'bullet'
-            ? <ul key={index} style={{ marginBlock: 8 }}><li>{block.text}</li></ul>
-            : <Paragraph key={index}>{block.text}</Paragraph>)}
-        </section>)}
-      </Space>
-    </Card>
+    <div className="privacy-layout">
+      <nav className="privacy-toc" aria-label="개인정보처리방침 목차">
+        {policy.sections.map((section, index) => <a key={section.title} href={`#privacy-section-${index}`}>{section.title}</a>)}
+      </nav>
+      <Card className="hoverable-card">
+        <Space direction="vertical" size={20} style={{ width: '100%' }}>
+          <Paragraph type="secondary" style={{ margin: 0 }}>시행일자: {policy.effectiveDate}</Paragraph>
+          <Paragraph style={{ margin: 0 }}>{policy.intro}</Paragraph>
+          {policy.sections.map((section, index) => <section key={section.title} id={`privacy-section-${index}`} className="privacy-section">
+            <Title level={5}>{section.title}</Title>
+            {section.blocks.map((block, blockIndex) => block.kind === 'bullet'
+              ? <ul key={blockIndex} style={{ marginBlock: 8 }}><li>{block.text}</li></ul>
+              : <Paragraph key={blockIndex}>{block.text}</Paragraph>)}
+          </section>)}
+        </Space>
+      </Card>
+    </div>
   </Space>
 }

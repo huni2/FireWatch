@@ -1,0 +1,11 @@
+/* 섹션이 많은 약관류 페이지의 훑어보기 목차 — help.css의 sticky 카테고리 사이드바 패턴 재사용. */
+.privacy-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; align-items: start; }
+.privacy-toc { display: grid; gap: 4px; position: sticky; top: 128px; }
+.privacy-toc a { display: flex; align-items: center; min-height: 40px; padding: 8px 12px; border-radius: 10px; color: var(--ant-color-text-secondary); font-size: 13px; line-height: 1.4; text-decoration: none; }
+.privacy-toc a:hover,.privacy-toc a:focus-visible { color: var(--ant-color-primary); background: color-mix(in srgb, var(--ant-color-primary) 8%, var(--ant-color-bg-container)); outline: none; }
+.privacy-section { scroll-margin-top: 128px; }
+@media(max-width:800px) {
+  .privacy-layout { grid-template-columns: 1fr; gap: 16px; }
+  .privacy-toc { position: static; display: flex; flex-wrap: wrap; gap: 6px; }
+  .privacy-toc a { font-size: 12px; padding: 6px 10px; min-height: 36px; }
+}
