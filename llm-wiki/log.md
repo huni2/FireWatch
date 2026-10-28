@@ -32,6 +32,8 @@
 
 - **[WEB] 인디고 브랜드 리디자인 — 나머지 라우트 리뷰·개인정보처리방침 목차 추가**: 사용자 요청으로 웹 11개·모바일 대응 화면을 하나씩 리뷰 — 전부 검색/폼/관리자 테이블/법적 고지 같은 기능성 화면이라 구조 변경 불필요로 결론(색만 Stage 1에서 자동 인디고 적용). 리뷰 중 `help.css`에서 찾은 죽은 CSS(`.help-shortcuts`/`.help-shortcut*`, 실제 JSX 어디서도 안 씀 — grep으로 확인)를 사용자 요청으로 삭제. 추가로 "개인정보처리방침이 AI 티 난다"는 지적에 — 12개 섹션이 그냥 위아래로 쌓여만 있고 훑어볼 방법이 없는 게 원인이라고 진단, `help.css`에 이미 있던 sticky 사이드바 패턴(동일 스크롤 오프셋)을 재사용해 섹션 목차를 추가(새 `privacy.css`). 모바일은 동일 패턴이 없고(사이드바 자체가 없는 좁은 화면이라 억지로 안 넣음) 그대로 둠. `npm run build`·`lint` 통과.
 
+- **[WEB] 인디고 브랜드 리디자인 — 게임 규칙 모달 스타일링**: "또 AI 티 나는 데 있나" 질문에 게임 화면의 "가상투자 게임 규칙" Modal이 범인이었음 — 앱 전체가 커스텀 CSS로 꾸며져 있는데 여기만 `<h3>`/`<p style={{marginBottom:24}}>` 맨 HTML이었음(모바일 대응 화면 `PracticeRules.tsx`는 이미 제대로 된 AppSheet로 돼 있어서 더 대비됨). 번호 배지(게임 보라색) 추가. AntD `Modal`이 `document.body`에 포탈로 그려져서 `.game-page`의 `--ant-color-primary` 스코프 오버라이드가 안 먹는다는 걸 확인하고, CSS 클래스 대신 `GameExperience`가 이미 계산해둔 `gamePrimary` JS 변수를 인라인으로 직접 넘기는 방식으로 우회. 같이 확인한 `GameRankingRules.tsx`(순위 산정 기준)는 이미 `.ranking-rules` 커스텀 CSS가 있어서 손 안 댐. `npm run build`·`lint` 통과.
+
 ## 2026-10-21
 
 - **[BE] 무료 브리핑 안정성 운영 배포·기본 본문 제공 확인**: 1405a5d Render10:18:35 KST success, CI39525932572 attempt2 백엔드H2/PG신규예산/보고서·복원/웹/모바일전체success. 웹최초실패는외부apt403·재실행통과/검사우회0. 공개healthOK·오늘ID63/FALLBACK/뉴스20/생성시각보존·기본브리핑본문true확인. 읽기전용진단39526683943 success. 기존재시도대기10:38이후라보조모델실응답/AI복구는미확인·한도초기화0/수동AI추가호출0. 앱빌드0. docs/maintenance/briefing-resilience 참고.
