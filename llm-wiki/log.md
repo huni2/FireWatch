@@ -36,6 +36,8 @@
 
 - **[PROJ] 인디고 브랜드 리디자인 main 병합·배포**: `codex/redesign-indigo-brand`를 main에 fast-forward 머지하고 push(커밋 20개, Stage 1~4 + 나머지 라우트 리뷰 + 게임 규칙 모달 + 개인정보 목차). 머지 직후 main CI(`Validate code`)가 모바일 잡에서 실패 — `mobile/scripts/action-button-colors.test.cjs`·`theme.test.cjs`가 `actionText`를 라이트/다크 공통 `'#17202E'`로 하드코딩하고 있었는데, Stage 1에서 다크 모드 `actionBackground`를 더 어두운 인디고(`#32377A`)로 바꾸면서 의도적으로 다크 모드 텍스트를 밝은 잉크(`tokens.dark.text`)로 바꾼 것과 충돌한 것(Stage 1 때 돌린 `tsc`/`expo lint`는 이 `scripts/*.test.cjs` 스위트를 안 돌림 — 검증 공백 확인). 두 테스트 모두 하드코딩된 리터럴 대신 실제 색 토큰/대비율(contrast ratio) 검사로 수정, 모바일 테스트 스위트 82개 전부 로컬 통과 확인 후 main에 바로 커밋·push(별도 브랜치 없이 — CI 복구는 핫픽스로 취급). 재실행 CI(run 40649286267) success 확인.
 
+- **[PROJ] Cloudflare Pages 자동 배포 끊김 발견·수동 배포로 복구**: main push 후 10분 넘게 기다려도 `firewatch-eqp.pages.dev`가 구버전(오렌지)을 계속 서빙 — Cloudflare 대시보드(Workers & Pages → firewatch)를 직접 열어 확인해보니 **"No Git connection"** 상태였음. 과거 log의 "Cloudflare 배포 완료" 기록들은 git 자동 배포가 아니라 그때그때 수동 `wrangler pages deploy`였던 것으로 추정(이 환경에 이미 `powerhch@gmail.com` 계정으로 wrangler 로그인이 돼있었음). `cd web && npm run build && npx wrangler pages deploy dist --project-name=firewatch --branch=main`으로 수동 배포, 배포 후 실제 사이트에서 인디고 버튼/링크·불꽃 로고 오렌지 유지·게임 화면 보라(수익률 텍스트·"새 게임 설정" 버튼) 전부 브라우저로 직접 확인. **git 연결 자체를 복구하는 건 Cloudflare 대시보드 작업이라 사용자가 직접 해야 함** — 안 고치면 다음 merge부터 또 수동 배포해야 한다.
+
 ## 2026-10-21
 
 - **[BE] 무료 브리핑 안정성 운영 배포·기본 본문 제공 확인**: 1405a5d Render10:18:35 KST success, CI39525932572 attempt2 백엔드H2/PG신규예산/보고서·복원/웹/모바일전체success. 웹최초실패는외부apt403·재실행통과/검사우회0. 공개healthOK·오늘ID63/FALLBACK/뉴스20/생성시각보존·기본브리핑본문true확인. 읽기전용진단39526683943 success. 기존재시도대기10:38이후라보조모델실응답/AI복구는미확인·한도초기화0/수동AI추가호출0. 앱빌드0. docs/maintenance/briefing-resilience 참고.
