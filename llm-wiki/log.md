@@ -19,6 +19,8 @@
 - **[APP] 모바일도 동일하게 증감 버튼 제거, 자동 포커스·전체 선택으로 교체**: 웹과 같은 이유로 `Choice` 버튼 ±1/±10/±100 행 삭제, 수량·현금류 `TextInput`에 `selectTextOnFocus` 추가, 기록 수정(검색 단계 없이 바로 열리는 경로) 마운트 시 수량 입력 자동 포커스하는 effect 추가. `npx tsc --noEmit`·`expo lint`·기존 jest 스크립트(action-button-colors/theme) 통과. **아직 빌드 안 함** — 전날 기록한 3개 버그 수정·인앱 업데이트 기능과 함께 다음 AAB 한 번에 묶어 올릴 예정(APP-33).
 - **[WEB] "리뷰 다시" 요청으로 찾은 추가 포커스 공백 수정 — 종목 검색창 자동 포커스**: 위 수량 자동 포커스 작업 후 같은 기준으로 앱을 다시 훑어보다 발견 — 보유 자산 신규 등록 1단계(종목 검색)는 화면 전체가 검색 하나만 하는데도 입력창에 자동 포커스가 없어 한 번 더 클릭해야 타이핑할 수 있었음. `HoldingSearch`의 `<Input>`에 `autoFocus` 추가. `npm run build`·`lint` 통과, 배포.
 - **[APP] 같은 검색창 자동 포커스 모바일에도 적용**: `HoldingSearch.tsx`의 `TextInput`에 `autoFocus` 추가. `npx tsc --noEmit`·`expo lint` 통과.
+- **[WEB] "범위 터져도 됨" 승인 후 입력 전수 조사 — 게임 거래 수량도 같은 결함**: 포커스·전체선택 패턴을 재확인하며 웹의 `InputNumber` 전체(`grep`으로 3곳 확인 — 보유수량·매입가·보유현금·월투자금은 이미 고침)를 점검, 투자연습 게임의 거래 수량 `InputNumber`만 포맷터가 없다는 걸 발견. `HoldingDrawer`의 `formatCommitted` 패턴을 그대로 가져와 적용(입력 중엔 그대로, 멈추면 콤마 · 포커스 시 전체선택). `npm run build`·`lint` 통과, 배포.
+- **[APP] 같은 게임 거래 수량 결함 모바일에도 — 파싱 버그 동반 수정**: 모바일은 콤마 포맷 자체가 없었던 데다, 추가하려면 `Number(quantity)` 파싱이 콤마 섞인 문자열에서 `NaN`이 되는 숨은 버그까지 같이 고쳐야 했음 — `groupThousands`로 표시를 바꾸고 파싱은 이미 콤마를 올바르게 처리하는 `parsePortfolioNumber`로 교체(이 한 곳만 바꾸면 되는 이유: `qty` 변수가 파생되는 지점이 `PracticeScreen.tsx`에 단 한 줄이고 이후 전부 재사용). `selectTextOnFocus`도 추가. `npx tsc --noEmit`·`expo lint` 통과. 웹·모바일 전체에서 숫자 입력 중 콤마/포커스 포맷이 없는 곳은 이제 없음(전수 grep 확인). 모바일은 다음 AAB 대상에 추가(`Next-Tasks.md` APP-33에 누적 기록).
 
 ## 2026-10-28
 
