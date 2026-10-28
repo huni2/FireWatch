@@ -34,6 +34,8 @@
 
 - **[WEB] 인디고 브랜드 리디자인 — 게임 규칙 모달 스타일링**: "또 AI 티 나는 데 있나" 질문에 게임 화면의 "가상투자 게임 규칙" Modal이 범인이었음 — 앱 전체가 커스텀 CSS로 꾸며져 있는데 여기만 `<h3>`/`<p style={{marginBottom:24}}>` 맨 HTML이었음(모바일 대응 화면 `PracticeRules.tsx`는 이미 제대로 된 AppSheet로 돼 있어서 더 대비됨). 번호 배지(게임 보라색) 추가. AntD `Modal`이 `document.body`에 포탈로 그려져서 `.game-page`의 `--ant-color-primary` 스코프 오버라이드가 안 먹는다는 걸 확인하고, CSS 클래스 대신 `GameExperience`가 이미 계산해둔 `gamePrimary` JS 변수를 인라인으로 직접 넘기는 방식으로 우회. 같이 확인한 `GameRankingRules.tsx`(순위 산정 기준)는 이미 `.ranking-rules` 커스텀 CSS가 있어서 손 안 댐. `npm run build`·`lint` 통과.
 
+- **[PROJ] 인디고 브랜드 리디자인 main 병합·배포**: `codex/redesign-indigo-brand`를 main에 fast-forward 머지하고 push(커밋 20개, Stage 1~4 + 나머지 라우트 리뷰 + 게임 규칙 모달 + 개인정보 목차). 머지 직후 main CI(`Validate code`)가 모바일 잡에서 실패 — `mobile/scripts/action-button-colors.test.cjs`·`theme.test.cjs`가 `actionText`를 라이트/다크 공통 `'#17202E'`로 하드코딩하고 있었는데, Stage 1에서 다크 모드 `actionBackground`를 더 어두운 인디고(`#32377A`)로 바꾸면서 의도적으로 다크 모드 텍스트를 밝은 잉크(`tokens.dark.text`)로 바꾼 것과 충돌한 것(Stage 1 때 돌린 `tsc`/`expo lint`는 이 `scripts/*.test.cjs` 스위트를 안 돌림 — 검증 공백 확인). 두 테스트 모두 하드코딩된 리터럴 대신 실제 색 토큰/대비율(contrast ratio) 검사로 수정, 모바일 테스트 스위트 82개 전부 로컬 통과 확인 후 main에 바로 커밋·push(별도 브랜치 없이 — CI 복구는 핫픽스로 취급). 재실행 CI(run 40649286267) success 확인.
+
 ## 2026-10-21
 
 - **[BE] 무료 브리핑 안정성 운영 배포·기본 본문 제공 확인**: 1405a5d Render10:18:35 KST success, CI39525932572 attempt2 백엔드H2/PG신규예산/보고서·복원/웹/모바일전체success. 웹최초실패는외부apt403·재실행통과/검사우회0. 공개healthOK·오늘ID63/FALLBACK/뉴스20/생성시각보존·기본브리핑본문true확인. 읽기전용진단39526683943 success. 기존재시도대기10:38이후라보조모델실응답/AI복구는미확인·한도초기화0/수동AI추가호출0. 앱빌드0. docs/maintenance/briefing-resilience 참고.
