@@ -1,4 +1,4 @@
-import { Alert, Card, Empty, Skeleton, Typography } from 'antd'
+import { Alert, Button, Card, Empty, Skeleton, Typography } from 'antd'
 import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
@@ -11,7 +11,7 @@ import { stockLabel } from '../../../../../shared/stock-labels'
 // 관심 종목의 최근 등락을 대시보드에서 바로 보고, 클릭하면 해당 종목 차트로 이동한다.
 // 2026-10-05 재설계 — 박스 카드가 아니라 지면의 한 섹션처럼(변수 없이 제목 밑줄로만 구분).
 export function WatchlistSummaryCard() {
-  const { data, loading, error } = useWatchlistSummary()
+  const { data, loading, error, reload } = useWatchlistSummary()
   const { names } = useStockNames()
 
   if (loading) {
@@ -25,7 +25,7 @@ export function WatchlistSummaryCard() {
   if (error) {
     return (
       <Card {...SECTION_CARD_PROPS} title="관심 종목">
-        <Alert type="error" message="관심 종목 정보를 불러오지 못했습니다" description={error.message} showIcon />
+        <Alert type="error" message="관심 종목 정보를 불러오지 못했습니다" description={error.message} showIcon action={<Button onClick={reload}>다시 시도</Button>} />
       </Card>
     )
   }

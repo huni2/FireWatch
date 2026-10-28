@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Card, Segmented } from 'antd'
+import { Alert, Button, Card, Segmented } from 'antd'
 import { MetricStat } from './components/MetricStat'
 import { RateChart } from './components/RateChart'
 import { useBriefingHistory } from './hooks/useBriefingHistory'
@@ -24,8 +24,8 @@ export function IndicesPage() {
   const cutoff = new Date(today + 9 * 3600000 - (period - 1) * 86400000).toISOString().slice(0, 10)
   return <div className="market-page"><header className="compact-intro"><h2>시장 지표</h2><p>지표마다 마지막 유효 값과 날짜를 확인하세요. 실시간 시세가 아닙니다.</p></header>
     <SlowLoadingHint loading={latest.loading || history.loading} isSlow={latest.isSlow || history.isSlow} />
-    {latest.error && <Alert type="error" message="최신 자료를 조회하지 못했습니다." description="조회 가능한 과거 기록이 있으면 기준 날짜와 함께 표시합니다." />}
-    {history.error && <Alert type="warning" message="과거 지표를 조회하지 못했습니다." description="확인할 수 없는 이전 값을 임의로 채우지 않습니다." />}
+    {latest.error && <Alert type="error" message="최신 자료를 조회하지 못했습니다." description="조회 가능한 과거 기록이 있으면 기준 날짜와 함께 표시합니다." action={<Button onClick={latest.reload}>다시 시도</Button>} />}
+    {history.error && <Alert type="warning" message="과거 지표를 조회하지 못했습니다." description="확인할 수 없는 이전 값을 임의로 채우지 않습니다." action={<Button onClick={history.reload}>다시 시도</Button>} />}
     {!latest.loading && missing > 0 && <Alert type="warning" message={`${latest.data?.briefingDate ?? '최신 자료'} · ${missing}개 지표 미수집`} description="날짜가 최신이어도 모든 가격이 수집됐다는 뜻은 아닙니다. 아래 과거 값은 표시된 날짜의 기록입니다." />}
     <Segmented aria-label="시장 지표 종류" value={group} onChange={v => setGroup(String(v))} options={['주가지수', '환율', '원자재·채권']} />
     <div className="market-layout"><div className="market-metric-grid">{metrics.filter(m => m.group === group).map((m, i) => {

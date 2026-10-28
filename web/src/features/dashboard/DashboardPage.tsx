@@ -1,4 +1,4 @@
-import { Alert, Empty, Space, Typography } from 'antd'
+import { Alert, Button, Empty, Space, Typography } from 'antd'
 import { InvestmentNotice } from '../../components/InvestmentNotice'
 import { BriefingSummaryCard } from './components/BriefingSummaryCard'
 import { RecommendedStockPerformanceCard } from './components/RecommendedStockPerformanceCard'
@@ -43,7 +43,7 @@ export function DashboardPage() {
       <SlowLoadingHint loading={latest.loading} isSlow={latest.isSlow} />
 
       {latest.error && (
-        <Alert type="error" message="브리핑을 불러오지 못했습니다" description={latest.error.message} showIcon />
+        <Alert type="error" message="브리핑을 불러오지 못했습니다" description={latest.error.message} showIcon action={<Button onClick={latest.reload}>다시 시도</Button>} />
       )}
 
       {!latest.loading && !latest.error && !latest.data && (
