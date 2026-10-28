@@ -9,6 +9,14 @@ import { searchHoldingCatalog, type HoldingSearchResult } from '../../../../shar
 import { request } from '../../lib/api'
 import { HoldingSearch } from './HoldingSearch'
 
+// 입력 중엔 그대로 두고(커서 점프 방지), 입력을 멈췄을 때만 천단위 콤마로 보여준다.
+function formatCommitted(value: number | string | undefined) {
+  if (value == null || String(value) === '') return ''
+  const [intPart, decPart] = String(Number(value)).split('.')
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return decPart == null ? grouped : `${grouped}.${decPart}`
+}
+
 export function HoldingDrawer({ initial, others, editing, saving, error, close, returnFocus, save, editExisting }: { initial: Holding; others: Holding[]; editing: boolean; saving: boolean; error: string | null; close: () => void; returnFocus: () => void; save: (value: Holding) => void; editExisting: (symbol: string) => void }) {
   const [holding, setHolding] = useState(initial)
   const [search, setSearch] = useState(!initial.symbol)
@@ -79,9 +87,9 @@ export function HoldingDrawer({ initial, others, editing, saving, error, close, 
           {!editing && <Button onClick={() => { setSearch(true); setDuplicate(null) }}>변경</Button>}</div>
         {selectionNotice && <Typography.Text role="status" type="secondary">{selectionNotice}</Typography.Text>}
         {checking && <Typography.Text role="status">종목 정보를 확인하고 있어요…</Typography.Text>}
-        <div><label className="holding-field" htmlFor={`${formId}-quantity`}>보유 수량<InputNumber id={`${formId}-quantity`} ref={quantity} aria-label="보유 수량" aria-invalid={!!quantityError} aria-describedby={`${formId}-quantity-hint`} status={quantityError ? 'error' : undefined} size="large" min={0.0001} max={1e9} precision={4} formatter={(value, info) => info.userTyping ? info.input : value == null || String(value) === '' ? '' : String(Number(value))} value={holding.quantity || null} onChange={value => change({ quantity: value ?? 0 })} addonAfter="주" style={{ width: '100%' }} /></label>
+        <div><label className="holding-field" htmlFor={`${formId}-quantity`}>보유 수량<InputNumber id={`${formId}-quantity`} ref={quantity} aria-label="보유 수량" aria-invalid={!!quantityError} aria-describedby={`${formId}-quantity-hint`} status={quantityError ? 'error' : undefined} size="large" min={0.0001} max={1e9} precision={4} formatter={(value, info) => info.userTyping ? info.input : formatCommitted(value)} value={holding.quantity || null} onChange={value => change({ quantity: value ?? 0 })} addonAfter="주" style={{ width: '100%' }} /></label>
           <div id={`${formId}-quantity-hint`}>{quantityError ? <Typography.Text role="alert" type="danger">{quantityError}</Typography.Text> : <Typography.Text type="secondary">현재 보유한 총수량을 입력해주세요. 소수점 네 자리까지 입력할 수 있어요.</Typography.Text>}</div></div>
-        {costOpen ? <div><label className="holding-field" htmlFor={`${formId}-cost`}>평균 구매 가격 (선택)<InputNumber id={`${formId}-cost`} aria-label="평균 구매 가격" aria-invalid={!!costError} aria-describedby={`${formId}-cost-hint`} status={costError ? 'error' : undefined} size="large" min={0.0001} max={1e9} precision={4} formatter={(value, info) => info.userTyping ? info.input : value == null || String(value) === '' ? '' : String(Number(value))} value={holding.averageCost} onChange={value => change({ averageCost: value })} addonAfter={holding.currency === 'KRW' ? '원 / 주' : '달러 / 주'} style={{ width: '100%' }} /></label>
+        {costOpen ? <div><label className="holding-field" htmlFor={`${formId}-cost`}>평균 구매 가격 (선택)<InputNumber id={`${formId}-cost`} aria-label="평균 구매 가격" aria-invalid={!!costError} aria-describedby={`${formId}-cost-hint`} status={costError ? 'error' : undefined} size="large" min={0.0001} max={1e9} precision={4} formatter={(value, info) => info.userTyping ? info.input : formatCommitted(value)} value={holding.averageCost} onChange={value => change({ averageCost: value })} addonAfter={holding.currency === 'KRW' ? '원 / 주' : '달러 / 주'} style={{ width: '100%' }} /></label>
           <div id={`${formId}-cost-hint`}>{costError && <Typography.Text role="alert" type="danger">{costError}</Typography.Text>}<p>증권 앱에 표시된 평균단가를 입력해주세요. 총 구매 금액이 아니에요.</p><Typography.Text type="secondary">비워두면 이 종목의 손익은 계산하지 않아요.</Typography.Text></div></div>
           : <Button type="link" style={{ padding: 0 }} onClick={() => setCostOpen(true)}>＋ 평균 구매 가격 입력 (선택)</Button>}
         {(editing || metadataMissing) && <details open={metadataMissing && !checking}><summary>{metadataMissing ? '종목 정보 보완' : '저장된 종목 정보 수정'}</summary>
