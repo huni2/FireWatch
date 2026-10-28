@@ -18,6 +18,7 @@ import { hasConsented, setConsented } from '@/lib/consent'
 import { toastConfig } from '@/lib/toastConfig'
 import { AnnouncementPopup, noteStartupInteraction } from '@/components/AnnouncementPopup'
 import { StartupState } from '@/components/StartupState'
+import { useInAppUpdate } from '@/lib/useInAppUpdate'
 
 // 화면 렌더 오류는 복구 화면으로 전환한다. 네이티브 프로세스 종료는 이 경계로 잡을 수 없다.
 export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
@@ -28,6 +29,7 @@ export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
 function AppContent() {
   const { colors } = useTheme()
   useNotificationRegistration()
+  useInAppUpdate()
   const [ready, setReady] = useState(false)
   const pathname = usePathname()
   const markReady = useCallback(() => setReady(true), [])
