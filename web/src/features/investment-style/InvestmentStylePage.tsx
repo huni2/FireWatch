@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { Alert, App, Button, Card, Progress, Radio, Space, Typography } from 'antd'
+import { Alert, App, Button, Card, Radio, Space, Typography } from 'antd'
 import { Link, useNavigate } from 'react-router-dom'
 import { investmentStyleResult, investmentStyleStorageKey, investmentStyleTitle, parseSavedStyle, saveStyleSnapshot, styleQuestions, type SavedStyle, type StyleAnswers } from '../../../../shared/investment-style'
+import { FirewatchIcon } from '../../components/FirewatchIcon'
+import type { FirewatchIconName } from '../../../../shared/firewatch-icons'
 import './investment-style.css'
+
+// 결과 유형마다 장식용 심볼 — 게임 마스코트가 아니라 기존 추상 아이콘 세트를 재사용(실자산 화면 톤 유지).
+const STYLE_ICONS: Record<string, FirewatchIconName> = { routine: 'rules', research: 'audit', compare: 'indices', simple: 'selected', exploring: 'notice' }
 
 function readSaved() {
   try { return { saved: parseSavedStyle(localStorage.getItem(investmentStyleStorageKey)), error: '' } }
@@ -60,7 +65,7 @@ export function InvestmentStylePage() {
       {hasStoredValue && <Button danger onClick={remove}>이 브라우저의 저장 결과 삭제</Button>}
     </div></Card>}
     {view === 'questions' && <section aria-label="투자 방식 질문" className="style-flow">
-      <span role="status">질문 {index + 1} / {styleQuestions.length}</span><Progress percent={Math.round(index / styleQuestions.length * 100)} showInfo={false} />
+      <span role="status">질문 {index + 1} / {styleQuestions.length}</span><div className="style-steps" aria-hidden="true">{styleQuestions.map((q, i) => <div key={q.id} className={`style-step ${i < index ? 'done' : i === index ? 'current' : ''}`} />)}</div>
       <Card><div className="style-flow"><h3 ref={questionHeading} tabIndex={-1} id="style-question-title">{question.title}</h3><p id="style-question-help">{question.help}</p>
         <Radio.Group aria-labelledby="style-question-title" aria-describedby="style-question-help" value={answers[question.id]} onChange={event => setAnswers(current => ({ ...current, [question.id]: event.target.value }))} className="style-options">
           {question.options.map(option => <Radio key={option.id} value={option.id}>{option.label}</Radio>)}
@@ -70,7 +75,7 @@ export function InvestmentStylePage() {
       <small>답변은 자동 저장되지 않아요. 나갔다가 돌아오면 다시 답해야 해요.</small>
     </section>}
     {result && <section aria-label="나의 투자 방식 결과" className="style-flow">
-      <Card><div className="style-flow"><span>현재 답변으로 본 나의 관리 방식</span><h3 className="style-result-name">{result.name}</h3><p>{result.description}</p><p>{result.method}</p><details><summary>이 결과가 나온 답변 보기</summary>{result.evidence.map(item => <p key={item.question}>{item.question}<br /><strong>{item.answer}</strong></p>)}</details></div></Card>
+      <Card><div className="style-flow"><span>현재 답변으로 본 나의 관리 방식</span><div className="style-result-badge"><div className="style-result-icon"><FirewatchIcon name={STYLE_ICONS[result.kind]} size={28} /></div><h3 className="style-result-name">{result.name}</h3></div><p>{result.description}</p><p>{result.method}</p><details><summary>이 결과가 나온 답변 보기</summary>{result.evidence.map(item => <p key={item.question}>{item.question}<br /><strong>{item.answer}</strong></p>)}</details></div></Card>
       <Card title="마음과 상황을 따로 살펴봐요"><h4>감수하고 싶은 마음</h4><p>{result.willingnessText}</p><h4>현재 생활과 사용 시점</h4><p>{result.capacityText}</p></Card>
       <Card title="먼저 확인할 점"><ul>{result.notices.map(notice => <li key={notice}>{notice}</li>)}</ul></Card>
       <Card title="다음에 해볼 일"><ol><li>돈을 모으는 목적과 사용할 시점을 적어보세요.</li><li>내 투자에서 보유 이유와 다음 확인할 내용을 남겨보세요.</li></ol><p>{result.learning}</p><Space wrap><Button type="primary" onClick={() => navigate('/')}>내 투자로 이동</Button><Link to="/investment-info">투자 정보 이용안내 읽기</Link></Space></Card>

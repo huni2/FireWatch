@@ -11,5 +11,11 @@
 .style-options .ant-radio-wrapper { margin: 0; padding: 14px; min-height: 56px; border: 1px solid var(--ant-color-border); border-radius: 12px; white-space: normal; align-items: flex-start; }
 .style-options .ant-radio-wrapper-checked { border-color: var(--ant-color-primary); background: var(--ant-color-primary-bg); }
 .style-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
-.style-result-name { font-size: 28px; line-height: 1.4; }
+.style-result-name { font-size: 28px; line-height: 1.4; margin: 0; }
+.style-steps { display: flex; gap: 6px; }
+.style-step { flex: 1; height: 6px; border-radius: 3px; background: var(--ant-color-border-secondary); }
+.style-step.done { background: var(--ant-color-primary); }
+.style-step.current { background: var(--ant-color-primary); opacity: .45; }
+.style-result-badge { display: flex; align-items: center; gap: 16px; }
+.style-result-icon { width: 56px; height: 56px; border-radius: 50%; background: var(--ant-color-primary-bg); color: var(--ant-color-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 @media(max-width:599px) { .investment-style-page { gap: 18px; }.investment-style-page .ant-card-body { padding: 20px; }.style-controls > .ant-btn { flex: 1 1 120px; height: auto; min-height: 48px; white-space: normal; } }
