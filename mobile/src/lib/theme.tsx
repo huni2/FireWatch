@@ -52,6 +52,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try { await AsyncStorage.setItem(themeStorageKey, mode); setColorScheme(mode); setMode(mode) }
     finally { pending.current = false; setSaving(false) }
   }
-  if (!ready) return <View style={{ flex: 1, backgroundColor: light.canvas, alignItems: 'center', justifyContent: 'center', gap: 18 }}><Text style={{ color: light.muted }}>화면 설정을 확인하고 있어요</Text><LoadingIndicator color={light.accent} trackColor={light.border} label="화면 설정 확인 중" /></View>
+  if (!ready) return <View style={{ flex: 1, backgroundColor: light.canvas, alignItems: 'center', justifyContent: 'center', gap: 18 }}><Text style={{ color: light.muted }}>화면 설정을 확인하고 있어요</Text><LoadingIndicator color={light.primary} trackColor={light.border} label="화면 설정 확인 중" /></View>
   return <ThemeContext.Provider value={{ preference, dark: isDark, colors, saving, setPreference }}><View style={[variables, { flex: 1, backgroundColor: colors.canvas }]}><StatusBar style={isDark ? 'light' : 'dark'} />{children}</View></ThemeContext.Provider>
 }

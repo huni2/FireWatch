@@ -54,7 +54,7 @@ export function HoldingSearch({ registered, onSelect, onQueryChange }: { registe
     <TextInput accessibilityLabel="주식·ETF 검색" value={query} onChangeText={changeQuery} autoCapitalize="none" autoCorrect={false}
       placeholder="회사명, ETF명 또는 종목코드" placeholderTextColor={c.muted} returnKeyType="search"
       style={{ minHeight: 52, padding: 14, borderWidth: 1, borderColor: c.border, borderRadius: 12, color: c.text, fontSize: 16 }} />
-    {!!query && <Pressable accessibilityRole="button" accessibilityLabel="검색어 지우기" onPress={() => changeQuery('')} style={{ minHeight: 44, justifyContent: 'center' }}><Text style={{ color: c.accent }}>검색어 지우기</Text></Pressable>}
+    {!!query && <Pressable accessibilityRole="button" accessibilityLabel="검색어 지우기" onPress={() => changeQuery('')} style={{ minHeight: 44, justifyContent: 'center' }}><Text style={{ color: c.primary }}>검색어 지우기</Text></Pressable>}
     {!query.trim() && <View style={{ gap: 6 }}><Text style={{ color: c.muted, fontSize: 13 }}>검색 예시</Text><View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{['삼성전자', '애플', 'TIGER'].map(example => <Pressable key={example} accessibilityRole="button" accessibilityLabel={`${example} 검색`} onPress={() => changeQuery(example)} style={{ minHeight: 44, paddingHorizontal: 12, justifyContent: 'center', borderWidth: 1, borderColor: c.border, borderRadius: 12 }}><Text style={{ color: c.text }}>{example}</Text></Pressable>)}</View><Text style={{ color: c.muted, fontSize: 13 }}>예시를 누르면 관련 종목을 검색해요.</Text></View>}
     {(results.length > 0 || hasMore) && <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled" style={{ maxHeight: 300, borderWidth: 1, borderColor: c.border, borderRadius: 12 }}>
       {results.map(item => <Pressable key={item.symbol} accessibilityRole="button" accessibilityLabel={`${item.name}, ${holdingSearchDescription(item)}${registered.includes(item.symbol.toUpperCase()) ? ', 등록됨' : ''}`}
@@ -62,11 +62,11 @@ export function HoldingSearch({ registered, onSelect, onQueryChange }: { registe
         <Text style={{ color: c.text, fontWeight: '600', fontSize: 16 }}>{item.name}{registered.includes(item.symbol.toUpperCase()) ? ' · 등록됨' : ''}</Text>
         <Text style={{ color: c.muted, fontSize: 13 }}>{holdingSearchDescription(item)}</Text>
       </Pressable>)}
-      {hasMore && <Pressable accessibilityRole="button" disabled={loading} onPress={() => void more()} style={{ minHeight: 48, padding: 14 }}><Text style={{ color: c.accent }}>{loading ? '불러오는 중…' : '검색 결과 더 보기'}</Text></Pressable>}
+      {hasMore && <Pressable accessibilityRole="button" disabled={loading} onPress={() => void more()} style={{ minHeight: 48, padding: 14 }}><Text style={{ color: c.primary }}>{loading ? '불러오는 중…' : '검색 결과 더 보기'}</Text></Pressable>}
     </ScrollView>}
     <Text accessibilityLiveRegion="polite" style={{ color: error ? c.danger : c.muted, fontSize: 13 }}>
       {loading ? '검색 중…' : error ? '검색을 불러오지 못했어요. 입력한 검색어는 유지했어요.' : query.trim() ? total ? `검색 결과 ${total}개 · 보유한 종목을 눌러주세요.` : '등록 가능한 목록에 없어요. 다른 이름이나 종목코드로 검색해보세요.' : '검색 결과에서 보유한 종목을 선택해주세요.'}
     </Text>
-    {error && <Pressable accessibilityRole="button" onPress={() => { if (results.length && hasMore) void more(); else { setError(false); setLoading(true); setRetry(value => value + 1) } }} style={{ minHeight: 48, justifyContent: 'center' }}><Text style={{ color: c.accent }}>다시 시도</Text></Pressable>}
+    {error && <Pressable accessibilityRole="button" onPress={() => { if (results.length && hasMore) void more(); else { setError(false); setLoading(true); setRetry(value => value + 1) } }} style={{ minHeight: 48, justifyContent: 'center' }}><Text style={{ color: c.primary }}>다시 시도</Text></Pressable>}
   </View>
 }

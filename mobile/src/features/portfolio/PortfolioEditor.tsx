@@ -37,7 +37,7 @@ function Field({ label, value, change, numeric = false, unit }: { label: string;
  return <View style={{ gap: 8 }}><Text style={{ color: c.muted }}>{label}</Text><TextInput accessibilityLabel={label} value={value} onChangeText={change} keyboardType={numeric ? 'decimal-pad' : 'default'} style={{ minHeight: 48, borderWidth: 1, borderColor: c.border, borderRadius: 12, padding: 14, color: c.text }} />{unit && portfolioNumberHint(value, unit) && <Text style={{ color: c.muted }}>{portfolioNumberHint(value, unit)}</Text>}</View> }
 function Choice({ label, selected, press }: { label: string; selected: boolean; press: () => void }) {
   const { colors: c } = useTheme()
- return <Pressable accessibilityRole="button" accessibilityState={{ selected }} onPress={press} style={{ minHeight: 48, padding: 12, borderWidth: 1, borderColor: selected ? c.accent : c.border, borderRadius: 10 }}><Text style={{ color: selected ? c.accent : c.text }}>{label}</Text></Pressable> }
+ return <Pressable accessibilityRole="button" accessibilityState={{ selected }} onPress={press} style={{ minHeight: 48, padding: 12, borderWidth: 1, borderColor: selected ? c.primary : c.border, borderRadius: 10 }}><Text style={{ color: selected ? c.primary : c.text }}>{label}</Text></Pressable> }
 
 export function HoldingRegistration({ initial, others, editing, saving, error, close, save, editExisting }: { initial: Holding; others: Holding[]; editing: boolean; saving: boolean; error: string | null; close: () => void; save: (value: Holding) => void; editExisting: (symbol: string) => void }) {
   const { colors: c } = useTheme()
@@ -113,7 +113,7 @@ export function HoldingRegistration({ initial, others, editing, saving, error, c
       {costOpen ? <View style={{ gap: 8 }}><Field label={`평균 구매 가격 (선택) · ${holding.currency === 'KRW' ? '원 / 주' : '달러 / 주'}`} value={cost} change={text => { setCost(text); setValidation(null) }} numeric unit={holding.currency === 'KRW' ? '원' : '달러'} />
         {costError && <Text accessibilityRole="alert" style={{ color: c.danger }}>{costError}</Text>}
         <Text style={{ color: c.muted, lineHeight: 22 }}>증권 앱에 표시된 평균단가를 입력해주세요. 총 구매 금액이 아니에요.</Text><Text style={{ color: c.muted }}>비워두면 이 종목의 손익은 계산하지 않아요.</Text>
-      </View> : <Pressable accessibilityRole="button" onPress={() => setCostOpen(true)} style={{ minHeight: 48, justifyContent: 'center' }}><Text style={{ color: c.accent }}>＋ 평균 구매 가격 입력 (선택)</Text></Pressable>}
+      </View> : <Pressable accessibilityRole="button" onPress={() => setCostOpen(true)} style={{ minHeight: 48, justifyContent: 'center' }}><Text style={{ color: c.primary }}>＋ 평균 구매 가격 입력 (선택)</Text></Pressable>}
       {(editing || metadataMissing) && <View style={{ gap: 12 }}><Choice label={metadataMissing ? '종목 정보 보완' : `저장된 종목 정보 ${advanced ? '접기' : '수정'}`} selected={advanced || (metadataMissing && !checking)} press={() => setAdvanced(!advanced)} />
         {(advanced || (metadataMissing && !checking)) && <View style={{ gap: 18 }}>
           {metadataMissing && <Text style={{ color: c.muted }}>자동 확인하지 못한 정보가 있어요. 분류와 통화를 확인해주세요.</Text>}

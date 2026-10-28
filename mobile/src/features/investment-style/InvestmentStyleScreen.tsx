@@ -69,7 +69,7 @@ export function InvestmentStyleScreen() {
   const result = view === 'result' ? investmentStyleResult(answers) : null
   const matchesSaved = !!saved && JSON.stringify(saved.answers) === JSON.stringify(answers)
   return <View style={{ flex: 1, backgroundColor: c.canvas }}>
-    <Stack.Screen options={{ title: '내 투자 방식 찾기', headerLeft: () => <Pressable accessibilityRole="button" accessibilityLabel="내 투자로 돌아가기" disabled={busy} onPress={leave} style={{ minHeight: 48, paddingRight: 12, justifyContent: 'center' }}><Text style={{ color: c.accent }}>← 돌아가기</Text></Pressable> }} />
+    <Stack.Screen options={{ title: '내 투자 방식 찾기', headerLeft: () => <Pressable accessibilityRole="button" accessibilityLabel="내 투자로 돌아가기" disabled={busy} onPress={leave} style={{ minHeight: 48, paddingRight: 12, justifyContent: 'center' }}><Text style={{ color: c.primary }}>← 돌아가기</Text></Pressable> }} />
     <ScrollView ref={scroll} contentContainerStyle={{ padding: 20, gap: 20, paddingBottom: 40 }}>
       <Text accessibilityRole="header" style={{ color: c.text, fontSize: 26, fontWeight: '700', lineHeight: 36 }}>{investmentStyleTitle}</Text><Text style={muted}>현재 답변으로 내 상황과 편한 관리 방식을 살펴봐요.</Text>
       {!!error && <Text accessibilityRole="alert" style={{ ...muted, color: c.danger }}>{error}</Text>}
@@ -82,8 +82,8 @@ export function InvestmentStyleScreen() {
       </Panel> : null}
       {!loading && view === 'questions' && <>
         <Text accessibilityLiveRegion="polite" style={muted}>질문 {index + 1} / {styleQuestions.length}</Text>
-        <View accessibilityLabel={`${styleQuestions.length}개 중 ${index}개 진행`} style={{ height: 6, backgroundColor: c.border, borderRadius: 6 }}><View style={{ height: 6, width: `${index / styleQuestions.length * 100}%`, backgroundColor: c.accent, borderRadius: 6 }} /></View>
-        <Panel title={question.title}><Text style={muted}>{question.help}</Text><View accessibilityRole="radiogroup" accessibilityLabel={question.title} style={{ gap: 12 }}>{question.options.map(option => <Pressable key={option.id} accessibilityRole="radio" accessibilityState={{ checked: answers[question.id] === option.id }} onPress={() => setAnswers(current => ({ ...current, [question.id]: option.id }))} style={{ padding: 16, minHeight: 56, borderWidth: 1, borderRadius: 12, borderColor: answers[question.id] === option.id ? c.accent : c.border, backgroundColor: answers[question.id] === option.id ? c.accentSoft : c.surface }}><Text style={text}>{option.label}</Text></Pressable>)}</View></Panel>
+        <View accessibilityLabel={`${styleQuestions.length}개 중 ${index}개 진행`} style={{ height: 6, backgroundColor: c.border, borderRadius: 6 }}><View style={{ height: 6, width: `${index / styleQuestions.length * 100}%`, backgroundColor: c.primary, borderRadius: 6 }} /></View>
+        <Panel title={question.title}><Text style={muted}>{question.help}</Text><View accessibilityRole="radiogroup" accessibilityLabel={question.title} style={{ gap: 12 }}>{question.options.map(option => <Pressable key={option.id} accessibilityRole="radio" accessibilityState={{ checked: answers[question.id] === option.id }} onPress={() => setAnswers(current => ({ ...current, [question.id]: option.id }))} style={{ padding: 16, minHeight: 56, borderWidth: 1, borderRadius: 12, borderColor: answers[question.id] === option.id ? c.primary : c.border, backgroundColor: answers[question.id] === option.id ? c.primarySoft : c.surface }}><Text style={text}>{option.label}</Text></Pressable>)}</View></Panel>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}><ActionButton label="이전 질문" disabled={index === 0} onPress={() => setIndex(index - 1)} /><ActionButton tone="primary" label={index === styleQuestions.length - 1 ? '내 결과 보기' : '다음 질문'} disabled={!answers[question.id]} onPress={() => { if (index === styleQuestions.length - 1) setView('result'); else setIndex(index + 1) }} /></View>
         <Text style={muted}>답변은 자동 저장되지 않아요. 나갔다가 돌아오면 다시 답해야 해요.</Text>
       </>}
@@ -98,7 +98,7 @@ export function InvestmentStyleScreen() {
           {hasStoredValue && <ActionButton fullWidth label="저장 결과 삭제" disabled={busy} onPress={remove} />}
         </Panel>
         <ActionButton fullWidth label="답변 다시 보고 수정하기" disabled={busy} onPress={() => { setIndex(0); setView('questions') }} />
-        <Pressable accessibilityRole="button" accessibilityState={{ expanded: answersExpanded }} onPress={() => setAnswersExpanded(!answersExpanded)} style={{ minHeight: 48, justifyContent: 'center' }}><Text style={{ color: c.accent }}>{answersExpanded ? '전체 답변 접기' : '전체 답변 보기'}</Text></Pressable>
+        <Pressable accessibilityRole="button" accessibilityState={{ expanded: answersExpanded }} onPress={() => setAnswersExpanded(!answersExpanded)} style={{ minHeight: 48, justifyContent: 'center' }}><Text style={{ color: c.primary }}>{answersExpanded ? '전체 답변 접기' : '전체 답변 보기'}</Text></Pressable>
         {answersExpanded && <Panel title="전체 답변">{styleQuestions.map(q => <View key={q.id} style={{ gap: 4 }}><Text style={muted}>{q.title}</Text><Text style={text}>{q.options.find(option => option.id === answers[q.id])?.label}</Text></View>)}</Panel>}
         <Text style={muted}>규칙으로 답변을 정리한 자기점검이에요. 투자 실력이나 상품 적합성을 판정하지 않으며, 생활과 목표가 달라지면 다시 확인해주세요.</Text>
       </>}
