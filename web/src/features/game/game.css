@@ -1,3 +1,8 @@
+/* 투자연습 전용 보라 — 실자산 화면의 인디고와 섞이지 않게. AntD 컴포넌트는 GameExperience의
+   nested ConfigProvider가 colorPrimary를 같이 덮어쓴다(여긴 var(--ant-color-primary) 직접
+   읽는 FirewatchIcon 같은 네이티브 CSS 소비자만 커버). */
+.game-page { --ant-color-primary: #8B5CF6; }
+[data-theme="dark"] .game-page { --ant-color-primary: #A78BFA; }
 .game-page { display: grid; gap: 24px; font-variant-numeric: tabular-nums; }
 .order-rail { min-width: 0; }
 .order-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
