@@ -60,7 +60,7 @@ export function HoldingSearch({ id, registered, onSelect, onQueryChange }: { id:
       options={results.map(item => ({ value: item.symbol, result: item, label: <div className="holding-search-result"><strong>{item.name}{registered.includes(item.symbol.toUpperCase()) && <span className="holding-registered">등록됨</span>}</strong><small>{holdingSearchDescription(item)}</small></div> }))}
       onPopupScroll={event => { const node = event.currentTarget; if (node.scrollHeight - node.scrollTop - node.clientHeight < 40) void more() }}
       dropdownRender={menu => <>{menu}{hasMore && <Button block type="text" loading={loading} onMouseDown={event => event.preventDefault()} onClick={() => void more()}>검색 결과 더 보기</Button>}</>}>
-      <Input id={id} aria-label="주식·ETF 검색" aria-describedby={`${id}-status`} allowClear placeholder="회사명, ETF명 또는 종목코드" size="large" />
+      <Input id={id} aria-label="주식·ETF 검색" aria-describedby={`${id}-status`} allowClear autoFocus placeholder="회사명, ETF명 또는 종목코드" size="large" />
     </AutoComplete>
     {!query.trim() && <div className="holding-search-examples" aria-label="검색어 예시"><small>검색 예시</small>{['삼성전자', '애플', 'TIGER'].map(example => <Button key={example} type="text" onClick={() => { changeQuery(example); input.current?.focus() }}>{example}</Button>)}<small>예시를 누르면 관련 종목을 검색해요.</small></div>}
     <div id={`${id}-status`} role="status" aria-live="polite">

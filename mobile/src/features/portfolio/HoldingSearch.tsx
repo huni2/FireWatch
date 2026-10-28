@@ -51,7 +51,7 @@ export function HoldingSearch({ registered, onSelect, onQueryChange }: { registe
   }
   return <View style={{ gap: 8 }}>
     <Text style={{ color: c.text, fontWeight: '600' }}>주식·ETF 검색</Text>
-    <TextInput accessibilityLabel="주식·ETF 검색" value={query} onChangeText={changeQuery} autoCapitalize="none" autoCorrect={false}
+    <TextInput accessibilityLabel="주식·ETF 검색" value={query} onChangeText={changeQuery} autoCapitalize="none" autoCorrect={false} autoFocus
       placeholder="회사명, ETF명 또는 종목코드" placeholderTextColor={c.muted} returnKeyType="search"
       style={{ minHeight: 52, padding: 14, borderWidth: 1, borderColor: c.border, borderRadius: 12, color: c.text, fontSize: 16 }} />
     {!!query && <Pressable accessibilityRole="button" accessibilityLabel="검색어 지우기" onPress={() => changeQuery('')} style={{ minHeight: 44, justifyContent: 'center' }}><Text style={{ color: c.primary }}>검색어 지우기</Text></Pressable>}
