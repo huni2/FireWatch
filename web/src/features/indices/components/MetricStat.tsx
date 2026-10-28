@@ -1,7 +1,7 @@
 import { Card, Statistic } from 'antd'
 import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons'
 import { motion } from 'framer-motion'
-import { BRAND_GREEN, TREND_DOWN_COLOR, TREND_UP_COLOR } from '../../../lib/theme'
+import { BRAND_PRIMARY, TREND_DOWN_COLOR, TREND_UP_COLOR } from '../../../lib/theme'
 
 interface MetricStatProps {
   title: string
@@ -49,7 +49,7 @@ export function MetricStat({ title, value, previousValue, precision = 2, suffix,
           style={{
             position: 'absolute',
             inset: 0,
-            background: trendColor ?? BRAND_GREEN,
+            background: trendColor ?? BRAND_PRIMARY,
             pointerEvents: 'none',
           }}
         />

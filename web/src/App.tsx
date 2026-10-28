@@ -31,7 +31,7 @@ export default function App() {
   useEffect(() => {
     document.documentElement.dataset.theme = darkMode ? 'dark' : 'light'
     const palette = darkMode ? designTokens.dark : designTokens.light
-    const cssColors = { primary: darkMode ? designTokens.accent : designTokens.light.accent, 'bg-layout': palette.canvas, 'bg-container': palette.surface, 'bg-elevated': palette.elevated, text: palette.text, 'text-secondary': palette.muted, border: palette.border, 'border-secondary': palette.border, 'fill-tertiary': darkMode ? '#ffffff0d' : '#00000008' }
+    const cssColors = { primary: darkMode ? designTokens.primary : designTokens.light.primary, 'bg-layout': palette.canvas, 'bg-container': palette.surface, 'bg-elevated': palette.elevated, text: palette.text, 'text-secondary': palette.muted, border: palette.border, 'border-secondary': palette.border, 'fill-tertiary': darkMode ? '#ffffff0d' : '#00000008' }
     for (const [key, color] of Object.entries(cssColors)) document.documentElement.style.setProperty(`--ant-color-${key}`, color)
     try { localStorage.setItem('firewatch-theme', darkMode ? 'dark' : 'light') } catch { /* Theme works without storage. */ }
   }, [darkMode])

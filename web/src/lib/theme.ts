@@ -1,13 +1,13 @@
 import { theme as antdTheme, type ThemeConfig } from 'antd'
 import tokens from '../../../shared/design-tokens.json'
 
-// 2026-10-07: 기본 라이트·선택 다크와 오렌지, 웹·모바일 공유 토큰을 사용한다.
-const FONT_FAMILY = "'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+// 2026-10-28: 인디고 브랜드 리디자인. 오렌지(accent)는 불꽃 로고·아이콘 불씨 서명 전용으로 남기고,
+// 버튼/링크/포커스 등 액션 색은 새 primary 토큰(인디고)을 쓴다 — docs/design 목업과 context-notes.md 참고.
+const FONT_FAMILY = "'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
 
-// 기존 import 이름을 유지하되 값은 오렌지 브랜드 토큰이다.
-export const BRAND_GREEN = tokens.light.accent
-// 밝은 배경에서는 대비를 위해 더 짙은 오렌지를 사용한다.
-const BRAND_GREEN_DARK = tokens.accent
+export const BRAND_PRIMARY = tokens.light.primary
+// 밝은 배경에서는 대비를 위해 더 밝은 인디고를 사용한다.
+const BRAND_PRIMARY_DARK = tokens.primary
 
 const CARD_SHADOW_LIGHT = '0 0 0.5px rgba(0, 0, 0, 0.14), 0 1px 1px rgba(0, 0, 0, 0.24)'
 const CARD_SHADOW_DARK = '0 0 0.5px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.5)'
@@ -17,9 +17,9 @@ const sharedTokens = {
   controlHeightSM: 44,
   controlHeightLG: 48,
   fontFamily: FONT_FAMILY,
-  colorPrimary: BRAND_GREEN,
-  borderRadius: 12,
-  borderRadiusLG: 16,
+  colorPrimary: BRAND_PRIMARY,
+  borderRadius: 14,
+  borderRadiusLG: 20,
   fontSize: tokens.typography.body,
   fontSizeHeading1: tokens.typography.title,
   fontSizeHeading3: tokens.typography.section,
@@ -36,7 +36,7 @@ export const lightThemeConfig: ThemeConfig = {
   components: {
     Layout: { headerBg: '#FFFFFF', bodyBg: tokens.light.canvas },
     Card: { boxShadowTertiary: CARD_SHADOW_LIGHT },
-    Button: { borderRadius: 10 },
+    Button: { borderRadius: 14 },
   },
 }
 
@@ -44,7 +44,7 @@ export const darkThemeConfig: ThemeConfig = {
   algorithm: antdTheme.darkAlgorithm,
   token: {
     ...sharedTokens,
-    colorPrimary: BRAND_GREEN_DARK,
+    colorPrimary: BRAND_PRIMARY_DARK,
     // 카드 표면을 배경보다 뚜렷이 밝게 + 테두리를 명시적으로 줘서 그림자에만 기대지 않게 함
     // (실측: 그림자 기반 구분은 어두운 바탕 위에서 그림자 자체가 거의 안 보여 카드 경계가 사라짐).
     colorBgLayout: tokens.dark.canvas,
@@ -58,7 +58,7 @@ export const darkThemeConfig: ThemeConfig = {
   components: {
     Layout: { headerBg: tokens.dark.surface, bodyBg: tokens.dark.canvas },
     Card: { boxShadowTertiary: CARD_SHADOW_DARK },
-    Button: { borderRadius: 10, primaryColor: '#18110D' },
+    Button: { borderRadius: 14 },
   },
 }
 

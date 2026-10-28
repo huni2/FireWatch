@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react'
 import { Card, Empty, Segmented, Select } from 'antd'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { Briefing } from '../../../lib/api'
-import { BRAND_GREEN } from '../../../lib/theme'
+import { BRAND_PRIMARY } from '../../../lib/theme'
 
-const CHART_COLOR = BRAND_GREEN
+const CHART_COLOR = BRAND_PRIMARY
 
 interface RateChartProps {
   history: Briefing[]

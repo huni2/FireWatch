@@ -12,13 +12,13 @@ import { OperatorPushSetup } from '../../components/OperatorPushSetup'
 import { CollectionNotice } from '../../components/CollectionNotice'
 import { useIsOperator } from '../../lib/operatorAccess'
 import { useLatestBriefing } from '../dashboard/hooks/useLatestBriefing'
-import { BRAND_GREEN, SECTION_CARD_PROPS } from '../../lib/theme'
+import { BRAND_PRIMARY, SECTION_CARD_PROPS } from '../../lib/theme'
 import '../support-pages.css'
 
 // AntD 정적 message는 ConfigProvider 테마를 못 받는 v5 known limitation이 있어, App.useApp()으로
-// 받은 인스턴스에만 브랜드 그린 성공 아이콘을 지정한다(에러는 AntD 기본 색 그대로 — 감사로그 고정 4색과
+// 받은 인스턴스에만 브랜드 primary 색 성공 아이콘을 지정한다(에러는 AntD 기본 색 그대로 — 감사로그 고정 4색과
 // 마찬가지로 의미색은 건드리지 않는다).
-const successIcon = <CheckCircleFilled style={{ color: BRAND_GREEN }} />
+const successIcon = <CheckCircleFilled style={{ color: BRAND_PRIMARY }} />
 
 // KeywordInput 기본값(components/KeywordInput.tsx)과 동일한 상한 — 추천 칩 클릭이 onChange를
 // 직접 호출해 KeywordInput 내부 가드를 안 거치므로 여기서 별도로 체크해야 한다(2026-09-01).
