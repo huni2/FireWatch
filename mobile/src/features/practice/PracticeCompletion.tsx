@@ -10,7 +10,7 @@ import { FirewatchIcon } from '../../components/FirewatchIcon'
 export function PracticeCompletion({ turn, close, publish }: { turn: PracticeTurn; close: () => void; publish: () => void }) {
   const result = gameCompletion(turn)
   const [expanded, setExpanded] = useState(false)
-  return <AppSheet open title="게임 결과" close={close} footer={<View style={{ gap: 12 }}>{result.canPublish && <ActionButton fullWidth tone="next" label="순위 등록 선택하기" onPress={publish} />}<ActionButton fullWidth label="결과 화면 보기" onPress={close} /></View>}>
+  return <AppSheet open title="게임 결과" close={close} footer={<View style={{ gap: 12 }}>{result.canPublish && <ActionButton fullWidth tone="game" label="순위 등록 선택하기" onPress={publish} />}<ActionButton fullWidth label="결과 화면 보기" onPress={close} /></View>}>
     <AppSheetScrollView contentContainerStyle={{ paddingHorizontal: 24, gap: 24 }}>
       <View className="flex-row items-center gap-3"><FirewatchIcon name="turn-result" size={36} /><Text className="text-muted">가상투자 결과 · {result.progress}</Text></View>
       <Text className="text-2xl font-bold text-ink" accessibilityRole="header">{result.title}</Text>
