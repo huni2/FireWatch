@@ -3,13 +3,6 @@
 .help-intro h1 { margin: 10px 0; font-size: clamp(26px, 3vw, 34px); letter-spacing: -1px; }
 .help-intro p { margin: 0; color: var(--ant-color-text-secondary); line-height: 1.7; }
 .help-intro .ant-btn { flex-shrink: 0; }
-.help-shortcuts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.help-shortcut { display: grid; gap: 10px; color: var(--ant-color-text); border: 1px solid var(--ant-color-border); border-radius: 18px; padding: 22px; background: var(--ant-color-bg-container); transition: border-color .2s, background-color .2s; }
-.help-shortcut:hover { color: var(--ant-color-text); border-color: var(--ant-color-primary); background: color-mix(in srgb, var(--ant-color-primary) 5%, var(--ant-color-bg-container)); }
-.help-shortcut-number { font-size: 12px; font-weight: 800; letter-spacing: 2px; color: var(--ant-color-primary); }
-.help-shortcut h2 { font-size: 19px; margin: 0; }
-.help-shortcut p { color: var(--ant-color-text-secondary); font-size: 14px; line-height: 1.7; margin: 0; }
-.help-shortcut-action { display: flex; gap: 8px; align-items: center; margin-top: 4px; font-weight: 700; color: var(--ant-color-primary); }
 .help-search-row { display: flex; gap: 24px; align-items: center; margin-bottom: 16px; }
 .help-search-row h2 { font-size: 21px; white-space: nowrap; margin: 0; }
 .help-search-row .ant-input-affix-wrapper { max-width: 540px; margin-left: auto; }
@@ -35,8 +28,7 @@
 .help-empty { text-align: center; padding: 24px; border: 1px dashed var(--ant-color-border); border-radius: 16px; }
 .help-page a:focus-visible,.help-categories button:focus-visible { outline: 2px solid var(--ant-color-primary); outline-offset: 3px; }
 @media(max-width:800px) { .help-intro { align-items: start; flex-direction: column; gap: 16px; }.help-answer-layout { grid-template-columns: 1fr; gap: 16px; }.help-categories { display: flex; flex-wrap: wrap; position: static; gap: 8px; }.help-categories button { border-color: var(--ant-color-border); }.help-search-row { flex-direction: column; align-items: stretch; gap: 12px; }.help-search-row .ant-input-affix-wrapper { max-width: none; margin-left: 0; } }
-@media(max-width:560px) { .help-page { gap: 22px; }.help-shortcuts { grid-template-columns: 1fr; gap: 10px; }.help-shortcut { padding: 16px 18px; gap: 6px; }.help-shortcut-number { display: none; }.help-shortcut h2 { font-size: 17px; }.help-shortcut-action { font-size: 14px; }.help-faq.ant-collapse .ant-collapse-header { padding: 16px; }.help-boundary { padding: 18px; } }
-@media(prefers-reduced-motion:reduce) { .help-shortcut { transition: none; } }
+@media(max-width:560px) { .help-page { gap: 22px; }.help-faq.ant-collapse .ant-collapse-header { padding: 16px; }.help-boundary { padding: 18px; } }
 .help-page { gap: 18px; }
 .help-intro h1 { margin: 0 0 6px; font-size: 28px; }
 .help-quick-links { display: flex; flex-wrap: wrap; gap: 8px 18px; }
