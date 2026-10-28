@@ -3,12 +3,21 @@ import { Alert, BackHandler, Pressable, ScrollView, Text, View } from 'react-nat
 import { Stack, router } from 'expo-router'
 import * as SecureStore from 'expo-secure-store'
 import { ActionButton } from '@/components/ActionButton'
+import { FirewatchIcon } from '../../components/FirewatchIcon'
 import { useTheme } from '@/lib/theme'
 import { investmentStyleResult, investmentStyleStorageKey, investmentStyleTitle, parseSavedStyle, saveStyleSnapshot, styleQuestions, type SavedStyle, type StyleAnswers } from '../../../../shared/investment-style'
+import type { FirewatchIconName } from '../../../../shared/firewatch-icons'
 
-function Panel({ title, children }: { title: string; children: ReactNode }) {
+// 결과 유형마다 장식용 심볼 — 게임 마스코트가 아니라 기존 추상 아이콘 세트를 재사용(실자산 화면 톤 유지, 웹과 동일 매핑).
+const STYLE_ICONS: Record<string, FirewatchIconName> = { routine: 'rules', research: 'audit', compare: 'indices', simple: 'selected', exploring: 'notice' }
+
+function Panel({ title, icon, children }: { title: string; icon?: FirewatchIconName; children: ReactNode }) {
   const { colors: c } = useTheme()
-  return <View style={{ gap: 16, padding: 20, borderWidth: 1, borderColor: c.border, borderRadius: 16, backgroundColor: c.surface }}><Text accessibilityRole="header" style={{ color: c.text, fontSize: 20, fontWeight: '700', lineHeight: 28 }}>{title}</Text>{children}</View>
+  const heading = <Text accessibilityRole="header" style={{ color: c.text, fontSize: 20, fontWeight: '700', lineHeight: 28, flexShrink: 1 }}>{title}</Text>
+  return <View style={{ gap: 16, padding: 20, borderWidth: 1, borderColor: c.border, borderRadius: 16, backgroundColor: c.surface }}>
+    {icon ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}><View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: c.primarySoft, alignItems: 'center', justifyContent: 'center' }}><FirewatchIcon name={icon} size={24} color={c.primary} monochrome /></View>{heading}</View> : heading}
+    {children}
+  </View>
 }
 export function InvestmentStyleScreen() {
   const { colors: c } = useTheme()
@@ -82,13 +91,13 @@ export function InvestmentStyleScreen() {
       </Panel> : null}
       {!loading && view === 'questions' && <>
         <Text accessibilityLiveRegion="polite" style={muted}>질문 {index + 1} / {styleQuestions.length}</Text>
-        <View accessibilityLabel={`${styleQuestions.length}개 중 ${index}개 진행`} style={{ height: 6, backgroundColor: c.border, borderRadius: 6 }}><View style={{ height: 6, width: `${index / styleQuestions.length * 100}%`, backgroundColor: c.primary, borderRadius: 6 }} /></View>
+        <View accessibilityLabel={`${styleQuestions.length}개 중 ${index}개 진행`} style={{ flexDirection: 'row', gap: 6 }}>{styleQuestions.map((q, i) => <View key={q.id} style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: i <= index ? c.primary : c.border, opacity: i === index ? 0.45 : 1 }} />)}</View>
         <Panel title={question.title}><Text style={muted}>{question.help}</Text><View accessibilityRole="radiogroup" accessibilityLabel={question.title} style={{ gap: 12 }}>{question.options.map(option => <Pressable key={option.id} accessibilityRole="radio" accessibilityState={{ checked: answers[question.id] === option.id }} onPress={() => setAnswers(current => ({ ...current, [question.id]: option.id }))} style={{ padding: 16, minHeight: 56, borderWidth: 1, borderRadius: 12, borderColor: answers[question.id] === option.id ? c.primary : c.border, backgroundColor: answers[question.id] === option.id ? c.primarySoft : c.surface }}><Text style={text}>{option.label}</Text></Pressable>)}</View></Panel>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}><ActionButton label="이전 질문" disabled={index === 0} onPress={() => setIndex(index - 1)} /><ActionButton tone="primary" label={index === styleQuestions.length - 1 ? '내 결과 보기' : '다음 질문'} disabled={!answers[question.id]} onPress={() => { if (index === styleQuestions.length - 1) setView('result'); else setIndex(index + 1) }} /></View>
         <Text style={muted}>답변은 자동 저장되지 않아요. 나갔다가 돌아오면 다시 답해야 해요.</Text>
       </>}
       {!loading && result && <>
-        <Panel title={result.name}><Text style={muted}>현재 답변으로 본 나의 관리 방식</Text><Text style={text}>{result.description}</Text><Text style={text}>{result.method}</Text>{result.evidence.map(item => <View key={item.question} style={{ gap: 4 }}><Text style={muted}>{item.question}</Text><Text style={text}>{item.answer}</Text></View>)}</Panel>
+        <Panel title={result.name} icon={STYLE_ICONS[result.kind]}><Text style={muted}>현재 답변으로 본 나의 관리 방식</Text><Text style={text}>{result.description}</Text><Text style={text}>{result.method}</Text>{result.evidence.map(item => <View key={item.question} style={{ gap: 4 }}><Text style={muted}>{item.question}</Text><Text style={text}>{item.answer}</Text></View>)}</Panel>
         <Panel title="마음과 상황을 따로 살펴봐요"><Text style={text}>감수하고 싶은 마음</Text><Text style={muted}>{result.willingnessText}</Text><Text style={text}>현재 생활과 사용 시점</Text><Text style={muted}>{result.capacityText}</Text></Panel>
         <Panel title="먼저 확인할 점">{result.notices.map(notice => <Text key={notice} style={text}>• {notice}</Text>)}</Panel>
         <Panel title="다음에 해볼 일"><Text style={text}>1. 돈을 모으는 목적과 사용할 시점을 적어보세요.{`\n`}2. 내 투자에서 보유 이유와 다음 확인할 내용을 남겨보세요.</Text><Text style={muted}>{result.learning}</Text><ActionButton fullWidth tone="primary" label="내 투자로 이동" onPress={() => router.replace('/')} /><ActionButton fullWidth label="투자 정보 이용안내 읽기" onPress={() => router.push('/investment-info')} /></Panel>
