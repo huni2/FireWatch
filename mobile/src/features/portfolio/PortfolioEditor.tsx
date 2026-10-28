@@ -14,6 +14,16 @@ import { accountLabels, assetLabels, riskLabels } from '../../../../shared/inves
 import type { Holding, PortfolioDraft } from '../../../../shared/investing'
 import { parsePortfolioNumber, portfolioNumberHint } from '../../../../shared/portfolio-input'
 
+// 숫자 키패드는 항상 끝에 이어 입력하므로, 입력 중에도 커서 걱정 없이 천단위 콤마를 바로 넣어준다.
+// parsePortfolioNumber가 콤마 섞인 문자열을 이미 올바르게 해석하므로 저장값 자체를 이 형태로 둬도 안전하다.
+function groupThousands(raw: string): string {
+  const cleaned = raw.replace(/,/g, '')
+  const [intPart, decPart] = cleaned.split('.')
+  if (!intPart) return cleaned
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return decPart === undefined ? grouped : `${grouped}.${decPart}`
+}
+
 export function EditorFrame({ title, saving, error, changed, close, submit, button, children, submitDisabled = false }: { submitDisabled?: boolean; title: string; saving: boolean; error: string | null; changed: boolean; close: () => void; submit: () => void; button: string; children: ReactNode }) {
   const { colors: c } = useTheme()
 
@@ -34,7 +44,7 @@ export function EditorFrame({ title, saving, error, changed, close, submit, butt
 }
 function Field({ label, value, change, numeric = false, unit }: { label: string; value: string; change: (value: string) => void; numeric?: boolean; unit?: string }) {
   const { colors: c } = useTheme()
- return <View style={{ gap: 8 }}><Text style={{ color: c.muted }}>{label}</Text><TextInput accessibilityLabel={label} value={value} onChangeText={change} keyboardType={numeric ? 'decimal-pad' : 'default'} style={{ minHeight: 48, borderWidth: 1, borderColor: c.border, borderRadius: 12, padding: 14, color: c.text }} />{unit && portfolioNumberHint(value, unit) && <Text style={{ color: c.muted }}>{portfolioNumberHint(value, unit)}</Text>}</View> }
+ return <View style={{ gap: 8 }}><Text style={{ color: c.muted }}>{label}</Text><TextInput accessibilityLabel={label} value={value} onChangeText={text => change(numeric ? groupThousands(text) : text)} keyboardType={numeric ? 'decimal-pad' : 'default'} style={{ minHeight: 48, borderWidth: 1, borderColor: c.border, borderRadius: 12, padding: 14, color: c.text }} />{unit && portfolioNumberHint(value, unit) && <Text style={{ color: c.muted }}>{portfolioNumberHint(value, unit)}</Text>}</View> }
 function Choice({ label, selected, press }: { label: string; selected: boolean; press: () => void }) {
   const { colors: c } = useTheme()
  return <Pressable accessibilityRole="button" accessibilityState={{ selected }} onPress={press} style={{ minHeight: 48, padding: 12, borderWidth: 1, borderColor: selected ? c.primary : c.border, borderRadius: 10 }}><Text style={{ color: selected ? c.primary : c.text }}>{label}</Text></Pressable> }
@@ -105,7 +115,7 @@ export function HoldingRegistration({ initial, others, editing, saving, error, c
       {selectionNotice && <Text accessibilityLiveRegion="polite" style={{ color: c.muted }}>{selectionNotice}</Text>}
       {checking && <Text accessibilityLiveRegion="polite" style={{ color: c.muted }}>종목 정보를 확인하고 있어요…</Text>}
       <View style={{ gap: 8 }}><Text style={{ color: c.text, fontWeight: '600' }}>보유 수량</Text><View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: quantityError ? c.danger : c.border, borderRadius: 12 }}>
-        <TextInput ref={quantityInput} accessibilityLabel="보유 수량" keyboardType="decimal-pad" value={quantity} onChangeText={text => { setQuantity(text); setValidation(null) }} returnKeyType="done" onSubmitEditing={Keyboard.dismiss} style={{ flex: 1, minHeight: 56, padding: 14, fontSize: 24, color: c.text }} /><Text style={{ paddingRight: 16, color: c.muted }}>주</Text></View>
+        <TextInput ref={quantityInput} accessibilityLabel="보유 수량" keyboardType="decimal-pad" value={quantity} onChangeText={text => { setQuantity(groupThousands(text)); setValidation(null) }} returnKeyType="done" onSubmitEditing={Keyboard.dismiss} style={{ flex: 1, minHeight: 56, padding: 14, fontSize: 24, color: c.text }} /><Text style={{ paddingRight: 16, color: c.muted }}>주</Text></View>
         {quantityError && <Text accessibilityRole="alert" style={{ color: c.danger }}>{quantityError}</Text>}
         <Text style={{ color: c.muted, lineHeight: 20 }}>현재 보유한 총수량을 입력해주세요. 소수점 네 자리까지 입력할 수 있어요.</Text>
         {!!quantity && portfolioNumberHint(quantity, '주') && <Text style={{ color: c.muted }}>{portfolioNumberHint(quantity, '주')}</Text>}
