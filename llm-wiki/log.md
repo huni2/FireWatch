@@ -21,6 +21,7 @@
 - **[APP] 같은 검색창 자동 포커스 모바일에도 적용**: `HoldingSearch.tsx`의 `TextInput`에 `autoFocus` 추가. `npx tsc --noEmit`·`expo lint` 통과.
 - **[WEB] "범위 터져도 됨" 승인 후 입력 전수 조사 — 게임 거래 수량도 같은 결함**: 포커스·전체선택 패턴을 재확인하며 웹의 `InputNumber` 전체(`grep`으로 3곳 확인 — 보유수량·매입가·보유현금·월투자금은 이미 고침)를 점검, 투자연습 게임의 거래 수량 `InputNumber`만 포맷터가 없다는 걸 발견. `HoldingDrawer`의 `formatCommitted` 패턴을 그대로 가져와 적용(입력 중엔 그대로, 멈추면 콤마 · 포커스 시 전체선택). `npm run build`·`lint` 통과, 배포.
 - **[APP] 같은 게임 거래 수량 결함 모바일에도 — 파싱 버그 동반 수정**: 모바일은 콤마 포맷 자체가 없었던 데다, 추가하려면 `Number(quantity)` 파싱이 콤마 섞인 문자열에서 `NaN`이 되는 숨은 버그까지 같이 고쳐야 했음 — `groupThousands`로 표시를 바꾸고 파싱은 이미 콤마를 올바르게 처리하는 `parsePortfolioNumber`로 교체(이 한 곳만 바꾸면 되는 이유: `qty` 변수가 파생되는 지점이 `PracticeScreen.tsx`에 단 한 줄이고 이후 전부 재사용). `selectTextOnFocus`도 추가. `npx tsc --noEmit`·`expo lint` 통과. 웹·모바일 전체에서 숫자 입력 중 콤마/포커스 포맷이 없는 곳은 이제 없음(전수 grep 확인). 모바일은 다음 AAB 대상에 추가(`Next-Tasks.md` APP-33에 누적 기록).
+- **[APP] "다 봐줘" 요청으로 로딩/피드백/빈 목록/삭제 확인 전수 점검(서브에이전트 위임)**: 입력 포맷 축 다음으로 다른 인터랙션 품질 축 — 버튼 busy 표시, 성공/실패 피드백, 빈 목록 안내, 삭제 전 확인 — 를 모바일 전체 기능(`mobile/src/features/*`)에서 전수 점검. `GoogleLinkButton.tsx`의 기기 관리 3개 버튼(연결된 기기 확인·연결 해제·로그아웃)이 하나의 `deviceBusy`로 서로 막긴 했지만 눌러도 로딩 표시가 전혀 없던 걸 발견 — "지금 뭐가 실행 중인지" 담는 `deviceAction`으로 바꿔 누른 버튼에만 로딩 인디케이터 표시(`SettingsScreen`의 `pushAction`과 같은 패턴). 나머지(기업 탐색 관심 토글, 포트폴리오 저장/메모, 투자방식 저장, 투자연습 거래/랭킹 등)는 이미 lock ref·busy 구분·토스트·`Alert.alert` 확인창이 전부 적절히 돼 있어 그대로 둠. `npx tsc --noEmit`·`expo lint`·기존 jest 스크립트 통과.
 
 ## 2026-10-28
 
