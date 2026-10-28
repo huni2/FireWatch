@@ -18,6 +18,7 @@ import { practice, previewPractice, type PracticePreview, type PracticeTurn } fr
 import { PracticeRankings } from './PracticeRankings'
 import { PracticeCompletion } from './PracticeCompletion'
 import { canPublishGame } from '../../../../shared/game-ranking'
+import { parsePortfolioNumber } from '../../../../shared/portfolio-input'
 import { gamePeriod, gameNews } from '../../../../shared/game-week'
 import type { RankingTab } from '../../../../shared/game-ranking'
 import { PracticeMenu } from './PracticeMenu'
@@ -26,6 +27,15 @@ import { shortSellingHelp } from '../../../../shared/game-rules'
 import { PracticeOrderSheet } from './PracticeOrderSheet'
 import { FirewatchIcon } from '../../components/FirewatchIcon'
 import type { FirewatchIconName } from '../../../../shared/firewatch-icons'
+
+// 숫자 키패드는 항상 끝에 이어 입력하므로, 입력 중에도 커서 걱정 없이 천단위 콤마를 바로 넣어준다.
+function groupThousands(raw: string): string {
+  const cleaned = raw.replace(/,/g, '')
+  const [intPart, decPart] = cleaned.split('.')
+  if (!intPart) return cleaned
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return decPart === undefined ? grouped : `${grouped}.${decPart}`
+}
 
 const amount = (v: number | null | undefined) => v == null ? '평가 미확정' : v.toLocaleString('ko-KR', { maximumFractionDigits: 2 })
 const assets = [['KOSPI', '코스피'], ['KOSDAQ', '코스닥'], ['SP500', 'S&P 500'], ['NASDAQ', '나스닥'], ['DOW', '다우'], ['GOLD', '금'], ['SILVER', '은'], ['USD', '달러'], ['STOCK', '개별 종목']]
@@ -67,7 +77,7 @@ export function PracticeScreen() {
   function selectOrder(target: PracticeTarget, action: 'BUY' | 'SELL' = 'BUY') {
     if (busy || turn?.status !== 'ACTIVE') return
     setInstrument(target.instrumentType); setSymbol(target.symbol ?? ''); setSide(action); setDetail(null)
-    if (!Number.isFinite(Number(quantity)) || Number(quantity) <= 0) setQuantity('1')
+    if (!Number.isFinite(parsePortfolioNumber(quantity)) || parsePortfolioNumber(quantity) <= 0) setQuantity('1')
     setChoosingAsset(false); setOrderOpen(true)
   }
   const operation = useRef(false), previewGeneration = useRef(0), requestId = useRef<string | null>(null)
@@ -78,7 +88,7 @@ export function PracticeScreen() {
     setPreview(null); setPreviewError(null); setPreviewLoading(false)
     setRevision(value => value + 1)
   }
-  const ticker = instrument === 'STOCK' ? symbol.trim().toUpperCase() : null, qty = Number(quantity)
+  const ticker = instrument === 'STOCK' ? symbol.trim().toUpperCase() : null, qty = parsePortfolioNumber(quantity)
   useEffect(() => {
     let active = true
     practice('current').then(t => { if (active) setTurn(t) }).catch(e => { if (active && !(e instanceof ApiRequestError && e.status === 404)) setError(e.message) }).finally(() => { if (active) setLoading(false) })
@@ -183,7 +193,7 @@ export function PracticeScreen() {
     {turn && <PracticeAssetDetail target={detail} turn={turn} close={() => setDetail(null)} order={selectOrder} />}
     </ScrollView>
     {!turn && <View style={s.startDock}><Text style={s.muted}>24주 연습 · 실제 돈은 쓰지 않아요</Text><GameButton fullWidth busy={busyAction === 'start'} tone="game" icon="start" label={busyAction === 'start' ? '가상 시장을 준비하고 있어요' : '투자 연습 시작'} onPress={() => void action('start')} disabled={busy} /></View>}
-    <PracticeOrderSheet open={orderOpen && turn?.status === 'ACTIVE'} busy={busy} error={error} close={() => setOrderOpen(false)} footer={<View style={{ gap: 8 }}><Text accessibilityLiveRegion="polite" style={[s.text, { fontWeight: '700', fontSize: 18 }]}>{previewLoading ? '거래 금액 확인 중' : matches ? `총 거래 금액 ${amount(preview?.total)} 게임머니` : '자산과 수량을 선택해주세요'}</Text><GameButton busy={busyAction === 'trade'} tone="game" icon={side === 'BUY' ? 'buy' : 'sell'} label={busyAction === 'trade' ? '주문을 반영하는 중' : '거래 금액 확인'} onPress={ confirmTrade} disabled={busy || ( previewLoading || !matches || !preview?.allowed)} /></View>}>{turn?.status === 'ACTIVE' && <View style={s.panel}><View style={s.split}><Text style={s.muted}>실제 주문이 아니에요</Text><Pressable accessibilityRole="button" disabled={busy} onPress={resetOrder} style={[s.chip, s.iconRow, busy && s.disabled]}><FirewatchIcon name="reset" size={18} /><Text style={s.orange}>주문 초기화</Text></Pressable></View><View style={s.split}><View style={{ flex: 1, gap: 4 }}><Text style={s.heading}>{assetName(instrument, ticker)}</Text><Text style={s.muted}>가상 가격 · 게임머니</Text></View><GameButton label="다른 자산 선택" disabled={busy} onPress={() => setChoosingAsset(true)} /></View>{(choosingAsset || (instrument === 'STOCK' && !ticker)) && <><View style={s.row}>{assets.map(([key,label]) => <Pressable accessibilityRole="button" disabled={busy} key={key} onPress={() => { setInstrument(key); if (key !== 'STOCK') setChoosingAsset(false) }} style={[s.chip, instrument === key && s.selected]}><Text style={s.text}>{label}</Text></Pressable>)}</View>{instrument === 'STOCK' && <><Text style={s.muted}>기업 목록에서 고르거나, 시트를 닫고 이름·분야로 찾아보세요.</Text><View style={s.row}>{visibleCompanies.map(a => <Pressable accessibilityRole="button" accessibilityState={{ selected: symbol === a.symbol }} disabled={busy} key={a.symbol} onPress={() => { setSymbol(a.symbol); setChoosingAsset(false) }} style={[s.chip, symbol === a.symbol && s.selected]}><Text style={s.text}>{a.name} · {amount(turn.stockPrices[a.symbol])}</Text></Pressable>)}</View></>}</>}<View style={s.row}>{(['BUY','SELL'] as const).map(v => <Pressable accessibilityRole="button" disabled={busy} key={v} onPress={() => setSide(v)} style={[s.chip,side === v && s.selected]}><Text style={s.text}>{v === 'BUY' ? '매수' : '매도'}</Text></Pressable>)}</View><Text style={s.muted}>거래 수량</Text><AppSheetTextInput accessibilityLabel="거래 수량" editable={!busy} value={quantity} onChangeText={setQuantity} keyboardType="decimal-pad" style={s.input} /><View style={s.preview}>{previewLoading ? <LoadingState inline compact message="거래 금액을 확인하고 있어요" /> : matches ? <><Text style={s.muted}>적용 단가 {amount(preview.unitPrice)}</Text><Text style={s.heading}>총 거래 금액 {amount(preview.total)}</Text><Text style={s.text}>거래 후 현금 {amount(preview.cashAfter)}</Text><Text style={s.text}>거래 후 보유량 {preview.quantityAfter}개</Text>{!preview.allowed && <Text style={s.warning}>{preview.reason}</Text>}</> : <Text style={s.muted}>{previewError ?? '자산과 수량을 선택하면 총액을 확인할 수 있습니다.'}</Text>}</View></View>}</PracticeOrderSheet>
+    <PracticeOrderSheet open={orderOpen && turn?.status === 'ACTIVE'} busy={busy} error={error} close={() => setOrderOpen(false)} footer={<View style={{ gap: 8 }}><Text accessibilityLiveRegion="polite" style={[s.text, { fontWeight: '700', fontSize: 18 }]}>{previewLoading ? '거래 금액 확인 중' : matches ? `총 거래 금액 ${amount(preview?.total)} 게임머니` : '자산과 수량을 선택해주세요'}</Text><GameButton busy={busyAction === 'trade'} tone="game" icon={side === 'BUY' ? 'buy' : 'sell'} label={busyAction === 'trade' ? '주문을 반영하는 중' : '거래 금액 확인'} onPress={ confirmTrade} disabled={busy || ( previewLoading || !matches || !preview?.allowed)} /></View>}>{turn?.status === 'ACTIVE' && <View style={s.panel}><View style={s.split}><Text style={s.muted}>실제 주문이 아니에요</Text><Pressable accessibilityRole="button" disabled={busy} onPress={resetOrder} style={[s.chip, s.iconRow, busy && s.disabled]}><FirewatchIcon name="reset" size={18} /><Text style={s.orange}>주문 초기화</Text></Pressable></View><View style={s.split}><View style={{ flex: 1, gap: 4 }}><Text style={s.heading}>{assetName(instrument, ticker)}</Text><Text style={s.muted}>가상 가격 · 게임머니</Text></View><GameButton label="다른 자산 선택" disabled={busy} onPress={() => setChoosingAsset(true)} /></View>{(choosingAsset || (instrument === 'STOCK' && !ticker)) && <><View style={s.row}>{assets.map(([key,label]) => <Pressable accessibilityRole="button" disabled={busy} key={key} onPress={() => { setInstrument(key); if (key !== 'STOCK') setChoosingAsset(false) }} style={[s.chip, instrument === key && s.selected]}><Text style={s.text}>{label}</Text></Pressable>)}</View>{instrument === 'STOCK' && <><Text style={s.muted}>기업 목록에서 고르거나, 시트를 닫고 이름·분야로 찾아보세요.</Text><View style={s.row}>{visibleCompanies.map(a => <Pressable accessibilityRole="button" accessibilityState={{ selected: symbol === a.symbol }} disabled={busy} key={a.symbol} onPress={() => { setSymbol(a.symbol); setChoosingAsset(false) }} style={[s.chip, symbol === a.symbol && s.selected]}><Text style={s.text}>{a.name} · {amount(turn.stockPrices[a.symbol])}</Text></Pressable>)}</View></>}</>}<View style={s.row}>{(['BUY','SELL'] as const).map(v => <Pressable accessibilityRole="button" disabled={busy} key={v} onPress={() => setSide(v)} style={[s.chip,side === v && s.selected]}><Text style={s.text}>{v === 'BUY' ? '매수' : '매도'}</Text></Pressable>)}</View><Text style={s.muted}>거래 수량</Text><AppSheetTextInput accessibilityLabel="거래 수량" editable={!busy} value={quantity} onChangeText={text => setQuantity(groupThousands(text))} selectTextOnFocus keyboardType="decimal-pad" style={s.input} /><View style={s.preview}>{previewLoading ? <LoadingState inline compact message="거래 금액을 확인하고 있어요" /> : matches ? <><Text style={s.muted}>적용 단가 {amount(preview.unitPrice)}</Text><Text style={s.heading}>총 거래 금액 {amount(preview.total)}</Text><Text style={s.text}>거래 후 현금 {amount(preview.cashAfter)}</Text><Text style={s.text}>거래 후 보유량 {preview.quantityAfter}개</Text>{!preview.allowed && <Text style={s.warning}>{preview.reason}</Text>}</> : <Text style={s.muted}>{previewError ?? '자산과 수량을 선택하면 총액을 확인할 수 있습니다.'}</Text>}</View></View>}</PracticeOrderSheet>
     {turn?.status === 'ACTIVE' && <View style={s.turnDock}><View style={{ flex: 1 }}><Text style={s.text}>{turn.turnIndex + 1}{period}째</Text><Text style={s.muted}>{currentTrades ? `이번 ${period} 거래 ${currentTrades}건` : '이번에는 지켜봐도 괜찮아요'}</Text></View><GameButton busy={busyAction === 'next-turn'} tone="game" icon="next-turn" label={period === '주' ? '다음 주로' : '다음 턴으로'} onPress={() => void action('next-turn')} disabled={busy} /></View>}
     {busy && !replay && <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, zIndex: 10 }}><LoadingState message={turn ? '선택한 내용을 반영하고 있어요' : '가상 시장을 준비하고 있어요'} /></View>}
   </View>
