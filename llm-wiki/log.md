@@ -27,6 +27,9 @@
 
 - **[WEB] 인디고 브랜드 리디자인 Stage 3 — 나머지 라우트 전수 점검, 추가 코드 변경 없이 종료**: `web/src`·`mobile/src` 전체에서 hex 색상 패턴을 전수 grep해 Stage 1·2가 놓친 하드코딩이 있는지 확인. 웹에서 남은 건 전부 설명 가능한 것(`editorial.css`의 분야연결/시장근거/게임 등 별도 의미색 체계, 거래 매수·매도 마커, 서드파티 벤더 코드)뿐이고 나머지 11개 라우트는 AntD `colorPrimary` 캐스케이딩으로 이미 자동 적용돼 추가로 고칠 게 없음을 확인. 모바일도 동일(남은 하드코딩은 시트 배경 스크림 하나, 브랜드색과 무관). 모바일 네이티브 `android/colors.xml`의 `colorPrimary`도 확인했으나 `mobile/android/`가 `.gitignore` 대상(= `expo prebuild` 재생성 산출물)이라 고쳐도 의미 없어 패스. `npm run build`·`lint`(웹), `npx tsc --noEmit`·`expo lint`(모바일) 최종 통과 — Stage 1·2·3 전부 종료, 브랜치 `codex/redesign-indigo-brand`, main 미병합.
 
+- **[WEB] 인디고 브랜드 리디자인 — 투자 방식 찾기 화면 Stage 4**: 사용자가 "게임 메뉴 캐릭터 가져와서 꾸밀까" 제안 — 이 화면은 "투자 실력 판정 안 함·서버로 안 보냄"을 계속 강조하는 진지한 자기점검 도구라 가상투자 게임의 놀이 톤 마스코트를 가져오면 Stage 2에서 나눠놓은 실자산/게임 구분이 역으로 허물어진다고 판단, 대신 기존 `FirewatchIcon` 추상 아이콘 세트로 대체 제안해 사용자 동의 받음. 가는 진행바 1개를 문항별 스텝 인디케이터로, 결과 카드 제목에 유형별(`result.kind`) 아이콘 배지(routine→rules, research→audit, compare→indices, simple→selected, exploring→notice) 추가. `npm run build`·`lint` 통과.
+- **[APP] 인디고 브랜드 리디자인 — 투자 방식 찾기 화면 Stage 4(모바일)**: 웹과 동일한 스텝 인디케이터·결과 아이콘 배지를 모바일에도 적용. `Panel` 컴포넌트에 선택적 `icon` prop 추가해 아이콘 배지+제목 행 구조로. `npx tsc --noEmit`·`expo lint` 통과.
+
 ## 2026-10-21
 
 - **[BE] 무료 브리핑 안정성 운영 배포·기본 본문 제공 확인**: 1405a5d Render10:18:35 KST success, CI39525932572 attempt2 백엔드H2/PG신규예산/보고서·복원/웹/모바일전체success. 웹최초실패는외부apt403·재실행통과/검사우회0. 공개healthOK·오늘ID63/FALLBACK/뉴스20/생성시각보존·기본브리핑본문true확인. 읽기전용진단39526683943 success. 기존재시도대기10:38이후라보조모델실응답/AI복구는미확인·한도초기화0/수동AI추가호출0. 앱빌드0. docs/maintenance/briefing-resilience 참고.
