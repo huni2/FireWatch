@@ -23,8 +23,8 @@ export function HelpScreen() {
       </Pressable>
       {opened === index && <Text className="pt-3 text-base leading-7 text-ink">{answer}</Text>}
     </View>)}
-    <Link href="/privacy" className="py-3 text-base font-semibold text-brand">개인정보처리방침</Link>
-    <Link href="/investment-info" className="py-3 text-base font-semibold text-brand">투자 정보 이용안내</Link>
-    <Link href="/community" className="py-3 text-base font-semibold text-brand">공지·의견 보내기</Link>
+    <Link href="/privacy" className="py-3 text-base font-semibold text-primary">개인정보처리방침</Link>
+    <Link href="/investment-info" className="py-3 text-base font-semibold text-primary">투자 정보 이용안내</Link>
+    <Link href="/community" className="py-3 text-base font-semibold text-primary">공지·의견 보내기</Link>
   </ScrollView>
 }

@@ -7,6 +7,8 @@ module.exports = {
     extend: {
       colors: {
         brand: 'rgb(var(--fw-accent) / <alpha-value>)',
+        primary: 'rgb(var(--fw-primary) / <alpha-value>)',
+        game: 'rgb(var(--fw-game) / <alpha-value>)',
         onselection: 'rgb(var(--fw-actionText) / <alpha-value>)',
         selection: 'rgb(var(--fw-actionBackground) / <alpha-value>)',
         canvas: 'rgb(var(--fw-canvas) / <alpha-value>)',

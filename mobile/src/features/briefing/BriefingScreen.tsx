@@ -33,7 +33,7 @@ export function BriefingScreen({ briefing, cachedAt, loading, onOpenSheet, error
     <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">
       <ScreenIntro eyebrow="DAILY MARKET BRIEF" title="오늘의 브리핑" description="시장 흐름을 읽고 내 보유 자산과 함께 살펴보세요." />
       <InvestmentNotice />
-      {error && <View className="gap-2 rounded-xl bg-canvas p-4"><Text className="text-ink">{error}</Text><Pressable onPress={onReload}><Text className="text-brand">다시 시도</Text></Pressable></View>}
+      {error && <View className="gap-2 rounded-xl bg-canvas p-4"><Text className="text-ink">{error}</Text><Pressable onPress={onReload}><Text className="text-primary">다시 시도</Text></Pressable></View>}
 
       {!loading && !briefing && !error && (
         <Text className="mt-10 text-center text-base text-muted">
@@ -54,7 +54,7 @@ export function BriefingScreen({ briefing, cachedAt, loading, onOpenSheet, error
             <Text className="text-base font-bold text-ink">
               {`증시 요약 · 자료 기준 ${briefing.briefingDate}`}
             </Text>
-            <Text className="text-sm font-semibold text-brand">전체 브리핑 읽기 →</Text>
+            <Text className="text-sm font-semibold text-primary">전체 브리핑 읽기 →</Text>
             <Text className="text-sm text-muted" numberOfLines={3}>
               {briefingText(briefing.marketSummary)}
             </Text>

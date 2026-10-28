@@ -112,7 +112,7 @@ export function SettingsScreen() {
   if (loading && !settings) return <View className="flex-1 bg-canvas p-5"><LoadingState message="계정 설정을 확인하고 있어요" /></View>
 
 
-  if (!settings) return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5"><Text className="text-ink">설정을 불러오지 못했습니다. 로그인했던 기기라면 Google 계정으로 다시 로그인해주세요.</Text><GoogleLinkButton linkedEmail={null} onLinked={handleLinked} onDeleted={handleDeleted} /><Pressable onPress={() => void reload()} className="min-h-12 items-center justify-center"><Text className="text-brand">설정 다시 불러오기</Text></Pressable></ScrollView>
+  if (!settings) return <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5"><Text className="text-ink">설정을 불러오지 못했습니다. 로그인했던 기기라면 Google 계정으로 다시 로그인해주세요.</Text><GoogleLinkButton linkedEmail={null} onLinked={handleLinked} onDeleted={handleDeleted} /><Pressable onPress={() => void reload()} className="min-h-12 items-center justify-center"><Text className="text-primary">설정 다시 불러오기</Text></Pressable></ScrollView>
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}><ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-5 p-5 pb-10">
@@ -138,7 +138,7 @@ export function SettingsScreen() {
         )}
         {showPicker && Platform.OS === 'ios' && (
           <Pressable onPress={() => { setPushTimes(values => values.length < 3 && !values.includes(pushTime) ? [...values, pushTime].sort() : values); setShowPicker(false) }} className="self-end">
-            <Text className="text-sm font-semibold text-brand">완료</Text>
+            <Text className="text-sm font-semibold text-primary">완료</Text>
           </Pressable>
         )}
       </View>
@@ -170,10 +170,10 @@ export function SettingsScreen() {
             .finally(() => setRegisteringPush(false))
         }} /><ActionButton fullWidth busy={registeringPush && pushAction === 'off'} disabled={registeringPush} label={registeringPush && pushAction === 'off' ? '이 기기의 알림을 끄고 있어요' : '이 기기 알림 끄기'} onPress={() => { setPushAction('off'); setRegisteringPush(true); void unregisterPushToken().then(() => { setPushRegistered(false); Toast.show({ type: 'success', text1: '이 기기의 알림을 껐어요.' }) }).catch(() => Toast.show({ type: 'error', text1: '알림을 끄지 못했어요.', text2: '잠시 후 다시 눌러주세요.' })).finally(() => setRegisteringPush(false)) }} /></View>
       </View>
-      <Link href="/community" className="py-3 text-brand">공지사항 · 문제 신고·의견 · 내 문의</Link>
-      <Link href="/guide" className="py-3 text-brand">앱 도움말</Link>
-      <Link href="/privacy" className="py-3 text-brand">개인정보처리방침</Link>
-      <Link href="/investment-info" className="py-3 text-brand">투자 정보 이용안내</Link>
+      <Link href="/community" className="py-3 text-primary">공지사항 · 문제 신고·의견 · 내 문의</Link>
+      <Link href="/guide" className="py-3 text-primary">앱 도움말</Link>
+      <Link href="/privacy" className="py-3 text-primary">개인정보처리방침</Link>
+      <Link href="/investment-info" className="py-3 text-primary">투자 정보 이용안내</Link>
     </ScrollView>
     <View style={{ padding: 20, paddingBottom: Math.max(20, insets.bottom), borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.surface }}>
       <View className="gap-2"><ActionButton label={saving ? '설정 저장 중' : '변경사항 저장'} onPress={() => void handleSave()} busy={saving} disabled={!dirty} tone="primary" fullWidth />

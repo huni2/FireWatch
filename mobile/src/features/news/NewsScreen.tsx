@@ -31,7 +31,7 @@ function NewsItem({ article }: { article: NewsArticle }) {
           {articleText(article.description)}
         </Text>
       )}
-      <Text className="text-xs text-brand">뉴스 원문 보기 ↗ · 외부 브라우저로 이동해요</Text>
+      <Text className="text-xs text-primary">뉴스 원문 보기 ↗ · 외부 브라우저로 이동해요</Text>
       {article.pubDate && <Text className="text-xs text-muted">{new Date(article.pubDate).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + ' KST'}</Text>}
     </Pressable>
   )
@@ -66,7 +66,7 @@ export function NewsScreen({ initialQuery = '' }: { initialQuery?: string }) {
       {validation && !filterOpen && <Text accessibilityRole="alert" className="text-danger">{validation}</Text>}
       {loading && !data && <LoadingState inline message="조건에 맞는 소식을 찾고 있어요" />}
       {!loading && !news.length && !error && <Text className="text-muted">이 조건으로 저장된 뉴스가 없습니다.</Text>}
-      {error && <View className="gap-2"><Text accessibilityRole="alert" className="text-danger">{error}</Text><Pressable accessibilityRole="button" onPress={() => void refresh()} className="min-h-12 justify-center"><Text className="text-brand">같은 조건으로 다시 확인</Text></Pressable></View>}
+      {error && <View className="gap-2"><Text accessibilityRole="alert" className="text-danger">{error}</Text><Pressable accessibilityRole="button" onPress={() => void refresh()} className="min-h-12 justify-center"><Text className="text-primary">같은 조건으로 다시 확인</Text></Pressable></View>}
       {news.map((article) => (
         <NewsItem key={article.link} article={article} />
       ))}

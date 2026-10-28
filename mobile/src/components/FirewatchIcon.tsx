@@ -7,6 +7,6 @@ export function FirewatchIcon({ name, size = 24, color: providedColor, monochrom
   const { colors } = useTheme()
   const color = providedColor ?? colors.text
   return <Svg width={size} height={size} viewBox="0 0 32 32" fill="none" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-    {firewatchIcons[name].map((shape, index) => <Path key={index} d={shape.d} transform={shape.transform} fill={shape.solid ? monochrome ? color : colors.accent : 'none'} stroke={shape.solid ? 'none' : shape.accent && !monochrome ? colors.accent : color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />)}
+    {firewatchIcons[name].map((shape, index) => <Path key={index} d={shape.d} transform={shape.transform} fill={shape.solid ? monochrome ? color : colors.primary : 'none'} stroke={shape.solid ? 'none' : shape.accent && !monochrome ? colors.primary : color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />)}
   </Svg>
 }

@@ -40,7 +40,7 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
           직접 입력한 투자 기록과 관심 기업을 저장해 점검에 사용해요. Google 계정 연결과 알림은 선택이며, 알림을 켜면 푸시 토큰을 사용해요. 어떤 자료를 보관하는지 아래에서 확인할 수 있어요.
         </Text>
         <Pressable accessibilityRole="button" accessibilityHint="앱 안에서 전문을 읽고 이 화면으로 돌아옵니다." onPress={() => setPolicyOpen(true)} className="min-h-12 justify-center">
-          <Text className="text-base font-semibold text-brand underline">개인정보처리방침 전문 보기</Text>
+          <Text className="text-base font-semibold text-primary underline">개인정보처리방침 전문 보기</Text>
         </Pressable>
       </View>
 
@@ -48,7 +48,7 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
         <Pressable accessibilityRole="checkbox" accessibilityState={{ checked, disabled: saving }} disabled={saving} onPress={() => setChecked((value) => !value)} className="min-h-12 flex-row items-center gap-3">
           <View
             className={`h-6 w-6 items-center justify-center rounded border ${
-              checked ? 'border-brand bg-selection' : 'border-neutral-400'
+              checked ? 'border-primary bg-selection' : 'border-neutral-400'
             }`}
           >
             {checked && <Text className="text-sm font-bold text-onselection">✓</Text>}
@@ -63,7 +63,7 @@ export function ConsentScreen({ onAgree }: ConsentScreenProps) {
           accessibilityRole="button"
           accessibilityState={{ disabled: !checked || saving, busy: saving }}
           disabled={!checked || saving}
-          className={`items-center rounded-full border py-4 ${checked ? 'bg-selection border-brand' : 'bg-surface border-line'}`}
+          className={`items-center rounded-full border py-4 ${checked ? 'bg-selection border-primary' : 'bg-surface border-line'}`}
         >
           <Text className={`text-base font-bold ${checked ? 'text-onselection' : 'text-muted'}`}>{saving ? '설정 저장 중…' : '동의하고 시작하기'}</Text>
         </Pressable>

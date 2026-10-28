@@ -8,8 +8,8 @@ export function InfoScreen({ kind }: { kind: 'privacy' | 'investment' }) {
     <InfoDocument kind={kind} />
     {kind === 'privacy' && <View className="gap-2 border-t border-line pt-5">
       <Text className="text-base leading-6 text-muted">계정 삭제는 설정에서 진행할 수 있어요. 로그인할 수 없거나 기기별 기록을 삭제하려면 위 문의처로 요청해주세요.</Text>
-      <Link href="/settings" accessibilityRole="link" className="py-3 text-base font-semibold text-brand">계정·설정으로 이동</Link>
+      <Link href="/settings" accessibilityRole="link" className="py-3 text-base font-semibold text-primary">계정·설정으로 이동</Link>
     </View>}
-    <Link href="/community" accessibilityRole="link" className="py-3 text-base font-semibold text-brand">공지·의견 보내기</Link>
+    <Link href="/community" accessibilityRole="link" className="py-3 text-base font-semibold text-primary">공지·의견 보내기</Link>
   </ScrollView>
 }

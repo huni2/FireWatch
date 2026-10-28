@@ -94,7 +94,7 @@ export function HomeScreen() {
       <StatusBar style={dark ? "light" : "dark"} />
       <Stack.Screen
         options={{
-          headerStyle: { backgroundColor: colors.accentSoft },
+          headerStyle: { backgroundColor: colors.primarySoft },
           headerTintColor: colors.text,
           headerShadowVisible: false,
           headerTitle: () => <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, flexShrink: 1 }}><FirewatchBrand size={27} /><Text numberOfLines={1} style={{ flexShrink: 1, color: colors.text, fontSize: 20, fontWeight: '700', letterSpacing: -.5 }}>FireWatch</Text></View>,
@@ -107,7 +107,7 @@ export function HomeScreen() {
         }}
       />
 
-      {((exploration && !(activeTab === 'stocks' && stockTarget.symbol)) || market) && <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, backgroundColor: colors.accentSoft }} contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 12 }}>
+      {((exploration && !(activeTab === 'stocks' && stockTarget.symbol)) || market) && <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, backgroundColor: colors.primarySoft }} contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 12 }}>
         <View style={{ flex: 1, flexDirection: 'row', gap: 4, padding: 4, borderRadius: 16, backgroundColor: colors.surface }}>
           {TABS.filter(tab => (exploration ? ['candidates', 'stocks', 'short-term'] : ['news', 'brief', 'indices']).includes(tab.key)).map(tab => {
             const selected = activeTab === tab.key
@@ -142,11 +142,11 @@ export function HomeScreen() {
       <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.border, paddingBottom: insets.bottom, backgroundColor: colors.surface }}>
         {primaryTabs.map((tab) => (
           <Pressable accessibilityRole="tab" accessibilityLabel={tab.label} accessibilityState={{ selected: tab.selected }} aria-selected={tab.selected} key={tab.key} onPress={() => { if (activeTab !== tab.key) changeTab(tab.key) }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 60, paddingVertical: 6, gap: 2 }}>
-            <FirewatchIcon name={tab.icon} size={22} color={tab.selected ? colors.accent : colors.muted} />
-            <Text className={`text-sm font-semibold ${tab.selected ? 'text-brand' : 'text-muted'}`}>
+            <FirewatchIcon name={tab.icon} size={22} color={tab.selected ? colors.primary : colors.muted} />
+            <Text className={`text-sm font-semibold ${tab.selected ? 'text-primary' : 'text-muted'}`}>
               {tab.label}
             </Text>
-            {tab.selected && <View className="mt-1 h-0.5 w-6 rounded-full bg-brand" />}
+            {tab.selected && <View className="mt-1 h-0.5 w-6 rounded-full bg-primary" />}
           </Pressable>
         ))}
       </View>

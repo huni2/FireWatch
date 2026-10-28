@@ -16,7 +16,7 @@ export function PracticeReplay({ value, close }: { value: PracticeReplayState | 
   const money = (v: number | null | undefined) => v == null ? '미확정' : v.toLocaleString('ko-KR', { maximumFractionDigits: 2 })
   const pct = (v: number | null) => v == null ? '미확정' : `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`
   return <AppSheet open={!!value} title={value?.after ? `이번 ${period} 돌아보기` : '내 선택을 돌아보는 중'} close={close}><AppSheetScrollView >
-    <Pressable accessibilityRole="button" onPress={close} className="min-h-12 justify-center"><Text className="text-brand">{value?.after ? '다음 선택으로' : '연출 건너뛰기'}</Text></Pressable>
+    <Pressable accessibilityRole="button" onPress={close} className="min-h-12 justify-center"><Text className="text-game">{value?.after ? '다음 선택으로' : '연출 건너뛰기'}</Text></Pressable>
     {value && <>
       <View className="flex-row items-center gap-4"><Image source={require('../../../../shared/assets/firewatch-scout.png')} accessibilityLabel="FireWatch 불꽃 정찰대" style={{ width: 92, height: 110 }} resizeMode="contain" /><View className="flex-1"><Text className="text-xs text-muted">{period} {value.before.turnIndex + 1} → {value.after ? value.after.turnIndex + 1 : '?'}</Text><Text className="text-xl font-bold text-ink">{value.after ? `이번 ${period} 돌아보기` : '내 선택을 돌아보는 중'}</Text></View></View>
       <View className="gap-2 rounded-xl border border-line bg-surface p-4"><Text className="font-semibold text-ink">내가 남긴 선택</Text>{replayChoices(value.before).length ? replayChoices(value.before).map((t, i) => <Text key={i} className="text-ink">{t.name} · {t.action === 'BUY' ? '매수' : '매도'} {t.quantity}개 · 총 {money(t.total)}</Text>) : <Text className="text-muted">새 거래 없이 보유 포지션을 유지했습니다.</Text>}</View>
