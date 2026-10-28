@@ -38,6 +38,8 @@
 
 - **[PROJ] Cloudflare Pages 자동 배포 끊김 발견·수동 배포로 복구**: main push 후 10분 넘게 기다려도 `firewatch-eqp.pages.dev`가 구버전(오렌지)을 계속 서빙 — Cloudflare 대시보드(Workers & Pages → firewatch)를 직접 열어 확인해보니 **"No Git connection"** 상태였음. 과거 log의 "Cloudflare 배포 완료" 기록들은 git 자동 배포가 아니라 그때그때 수동 `wrangler pages deploy`였던 것으로 추정(이 환경에 이미 `powerhch@gmail.com` 계정으로 wrangler 로그인이 돼있었음). `cd web && npm run build && npx wrangler pages deploy dist --project-name=firewatch --branch=main`으로 수동 배포, 배포 후 실제 사이트에서 인디고 버튼/링크·불꽃 로고 오렌지 유지·게임 화면 보라(수익률 텍스트·"새 게임 설정" 버튼) 전부 브라우저로 직접 확인. **git 연결 자체를 복구하는 건 Cloudflare 대시보드 작업이라 사용자가 직접 해야 함** — 안 고치면 다음 merge부터 또 수동 배포해야 한다.
 
+- **[APP] 1.0.16 release AAB 빌드 — C 드라이브 디스크 부족으로 4연속 실패 후 해결**: 리디자인 브랜치 반영 겸 앱 업데이트 요청으로 `versionCode 21`/`versionName "1.0.16"`(`build.gradle`·`app.json`·`package.json`)으로 올리고 `bundleRelease` 시도 — 연속 4번 실패했는데 매번 증상이 달랐음(OOM성 네이티브 크래시 → ninja 크래시 → 명시적 "디스크 공간이 부족합니다" 2연속). 원인은 전부 **C 드라이브가 거의 꽉 찬 것**(한 자리 GB)이었음 — 프로젝트는 E 드라이브인데 Gradle 캐시·Windows 임시 폴더는 기본적으로 C를 씀. `GRADLE_USER_HOME`만 E로 돌렸을 땐 여전히 실패 — 패키징 단계가 Java/Windows `TEMP`/`TMP`를 따로 쓴다는 걸 확인하고 그것까지 E로 돌리니 1분 27초 만에 성공. `jarsigner -verify`로 release 인증서(`CN=FireWatch`) 서명 확인 완료, `app-release.aab`(~42MB) 생성. 트러블슈팅 과정을 `docs/deployment/android-aab-release.md`에 기록(다음에 또 겪지 않게). Play Console 업로드는 OS 네이티브 파일창이라 사용자 직접 진행 필요 — 코드 쪽은 여기서 종료.
+
 ## 2026-10-21
 
 - **[BE] 무료 브리핑 안정성 운영 배포·기본 본문 제공 확인**: 1405a5d Render10:18:35 KST success, CI39525932572 attempt2 백엔드H2/PG신규예산/보고서·복원/웹/모바일전체success. 웹최초실패는외부apt403·재실행통과/검사우회0. 공개healthOK·오늘ID63/FALLBACK/뉴스20/생성시각보존·기본브리핑본문true확인. 읽기전용진단39526683943 success. 기존재시도대기10:38이후라보조모델실응답/AI복구는미확인·한도초기화0/수동AI추가호출0. 앱빌드0. docs/maintenance/briefing-resilience 참고.
