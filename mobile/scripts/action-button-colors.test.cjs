@@ -27,7 +27,7 @@ for (const mode of ['light','dark']) for (const tone of ['primary','next','secon
     assert.ok(ratio(label.props.style.color,background)>=4.5);
     assert.equal(button.props.accessibilityState.disabled, state !== 'ready');
     if (tone !== 'secondary' && state !== 'disabled') {
-      assert.equal(label.props.style.color, '#17202E');
+      assert.equal(label.props.style.color, colors.actionText);
       assert.equal(background, colors.actionBackground);
     }
     if (state === 'busy') assert.equal(slot.props.children.props.color, label.props.style.color);
