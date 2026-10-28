@@ -40,6 +40,8 @@
 
 - **[APP] 1.0.16 release AAB 빌드 — C 드라이브 디스크 부족으로 4연속 실패 후 해결**: 리디자인 브랜치 반영 겸 앱 업데이트 요청으로 `versionCode 21`/`versionName "1.0.16"`(`build.gradle`·`app.json`·`package.json`)으로 올리고 `bundleRelease` 시도 — 연속 4번 실패했는데 매번 증상이 달랐음(OOM성 네이티브 크래시 → ninja 크래시 → 명시적 "디스크 공간이 부족합니다" 2연속). 원인은 전부 **C 드라이브가 거의 꽉 찬 것**(한 자리 GB)이었음 — 프로젝트는 E 드라이브인데 Gradle 캐시·Windows 임시 폴더는 기본적으로 C를 씀. `GRADLE_USER_HOME`만 E로 돌렸을 땐 여전히 실패 — 패키징 단계가 Java/Windows `TEMP`/`TMP`를 따로 쓴다는 걸 확인하고 그것까지 E로 돌리니 1분 27초 만에 성공. `jarsigner -verify`로 release 인증서(`CN=FireWatch`) 서명 확인 완료, `app-release.aab`(~42MB) 생성. 트러블슈팅 과정을 `docs/deployment/android-aab-release.md`에 기록(다음에 또 겪지 않게). Play Console 업로드는 OS 네이티브 파일창이라 사용자 직접 진행 필요 — 코드 쪽은 여기서 종료.
 
+- **[PROJ] 1.0.16 Play 비공개 테스트 제출 완료(코드 변경 없음)**: AAB 업로드 중 "대한민국 거주 개발자 추가 정보 제공" 계정 컴플라이언스 요구로 막혔던 걸 사용자가 Play Console에서 직접 입력 후 재시도해 제출 완료. 인디고 브랜드 리디자인(Stage 1~4 + 나머지 라우트 리뷰) 작업 전체가 웹(배포 완료)·모바일(1.0.16 제출 완료) 양쪽 다 마무리됨.
+
 ## 2026-10-21
 
 - **[BE] 무료 브리핑 안정성 운영 배포·기본 본문 제공 확인**: 1405a5d Render10:18:35 KST success, CI39525932572 attempt2 백엔드H2/PG신규예산/보고서·복원/웹/모바일전체success. 웹최초실패는외부apt403·재실행통과/검사우회0. 공개healthOK·오늘ID63/FALLBACK/뉴스20/생성시각보존·기본브리핑본문true확인. 읽기전용진단39526683943 success. 기존재시도대기10:38이후라보조모델실응답/AI복구는미확인·한도초기화0/수동AI추가호출0. 앱빌드0. docs/maintenance/briefing-resilience 참고.
