@@ -16,6 +16,7 @@ import { InvestmentNotice } from '../../components/InvestmentNotice'
 import { InvestmentStyleEntry } from '../investment-style/InvestmentStyleEntry'
 import { PortfolioExposureCard } from './PortfolioExposureCard'
 import { AllocationDonut } from './AllocationDonut'
+import { PortfolioHero } from './PortfolioHero'
 import { InvestmentFocus } from './InvestmentFocus'
 import { HoldingDrawer } from './HoldingDrawer'
 import { PortfolioConnections } from './PortfolioConnections'
@@ -140,6 +141,7 @@ export function PortfolioPage() {
     {hasAssets && <nav aria-label="내 투자 바로가기"><Button onClick={showHoldings}>보유 내역 보기</Button></nav>}
     {!hasAssets && <section className="portfolio-welcome"><div className="welcome-copy"><span className="section-kicker">내 투자에서 발견하기</span><Title level={3}>내 자산이 어디에<br />몰려 있는지 알아보세요</Title><p>종목을 선택하고 수량을 입력하면 내 투자 구성을 점검할 수 있어요.<br />평균 구매 가격은 나중에 입력해도 괜찮아요.</p><Button data-tour="portfolio-registration" type="primary" size="large" disabled={saving} onClick={() => openHolding()}>첫 자산 등록</Button><Button type="text" onClick={() => setSampleOpen(true)}>예시로 먼저 보기 →</Button></div><div className="welcome-connection" aria-hidden="true"><span>다른 상품</span><div><b>ETF A</b><i /><b>ETF B</b></div><strong>같은 시장</strong><small>가상 예시 · 개인 기록에 저장되지 않음</small></div></section>}
     {hasAssets && portfolio && <>
+      <PortfolioHero portfolio={portfolio} />
       {lastSaved && <div className="portfolio-saved" role="status"><span>{portfolio.holdings.find(row => row.holding.symbol === lastSaved)?.holding.name} 기록을 저장했어요.</span><Space wrap>{portfolio.holdingNotes !== undefined && <Button onClick={() => openNote(lastSaved, portfolio.holdings.find(row => row.holding.symbol === lastSaved)?.holding.name ?? lastSaved)}>보유 이유 남기기</Button>}<Button onClick={() => openHolding()}>다른 자산도 등록</Button></Space></div>}
       <section ref={findingRef} tabIndex={-1} className="portfolio-checkup" aria-label="내 투자 점검"><PortfolioCheckup portfolio={portfolio} busy={saving} refreshing={query.loading} onRefresh={query.reload} onInspect={inspectFinding} onEdit={symbol => { const index = draft.holdings.findIndex(row => row.symbol === symbol); if (index >= 0) openHolding(index) }} onReview={() => void markReview()} /></section>
       <HoldingNotes portfolio={portfolio} busy={saving} edit={openNote} />
