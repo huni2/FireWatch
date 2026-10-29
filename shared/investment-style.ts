@@ -62,3 +62,7 @@ export function investmentStyleResult(answers: StyleAnswers) {
   })
   return { kind, ...styles[kind], evidence, capacity, capacityText: capacity === 'limited' ? '생활에 필요한 돈과 사용 시점을 먼저 점검할 답변이 있어요.' : capacity === 'unclear' ? '손실을 감당할 상황을 더 확인해야 해요.' : '예비 자금·사용 시점·생활 영향을 구분해 답했어요. 손실을 감당할 금액이 확정된 것은 아니에요.', willingness, willingnessText: willingness === 'unclear' ? '감수하고 싶은 변동의 정도를 아직 정하지 않았어요.' : willingness === 'cautious' ? '변동을 줄이고 싶거나, 하락할 때 부담을 느꼈다고 답했어요.' : willingness === 'accepting' ? '큰 변동도 생각한다고 답했어요. 실제 감당할 여력과 따로 확인해야 해요.' : '변동과 수익 가능성을 함께 생각한다고 답했어요.', notices, learning: answers.experience === 'none' || answers.experience === 'unknown' ? '투자를 시작하기 전 손실 가능성·분산·비용의 의미부터 살펴보세요.' : '이미 보유한 자산의 투자 목적과 비중, 비용을 같은 기준으로 다시 살펴보세요.' }
 }
+// 점수나 등수가 아니라 관리 방식 이름만 공유해, 개인 투자 정보가 나가지 않는다.
+export function investmentStyleShareText(name: string, url: string): string {
+  return `FireWatch에서 내 투자 관리 방식을 확인했어요 — '${name}'. 나에게 맞는 방식도 2분이면 확인할 수 있어요.\n${url}`
+}

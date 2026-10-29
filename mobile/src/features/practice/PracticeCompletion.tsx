@@ -2,15 +2,15 @@ import { AppSheet, AppSheetScrollView } from '@/components/AppSheet'
 import { ActionButton } from '@/components/ActionButton'
 // 모바일 종료 결과를 세로로 읽고 하단에서 공개 여부를 선택한다.
 import { useState } from 'react'
-import { Pressable, Text, View } from 'react-native'
+import { Pressable, Share, Text, View } from 'react-native'
 import type { PracticeTurn } from '@/lib/investingApi'
-import { gameCompletion } from '../../../../shared/game-completion'
+import { gameCompletion, gameShareText } from '../../../../shared/game-completion'
 import { FirewatchIcon } from '../../components/FirewatchIcon'
 
 export function PracticeCompletion({ turn, close, publish }: { turn: PracticeTurn; close: () => void; publish: () => void }) {
   const result = gameCompletion(turn)
   const [expanded, setExpanded] = useState(false)
-  return <AppSheet open title="게임 결과" close={close} footer={<View style={{ gap: 12 }}>{result.canPublish && <ActionButton fullWidth tone="game" label="순위 등록 선택하기" onPress={publish} />}<ActionButton fullWidth label="결과 화면 보기" onPress={close} /></View>}>
+  return <AppSheet open title="게임 결과" close={close} footer={<View style={{ gap: 12 }}>{result.canPublish && <ActionButton fullWidth tone="game" label="순위 등록 선택하기" onPress={publish} />}{result.scored && <ActionButton fullWidth tone="secondary" label="결과 공유하기" onPress={() => void Share.share({ message: gameShareText(result, 'https://firewatch-eqp.pages.dev/game') })} />}<ActionButton fullWidth label="결과 화면 보기" onPress={close} /></View>}>
     <AppSheetScrollView contentContainerStyle={{ paddingHorizontal: 24, gap: 24 }}>
       <View className="flex-row items-center gap-3"><FirewatchIcon name="turn-result" size={36} /><Text className="text-muted">가상투자 결과 · {result.progress}</Text></View>
       <Text className="text-2xl font-bold text-ink" accessibilityRole="header">{result.title}</Text>

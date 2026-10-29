@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Alert, App, Button, Card, Radio, Space, Typography } from 'antd'
 import { Link, useNavigate } from 'react-router-dom'
-import { investmentStyleResult, investmentStyleStorageKey, investmentStyleTitle, parseSavedStyle, saveStyleSnapshot, styleQuestions, type SavedStyle, type StyleAnswers } from '../../../../shared/investment-style'
+import { investmentStyleResult, investmentStyleShareText, investmentStyleStorageKey, investmentStyleTitle, parseSavedStyle, saveStyleSnapshot, styleQuestions, type SavedStyle, type StyleAnswers } from '../../../../shared/investment-style'
 import { FirewatchIcon } from '../../components/FirewatchIcon'
 import type { FirewatchIconName } from '../../../../shared/firewatch-icons'
+import { shareOrCopy } from '../../lib/share'
 import './investment-style.css'
 
 // 결과 유형마다 장식용 심볼 — 게임 마스코트가 아니라 기존 추상 아이콘 세트를 재사용(실자산 화면 톤 유지).
@@ -50,6 +51,11 @@ export function InvestmentStylePage() {
     } })
   }
   const result = view === 'result' ? investmentStyleResult(answers) : null
+  async function shareResult() {
+    if (!result) return
+    const outcome = await shareOrCopy(investmentStyleShareText(result.name, `${window.location.origin}/investment-style`))
+    if (outcome === 'copied') message.success('공유 문구를 클립보드에 복사했어요.')
+  }
   const matchesSaved = !!saved && JSON.stringify(saved.answers) === JSON.stringify(answers)
   return <section className="investment-style-page">
     <Button type="text" onClick={leave}>← 내 투자로 돌아가기</Button>
@@ -75,7 +81,7 @@ export function InvestmentStylePage() {
       <small>답변은 자동 저장되지 않아요. 나갔다가 돌아오면 다시 답해야 해요.</small>
     </section>}
     {result && <section aria-label="나의 투자 방식 결과" className="style-flow">
-      <Card><div className="style-flow"><span>현재 답변으로 본 나의 관리 방식</span><div className="style-result-badge"><div className="style-result-icon"><FirewatchIcon name={STYLE_ICONS[result.kind]} size={28} /></div><h3 className="style-result-name">{result.name}</h3></div><p>{result.description}</p><p>{result.method}</p><details><summary>이 결과가 나온 답변 보기</summary>{result.evidence.map(item => <p key={item.question}>{item.question}<br /><strong>{item.answer}</strong></p>)}</details></div></Card>
+      <Card><div className="style-flow"><span>현재 답변으로 본 나의 관리 방식</span><div className="style-result-badge"><div className="style-result-icon"><FirewatchIcon name={STYLE_ICONS[result.kind]} size={28} /></div><h3 className="style-result-name">{result.name}</h3></div><p>{result.description}</p><p>{result.method}</p><Button onClick={shareResult}>결과 공유하기</Button><details><summary>이 결과가 나온 답변 보기</summary>{result.evidence.map(item => <p key={item.question}>{item.question}<br /><strong>{item.answer}</strong></p>)}</details></div></Card>
       <Card title="마음과 상황을 따로 살펴봐요"><h4>감수하고 싶은 마음</h4><p>{result.willingnessText}</p><h4>현재 생활과 사용 시점</h4><p>{result.capacityText}</p></Card>
       <Card title="먼저 확인할 점"><ul>{result.notices.map(notice => <li key={notice}>{notice}</li>)}</ul></Card>
       <Card title="다음에 해볼 일"><ol><li>돈을 모으는 목적과 사용할 시점을 적어보세요.</li><li>내 투자에서 보유 이유와 다음 확인할 내용을 남겨보세요.</li></ol><p>{result.learning}</p><Space wrap><Button type="primary" onClick={() => navigate('/')}>내 투자로 이동</Button><Link to="/investment-info">투자 정보 이용안내 읽기</Link></Space></Card>

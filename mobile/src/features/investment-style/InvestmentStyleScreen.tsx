@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Alert, BackHandler, Pressable, ScrollView, Text, View } from 'react-native'
+import { Alert, BackHandler, Pressable, ScrollView, Share, Text, View } from 'react-native'
 import { Stack, router } from 'expo-router'
 import * as SecureStore from 'expo-secure-store'
 import { ActionButton } from '@/components/ActionButton'
 import { FirewatchIcon } from '../../components/FirewatchIcon'
 import { useTheme } from '@/lib/theme'
-import { investmentStyleResult, investmentStyleStorageKey, investmentStyleTitle, parseSavedStyle, saveStyleSnapshot, styleQuestions, type SavedStyle, type StyleAnswers } from '../../../../shared/investment-style'
+import { investmentStyleResult, investmentStyleShareText, investmentStyleStorageKey, investmentStyleTitle, parseSavedStyle, saveStyleSnapshot, styleQuestions, type SavedStyle, type StyleAnswers } from '../../../../shared/investment-style'
 import type { FirewatchIconName } from '../../../../shared/firewatch-icons'
 
 // 결과 유형마다 장식용 심볼 — 게임 마스코트가 아니라 기존 추상 아이콘 세트를 재사용(실자산 화면 톤 유지, 웹과 동일 매핑).
@@ -97,7 +97,7 @@ export function InvestmentStyleScreen() {
         <Text style={muted}>답변은 자동 저장되지 않아요. 나갔다가 돌아오면 다시 답해야 해요.</Text>
       </>}
       {!loading && result && <>
-        <Panel title={result.name} icon={STYLE_ICONS[result.kind]}><Text style={muted}>현재 답변으로 본 나의 관리 방식</Text><Text style={text}>{result.description}</Text><Text style={text}>{result.method}</Text>{result.evidence.map(item => <View key={item.question} style={{ gap: 4 }}><Text style={muted}>{item.question}</Text><Text style={text}>{item.answer}</Text></View>)}</Panel>
+        <Panel title={result.name} icon={STYLE_ICONS[result.kind]}><Text style={muted}>현재 답변으로 본 나의 관리 방식</Text><Text style={text}>{result.description}</Text><Text style={text}>{result.method}</Text><ActionButton label="결과 공유하기" onPress={() => void Share.share({ message: investmentStyleShareText(result.name, 'https://firewatch-eqp.pages.dev/investment-style') })} />{result.evidence.map(item => <View key={item.question} style={{ gap: 4 }}><Text style={muted}>{item.question}</Text><Text style={text}>{item.answer}</Text></View>)}</Panel>
         <Panel title="마음과 상황을 따로 살펴봐요"><Text style={text}>감수하고 싶은 마음</Text><Text style={muted}>{result.willingnessText}</Text><Text style={text}>현재 생활과 사용 시점</Text><Text style={muted}>{result.capacityText}</Text></Panel>
         <Panel title="먼저 확인할 점">{result.notices.map(notice => <Text key={notice} style={text}>• {notice}</Text>)}</Panel>
         <Panel title="다음에 해볼 일"><Text style={text}>1. 돈을 모으는 목적과 사용할 시점을 적어보세요.{`\n`}2. 내 투자에서 보유 이유와 다음 확인할 내용을 남겨보세요.</Text><Text style={muted}>{result.learning}</Text><ActionButton fullWidth tone="primary" label="내 투자로 이동" onPress={() => router.replace('/')} /><ActionButton fullWidth label="투자 정보 이용안내 읽기" onPress={() => router.push('/investment-info')} /></Panel>
