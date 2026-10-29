@@ -48,6 +48,15 @@ function Field({ label, value, change, numeric = false, unit }: { label: string;
 function Choice({ label, selected, press }: { label: string; selected: boolean; press: () => void }) {
   const { colors: c } = useTheme()
  return <Pressable accessibilityRole="button" accessibilityState={{ selected }} onPress={press} style={{ minHeight: 48, padding: 12, borderWidth: 1, borderColor: selected ? c.primary : c.border, borderRadius: 10 }}><Text style={{ color: selected ? c.primary : c.text }}>{label}</Text></Pressable> }
+// 자주 쓰는 값을 칩으로 보여주되, 눌러서 채운 뒤에도 입력창에서 직접 고쳐 쓸 수 있다(웹의 자동완성 입력과 같은 역할).
+function QuickPicks({ options, value, onPick }: { options: { value: string; label: string }[]; value: string; onPick: (value: string) => void }) {
+  return <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{options.map(o => <Choice key={o.value} label={o.label} selected={value === o.value} press={() => onPick(o.value)} />)}</View>
+}
+const GOAL_PRESETS = ['목돈 마련', '주택 자금', '은퇴 준비', '자녀 교육비', '비상금 마련'].map(value => ({ value, label: value }))
+const MONTH_PRESETS = ([[6, '6개월'], [12, '1년'], [24, '2년'], [36, '3년'], [60, '5년'], [120, '10년']] as const).map(([months, label]) => ({ value: String(months), label }))
+const amountPresets = (amounts: number[]) => amounts.map(amount => ({ value: groupThousands(String(amount)), label: `${groupThousands(String(amount))}원` }))
+const CASH_PRESETS = amountPresets([1000000, 5000000, 10000000, 30000000, 50000000, 100000000])
+const MONTHLY_PRESETS = amountPresets([100000, 300000, 500000, 1000000, 2000000])
 
 export function HoldingRegistration({ initial, others, editing, saving, error, close, save, editExisting }: { initial: Holding; others: Holding[]; editing: boolean; saving: boolean; error: string | null; close: () => void; save: (value: Holding) => void; editExisting: (symbol: string) => void }) {
   const { colors: c } = useTheme()
@@ -151,8 +160,11 @@ export function PortfolioPlanEditor({ initial, saving, error, close, save }: { i
   const [cash, setCash] = useState(String(initial.cash)), [months, setMonths] = useState(String(initial.horizonMonths)), [monthly, setMonthly] = useState(String(initial.monthlyContribution))
   const value = { ...draft, cash: parsePortfolioNumber(cash), horizonMonths: parsePortfolioNumber(months), monthlyContribution: parsePortfolioNumber(monthly) }
   return <EditorFrame title="현금·투자 계획" saving={saving} error={error} changed={JSON.stringify(value) !== JSON.stringify(initial)} close={close} submit={() => save(value)} button="계획 저장하기">
-    <Field label="보유 현금 · 원" value={cash} change={setCash} numeric unit="원" /><Field label="투자 목표" value={draft.goal} change={goal => setDraft({ ...draft, goal })} /><Field label="투자 기간 · 개월" value={months} change={setMonths} numeric />
+    <Field label="보유 현금 · 원" value={cash} change={setCash} numeric unit="원" /><QuickPicks options={CASH_PRESETS} value={cash} onPick={setCash} />
+    <Field label="투자 목표" value={draft.goal} change={goal => setDraft({ ...draft, goal })} /><QuickPicks options={GOAL_PRESETS} value={draft.goal} onPick={goal => setDraft({ ...draft, goal })} />
+    <Field label="투자 기간 · 개월" value={months} change={setMonths} numeric /><QuickPicks options={MONTH_PRESETS} value={months} onPick={setMonths} />
     <Text style={{ color: c.muted }}>투자 성향</Text><View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{Object.entries(riskLabels).map(([key, label]) => <Choice key={key} label={label} selected={draft.riskLevel === key} press={() => setDraft({ ...draft, riskLevel: key as PortfolioDraft['riskLevel'] })} />)}</View>
-    <Text style={{ color: c.muted }}>계좌 종류</Text><View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{Object.entries(accountLabels).map(([key, label]) => <Choice key={key} label={label} selected={draft.accountType === key} press={() => setDraft({ ...draft, accountType: key as PortfolioDraft['accountType'] })} />)}</View><Field label="월 추가 투자금 · 원" value={monthly} change={setMonthly} numeric unit="원" />
+    <Text style={{ color: c.muted }}>계좌 종류</Text><View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{Object.entries(accountLabels).map(([key, label]) => <Choice key={key} label={label} selected={draft.accountType === key} press={() => setDraft({ ...draft, accountType: key as PortfolioDraft['accountType'] })} />)}</View>
+    <Field label="월 추가 투자금 · 원" value={monthly} change={setMonthly} numeric unit="원" /><QuickPicks options={MONTHLY_PRESETS} value={monthly} onPick={setMonthly} />
   </EditorFrame>
 }
