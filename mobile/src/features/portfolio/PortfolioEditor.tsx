@@ -7,10 +7,11 @@ import type { ReactNode } from 'react'
 import { Alert, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { HoldingSearch } from './HoldingSearch'
+import { AppSheet, AppSheetScrollView } from '@/components/AppSheet'
 import { request } from '@/lib/api'
 import { searchHoldingCatalog, type HoldingSearchResult } from '../../../../shared/holding-search'
 import { holdingError, holdingIdentity, selectedHolding } from '../../../../shared/holding-registration'
-import { accountLabels, assetLabels, riskLabels } from '../../../../shared/investing'
+import { accountLabels, assetLabels, CONTRIBUTION_LAST_DAY_OF_MONTH, riskLabels } from '../../../../shared/investing'
 import type { Holding, PortfolioDraft } from '../../../../shared/investing'
 import { parsePortfolioNumber, portfolioNumberHint } from '../../../../shared/portfolio-input'
 
@@ -57,6 +58,13 @@ const MONTH_PRESETS = ([[6, '6개월'], [12, '1년'], [24, '2년'], [36, '3년']
 const amountPresets = (amounts: number[]) => amounts.map(amount => ({ value: groupThousands(String(amount)), label: `${groupThousands(String(amount))}원` }))
 const CASH_PRESETS = amountPresets([1000000, 5000000, 10000000, 30000000, 50000000, 100000000])
 const MONTHLY_PRESETS = amountPresets([100000, 300000, 500000, 1000000, 2000000])
+const CONTRIBUTION_DAY_OPTIONS: { value: number | null; label: string }[] = [{ value: null, label: '사용 안 함' }, ...Array.from({ length: 28 }, (_, i) => ({ value: i + 1, label: `매월 ${i + 1}일` })), { value: CONTRIBUTION_LAST_DAY_OF_MONTH, label: '매월 말일' }]
+const contributionDayLabel = (day: number | null) => CONTRIBUTION_DAY_OPTIONS.find(o => o.value === day)?.label ?? '사용 안 함'
+export function lastContributionText(at: string | null, amount: number | null, months: number | null) {
+  if (!at || amount == null) return null
+  const date = new Date(at).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })
+  return `최근 자동 반영 · ${date} · +${amount.toLocaleString()}원${months != null && months > 1 ? ` (${months}개월치 소급)` : ''}`
+}
 
 export function HoldingRegistration({ initial, others, editing, saving, error, close, save, editExisting }: { initial: Holding; others: Holding[]; editing: boolean; saving: boolean; error: string | null; close: () => void; save: (value: Holding) => void; editExisting: (symbol: string) => void }) {
   const { colors: c } = useTheme()
@@ -153,9 +161,9 @@ export function HoldingRegistration({ initial, others, editing, saving, error, c
     <Text style={{ color: c.muted, lineHeight: 22 }}>실제 주문 없이 보유 내역만 저장해요.</Text>
   </EditorFrame>
 }
-export function PortfolioPlanEditor({ initial, saving, error, close, save }: { initial: PortfolioDraft; saving: boolean; error: string | null; close: () => void; save: (value: PortfolioDraft) => void }) {
+export function PortfolioPlanEditor({ initial, saving, error, close, save, lastContributionAppliedAt = null, lastContributionAppliedAmount = null, lastContributionAppliedMonths = null }: { initial: PortfolioDraft; saving: boolean; error: string | null; close: () => void; save: (value: PortfolioDraft) => void; lastContributionAppliedAt?: string | null; lastContributionAppliedAmount?: number | null; lastContributionAppliedMonths?: number | null }) {
   const { colors: c } = useTheme()
-
+  const [dayPickerOpen, setDayPickerOpen] = useState(false)
   const [draft, setDraft] = useState(initial)
   const [cash, setCash] = useState(String(initial.cash)), [months, setMonths] = useState(String(initial.horizonMonths)), [monthly, setMonthly] = useState(String(initial.monthlyContribution))
   const value = { ...draft, cash: parsePortfolioNumber(cash), horizonMonths: parsePortfolioNumber(months), monthlyContribution: parsePortfolioNumber(monthly) }
@@ -166,5 +174,16 @@ export function PortfolioPlanEditor({ initial, saving, error, close, save }: { i
     <Text style={{ color: c.muted }}>투자 성향</Text><View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{Object.entries(riskLabels).map(([key, label]) => <Choice key={key} label={label} selected={draft.riskLevel === key} press={() => setDraft({ ...draft, riskLevel: key as PortfolioDraft['riskLevel'] })} />)}</View>
     <Text style={{ color: c.muted }}>계좌 종류</Text><View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{Object.entries(accountLabels).map(([key, label]) => <Choice key={key} label={label} selected={draft.accountType === key} press={() => setDraft({ ...draft, accountType: key as PortfolioDraft['accountType'] })} />)}</View>
     <Field label="월 추가 투자금 · 원" value={monthly} change={setMonthly} numeric unit="원" /><QuickPicks options={MONTHLY_PRESETS} value={monthly} onPick={setMonthly} />
+    <View style={{ gap: 8 }}>
+      <Text style={{ color: c.text, fontWeight: '600' }}>월 추가 투자금 자동 반영</Text>
+      <Pressable accessibilityRole="button" accessibilityLabel={`월 추가 투자금 자동 반영 · ${contributionDayLabel(draft.contributionDay)}`} onPress={() => setDayPickerOpen(true)} style={{ minHeight: 48, justifyContent: 'center', borderWidth: 1, borderColor: c.border, borderRadius: 12, padding: 14 }}>
+        <Text style={{ color: c.text }}>{contributionDayLabel(draft.contributionDay)}</Text>
+      </Pressable>
+      <Text style={{ color: c.muted, fontSize: 13 }}>{draft.contributionDay != null ? '지정한 날짜가 지나면 보유 현금에 자동으로 더해요. 오래 접속하지 않았다면 최대 12개월까지 소급 반영해요.' : '지정하면 매달 정해진 날짜에 월 추가 투자금만큼 보유 현금이 자동으로 늘어나요.'}</Text>
+      {lastContributionText(lastContributionAppliedAt, lastContributionAppliedAmount, lastContributionAppliedMonths) && <Text style={{ color: c.muted, fontSize: 13 }}>{lastContributionText(lastContributionAppliedAt, lastContributionAppliedAmount, lastContributionAppliedMonths)}</Text>}
+    </View>
+    <AppSheet open={dayPickerOpen} title="자동 반영 날짜 선택" close={() => setDayPickerOpen(false)}>
+      <AppSheetScrollView>{CONTRIBUTION_DAY_OPTIONS.map(o => <Pressable key={o.label} accessibilityRole="button" accessibilityState={{ selected: draft.contributionDay === o.value }} onPress={() => { setDraft({ ...draft, contributionDay: o.value }); setDayPickerOpen(false) }} style={{ minHeight: 48, justifyContent: 'center' }}><Text style={{ color: draft.contributionDay === o.value ? c.primary : c.text }}>{o.label}</Text></Pressable>)}</AppSheetScrollView>
+    </AppSheet>
   </EditorFrame>
 }

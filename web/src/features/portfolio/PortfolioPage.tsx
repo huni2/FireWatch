@@ -5,7 +5,7 @@ import { Alert, App, AutoComplete, Button, Card, Dropdown, Input, Modal, Select,
 import { Link, useSearchParams } from 'react-router-dom'
 import { useApi } from '../../lib/useApi'
 import { fetchPortfolio, savePortfolio, reviewPortfolio, saveHoldingNote } from '../../lib/investingApi'
-import { accountLabels, assetLabels, emptyHolding, riskLabels, toDraft } from '../../../../shared/investing'
+import { accountLabels, assetLabels, CONTRIBUTION_LAST_DAY_OF_MONTH, emptyHolding, riskLabels, toDraft } from '../../../../shared/investing'
 import type { Holding, PortfolioDraft, HoldingNoteRequest } from '../../../../shared/investing'
 import { portfolioCoverageText, selectedHolding } from '../../../../shared/holding-registration'
 import { PortfolioCheckup } from './PortfolioCheckup'
@@ -33,6 +33,13 @@ const MONTH_PRESETS = [[6, '6개월'], [12, '1년'], [24, '2년'], [36, '3년'],
 const amountPresets = (amounts: number[]) => amounts.map(amount => ({ value: formatThousands(amount), label: `${formatThousands(amount)}원` }))
 const CASH_PRESETS = amountPresets([1000000, 5000000, 10000000, 30000000, 50000000, 100000000])
 const MONTHLY_PRESETS = amountPresets([100000, 300000, 500000, 1000000, 2000000])
+const CONTRIBUTION_DAY_OPTIONS = [{ value: 'off', label: '사용 안 함' }, ...Array.from({ length: 28 }, (_, i) => ({ value: String(i + 1), label: `매월 ${i + 1}일` })), { value: String(CONTRIBUTION_LAST_DAY_OF_MONTH), label: '매월 말일' }]
+function lastContributionText(portfolio: { lastContributionAppliedAt: string | null; lastContributionAppliedAmount: number | null; lastContributionAppliedMonths: number | null }) {
+  if (!portfolio.lastContributionAppliedAt || portfolio.lastContributionAppliedAmount == null) return null
+  const date = new Date(portfolio.lastContributionAppliedAt).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })
+  const months = portfolio.lastContributionAppliedMonths ?? 1
+  return `최근 자동 반영 · ${date} · +${portfolio.lastContributionAppliedAmount.toLocaleString()}원${months > 1 ? ` (${months}개월치 소급)` : ''}`
+}
 
 export function PortfolioPage() {
   const query = useApi(fetchPortfolio)
@@ -162,6 +169,7 @@ export function PortfolioPage() {
       <div className="portfolio-home-grid"><aside ref={allocationRef} tabIndex={-1} className="portfolio-allocation" aria-label="등록한 자산 구성"><Title level={3}>내 자산 구성</Title><AllocationDonut allocation={portfolio.allocation} holdingsCount={portfolio.holdings.length} />{Object.entries(portfolio.allocation).map(([key, value]) => <div key={key} className="portfolio-weight-label"><span><span className="allocation-dot" style={{ background: key === 'ETF' ? 'var(--fw-connection)' : key === 'STOCK' ? 'var(--fw-market)' : 'var(--ant-color-text-secondary)' }} aria-hidden="true" />{assetLabels[key]}</span><strong>{value.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}%</strong></div>)}{!Object.keys(portfolio.allocation).length && <p>가격·환율을 확인하면 비중을 볼 수 있어요.</p>}<details className="allocation-basis"><summary>비중 계산 기준</summary><p>{portfolioCoverageText(portfolio)}</p><p>등록하지 않은 자산은 포함되지 않아요.</p></details></aside><section ref={analysisRef} tabIndex={-1} id="portfolio-analysis" className="portfolio-holdings" aria-label="저장된 보유 자산"><div className="portfolio-section-heading"><Title level={3}>보유 자산</Title><Text type="secondary">기록 수정</Text></div><p className="portfolio-coverage">{portfolioCoverageText(portfolio)}</p>
         {portfolio.holdings.map((row, index) => <article className={`portfolio-holding-row ${lastSaved === row.holding.symbol ? "just-saved" : ""}`} key={row.holding.symbol}><div><Link to={`/stocks?symbol=${encodeURIComponent(row.holding.symbol)}`}><strong>{row.holding.name}</strong></Link><small>{row.holding.quantity.toLocaleString()}주 · {assetLabels[row.holding.assetClass]}</small><small>{row.holding.averageCost == null ? '평균 구매 가격 미입력 · 손익 계산 안 함' : `평균 구매 가격 ${row.holding.averageCost.toLocaleString()} ${row.holding.currency === 'KRW' ? '원' : '달러'}`}</small></div><div className="portfolio-holding-value"><strong>{row.valueKrw == null ? '가격·환율 확인 필요' : `${row.valueKrw.toLocaleString()}원`}</strong><small>{row.quoteAsOf ? `시세 ${new Date(row.quoteAsOf).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}` : '시세 미수집'}</small></div><Space wrap>{portfolio.holdingNotes !== undefined && <Button type="text" disabled={saving} aria-label={`${row.holding.name} 투자 메모`} onClick={() => openNote(row.holding.symbol, row.holding.name)}>투자 메모</Button>}<Button type="text" disabled={saving} aria-label={`${row.holding.name} 기록 수정`} onClick={() => openHolding(index)}>수정</Button><Dropdown trigger={['click']} menu={{ items: [{ key: 'delete', label: '보유 기록 삭제', danger: true, onClick: () => deleteHolding(index) }] }}><Button type="text" disabled={saving} aria-label={`${row.holding.name} 기록 더보기`}>···</Button></Dropdown></Space></article>)}
         <div className="portfolio-cash-row"><Text>등록한 현금</Text><Space><strong>{portfolio.cash.toLocaleString()}원</strong><Button type="text" disabled={saving} aria-label="보유 현금 수정" onClick={openPlan}>수정</Button></Space></div>
+        {lastContributionText(portfolio) && <Text type="secondary">{lastContributionText(portfolio)}</Text>}
         <details className="portfolio-profit"><summary>투자원금·손익 확인</summary>{portfolio.holdings.some(row => row.holding.averageCost == null) && <p>평균 구매 가격이 없는 종목이 있어 전체 투자원금과 손익을 계산하지 않았어요.</p>}<p>투자원금 {portfolio.investedKrw == null ? '평균 구매 가격·환율 확인 필요' : `${portfolio.investedKrw.toLocaleString()}원`}</p><p>가격 변동 수익률 {portfolio.returnPercent == null ? '계산하지 않았어요' : `${portfolio.returnPercent}%`}</p><small>평균 구매 가격·수집 시세·환율이 확인된 경우 계산해요. 수수료·세금은 포함하지 않아요.</small></details>
       </section></div>
       <PortfolioConnections portfolio={portfolio} />
@@ -182,6 +190,9 @@ export function PortfolioPage() {
         <label>투자 성향<Select aria-label="투자 성향" disabled={saving} value={draft.riskLevel} options={Object.entries(riskLabels).map(([value, label]) => ({ value, label }))} onChange={riskLevel => setDraft({ ...draft, riskLevel })} /></label>
         <label>계좌 종류<Select aria-label="계좌 종류" disabled={saving} value={draft.accountType} options={Object.entries(accountLabels).map(([value, label]) => ({ value, label }))} onChange={accountType => setDraft({ ...draft, accountType })} /></label>
         <label>월 추가 투자금 · 원<AutoComplete aria-label="월 추가 투자금 · 원" style={{ width: '100%' }} disabled={saving} options={MONTHLY_PRESETS} filterOption={false} value={monthlyText} onChange={text => { setMonthlyText(text); setDraft({ ...draft, monthlyContribution: parseThousands(text) }) }} onFocus={event => (event.target as HTMLInputElement).select()} onBlur={() => setMonthlyText(formatThousands(Math.min(1e9, Math.max(0, parseThousands(monthlyText)))))}><Input inputMode="numeric" /></AutoComplete></label>
+        <label>월 추가 투자금 자동 반영<Select aria-label="월 추가 투자금 자동 반영" disabled={saving} value={draft.contributionDay == null ? 'off' : String(draft.contributionDay)} options={CONTRIBUTION_DAY_OPTIONS} onChange={value => setDraft({ ...draft, contributionDay: value === 'off' ? null : Number(value) })} /></label>
+        <Typography.Text type="secondary">{draft.contributionDay != null ? '지정한 날짜가 지나면 보유 현금에 자동으로 더해요. 오래 접속하지 않았다면 최대 12개월까지 소급 반영해요.' : '지정하면 매달 정해진 날짜에 월 추가 투자금만큼 보유 현금이 자동으로 늘어나요.'}</Typography.Text>
+        {portfolio && lastContributionText(portfolio) && <Typography.Text type="secondary">{lastContributionText(portfolio)}</Typography.Text>}
         {error && <Alert type="error" message={error} description="입력한 내용은 유지돼요." />}
       </div>
       <details style={{ marginTop: 24 }}><summary>내 조건으로 만드는 구성 초안</summary><p>기간·성향을 반영한 규칙 기반 예시예요. 실제 상품과 계좌 조건은 별도로 확인해주세요.</p>{Object.entries(portfolio?.targetAllocation ?? {}).map(([key, value]) => <p key={key}>{assetLabels[key]} {value}% · 월 배분 예시 {portfolio?.contributionPlan[key]?.toLocaleString()}원</p>)}<small>저장된 투자 조건 기준이에요. 변경한 조건은 저장 후 반영돼요.</small></details>

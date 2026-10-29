@@ -9,6 +9,8 @@ export interface Holding {
   region: 'KR' | 'US' | 'GLOBAL'
   underlyingIndex: string
 }
+// 1~28일 중 하나, 매월 말일은 CONTRIBUTION_LAST_DAY_OF_MONTH(백엔드 PortfolioContribution.LAST_DAY_OF_MONTH와 동일한 값), 납입일 미설정은 null.
+export const CONTRIBUTION_LAST_DAY_OF_MONTH = 99
 export interface PortfolioDraft {
   version: number
   goal: string
@@ -18,6 +20,7 @@ export interface PortfolioDraft {
   monthlyContribution: number
   cash: number
   holdings: Holding[]
+  contributionDay: number | null
 }
 export interface FeedArticle {
   title: string
@@ -28,6 +31,9 @@ export interface FeedArticle {
 export interface Portfolio extends Omit<PortfolioDraft, 'holdings'> {
   holdingNotes?: HoldingNote[]
   reviewCheckpoint?: PortfolioReviewCheckpoint | null
+  lastContributionAppliedAt: string | null
+  lastContributionAppliedAmount: number | null
+  lastContributionAppliedMonths: number | null
   holdings: { holding: Holding; investedKrw: number | null; currentPrice: number | null; valueKrw: number | null; returnPercent: number | null; quoteAsOf: string | null }[]
   investedKrw: number | null
   totalValueKrw: number | null
@@ -66,7 +72,7 @@ export interface NewsFeed { news: FeedArticle[]; updatedAt: string | null; refre
 export interface NewsFilters { from?: string; to?: string; q?: string; page?: number; size?: number }
 export const newsQuery = (filters: NewsFilters = {}) => Object.entries(filters).filter(([, value]) => value !== undefined && value !== '').map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`).join('&')
 export const emptyHolding = (): Holding => ({ symbol: '', name: '', quantity: 0, averageCost: null, currency: 'KRW', assetClass: 'STOCK', sector: '미분류', region: 'KR', underlyingIndex: '' })
-export const toDraft = (portfolio: Portfolio): PortfolioDraft => ({ version: portfolio.version, goal: portfolio.goal, horizonMonths: portfolio.horizonMonths, riskLevel: portfolio.riskLevel, accountType: portfolio.accountType, monthlyContribution: portfolio.monthlyContribution, cash: portfolio.cash, holdings: portfolio.holdings.map(h => h.holding) })
+export const toDraft = (portfolio: Portfolio): PortfolioDraft => ({ version: portfolio.version, goal: portfolio.goal, horizonMonths: portfolio.horizonMonths, riskLevel: portfolio.riskLevel, accountType: portfolio.accountType, monthlyContribution: portfolio.monthlyContribution, cash: portfolio.cash, holdings: portfolio.holdings.map(h => h.holding), contributionDay: portfolio.contributionDay })
 export const accountLabels = { GENERAL: '일반 계좌', ISA: 'ISA', PENSION: '연금 계좌' }
 export const riskLabels = { CAUTIOUS: '안정 선호', BALANCED: '균형 선호', GROWTH: '성장 선호' }
 export const assetLabels: Record<string, string> = { STOCK: '개별주식', ETF: 'ETF', BOND: '채권', OTHER: '기타', CASH: '현금' }
