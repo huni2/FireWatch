@@ -1,7 +1,7 @@
 import { AppDrawer as Drawer } from '../../components/AppDrawer'
 // 등록과 점검을 분리하고 저장 응답을 즉시 홈에 반영한다.
 import { useEffect, useRef, useState } from 'react'
-import { Alert, App, Button, Card, Dropdown, Input, InputNumber, Modal, Select, Space, Tag, Typography } from 'antd'
+import { Alert, App, AutoComplete, Button, Card, Dropdown, Input, Modal, Select, Space, Tag, Typography } from 'antd'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useApi } from '../../lib/useApi'
 import { fetchPortfolio, savePortfolio, reviewPortfolio, saveHoldingNote } from '../../lib/investingApi'
@@ -27,6 +27,13 @@ const { Title, Text } = Typography
 const formatThousands = (value: number | undefined) => value == null ? '' : `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 const parseThousands = (value: string | undefined): number => Number((value ?? '').replace(/,/g, '')) || 0
 
+// 투자 목표·기간·현금류 입력에 자주 쓰는 값을 자동완성 목록으로 보여주되, 목록에 없는 값도 그대로 타이핑할 수 있다.
+const GOAL_PRESETS = ['목돈 마련', '주택 자금', '은퇴 준비', '자녀 교육비', '비상금 마련'].map(value => ({ value }))
+const MONTH_PRESETS = [[6, '6개월'], [12, '1년'], [24, '2년'], [36, '3년'], [60, '5년'], [120, '10년']].map(([months, label]) => ({ value: String(months), label }))
+const amountPresets = (amounts: number[]) => amounts.map(amount => ({ value: formatThousands(amount), label: `${formatThousands(amount)}원` }))
+const CASH_PRESETS = amountPresets([1000000, 5000000, 10000000, 30000000, 50000000, 100000000])
+const MONTHLY_PRESETS = amountPresets([100000, 300000, 500000, 1000000, 2000000])
+
 export function PortfolioPage() {
   const query = useApi(fetchPortfolio)
   const [params, setParams] = useSearchParams()
@@ -35,6 +42,9 @@ export function PortfolioPage() {
   const [editingDraft, setDraft] = useState<PortfolioDraft | null>(null)
   const [selected, setSelected] = useState<{ initial: Holding; index: number | null } | null>(null)
   const [planOpen, setPlanOpen] = useState(false)
+  const [cashText, setCashText] = useState('')
+  const [monthsText, setMonthsText] = useState('')
+  const [monthlyText, setMonthlyText] = useState('')
   const [noteTarget, setNoteTarget] = useState<{ symbol: string; name: string } | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -83,6 +93,7 @@ export function PortfolioPage() {
     if (!draft || saving) return
     modal.confirm({ title: `${draft.holdings[index].name} 기록을 삭제할까요?`, content: '보유 기록만 삭제하며 실제 주식은 매도하지 않아요.', okText: '기록 삭제', cancelText: '유지하기', okButtonProps: { danger: true }, onOk: async () => { if (!await persist({ ...draft, holdings: draft.holdings.filter((_, i) => i !== index) })) throw new Error('삭제 실패') } })
   }
+  function openPlan() { if (!draft || saving) return; setError(null); setDraft(draft); setCashText(formatThousands(draft.cash)); setMonthsText(String(draft.horizonMonths)); setMonthlyText(formatThousands(draft.monthlyContribution)); setPlanOpen(true) }
   function closePlan() {
     if (saving) return
     if (query.data && JSON.stringify(draft) !== JSON.stringify(toDraft(query.data))) modal.confirm({ title: '변경한 계획을 저장하지 않고 닫을까요?', okText: '변경 취소', cancelText: '계속 입력', onOk: () => { setDraft(null); setPlanOpen(false) } })
@@ -136,7 +147,7 @@ export function PortfolioPage() {
     target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'start' })
   }
   return <div className="portfolio-home">
-    <header data-tour="portfolio-intro" ref={headingRef} tabIndex={-1} className="portfolio-home-heading"><div><Title level={2}>내 투자</Title></div>{hasAssets && <Space wrap><Button data-tour="portfolio-registration" type="primary" disabled={saving || draft.holdings.length >= 50} onClick={() => openHolding()}>자산 추가</Button><Button type="text" disabled={saving} onClick={() => { setError(null); setDraft(draft); setPlanOpen(true) }}>현금·투자 계획</Button></Space>}</header>
+    <header data-tour="portfolio-intro" ref={headingRef} tabIndex={-1} className="portfolio-home-heading"><div><Title level={2}>내 투자</Title></div>{hasAssets && <Space wrap><Button data-tour="portfolio-registration" type="primary" disabled={saving || draft.holdings.length >= 50} onClick={() => openHolding()}>자산 추가</Button><Button type="text" disabled={saving} onClick={openPlan}>현금·투자 계획</Button></Space>}</header>
     {query.loading && hasAssets && <p role="status">등록한 기록을 유지하며 최신 내용을 확인하고 있어요.</p>}
     {query.error && <Alert type="warning" message="최신 기록을 확인하지 못했어요. 현재 기록은 유지돼요." action={<Button onClick={query.reload}>다시 확인</Button>} />}
     {error && !selected && !planOpen && !noteTarget && <Alert type="error" message={error} />}
@@ -150,7 +161,7 @@ export function PortfolioPage() {
       <HoldingNotes portfolio={portfolio} busy={saving} edit={openNote} />
       <div className="portfolio-home-grid"><aside ref={allocationRef} tabIndex={-1} className="portfolio-allocation" aria-label="등록한 자산 구성"><Title level={3}>내 자산 구성</Title><AllocationDonut allocation={portfolio.allocation} holdingsCount={portfolio.holdings.length} />{Object.entries(portfolio.allocation).map(([key, value]) => <div key={key} className="portfolio-weight-label"><span><span className="allocation-dot" style={{ background: key === 'ETF' ? 'var(--fw-connection)' : key === 'STOCK' ? 'var(--fw-market)' : 'var(--ant-color-text-secondary)' }} aria-hidden="true" />{assetLabels[key]}</span><strong>{value.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}%</strong></div>)}{!Object.keys(portfolio.allocation).length && <p>가격·환율을 확인하면 비중을 볼 수 있어요.</p>}<details className="allocation-basis"><summary>비중 계산 기준</summary><p>{portfolioCoverageText(portfolio)}</p><p>등록하지 않은 자산은 포함되지 않아요.</p></details></aside><section ref={analysisRef} tabIndex={-1} id="portfolio-analysis" className="portfolio-holdings" aria-label="저장된 보유 자산"><div className="portfolio-section-heading"><Title level={3}>보유 자산</Title><Text type="secondary">기록 수정</Text></div><p className="portfolio-coverage">{portfolioCoverageText(portfolio)}</p>
         {portfolio.holdings.map((row, index) => <article className={`portfolio-holding-row ${lastSaved === row.holding.symbol ? "just-saved" : ""}`} key={row.holding.symbol}><div><Link to={`/stocks?symbol=${encodeURIComponent(row.holding.symbol)}`}><strong>{row.holding.name}</strong></Link><small>{row.holding.quantity.toLocaleString()}주 · {assetLabels[row.holding.assetClass]}</small><small>{row.holding.averageCost == null ? '평균 구매 가격 미입력 · 손익 계산 안 함' : `평균 구매 가격 ${row.holding.averageCost.toLocaleString()} ${row.holding.currency === 'KRW' ? '원' : '달러'}`}</small></div><div className="portfolio-holding-value"><strong>{row.valueKrw == null ? '가격·환율 확인 필요' : `${row.valueKrw.toLocaleString()}원`}</strong><small>{row.quoteAsOf ? `시세 ${new Date(row.quoteAsOf).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}` : '시세 미수집'}</small></div><Space wrap>{portfolio.holdingNotes !== undefined && <Button type="text" disabled={saving} aria-label={`${row.holding.name} 투자 메모`} onClick={() => openNote(row.holding.symbol, row.holding.name)}>투자 메모</Button>}<Button type="text" disabled={saving} aria-label={`${row.holding.name} 기록 수정`} onClick={() => openHolding(index)}>수정</Button><Dropdown trigger={['click']} menu={{ items: [{ key: 'delete', label: '보유 기록 삭제', danger: true, onClick: () => deleteHolding(index) }] }}><Button type="text" disabled={saving} aria-label={`${row.holding.name} 기록 더보기`}>···</Button></Dropdown></Space></article>)}
-        <div className="portfolio-cash-row"><Text>등록한 현금</Text><Space><strong>{portfolio.cash.toLocaleString()}원</strong><Button type="text" disabled={saving} aria-label="보유 현금 수정" onClick={() => { setError(null); setDraft(draft); setPlanOpen(true) }}>수정</Button></Space></div>
+        <div className="portfolio-cash-row"><Text>등록한 현금</Text><Space><strong>{portfolio.cash.toLocaleString()}원</strong><Button type="text" disabled={saving} aria-label="보유 현금 수정" onClick={openPlan}>수정</Button></Space></div>
         <details className="portfolio-profit"><summary>투자원금·손익 확인</summary>{portfolio.holdings.some(row => row.holding.averageCost == null) && <p>평균 구매 가격이 없는 종목이 있어 전체 투자원금과 손익을 계산하지 않았어요.</p>}<p>투자원금 {portfolio.investedKrw == null ? '평균 구매 가격·환율 확인 필요' : `${portfolio.investedKrw.toLocaleString()}원`}</p><p>가격 변동 수익률 {portfolio.returnPercent == null ? '계산하지 않았어요' : `${portfolio.returnPercent}%`}</p><small>평균 구매 가격·수집 시세·환율이 확인된 경우 계산해요. 수수료·세금은 포함하지 않아요.</small></details>
       </section></div>
       <PortfolioConnections portfolio={portfolio} />
@@ -164,7 +175,15 @@ export function PortfolioPage() {
     {noteTarget && portfolio && <HoldingNoteEditor key={noteTarget.symbol} {...noteTarget} initial={portfolio.holdingNotes?.find(note => note.symbol === noteTarget.symbol)} version={portfolio.version} busy={saving} error={error} close={() => { setNoteTarget(null); setError(null); returnToHoldingOpener() }} save={persistNote} />}
     {selected && <HoldingDrawer key={`${selected.index ?? 'new'}:${selected.initial.symbol}`} editExisting={symbol => { const index = draft.holdings.findIndex(row => row.symbol.toUpperCase() === symbol.toUpperCase()); if (index >= 0) openHolding(index) }} initial={selected.initial} others={draft.holdings.filter((_, index) => index !== selected.index)} editing={selected.index != null} saving={saving} error={error} close={closeHolding} returnFocus={returnToHoldingOpener} save={holding => { const holdings = selected.index == null ? [...draft.holdings, holding] : draft.holdings.map((h, i) => i === selected.index ? holding : h); void persist({ ...draft, holdings }, holding.symbol) }} />}
     <Drawer title="현금·투자 계획" open={planOpen} onClose={closePlan} width="min(480px, 100vw)" maskClosable={!saving} keyboard={!saving} closable={!saving} footer={<Button block type="primary" size="large" loading={saving} onClick={() => void persist(draft)}>계획 저장하기</Button>}>
-      <div className="holding-advanced"><label>보유 현금 · 원<InputNumber aria-label="보유 현금 · 원" style={{ width: '100%' }} disabled={saving} min={0} max={1e12} formatter={formatThousands} parser={parseThousands} onFocus={event => event.target.select()} value={draft.cash} onChange={v => setDraft({ ...draft, cash: v ?? 0 })} /></label><label>투자 목표<Input aria-label="투자 목표" disabled={saving} value={draft.goal} maxLength={120} onChange={e => setDraft({ ...draft, goal: e.target.value })} /></label><label>투자 기간 · 개월<InputNumber aria-label="투자 기간 · 개월" style={{ width: '100%' }} disabled={saving} min={1} max={600} value={draft.horizonMonths} onChange={v => setDraft({ ...draft, horizonMonths: v ?? 1 })} /></label><label>투자 성향<Select aria-label="투자 성향" disabled={saving} value={draft.riskLevel} options={Object.entries(riskLabels).map(([value, label]) => ({ value, label }))} onChange={riskLevel => setDraft({ ...draft, riskLevel })} /></label><label>계좌 종류<Select aria-label="계좌 종류" disabled={saving} value={draft.accountType} options={Object.entries(accountLabels).map(([value, label]) => ({ value, label }))} onChange={accountType => setDraft({ ...draft, accountType })} /></label><label>월 추가 투자금 · 원<InputNumber aria-label="월 추가 투자금 · 원" style={{ width: '100%' }} disabled={saving} min={0} max={1e9} formatter={formatThousands} parser={parseThousands} onFocus={event => event.target.select()} value={draft.monthlyContribution} onChange={v => setDraft({ ...draft, monthlyContribution: v ?? 0 })} /></label>{error && <Alert type="error" message={error} description="입력한 내용은 유지돼요." />}</div>
+      <div className="holding-advanced">
+        <label>보유 현금 · 원<AutoComplete aria-label="보유 현금 · 원" style={{ width: '100%' }} disabled={saving} options={CASH_PRESETS} filterOption={false} value={cashText} onChange={text => { setCashText(text); setDraft({ ...draft, cash: parseThousands(text) }) }} onFocus={event => (event.target as HTMLInputElement).select()} onBlur={() => setCashText(formatThousands(Math.min(1e12, Math.max(0, parseThousands(cashText)))))}><Input inputMode="numeric" /></AutoComplete></label>
+        <label>투자 목표<AutoComplete aria-label="투자 목표" style={{ width: '100%' }} disabled={saving} options={GOAL_PRESETS} filterOption={false} value={draft.goal} onChange={value => setDraft({ ...draft, goal: value })}><Input maxLength={120} /></AutoComplete></label>
+        <label>투자 기간 · 개월<AutoComplete aria-label="투자 기간 · 개월" style={{ width: '100%' }} disabled={saving} options={MONTH_PRESETS} filterOption={false} value={monthsText} onChange={text => { const digits = text.replace(/[^0-9]/g, ''); setMonthsText(digits); setDraft({ ...draft, horizonMonths: digits ? Number(digits) : 1 }) }} onBlur={() => { const months = Math.min(600, Math.max(1, Number(monthsText) || 1)); setMonthsText(String(months)); setDraft({ ...draft, horizonMonths: months }) }}><Input inputMode="numeric" /></AutoComplete></label>
+        <label>투자 성향<Select aria-label="투자 성향" disabled={saving} value={draft.riskLevel} options={Object.entries(riskLabels).map(([value, label]) => ({ value, label }))} onChange={riskLevel => setDraft({ ...draft, riskLevel })} /></label>
+        <label>계좌 종류<Select aria-label="계좌 종류" disabled={saving} value={draft.accountType} options={Object.entries(accountLabels).map(([value, label]) => ({ value, label }))} onChange={accountType => setDraft({ ...draft, accountType })} /></label>
+        <label>월 추가 투자금 · 원<AutoComplete aria-label="월 추가 투자금 · 원" style={{ width: '100%' }} disabled={saving} options={MONTHLY_PRESETS} filterOption={false} value={monthlyText} onChange={text => { setMonthlyText(text); setDraft({ ...draft, monthlyContribution: parseThousands(text) }) }} onFocus={event => (event.target as HTMLInputElement).select()} onBlur={() => setMonthlyText(formatThousands(Math.min(1e9, Math.max(0, parseThousands(monthlyText)))))}><Input inputMode="numeric" /></AutoComplete></label>
+        {error && <Alert type="error" message={error} description="입력한 내용은 유지돼요." />}
+      </div>
       <details style={{ marginTop: 24 }}><summary>내 조건으로 만드는 구성 초안</summary><p>기간·성향을 반영한 규칙 기반 예시예요. 실제 상품과 계좌 조건은 별도로 확인해주세요.</p>{Object.entries(portfolio?.targetAllocation ?? {}).map(([key, value]) => <p key={key}>{assetLabels[key]} {value}% · 월 배분 예시 {portfolio?.contributionPlan[key]?.toLocaleString()}원</p>)}<small>저장된 투자 조건 기준이에요. 변경한 조건은 저장 후 반영돼요.</small></details>
     </Drawer>
   </div>
