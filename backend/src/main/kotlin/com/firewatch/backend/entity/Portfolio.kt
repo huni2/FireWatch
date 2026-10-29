@@ -19,6 +19,11 @@ class Portfolio(
     var updatedAt: Instant = Instant.now(),
     @Column(columnDefinition = "TEXT") var reviewJson: String? = null,
     @Column(columnDefinition = "TEXT") var holdingNotesJson: String? = null,
+    var contributionDay: Int? = null,
+    var lastContributionAppliedMonth: String? = null,
+    var lastContributionAppliedAt: Instant? = null,
+    var lastContributionAppliedAmount: BigDecimal? = null,
+    var lastContributionAppliedMonths: Int? = null,
 ) {
     override fun toString() = "포트폴리오 v$version 변경"
 }

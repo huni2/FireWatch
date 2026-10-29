@@ -24,6 +24,7 @@ data class PortfolioUpdateRequest(
     val monthlyContribution: BigDecimal,
     val cash: BigDecimal,
     val holdings: List<PortfolioHoldingInput>,
+    val contributionDay: Int? = null,
 ) {
     override fun toString() = "포트폴리오 변경 v$version (자산 ${holdings.size}개)"
 }
@@ -77,6 +78,10 @@ data class PortfolioResponse(
     val valuationCoverage: ValuationCoverage? = null,
     val reviewCheckpoint: PortfolioReviewCheckpoint? = null,
     val holdingNotes: List<HoldingNote> = emptyList(),
+    val contributionDay: Int? = null,
+    val lastContributionAppliedAt: Instant? = null,
+    val lastContributionAppliedAmount: BigDecimal? = null,
+    val lastContributionAppliedMonths: Int? = null,
 ) {
     override fun toString() = "포트폴리오 분석 $analysisVersion (자산 ${holdings.size}개)"
 }

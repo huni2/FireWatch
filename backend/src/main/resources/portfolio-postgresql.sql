@@ -86,3 +86,10 @@ ALTER TABLE auth_sessions ENABLE ROW LEVEL SECURITY;
 
 -- 기존 게임의 기업/난수 규칙을 버전1로 보존하며 재실행 시 값을 바꾸지 않는다.
 ALTER TABLE game_sessions ADD COLUMN IF NOT EXISTS simulation_version INT NOT NULL DEFAULT 1;
+
+-- 월 추가 투자금 정기 반영(납입일 지정 시 보유현금 자동 증가).
+ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS contribution_day INT;
+ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS last_contribution_applied_month VARCHAR(7);
+ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS last_contribution_applied_at TIMESTAMP;
+ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS last_contribution_applied_amount DECIMAL(16,2);
+ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS last_contribution_applied_months INT;

@@ -13,6 +13,8 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZoneId
 
 @Service
 class PortfolioService(
@@ -33,8 +35,23 @@ class PortfolioService(
 
     fun get(deviceId: String): PortfolioResponse {
         val owner = identityResolver.resolveForDevice(deviceId).id
-        val stored = portfolios.findById(owner).orElse(null)
+        val stored = portfolios.findById(owner).orElse(null)?.let { applyDueContribution(it) }
         return analyze(stored ?: Portfolio(ownerId = owner), stored != null)
+    }
+
+    // 조회할 때마다 납입일이 지났는지 확인해 밀린 월 추가 투자금을 현금에 반영한다(최대 12개월 소급, 그 이상은 버림).
+    // 별도 배치 없이 조회 시점에 계산하므로 항상 최신이고, 사용자가 켜 둔 적 없는(lastContributionAppliedMonth=null) 상태에서는 아무 일도 하지 않는다.
+    @Transactional
+    fun applyDueContribution(row: Portfolio): Portfolio {
+        val today = LocalDate.now(ZoneId.of("Asia/Seoul"))
+        val due = PortfolioContribution.due(row.contributionDay, row.monthlyContribution, row.lastContributionAppliedMonth, today) ?: return row
+        row.cash = row.cash.add(due.amount)
+        row.lastContributionAppliedMonth = due.appliedThroughMonth
+        row.lastContributionAppliedAt = Instant.now()
+        row.lastContributionAppliedAmount = due.amount
+        row.lastContributionAppliedMonths = due.monthsApplied
+        row.updatedAt = Instant.now()
+        return portfolios.saveAndFlush(row)
     }
 
     @Transactional
@@ -95,6 +112,9 @@ class PortfolioService(
         row.accountType = input.accountType
         row.monthlyContribution = input.monthlyContribution
         row.cash = input.cash
+        // 납입일을 새로 설정하거나 바꾸면 이번 달은 소급하지 않고 다음 납입일부터 반영을 시작한다 — 방금 켠 설정으로 당장 현금이 느는 걸 막는다.
+        if (input.contributionDay != row.contributionDay) row.lastContributionAppliedMonth = YearMonth.now(ZoneId.of("Asia/Seoul")).toString()
+        row.contributionDay = input.contributionDay
         row.holdingsJson = mapper.writeValueAsString(input.holdings.map { it.copy(symbol = it.symbol.trim().uppercase(), name = it.name.trim(), underlyingIndex = it.underlyingIndex.trim().uppercase()) })
         row.updatedAt = Instant.now()
         val saved = portfolios.saveAndFlush(row)
@@ -109,6 +129,7 @@ class PortfolioService(
         if (input.riskLevel !in setOf("CAUTIOUS", "BALANCED", "GROWTH")) errors["riskLevel"] = "투자 성향을 선택해주세요."
         if (input.accountType !in setOf("GENERAL", "ISA", "PENSION")) errors["accountType"] = "계좌 종류를 선택해주세요."
         if (input.cash < BigDecimal.ZERO || input.monthlyContribution < BigDecimal.ZERO || input.cash > BigDecimal("1000000000000") || input.monthlyContribution > BigDecimal("1000000000")) errors["cash"] = "금액 범위를 확인해주세요."
+        if (input.contributionDay != null && input.contributionDay !in 1..28 && input.contributionDay != PortfolioContribution.LAST_DAY_OF_MONTH) errors["contributionDay"] = "납입일은 1~28일 또는 매월 말일 중에서 선택해주세요."
         if (input.holdings.size > 50) errors["holdings"] = "보유 자산은 최대 50개입니다."
         if (input.holdings.map { it.symbol.uppercase() }.distinct().size != input.holdings.size) errors["holdings"] = "같은 티커는 합산해서 입력해주세요."
         input.holdings.forEachIndexed { index, h ->
@@ -179,7 +200,11 @@ class PortfolioService(
             }.sortedByDescending { it.pubDate }.take(10)
         return PortfolioResponse(row.version, row.goal, row.horizonMonths, row.riskLevel, row.accountType, row.monthlyContribution, row.cash, views, invested, total, if (total != null && invested != null) percent(total - row.cash - invested, invested) else null, allocation, target, contribution, insights, articles, row.updatedAt.takeIf { persisted }, latest?.briefingDate?.toString().takeIf { fx != null }, exposure = PortfolioExposureAnalysis.analyze(views, row.cash), valuationCoverage = coverage,
             reviewCheckpoint = row.reviewJson?.let { mapper.readValue(it, PortfolioReviewCheckpoint::class.java) },
-            holdingNotes = row.holdingNotesJson?.let { mapper.readValue(it, Array<HoldingNote>::class.java).toList() }.orEmpty())
+            holdingNotes = row.holdingNotesJson?.let { mapper.readValue(it, Array<HoldingNote>::class.java).toList() }.orEmpty(),
+            contributionDay = row.contributionDay,
+            lastContributionAppliedAt = row.lastContributionAppliedAt,
+            lastContributionAppliedAmount = row.lastContributionAppliedAmount,
+            lastContributionAppliedMonths = row.lastContributionAppliedMonths)
     }
 
     companion object {
