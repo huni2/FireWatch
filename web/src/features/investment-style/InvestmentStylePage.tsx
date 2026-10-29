@@ -55,6 +55,7 @@ export function InvestmentStylePage() {
     if (!result) return
     const outcome = await shareOrCopy(investmentStyleShareText(result.name, `${window.location.origin}/investment-style`))
     if (outcome === 'copied') message.success('공유 문구를 클립보드에 복사했어요.')
+    else if (outcome === 'failed') message.error('공유하지 못했어요. 다시 시도해주세요.')
   }
   const matchesSaved = !!saved && JSON.stringify(saved.answers) === JSON.stringify(answers)
   return <section className="investment-style-page">

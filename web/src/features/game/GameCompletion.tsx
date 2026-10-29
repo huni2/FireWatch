@@ -11,6 +11,7 @@ export function GameCompletion({ turn, close, publish }: { turn: GameTurn; close
   async function share() {
     const outcome = await shareOrCopy(gameShareText(result, `${window.location.origin}/game`))
     if (outcome === 'copied') message.success('공유 문구를 클립보드에 복사했어요.')
+    else if (outcome === 'failed') message.error('공유하지 못했어요. 다시 시도해주세요.')
   }
   return <Modal open centered title={result.title} width={560} onCancel={close} className="game-completion-modal" styles={{ body: { maxHeight: 'calc(100dvh - 240px)', overflowY: 'auto' } }} footer={<div className="game-completion-actions"><Button onClick={close}>결과 화면 보기</Button>{result.scored && <Button onClick={share}>결과 공유하기</Button>}{result.canPublish && <Button type="primary" onClick={publish}>순위 등록 선택하기</Button>}</div>}>
     <section className="game-completion" aria-label="이번 게임 결과">
